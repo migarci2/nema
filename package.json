@@ -1,0 +1,17 @@
+{
+  "name": "nema",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "nema: learner-owned learning vault and WebMCP learning protocol",
+  "scripts": {
+    "test": "node --test test/",
+    "build": "bash scripts/build.sh",
+    "dev": "bash scripts/dev.sh",
+    "deploy": "bash scripts/deploy.sh",
+    "seed": "node scripts/make-seed.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.128.0"
+  }
+}

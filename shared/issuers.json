@@ -1,0 +1,29 @@
+{
+  "harness": {
+    "kid": "harness-2026-09",
+    "jwk": {
+      "kty": "EC",
+      "x": "xaWcI2BOz8kZRsa6504j3aqIVrh_jelH1Mdd5U16IXU",
+      "y": "lm5aJyj-iu9uGs6upf_6QfxilrD0lxj3Y-gCokPYqbg",
+      "crv": "P-256"
+    }
+  },
+  "security": {
+    "kid": "security-2026-09",
+    "jwk": {
+      "kty": "EC",
+      "x": "VpXVWqsgWzp9JWZ1S9zv5VVzMTY2A4tRyxA7pFkDMvY",
+      "y": "7QchWSSwzYKiS3spRo6N1IJZ1ac-OL9m1ESwOjYhBuA",
+      "crv": "P-256"
+    }
+  },
+  "seed": {
+    "kid": "seed-2026-09",
+    "jwk": {
+      "kty": "EC",
+      "x": "BTZzb6ZLgfZqi4_ILS6Zmol1rEXUv6OIeRpJZYUGPr0",
+      "y": "5tEPHwY9xR_31LkBJICEzWE7cWIdyLC1sUf-Jpxl1zo",
+      "crv": "P-256"
+    }
+  }
+}
