@@ -20,113 +20,97 @@
 <div class="n-app">
   <header data-nema-header></header>
 
-  <main class="n-app__main" id="vault">
+  <main class="n-app__main v-main" id="vault">
 
     <div class="v-lede">
       <h1 class="v-title">Personal learning vault</h1>
-      <p class="v-lede__text">Every band below is derived from signed evidence held in this browser. Nothing leaves the vault except inside an assertion you approve, for one audience, for thirty minutes.</p>
+      <p class="v-lede__text">Signed evidence held in this browser, and nothing leaves it without your approval.</p>
     </div>
 
-    <div class="n-grid">
+    <!-- summary --------------------------------------------------------- -->
+    <section class="n-panel n-panel--quiet v-summary" aria-labelledby="p-summary">
+      <h2 class="sr-only" id="p-summary">Vault summary</h2>
+      <div class="n-stats v-stats" data-summary-stats></div>
+      <p class="v-registry" data-summary-line aria-live="polite">Reading the vault.</p>
+      <div class="row row--tight v-actions">
+        <button class="n-btn n-btn--primary" type="button" data-action="load-demo">Load demo learner</button>
+      </div>
+    </section>
 
-      <!-- 01 summary ------------------------------------------------- -->
-      <section class="n-panel c-12" aria-labelledby="p-summary">
-        <h2 class="n-panel__label" id="p-summary"><span class="n-panel__index">01</span> Vault summary
-          <span class="n-panel__hint" data-vault-source>local storage, this browser only</span>
-        </h2>
-        <div class="n-panel__body">
-          <div class="n-stats" data-summary-stats></div>
-          <p class="v-registry mono" data-summary-line aria-live="polite">Reading the vault.</p>
-          <div class="row row--tight v-actions">
-            <button class="n-btn n-btn--primary" type="button" data-action="load-demo">Load demo learner</button>
-            <button class="n-btn n-btn--secondary" type="button" data-action="export">Export vault</button>
-            <button class="n-btn n-btn--secondary" type="button" data-action="import">Import vault</button>
-            <button class="n-btn n-btn--danger" type="button" data-action="reset">Reset vault</button>
-            <input class="sr-only" type="file" accept="application/json,.json" data-import-file aria-label="Choose a vault JSON file to import">
+    <!-- learning graph -------------------------------------------------- -->
+    <section class="n-panel n-panel--quiet" aria-labelledby="p-graph">
+      <h2 class="n-panel__label" id="p-graph">Learning graph</h2>
+      <div class="n-panel__body">
+        <div class="n-graph v-graph" data-graph></div>
+        <p class="v-graph__detail" data-graph-detail aria-live="polite"></p>
+        <p class="v-legend" data-graph-legend></p>
+      </div>
+    </section>
+
+    <!-- learner state --------------------------------------------------- -->
+    <section class="n-panel n-panel--quiet" aria-labelledby="p-state">
+      <h2 class="n-panel__label" id="p-state">Learner state</h2>
+      <div class="n-panel__body">
+        <div data-state-table></div>
+        <div class="row row--tight">
+          <button class="n-btn n-btn--secondary n-btn--sm" type="button" data-action="toggle-state" hidden>Show all</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- learning needs -------------------------------------------------- -->
+    <section class="n-panel n-panel--quiet" aria-labelledby="p-needs">
+      <h2 class="n-panel__label" id="p-needs">Learning needs</h2>
+      <div class="n-panel__body">
+        <form class="row row--tight v-budget" data-needs-form>
+          <label class="v-budget__label" for="budget-minutes">Plan a session of</label>
+          <input class="n-input n-input--num" id="budget-minutes" name="budgetMinutes" type="number" min="1" max="120" step="1" value="5" inputmode="numeric">
+          <span class="v-budget__label">minutes</span>
+          <button class="n-btn n-btn--secondary n-btn--sm" type="submit">Plan</button>
+        </form>
+        <div class="n-path" data-needs-list></div>
+      </div>
+    </section>
+
+    <!-- ledger ---------------------------------------------------------- -->
+    <section class="n-panel n-panel--quiet v-ledgers" aria-labelledby="p-ledger">
+      <h2 class="n-panel__label" id="p-ledger">Ledger</h2>
+      <div class="n-panel__body">
+        <div class="v-ledgers__block">
+          <h3 class="v-sublabel" id="p-evidence">Evidence in</h3>
+          <div class="n-ledger" data-evidence-ledger></div>
+          <div class="row row--tight">
+            <button class="n-btn n-btn--secondary n-btn--sm" type="button" data-action="toggle-evidence" hidden>Show all</button>
           </div>
         </div>
-      </section>
-
-      <!-- 02 learning graph ------------------------------------------ -->
-      <section class="n-panel c-12" aria-labelledby="p-graph">
-        <h2 class="n-panel__label" id="p-graph"><span class="n-panel__index">02</span> Learning graph
-          <span class="n-panel__hint">columns are prerequisite depth</span>
-        </h2>
-        <div class="n-panel__body">
-          <div class="n-graph v-graph" data-graph></div>
-          <div class="v-graph__detail" data-graph-detail aria-live="polite">
-            <span class="dim mono">Focus or hover a node to read its bands.</span>
-          </div>
-          <div class="row row--tight v-legend" data-graph-legend></div>
-        </div>
-      </section>
-
-      <!-- 03 learner state ------------------------------------------- -->
-      <section class="n-panel c-12" aria-labelledby="p-state">
-        <h2 class="n-panel__label" id="p-state"><span class="n-panel__index">03</span> Learner state
-          <span class="n-panel__hint">bands only, never scores</span>
-        </h2>
-        <div class="n-panel__body">
-          <div class="v-table__scroll" data-state-table></div>
-          <div data-misconceptions></div>
-        </div>
-      </section>
-
-      <!-- 04 needs --------------------------------------------------- -->
-      <section class="n-panel c-5" aria-labelledby="p-needs">
-        <h2 class="n-panel__label" id="p-needs"><span class="n-panel__index">04</span> Learning needs</h2>
-        <div class="n-panel__body">
-          <form class="row row--tight v-budget" data-needs-form>
-            <label class="n-label" for="budget-minutes">Best session for</label>
-            <input class="n-input n-input--num" id="budget-minutes" name="budgetMinutes" type="number" min="1" max="120" step="1" value="5" inputmode="numeric">
-            <span class="n-label">minutes</span>
-            <button class="n-btn n-btn--secondary n-btn--sm" type="submit">Plan</button>
-          </form>
-          <div class="n-path" data-needs-list></div>
-        </div>
-      </section>
-
-      <!-- 05 disclosure ledger --------------------------------------- -->
-      <section class="n-panel c-7" aria-labelledby="p-disclosures">
-        <h2 class="n-panel__label" id="p-disclosures"><span class="n-panel__index">05</span> Disclosure ledger
-          <span class="n-panel__hint">what left the vault</span>
-        </h2>
-        <div class="n-panel__body">
+        <div class="v-ledgers__block">
+          <h3 class="v-sublabel" id="p-disclosures">Disclosures out</h3>
           <div class="n-ledger" data-disclosure-ledger></div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- 06 evidence ledger ----------------------------------------- -->
-      <section class="n-panel c-12" aria-labelledby="p-evidence">
-        <h2 class="n-panel__label" id="p-evidence"><span class="n-panel__index">06</span> Evidence ledger
-          <span class="n-panel__hint">signed receipts, newest first</span>
-        </h2>
-        <div class="n-panel__body">
-          <div class="n-ledger" data-evidence-ledger></div>
-          <button class="n-btn n-btn--secondary n-btn--sm" type="button" data-action="toggle-evidence" hidden>Show all receipts</button>
-        </div>
-      </section>
+    <!-- more ------------------------------------------------------------ -->
+    <details class="v-more">
+      <summary class="v-more__summary">More</summary>
+      <div class="v-more__body">
 
-      <!-- 07 goals --------------------------------------------------- -->
-      <section class="n-panel c-5" aria-labelledby="p-goals">
-        <h2 class="n-panel__label" id="p-goals"><span class="n-panel__index">07</span> Goals
-          <span class="n-panel__hint">declarative tool</span>
-        </h2>
-        <div class="n-panel__body">
+        <section class="n-panel n-panel--quiet v-sub" aria-labelledby="p-goals">
+          <h3 class="v-sublabel" id="p-goals">Goals</h3>
           <form class="stack stack--tight" data-goal-form toolautosubmit
                 toolname="set_learning_goal_form"
                 tooldescription="Set the learner's active goal from the goal form in the vault page. Goals only re-order learning needs, they never create evidence and never change a band.">
             <div class="n-field">
               <label class="n-label" for="goal-title">Goal title</label>
               <input class="n-input" id="goal-title" name="title" type="text" required
-                     placeholder="Ship an agent I can trust in production"
+                     placeholder="What I want to be able to do"
                      toolparamdescription="Short title of the goal, in the learner's own words.">
             </div>
             <div class="n-field">
               <label class="n-label" for="goal-concepts">Concept ids, comma separated</label>
               <input class="n-input mono" id="goal-concepts" name="concepts" type="text" required
-                     placeholder="nema:agent-evals, nema:feedback-loops"
-                     toolparamdescription="Comma separated nema concept ids from the shared registry, for example nema:agent-evals.">
+                     placeholder="nema:concept-id, nema:another-concept"
+                     toolparamdescription="Comma separated nema concept ids from the shared registry, as returned by get_learner_state.">
             </div>
             <div class="row row--tight">
               <button class="n-btn n-btn--secondary n-btn--sm" type="submit">Set goal</button>
@@ -134,40 +118,50 @@
             </div>
           </form>
           <div class="n-ledger" data-goal-list></div>
-        </div>
-      </section>
+        </section>
 
-      <!-- 08 receipt inbox ------------------------------------------- -->
-      <section class="n-panel c-7" aria-labelledby="p-inbox">
-        <h2 class="n-panel__label" id="p-inbox"><span class="n-panel__index">08</span> Receipt inbox
-          <span class="n-panel__hint">same code path as the tool</span>
-        </h2>
-        <div class="n-panel__body">
+        <section class="n-panel n-panel--quiet v-sub" aria-labelledby="p-inbox">
+          <h3 class="v-sublabel" id="p-inbox">Receipt inbox</h3>
           <p class="v-inbox__note" data-inbox-note hidden></p>
           <div class="n-field">
-            <label class="n-label" for="inbox-token">Paste an evidence receipt token</label>
+            <label class="n-label" for="inbox-token">Paste a receipt token</label>
             <textarea class="n-textarea" id="inbox-token" data-inbox-token spellcheck="false" placeholder="nema1.eyJ0eXBlIjoiZXZpZGVuY2UtcmVjZWlwdCIs..."></textarea>
           </div>
           <div class="row row--tight">
-            <button class="n-btn n-btn--primary" type="button" data-action="stage">Stage receipt</button>
-            <button class="n-btn n-btn--secondary" type="button" data-action="clear-inbox">Clear</button>
+            <button class="n-btn n-btn--secondary n-btn--sm" type="button" data-action="stage">Stage receipt</button>
+            <button class="n-btn n-btn--secondary n-btn--sm" type="button" data-action="clear-inbox">Clear</button>
           </div>
           <div class="v-result" data-inbox-result role="status" aria-live="polite"></div>
-        </div>
-      </section>
+        </section>
 
-      <!-- 09 tool activity ------------------------------------------- -->
-      <section class="n-panel c-12" aria-labelledby="p-activity">
-        <h2 class="n-panel__label" id="p-activity"><span class="n-panel__index">09</span> Tool activity
-          <span class="n-panel__hint" data-tools-mode>WebMCP</span>
-        </h2>
-        <div class="n-panel__body">
-          <div class="activity-strip__head"><span>last 8 calls</span><span class="push mono" data-tools-list>no tools yet</span></div>
-          <div data-activity-strip></div>
-        </div>
-      </section>
+        <section class="n-panel n-panel--quiet v-sub" aria-labelledby="p-misconceptions">
+          <h3 class="v-sublabel" id="p-misconceptions">Misconceptions</h3>
+          <div data-misconceptions></div>
+        </section>
 
+        <section class="n-panel n-panel--quiet v-sub" aria-labelledby="p-file">
+          <h3 class="v-sublabel" id="p-file">Vault file</h3>
+          <div class="row row--tight v-file">
+            <button class="v-text-btn" type="button" data-action="export">Export</button>
+            <button class="v-text-btn" type="button" data-action="import">Import</button>
+            <button class="v-text-btn v-text-btn--danger" type="button" data-action="reset">Reset</button>
+            <input class="sr-only" type="file" accept="application/json,.json" data-import-file aria-label="Choose a vault JSON file to import">
+          </div>
+        </section>
+
+      </div>
+    </details>
+
+    <!-- tool activity --------------------------------------------------- -->
+    <div class="v-activity">
+      <div class="activity-strip__head">
+        <span>Tool activity</span>
+        <span class="push" data-tools-list>no tools yet</span>
+        <span data-tools-mode>WebMCP</span>
+      </div>
+      <div data-activity-strip></div>
     </div>
+
   </main>
 
   <footer data-nema-footer></footer>
@@ -176,25 +170,23 @@
 <div class="n-modal" id="consent-modal" role="dialog" aria-modal="true" aria-labelledby="consent-title" aria-describedby="consent-purpose" hidden>
   <div class="n-modal__dialog" tabindex="-1">
     <div class="n-modal__head">
-      <p class="n-modal__eyebrow">Disclosure request</p>
       <h2 class="n-modal__title" id="consent-title" data-consent-title>A provider asks to know</h2>
       <p class="v-consent__origin mono" data-consent-origin></p>
-      <p class="v-consent__key mono" data-consent-key></p>
       <p class="v-consent__purpose" id="consent-purpose" data-consent-purpose></p>
     </div>
     <div class="n-modal__body">
       <div class="v-consent__block">
-        <span class="v-consent__cap">Shared</span>
+        <span class="v-sublabel">Shared</span>
         <div class="n-ledger" data-consent-shared></div>
       </div>
       <div class="v-consent__block">
-        <span class="v-consent__cap">Not shared</span>
+        <span class="v-sublabel">Not shared</span>
         <ul class="v-consent__withheld" data-consent-withheld></ul>
       </div>
     </div>
     <div class="n-modal__foot v-consent__foot">
       <div class="v-consent__decide">
-        <p class="v-consent__expiry mono" data-consent-expiry>Expires in 30 minutes</p>
+        <p class="v-consent__expiry" data-consent-expiry>Expires in 30 minutes</p>
         <label class="n-check">
           <input type="checkbox" data-consent-auto>
           <span>Auto approve this provider for 1 hour</span>

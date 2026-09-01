@@ -27,8 +27,9 @@ nema is a WebMCP protocol for learning, plus five pages that implement it.
    audience-bound answer, and carries the result across origins.
 4. **You** approve every disclosure in a modal, and you answer every question.
    No tool can do either for you.
-5. The payoff: a 68 minute course becomes 27, then 21, and a second website
-   recognises the first one's receipt with no partnership between them.
+5. The payoff: a 68 minute course on pan sauces becomes 27, then 21, and a
+   second cooking site recognises prerequisites it never taught, with no
+   partnership between the two.
 
 ## Live
 
@@ -37,8 +38,8 @@ nema is a WebMCP protocol for learning, plus five pages that implement it.
 | Site (hub) | https://nema.migarci2.dev | `explain_nema`, `open_app` (declarative) |
 | Coach (the agent) | https://nema-coach.migarci2.dev | none, it calls the others |
 | Vault | https://nema-vault.migarci2.dev | 9 imperative + 1 declarative form (10 in `getTools()`) |
-| Harness Lab (provider) | https://nema-harness.migarci2.dev | 5 |
-| Agent Security (provider) | https://nema-security.migarci2.dev | 5 |
+| Saucier School (provider) | https://saucier.migarci2.dev | 5 |
+| Line Cook Lab (provider) | https://linecook.migarci2.dev | 5 |
 
 Judges: start with [`docs/JUDGE_GUIDE.md`](docs/JUDGE_GUIDE.md). It is a seven
 step walkthrough with the exact tool names and a list of things to try to break.
@@ -77,7 +78,8 @@ Five origins. No shared database, no accounts, no server that sees both sides.
              coach origin   |                             |    coach origin
                             v                             v
         +-------------------+--------+     +--------------+-----------------+
-        |  vault      (learner)      |     |  harness / security (provider) |
+        |  vault      (learner)      |     |  provider  (Saucier School or  |
+        |                            |     |             Line Cook Lab)     |
         |                            |     |                                |
         |  evidence ledger (signed)  |     |  LearningManifest              |
         |  derived bands per ability |     |  activities + graders          |
@@ -120,8 +122,8 @@ fails. If you want the raw runner, use `node --test "test/**/*.test.js"` or
 |---|---|
 | site | http://localhost:8780 |
 | vault | http://localhost:8781 |
-| harness | http://localhost:8782 |
-| security | http://localhost:8783 |
+| harness (Saucier School) | http://localhost:8782 |
+| security (Line Cook Lab) | http://localhost:8783 |
 | coach | http://localhost:8784 |
 
 For native WebMCP, open Chrome 149 or later, go to
@@ -159,12 +161,33 @@ nema/
   apps/
     site/              the hub and the presentation
     vault/             the learner's vault, 9 tools + 1 declarative form
-    harness/           provider 1, "Designing Agent Evals", 5 tools + Worker
-    security/          provider 2, "Feedback Loop Attack Surface", 5 tools + Worker
+    harness/           provider 1, Saucier School, "Pan Sauces and Emulsions", 5 tools + Worker
+    security/          provider 2, Line Cook Lab, "Service Under Pressure", 5 tools + Worker
     coach/             the agent page, chat + iframe + token clipboard
   scripts/             build.sh, dev.sh, deploy.sh, make-seed.mjs
   test/                crypto, protocol, inference, graders
 ```
+
+One naming note, because it trips people up on first read. The two provider
+apps live in `apps/harness` and `apps/security`, and the same two keys name
+them in `shared/origins.json`, in `ORIGINS.harness` and `ORIGINS.security`, and
+in the dev port table above. Those are internal identifiers, frozen so the
+build, the deploy script and the tests do not churn. What the learner sees is
+the provider's public identity: `apps/harness` is **Saucier School** at
+https://saucier.migarci2.dev, and `apps/security` is **Line Cook Lab** at
+https://linecook.migarci2.dev. Every name, unit and concept in the two example
+courses is about cooking. The courses are examples of the protocol, not
+descriptions of nema itself.
+
+## Two identities on purpose
+
+nema is a hub, a vault and a coach. It is not a course catalogue. So the two
+example providers do not wear nema's brand: they re-theme the shared components
+in their own `app.css`, render their own header and wordmark, and carry one
+discreet "Works with nema" badge that links back to the hub. Saucier School is
+warm paper and a serif, a well made course site. Line Cook Lab is near black
+and monospace, an ops tool for the pass. A judge should be able to tell at a
+glance which surface belongs to the learner and which two are just the web.
 
 ## WebMCP integration
 
@@ -231,7 +254,8 @@ load and on `toolchange`.
 `document.modelContext.getTools()` on the vault returns ten.
 
 **Providers**, 5 tools each. `describe_learning_offer`,
-`personalize_learning_path` (harness) or `check_prerequisites` (security),
+`personalize_learning_path` (Saucier School) or `check_prerequisites` (Line
+Cook Lab),
 `start_activity`, `get_attempt_status`, `issue_evidence_receipt`.
 
 **Site**, 1 imperative plus 1 declarative. `explain_nema`, `open_app`.

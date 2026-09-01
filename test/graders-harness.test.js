@@ -1,5 +1,5 @@
 /**
- * Harness provider: content, graders and path personalization.
+ * Saucier School provider: content, graders and path personalization.
  * Run: node --test test/graders-harness.test.js
  */
 
@@ -18,61 +18,66 @@ import {
 /* Fixtures                                                            */
 /* ------------------------------------------------------------------ */
 
-const LAB = ACTIVITIES['eval-design-lab'].content;
+const LAB = ACTIVITIES['fix-the-broken-sauce'].content;
 const LAB_KEY = LAB.answerKey;
 
 const ALL_MISSING = {
-  'nema:software-testing|apply': 'missing',
-  'nema:agent-loop|explain': 'missing',
-  'nema:json-schema|apply': 'missing'
+  'nema:knife-skills|apply': 'missing',
+  'nema:heat-control|explain': 'missing',
+  'nema:ratios|apply': 'missing'
 };
 
 const SEED = {
-  'nema:software-testing|apply': 'verified',
-  'nema:agent-loop|explain': 'verified',
-  'nema:json-schema|apply': 'uncertain'
+  'nema:knife-skills|apply': 'verified',
+  'nema:heat-control|explain': 'verified',
+  'nema:ratios|apply': 'uncertain'
 };
 
 const AFTER_DIAGNOSTIC = {
-  'nema:software-testing|apply': 'verified',
-  'nema:agent-loop|explain': 'verified',
-  'nema:json-schema|apply': 'verified'
+  'nema:knife-skills|apply': 'verified',
+  'nema:heat-control|explain': 'verified',
+  'nema:ratios|apply': 'verified'
 };
 
 const GOOD_ANSWER =
-  'A green unit suite only proves that the functions someone remembered to test behave as that person expected in isolation. ' +
-  'An agent eval checks the end to end outcome of the real task instead: it restores a fixture, runs the agent on the ticket, ' +
-  'then calls the endpoint and asserts the response. The verifier writes its feedback back into the loop so the agent can ' +
-  'self-correct, and an acceptance gate decides at the end. Typical failure: every test passes but the migration was never applied.';
+  'A pan sauce is an emulsion, not a liquid somebody thickened: the butterfat is broken into droplets and held ' +
+  'inside the reduced stock instead of floating on top of it. The milk solids in the butter are the emulsifier ' +
+  'doing that work, the same job the mustard does in a vinaigrette. Ours split because it went back to a rolling ' +
+  'boil after it was mounted, and past about 90 C the droplets merge again and the fat comes out. Mount off the ' +
+  'heat and hold it near 65 C.';
 
+// Meets the first two criteria and nothing about temperature, which is the
+// most common gap: cooks describe the structure and forget what breaks it.
 const PARTIAL_ANSWER =
-  'The unit tests only cover single functions in isolation, so they can be completely green while the ticket is still not done. ' +
-  'What matters is the end to end outcome of the task the person actually asked for, measured against the running system after ' +
-  'the agent has finished its work, on a fixture that was restored before the run started so the result is repeatable.';
+  'A pan sauce is an emulsion rather than a liquid somebody thickened with flour. The butterfat ends up as tiny ' +
+  'droplets suspended through the reduced stock, and something has to keep those droplets from finding each other ' +
+  'again. In a vinaigrette that job belongs to the mustard; in a mounted pan sauce the milk solids in the butter ' +
+  'do the same work while you swirl the pan and drop the cubes in a few at a time.';
 
 // Covers all three criteria without using a single keyword verbatim: every hit
-// is an inflection ("Unit testing", "verifies", "self-corrects", "task level").
+// is an inflection ("emulsified", "droplets", "Boiling").
 const INFLECTED_ANSWER =
-  'Unit testing only proves that individual functions behave the way whoever wrote them expected on the inputs that ' +
-  'person imagined. It says nothing at the task level, because nobody checked whether the thing the ticket asked for ' +
-  'got done against a running system. An agent eval restores a fixture, gives the agent the ticket, then verifies the ' +
-  'real endpoints afterwards and hands the failure text back into the loop so the agent self-corrects before any gate ' +
-  'is allowed to say done. Classic failure: a green suite and a migration that was never applied.';
+  'The stock and the butterfat are emulsified into one another rather than layered, so what you are looking at is ' +
+  'millions of fat droplets that never get the chance to find each other again. Boiling the finished sauce is what ' +
+  'undoes that, which is why the pan comes off the flame before the butter goes in, and why nothing that has been ' +
+  'mounted ever goes back over a live flame.';
 
 const WEAK_ANSWER =
-  'I think the agent did a good job on the ticket and the numbers on the dashboard looked green afterwards, which felt like a ' +
-  'reasonable signal to me at the time, so we shipped the change on Friday afternoon and went home without looking any further.';
+  'I would follow the recipe the way I was taught at the restaurant, taste it at the end of service, and if it looks ' +
+  'wrong I would start again with a clean pan, a better wine and more butter, because that is what the chef always ' +
+  'did on a busy Saturday night when the plates were already going out.';
 
 /* ------------------------------------------------------------------ */
 /* Manifest and content integrity                                      */
 /* ------------------------------------------------------------------ */
 
-test('manifest describes the harness provider', () => {
+test('manifest describes the Saucier School provider', () => {
   assert.equal(MANIFEST.protocol, 'nema/0.1');
-  assert.equal(MANIFEST.provider.origin, 'https://nema-harness.migarci2.dev');
-  assert.equal(MANIFEST.provider.keyId, 'harness-2026-09');
-  assert.equal(MANIFEST.unit.id, 'agent-evals-foundations');
-  assert.equal(MANIFEST.unit.title, 'Designing Agent Evals');
+  assert.equal(MANIFEST.provider.origin, 'https://saucier.migarci2.dev');
+  assert.equal(MANIFEST.provider.name, 'Saucier School');
+  assert.equal(MANIFEST.provider.keyId, 'saucier-2026-09');
+  assert.equal(MANIFEST.unit.id, 'pan-sauces-foundations');
+  assert.equal(MANIFEST.unit.title, 'Pan Sauces and Emulsions');
   assert.equal(MANIFEST.unit.language, 'en');
   assert.equal(MANIFEST.unit.price, 'free');
 });
@@ -82,14 +87,36 @@ test('estimated minutes equal the sum of the full path', () => {
   assert.equal(sum, 68);
   assert.equal(MANIFEST.unit.estimatedMinutes, 68);
   assert.equal(MANIFEST.activities.length, 7);
+  assert.deepEqual(
+    MANIFEST.activities.map((a) => a.id),
+    [
+      'heat-control-primer',
+      'knife-skills-refresher',
+      'ratios-diagnostic',
+      'ratios-primer',
+      'pan-sauce-anatomy',
+      'fix-the-broken-sauce',
+      'explain-without-the-recipe'
+    ]
+  );
 });
 
 test('manifest requirements match the activity gates', () => {
   const requirements = MANIFEST.requirements.map((r) => r.concept + '|' + r.ability).sort();
   assert.deepEqual(requirements, [
-    'nema:agent-loop|explain',
-    'nema:json-schema|apply',
-    'nema:software-testing|apply'
+    'nema:heat-control|explain',
+    'nema:knife-skills|apply',
+    'nema:ratios|apply'
+  ]);
+});
+
+test('manifest outcomes are the four the unit claims to produce', () => {
+  const outcomes = MANIFEST.outcomes.map((o) => o.concept + '|' + o.ability).sort();
+  assert.deepEqual(outcomes, [
+    'nema:emulsions|discriminate',
+    'nema:pan-sauces|apply',
+    'nema:pan-sauces|explain',
+    'nema:ratios|apply'
   ]);
 });
 
@@ -116,20 +143,30 @@ test('lessons have three sections and an exposure claim', () => {
     assert.ok(lesson.content.keyPoints.length >= 4);
     assert.equal(lesson.content.exposureClaim.ability, 'recognize');
     assert.equal(lesson.content.exposureClaim.evidenceType, 'recognition');
+    const words = lesson.content.sections
+      .map((s) => s.html.replace(/<[^>]+>/g, ' '))
+      .join(' ')
+      .trim()
+      .split(/\s+/).length;
+    assert.ok(words >= 300, lesson.id + ' is too short to be a real lesson: ' + words + ' words');
   }
 });
 
-test('the diagnostic has four options and exactly one answer key', () => {
-  const content = ACTIVITIES['json-schema-diagnostic'].content;
+test('the diagnostic has four written ratios and exactly one answer key', () => {
+  const content = ACTIVITIES['ratios-diagnostic'].content;
   assert.equal(content.options.length, 4);
   const correct = content.options.filter((o) => o.whyWrong === '');
   assert.equal(correct.length, 1);
   assert.equal(correct[0].id, content.answerKey);
+  assert.equal(content.answerKey, 'ratio-b');
   assert.equal(content.hints.length, 2);
-  // The three distractors are wrong in three different ways.
+  // The three distractors are wrong in three different ways: too much acid,
+  // no emulsifier, and an inverted ratio.
   const wrong = content.options.filter((o) => o.id !== content.answerKey);
   assert.equal(wrong.length, 3);
   for (const option of wrong) assert.ok(option.whyWrong.length > 40);
+  assert.ok(correct[0].html.includes('3 parts oil to 1 part acid'));
+  assert.ok(correct[0].html.toLowerCase().includes('dijon'));
 });
 
 test('the lab has 8 checks split 3 required, 2 harmful, 3 neutral', () => {
@@ -145,31 +182,35 @@ test('the lab has 8 checks split 3 required, 2 harmful, 3 neutral', () => {
     LAB.checks.filter((c) => c.kind === 'harmful').map((c) => c.id).sort(),
     [...LAB_KEY.harmfulChecks].sort()
   );
+  for (const check of LAB.checks) assert.ok(check.detail.length > 40);
 });
 
-test('the lab orders three stages and shows a before and after console', () => {
+test('the lab orders three stages and shows a before and after tasting log', () => {
   assert.equal(LAB.stages.length, 3);
   assert.deepEqual(LAB.stages.map((s) => s.id).sort(), [...LAB_KEY.stageOrder].sort());
-  assert.deepEqual(LAB_KEY.stageOrder, [
-    'task-eval-stage',
-    'self-correction-loop',
-    'acceptance-gate'
-  ]);
+  assert.deepEqual(LAB_KEY.stageOrder, ['deglaze', 'reduce', 'mount']);
   assert.ok(LAB.beforeRun.length >= 5 && LAB.beforeRun.length <= 7);
   assert.ok(LAB.afterRun.length >= 5 && LAB.afterRun.length <= 7);
-  assert.ok(LAB.beforeRun.some((line) => line.includes('128 passed')));
-  assert.ok(LAB.beforeRun.some((line) => line.includes('500')));
-  assert.ok(LAB.afterRun.some((line) => line.includes('acceptance gate: passed')));
+  assert.ok(LAB.beforeRun.some((line) => line.includes('greasy')));
+  assert.ok(LAB.beforeRun.some((line) => line.includes('sauce rejected')));
+  assert.ok(LAB.afterRun.some((line) => line.includes('coats the back of the spoon')));
+  assert.ok(LAB.afterRun.some((line) => line.includes('holds on the pass')));
+  assert.equal(LAB.hints.length, 3);
 });
 
 test('the free recall rubric has three keyword criteria', () => {
-  const content = ACTIVITIES['eval-retrieval'].content;
+  const content = ACTIVITIES['explain-without-the-recipe'].content;
   assert.equal(content.rubric.length, 3);
   assert.equal(content.minWords, 40);
   for (const criterion of content.rubric) {
     assert.ok(criterion.keywords.length > 0);
     assert.ok(criterion.criterion.length > 0);
   }
+  assert.deepEqual(content.rubric.map((c) => c.id), [
+    'emulsion-named',
+    'what-holds-it',
+    'heat-window'
+  ]);
 });
 
 test('content hash input is stable and parses back to the activities', () => {
@@ -191,7 +232,12 @@ test('content has no emojis and no em dashes', () => {
 /* grade(): lessons                                                    */
 /* ------------------------------------------------------------------ */
 
-for (const lessonId of ['agent-loop-primer', 'testing-refresher', 'json-schema-primer', 'eval-anatomy']) {
+for (const lessonId of [
+  'heat-control-primer',
+  'knife-skills-refresher',
+  'ratios-primer',
+  'pan-sauce-anatomy'
+]) {
   test('lesson ' + lessonId + ' passes when completed and fails otherwise', () => {
     const passed = grade(lessonId, { completed: true });
     assert.equal(passed.result, 'passed');
@@ -216,59 +262,56 @@ for (const lessonId of ['agent-loop-primer', 'testing-refresher', 'json-schema-p
 /* grade(): diagnostic                                                 */
 /* ------------------------------------------------------------------ */
 
-test('diagnostic passes on the schema that rejects copies 0 and accepts copies 3', () => {
-  const result = grade('json-schema-diagnostic', { optionId: 'schema-b' });
+test('diagnostic passes on 3 parts oil to 1 part acid with mustard', () => {
+  const result = grade('ratios-diagnostic', { optionId: 'ratio-b' });
   assert.equal(result.result, 'passed');
   assert.equal(result.score, 1);
   assert.deepEqual(result.claims, [
     {
-      concept: 'nema:json-schema',
+      concept: 'nema:ratios',
       ability: 'apply',
       evidenceType: 'application',
       result: 'passed',
       difficulty: 'intermediate'
     }
   ]);
-  assert.ok(result.feedback[0].includes('minimum'));
+  assert.ok(result.feedback[0].includes('Three parts oil to one part acid'));
 });
 
 test('hints do not change the diagnostic result', () => {
   // hintsUsed reaches the vault in the receipt conditions. The provider does
   // not grade it a second time, so the 27 -> 21 beat cannot be broken by a
   // judge who opens both hints before answering.
-  const baseline = grade('json-schema-diagnostic', { optionId: 'schema-b' });
+  const baseline = grade('ratios-diagnostic', { optionId: 'ratio-b' });
   for (const hintsUsed of [0, 1, 2, 5]) {
-    const result = grade('json-schema-diagnostic', { optionId: 'schema-b', hintsUsed });
+    const result = grade('ratios-diagnostic', { optionId: 'ratio-b', hintsUsed });
     assert.equal(result.result, 'passed', hintsUsed + ' hints must still pass');
     assert.equal(result.score, 1);
     assert.deepEqual(result.claims, baseline.claims);
   }
 
   // Hints do not rescue a wrong answer either.
-  assert.equal(
-    grade('json-schema-diagnostic', { optionId: 'schema-a', hintsUsed: 0 }).result,
-    'failed'
-  );
+  assert.equal(grade('ratios-diagnostic', { optionId: 'ratio-a', hintsUsed: 0 }).result, 'failed');
 });
 
 test('diagnostic fails on each distractor and on no answer', () => {
-  for (const optionId of ['schema-a', 'schema-c', 'schema-d']) {
-    const result = grade('json-schema-diagnostic', { optionId });
+  for (const optionId of ['ratio-a', 'ratio-c', 'ratio-d']) {
+    const result = grade('ratios-diagnostic', { optionId });
     assert.equal(result.result, 'failed', optionId + ' must not pass');
     assert.equal(result.score, 0);
     assert.deepEqual(result.claims, []);
     assert.ok(result.feedback[0].length > 0);
   }
-  assert.equal(grade('json-schema-diagnostic', {}).result, 'failed');
-  assert.equal(grade('json-schema-diagnostic', { optionId: 'schema-z' }).result, 'failed');
+  assert.equal(grade('ratios-diagnostic', {}).result, 'failed');
+  assert.equal(grade('ratios-diagnostic', { optionId: 'ratio-z' }).result, 'failed');
 });
 
 /* ------------------------------------------------------------------ */
 /* grade(): interactive lab                                            */
 /* ------------------------------------------------------------------ */
 
-test('lab passes with the three required checks, no harmful check and the right order', () => {
-  const result = grade('eval-design-lab', {
+test('lab passes with the three required steps, no harmful step and the right order', () => {
+  const result = grade('fix-the-broken-sauce', {
     checks: [...LAB_KEY.requiredChecks],
     stageOrder: [...LAB_KEY.stageOrder]
   });
@@ -276,14 +319,14 @@ test('lab passes with the three required checks, no harmful check and the right 
   assert.equal(result.score, 1);
   assert.deepEqual(result.claims, [
     {
-      concept: 'nema:agent-evals',
+      concept: 'nema:pan-sauces',
       ability: 'apply',
       evidenceType: 'application',
       result: 'passed',
       difficulty: 'intermediate'
     },
     {
-      concept: 'nema:feedback-loops',
+      concept: 'nema:emulsions',
       ability: 'discriminate',
       evidenceType: 'discrimination',
       result: 'passed',
@@ -292,40 +335,40 @@ test('lab passes with the three required checks, no harmful check and the right 
   ]);
 });
 
-test('lab still passes when neutral checks are selected too', () => {
-  const result = grade('eval-design-lab', {
-    checks: [...LAB_KEY.requiredChecks, 'format-lint', 'step-timing', 'coverage-badge'],
+test('lab still passes when neutral steps are selected too', () => {
+  const result = grade('fix-the-broken-sauce', {
+    checks: [...LAB_KEY.requiredChecks, 'warm-the-plates', 'pass-through-chinois', 'log-the-timings'],
     stageOrder: [...LAB_KEY.stageOrder]
   });
   assert.equal(result.result, 'passed');
 });
 
-test('lab is partial when the checks are right and the stage order is wrong', () => {
-  const result = grade('eval-design-lab', {
+test('lab is partial when the steps are right and the stage order is wrong', () => {
+  const result = grade('fix-the-broken-sauce', {
     checks: [...LAB_KEY.requiredChecks],
-    stageOrder: ['acceptance-gate', 'task-eval-stage', 'self-correction-loop']
+    stageOrder: ['mount', 'deglaze', 'reduce']
   });
   assert.equal(result.result, 'partial');
   assert.equal(result.score, 0.7);
   assert.equal(result.claims.length, 1);
-  assert.equal(result.claims[0].concept, 'nema:agent-evals');
+  assert.equal(result.claims[0].concept, 'nema:pan-sauces');
   assert.equal(result.claims[0].ability, 'apply');
   assert.equal(result.claims[0].result, 'partial');
 });
 
-test('lab fails when a harmful check is selected, even with every required check', () => {
-  const result = grade('eval-design-lab', {
-    checks: [...LAB_KEY.requiredChecks, 'agent-self-accept'],
+test('lab fails when a harmful step is selected, even with every required step', () => {
+  const result = grade('fix-the-broken-sauce', {
+    checks: [...LAB_KEY.requiredChecks, 'boil-after-mounting'],
     stageOrder: [...LAB_KEY.stageOrder]
   });
   assert.equal(result.result, 'failed');
   assert.deepEqual(result.claims, []);
-  assert.ok(result.feedback.some((line) => line.includes('hiding a failure')));
+  assert.ok(result.feedback.some((line) => line.includes('breaks a sauce')));
 });
 
-test('lab fails when a required check is missing', () => {
-  const result = grade('eval-design-lab', {
-    checks: ['task-eval', 'scope-diff'],
+test('lab fails when a required step is missing', () => {
+  const result = grade('fix-the-broken-sauce', {
+    checks: ['deglaze-the-fond', 'reduce-by-half'],
     stageOrder: [...LAB_KEY.stageOrder]
   });
   assert.equal(result.result, 'failed');
@@ -334,11 +377,14 @@ test('lab fails when a required check is missing', () => {
 });
 
 test('lab fails on an empty or malformed submission', () => {
-  assert.equal(grade('eval-design-lab', {}).result, 'failed');
-  assert.equal(grade('eval-design-lab', { checks: 'task-eval', stageOrder: 7 }).result, 'failed');
-  const duplicates = grade('eval-design-lab', {
-    checks: [...LAB_KEY.requiredChecks, 'task-eval', 'unknown-check'],
-    stageOrder: [...LAB_KEY.stageOrder, 'acceptance-gate']
+  assert.equal(grade('fix-the-broken-sauce', {}).result, 'failed');
+  assert.equal(
+    grade('fix-the-broken-sauce', { checks: 'deglaze-the-fond', stageOrder: 7 }).result,
+    'failed'
+  );
+  const duplicates = grade('fix-the-broken-sauce', {
+    checks: [...LAB_KEY.requiredChecks, 'deglaze-the-fond', 'unknown-step'],
+    stageOrder: [...LAB_KEY.stageOrder, 'mount']
   });
   assert.equal(duplicates.result, 'passed', 'duplicates and unknown ids are ignored, not fatal');
 });
@@ -348,12 +394,12 @@ test('lab fails on an empty or malformed submission', () => {
 /* ------------------------------------------------------------------ */
 
 test('free recall passes when all three rubric criteria are met', () => {
-  const result = grade('eval-retrieval', { text: GOOD_ANSWER });
+  const result = grade('explain-without-the-recipe', { text: GOOD_ANSWER });
   assert.equal(result.result, 'passed');
   assert.equal(result.score, 1);
   assert.deepEqual(result.claims, [
     {
-      concept: 'nema:agent-evals',
+      concept: 'nema:pan-sauces',
       ability: 'explain',
       evidenceType: 'explanation',
       result: 'passed',
@@ -363,7 +409,7 @@ test('free recall passes when all three rubric criteria are met', () => {
 });
 
 test('free recall accepts ordinary inflections of the rubric stems', () => {
-  const inflected = grade('eval-retrieval', { text: INFLECTED_ANSWER });
+  const inflected = grade('explain-without-the-recipe', { text: INFLECTED_ANSWER });
   assert.equal(inflected.result, 'passed');
   assert.equal(inflected.score, 1);
   assert.equal(inflected.claims.length, 1);
@@ -375,7 +421,7 @@ test('free recall accepts ordinary inflections of the rubric stems', () => {
 });
 
 test('free recall is partial when two criteria are met', () => {
-  const result = grade('eval-retrieval', { text: PARTIAL_ANSWER });
+  const result = grade('explain-without-the-recipe', { text: PARTIAL_ANSWER });
   assert.equal(result.result, 'partial');
   assert.ok(Math.abs(result.score - 0.67) < 0.01);
   assert.equal(result.claims.length, 1);
@@ -384,14 +430,14 @@ test('free recall is partial when two criteria are met', () => {
 });
 
 test('free recall fails on a long answer that meets no criteria', () => {
-  const result = grade('eval-retrieval', { text: WEAK_ANSWER });
+  const result = grade('explain-without-the-recipe', { text: WEAK_ANSWER });
   assert.equal(result.result, 'failed');
   assert.deepEqual(result.claims, []);
 });
 
 test('free recall refuses to grade an answer under the word floor', () => {
-  const result = grade('eval-retrieval', {
-    text: 'Unit tests are not an end to end task outcome, the verifier feedback drives self-correct.'
+  const result = grade('explain-without-the-recipe', {
+    text: 'A pan sauce is an emulsion of fat and water held by the milk solids, and a boil splits it.'
   });
   assert.equal(result.result, 'failed');
   assert.equal(result.score, 0);
@@ -400,17 +446,19 @@ test('free recall refuses to grade an answer under the word floor', () => {
 });
 
 test('free recall keyword matching respects word boundaries and case', () => {
-  const inside = grade('eval-retrieval', {
+  const shouting = grade('explain-without-the-recipe', {
     text:
-      'END TO END behaviour of the ticket is the thing that matters, not the UNIT TESTS that pass in isolation, ' +
-      'and the VERIFIER has to hand its output back to the agent before anything says done, otherwise nothing improves at all.'
+      'THE FAT AND WATER ARE HELD TOGETHER AS DROPLETS BY THE MILK SOLIDS IN THE BUTTER, AND THE WHOLE THING ' +
+      'FALLS APART IF ANYONE LETS IT BOIL AGAIN AFTER THE BUTTER HAS GONE IN, WHICH IS EXACTLY WHAT HAPPENED ' +
+      'TO THE FIRST ONE ON THE PASS TONIGHT.'
   });
-  assert.equal(inside.result, 'passed');
+  assert.equal(shouting.result, 'passed');
 
-  const substringOnly = grade('eval-retrieval', {
+  const substringOnly = grade('explain-without-the-recipe', {
     text:
-      'The unittests were fine and the taskoutcomes looked acceptable to everyone involved in the review, ' +
-      'so nobody bothered to look any deeper at what the coding agent had really changed in the repository that afternoon.'
+      'The preheating of the ovens went fine and the nonemulsified dressing on the salad course looked acceptable ' +
+      'to everyone working the pass that night, so nobody bothered to taste the second sauce again before the ' +
+      'plates went out to the tables in the dining room.'
   });
   assert.equal(substringOnly.result, 'failed', 'substrings inside words must not count');
 });
@@ -447,24 +495,24 @@ test('every requirement missing: nothing is skipped except the diagnostic', () =
   assert.deepEqual(
     path.map((p) => p.activityId),
     [
-      'agent-loop-primer',
-      'testing-refresher',
-      'json-schema-primer',
-      'eval-anatomy',
-      'eval-design-lab',
-      'eval-retrieval'
+      'heat-control-primer',
+      'knife-skills-refresher',
+      'ratios-primer',
+      'pan-sauce-anatomy',
+      'fix-the-broken-sauce',
+      'explain-without-the-recipe'
     ]
   );
   // The remedial lessons are all present, which is the point of a missing
   // requirement. 62 is the longest path a real assertion can produce: 68 is the
   // offer before anyone has presented one.
   assert.equal(personalMinutes, 62);
-  assert.deepEqual(skipped.map((s) => s.activityId), ['json-schema-diagnostic']);
-  assert.ok(skipped[0].reason.includes('only runs when JSON Schema is uncertain'));
+  assert.deepEqual(skipped.map((s) => s.activityId), ['ratios-diagnostic']);
+  assert.ok(skipped[0].reason.includes('only runs when ratios are uncertain'));
   assert.equal(
     skipped[0].reason.includes('already proves'),
     false,
-    'a learner with no evidence must not be told the vault already proves the skill'
+    'a cook with no evidence must not be told the vault already proves the skill'
   );
 });
 
@@ -474,11 +522,16 @@ test('seed learner: 68 becomes 27 at personalization time', () => {
   assert.equal(personalMinutes, 27);
   assert.deepEqual(
     path.map((p) => p.activityId),
-    ['json-schema-diagnostic', 'eval-anatomy', 'eval-design-lab', 'eval-retrieval']
+    [
+      'ratios-diagnostic',
+      'pan-sauce-anatomy',
+      'fix-the-broken-sauce',
+      'explain-without-the-recipe'
+    ]
   );
   assert.deepEqual(
     skipped.map((s) => s.activityId),
-    ['agent-loop-primer', 'testing-refresher', 'json-schema-primer']
+    ['heat-control-primer', 'knife-skills-refresher', 'ratios-primer']
   );
   assert.equal(
     skipped.reduce((sum, s) => sum + s.minutes, 0),
@@ -493,18 +546,18 @@ test('after the diagnostic passes: 27 becomes 21', () => {
   assert.equal(personalMinutes, 21);
   assert.deepEqual(
     path.map((p) => p.activityId),
-    ['eval-anatomy', 'eval-design-lab', 'eval-retrieval']
+    ['pan-sauce-anatomy', 'fix-the-broken-sauce', 'explain-without-the-recipe']
   );
   assert.equal(skipped.length, 4);
-  assert.ok(skipped.some((s) => s.activityId === 'json-schema-primer'));
+  assert.ok(skipped.some((s) => s.activityId === 'ratios-primer'));
 
   // The learner just passed the diagnostic, so the panel must say so. Telling
-  // them the check "only runs when JSON Schema is uncertain" would be false at
+  // them the check "only runs when ratios are uncertain" would be false at
   // exactly the moment a judge is reading the panel.
-  const diagnostic = skipped.find((s) => s.activityId === 'json-schema-diagnostic');
+  const diagnostic = skipped.find((s) => s.activityId === 'ratios-diagnostic');
   assert.ok(diagnostic);
   assert.ok(
-    diagnostic.reason.includes('already proves you can apply JSON Schema'),
+    diagnostic.reason.includes('already proves you can apply ratios'),
     'expected the vault-already-proves reason, got: ' + diagnostic.reason
   );
   for (const item of skipped) {
@@ -517,32 +570,32 @@ test('after the diagnostic passes: 27 becomes 21', () => {
 });
 
 test('a verified status satisfies an uncertain gate, but not the reverse', () => {
-  // json-schema-primer is skipped at uncertain and at verified.
-  const uncertain = personalizePath({ 'nema:json-schema|apply': 'uncertain' });
-  assert.ok(uncertain.skipped.some((s) => s.activityId === 'json-schema-primer'));
+  // ratios-primer is skipped at uncertain and at verified.
+  const uncertain = personalizePath({ 'nema:ratios|apply': 'uncertain' });
+  assert.ok(uncertain.skipped.some((s) => s.activityId === 'ratios-primer'));
 
-  const verified = personalizePath({ 'nema:json-schema|apply': 'verified' });
-  assert.ok(verified.skipped.some((s) => s.activityId === 'json-schema-primer'));
+  const verified = personalizePath({ 'nema:ratios|apply': 'verified' });
+  assert.ok(verified.skipped.some((s) => s.activityId === 'ratios-primer'));
 
-  // agent-loop-primer requires verified: uncertain is not enough.
-  const weakLoop = personalizePath({ 'nema:agent-loop|explain': 'uncertain' });
-  assert.ok(weakLoop.path.some((p) => p.activityId === 'agent-loop-primer'));
+  // heat-control-primer requires verified: uncertain is not enough.
+  const weakHeat = personalizePath({ 'nema:heat-control|explain': 'uncertain' });
+  assert.ok(weakHeat.path.some((p) => p.activityId === 'heat-control-primer'));
 });
 
 test('unknown status values and unrelated keys are treated as missing', () => {
   const noisy = personalizePath({
-    'nema:agent-loop|explain': 'excellent',
+    'nema:heat-control|explain': 'excellent',
     'nema:unrelated|apply': 'verified'
   });
-  assert.ok(noisy.path.some((p) => p.activityId === 'agent-loop-primer'));
+  assert.ok(noisy.path.some((p) => p.activityId === 'heat-control-primer'));
   assert.equal(noisy.personalMinutes, 62);
 });
 
 test('the lab and the retrieval task are never skipped', () => {
   for (const statuses of [ALL_MISSING, SEED, AFTER_DIAGNOSTIC]) {
     const { path } = personalizePath(statuses);
-    assert.ok(path.some((p) => p.activityId === 'eval-design-lab'));
-    assert.ok(path.some((p) => p.activityId === 'eval-retrieval'));
-    assert.ok(path.some((p) => p.activityId === 'eval-anatomy'));
+    assert.ok(path.some((p) => p.activityId === 'fix-the-broken-sauce'));
+    assert.ok(path.some((p) => p.activityId === 'explain-without-the-recipe'));
+    assert.ok(path.some((p) => p.activityId === 'pan-sauce-anatomy'));
   }
 });

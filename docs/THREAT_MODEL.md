@@ -169,8 +169,8 @@ This is a human action; there is no `export_vault` tool.
 Written plainly, because a judge will find these anyway.
 
 1. **Provider answer keys ship to the browser.** `content.js` is imported by
-   both the page and the Worker, so the answer keys for the diagnostic and the
-   labs are readable in devtools. A real provider would keep `answerKey` server
+   both the page and the Worker, so the answer keys for the vinaigrette
+   diagnostic and for both kitchen labs are readable in devtools. A real provider would keep `answerKey` server
    side and expose only the rendering data. The Worker re-grades every
    submission before signing, so a tampered client cannot mint a receipt, but a
    determined learner can look up the answer.

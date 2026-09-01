@@ -90,14 +90,14 @@ test('fromOpenAIResponse reads text and tool calls, and parses the arguments', (
         tool_calls: [{
           id: 'call_9',
           type: 'function',
-          function: { name: 'get_learner_state', arguments: '{"concepts":["nema:agent-evals"]}' }
+          function: { name: 'get_learner_state', arguments: '{"concepts":["nema:pan-sauces"]}' }
         }]
       }
     }]
   });
   assert.equal(withCalls.text, null);
   assert.deepEqual(withCalls.toolCalls, [
-    { id: 'call_9', name: 'get_learner_state', arguments: { concepts: ['nema:agent-evals'] } }
+    { id: 'call_9', name: 'get_learner_state', arguments: { concepts: ['nema:pan-sauces'] } }
   ]);
 });
 

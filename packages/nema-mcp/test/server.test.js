@@ -12,7 +12,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '../../..');
 const BIN = path.join(HERE, '..', 'bin.mjs');
 const proto = await import(path.join(REPO, 'shared/protocol.js'));
-const HARNESS = 'https://nema-harness.migarci2.dev';
+const HARNESS = 'https://saucier.migarci2.dev';
 const NINE = ['create_readiness_assertion', 'get_disclosure_ledger', 'get_evidence_ledger', 'get_learner_state', 'get_learning_needs', 'get_vault_summary', 'record_agent_assessment', 'set_learning_goal', 'stage_evidence_receipt'];
 
 function tmpFile() {
@@ -50,19 +50,19 @@ test('fresh vault, then the demo seed, then bands for the story concepts', async
   client = await connect(file);
   try {
     const sum = parse(await client.callTool({ name: 'get_vault_summary', arguments: {} }));
-    assert.ok(sum.receipts >= 60, 'seed receipts loaded');
+    assert.ok(sum.receipts >= 40, 'seed receipts loaded');
     assert.equal(sum.fragile, 7);
-    const st = parse(await client.callTool({ name: 'get_learner_state', arguments: { concepts: ['nema:json-schema', 'nema:agent-evals'] } }));
+    const st = parse(await client.callTool({ name: 'get_learner_state', arguments: { concepts: ['nema:ratios', 'nema:pan-sauces'] } }));
     const band = (c) => st.state.find((x) => x.concept === c).bands;
-    assert.equal(band('nema:json-schema').apply, 'uncertain');
-    assert.equal(band('nema:agent-evals').apply, 'unknown');
+    assert.equal(band('nema:ratios').apply, 'uncertain');
+    assert.equal(band('nema:pan-sauces').apply, 'unknown');
     assert.ok(!JSON.stringify(st).includes('receiptId'), 'no evidence history in state');
   } finally { await client.close(); }
 });
 
 test('consent: denied without elicitation or policy, approved through elicitation, audience bound', async () => {
   const file = tmpFile();
-  const args = { audience: HARNESS, purpose: 'personalize-agent-evals-path', requirements: [{ concept: 'nema:software-testing', ability: 'apply' }] };
+  const args = { audience: HARNESS, purpose: 'personalize-pan-sauces-path', requirements: [{ concept: 'nema:knife-skills', ability: 'apply' }] };
   let client = await connect(file);
   try {
     const denied = parse(await client.callTool({ name: 'create_readiness_assertion', arguments: args }));
@@ -79,7 +79,7 @@ test('consent: denied without elicitation or policy, approved through elicitatio
     const v = await proto.verifyAssertion(approved.token, { audience: HARNESS, now: new Date().toISOString() });
     assert.equal(v.ok, true);
     assert.equal(v.payload.assertions.length, 1);
-    const wrong = await proto.verifyAssertion(approved.token, { audience: 'https://nema-security.migarci2.dev', now: new Date().toISOString() });
+    const wrong = await proto.verifyAssertion(approved.token, { audience: 'https://linecook.migarci2.dev', now: new Date().toISOString() });
     assert.equal(wrong.reason, 'wrong-audience');
     const declined = parse(await client.callTool({ name: 'create_readiness_assertion', arguments: { ...args, purpose: 'again' } }));
     assert.equal(declined.status, 'approved');
@@ -99,7 +99,7 @@ test('pre-approval policy from the CLI approves without elicitation', async () =
   execFileSync(process.execPath, [BIN, 'approve', HARNESS, '--hours', '1'], { env: { ...process.env, NEMA_VAULT_FILE: file } });
   const client = await connect(file);
   try {
-    const r = parse(await client.callTool({ name: 'create_readiness_assertion', arguments: { audience: HARNESS, purpose: 'p', requirements: [{ concept: 'nema:agent-loop', ability: 'explain' }] } }));
+    const r = parse(await client.callTool({ name: 'create_readiness_assertion', arguments: { audience: HARNESS, purpose: 'p', requirements: [{ concept: 'nema:heat-control', ability: 'explain' }] } }));
     assert.equal(r.status, 'approved');
   } finally { await client.close(); }
 });
@@ -108,8 +108,8 @@ test('stages a receipt signed by the harness key, rejects a replay', { skip: !fs
   const keys = JSON.parse(fs.readFileSync(path.join(REPO, 'secrets/issuer-private-keys.json'), 'utf8'));
   const payload = proto.buildReceiptPayload({
     issuer: HARNESS, keyId: keys.harness.kid, subject: 'lk_test',
-    activity: { id: 'json-schema-diagnostic', version: '1.0.0', title: 'Which schema holds the line', contentHash: 'sha256:0' },
-    claims: [{ concept: 'nema:json-schema', ability: 'apply', evidenceType: 'application', result: 'passed', difficulty: 'intermediate' }],
+    activity: { id: 'ratios-diagnostic', version: '1.0.0', title: 'Which ratio holds', contentHash: 'sha256:0' },
+    claims: [{ concept: 'nema:ratios', ability: 'apply', evidenceType: 'application', result: 'passed', difficulty: 'intermediate' }],
     conditions: { attempts: 1, hintsUsed: 0, durationSeconds: 60, grader: 'deterministic', graderVersion: '1' },
     now: new Date()
   });
@@ -118,7 +118,7 @@ test('stages a receipt signed by the harness key, rejects a replay', { skip: !fs
   try {
     const r = parse(await client.callTool({ name: 'stage_evidence_receipt', arguments: { token } }));
     assert.equal(r.status, 'accepted');
-    assert.ok(r.changes.some((c) => c.concept === 'nema:json-schema' && c.ability === 'apply'));
+    assert.ok(r.changes.some((c) => c.concept === 'nema:ratios' && c.ability === 'apply'));
     const again = parse(await client.callTool({ name: 'stage_evidence_receipt', arguments: { token } }));
     assert.equal(again.reason, 'duplicate');
   } finally { await client.close(); }
@@ -134,6 +134,6 @@ test('merge is a union by receipt id and idempotent', async () => {
   const b = tmpFile();
   const out1 = execFileSync(process.execPath, [BIN, 'merge', exp], { env: { ...process.env, NEMA_VAULT_FILE: b } }).toString();
   const out2 = execFileSync(process.execPath, [BIN, 'merge', exp], { env: { ...process.env, NEMA_VAULT_FILE: b } }).toString();
-  assert.match(out1, /0 -> 63 receipts/);
-  assert.match(out2, /63 -> 63 receipts/);
+  assert.match(out1, /0 -> 46 receipts/);
+  assert.match(out2, /46 -> 46 receipts/);
 });

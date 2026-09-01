@@ -85,23 +85,28 @@ The shared vocabulary. Providers map their own ids onto it with `aliases`.
 
 ```json
 {
-  "id": "nema:agent-evals",
-  "title": "Agent evals",
-  "summary": "Task level evaluation of an agent's end to end behaviour, as opposed to unit tests of its functions.",
-  "prereqs": ["nema:software-testing", "nema:agent-loop"],
-  "confusableWith": ["nema:unit-testing"],
+  "id": "nema:emulsions",
+  "title": "Emulsions",
+  "summary": "Holding fat and water in suspension as droplets, with an emulsifier and a temperature window that keeps them from coalescing.",
+  "prereqs": ["nema:heat-control", "nema:ratios"],
+  "confusableWith": ["nema:reduction"],
   "misconceptions": [
-    { "id": "unit_tests_are_equivalent_to_agent_evals", "text": "If the unit tests pass, the agent works." }
+    { "id": "a_sauce_can_be_boiled_once_it_holds", "text": "Once a butter sauce has come together it is stable, so it can go back to the boil." }
   ],
   "rubric": {
-    "explain": ["names the unit of evaluation", "distinguishes step level from task level"],
-    "apply": ["writes an acceptance check for a task", "covers one failure mode"],
-    "discriminate": ["gives one case where unit tests pass and the agent fails"]
+    "explain": ["names the two phases and which one is dispersed", "names an emulsifier and what it does at the interface", "gives the temperature window a butter emulsion survives, roughly 50 to 60 C"],
+    "apply": ["mounts a sauce that coats the back of a spoon", "keeps the pan off direct heat while the fat goes in", "brings a broken sauce back with a splash of cold liquid and hard whisking"],
+    "discriminate": ["separates an emulsion that thickened from a liquid that merely reduced"]
   },
   "minutes": { "retrieve": 3, "explain": 4, "apply": 6, "discriminate": 4 },
-  "aliases": { "harness": "agent-evaluation", "security": "agent-evals" }
+  "aliases": { "harness": "sauce-emulsion", "security": "emulsified-sauce" }
 }
 ```
+
+The `aliases` keys are the provider's own internal id for that concept, keyed
+by the app directory that owns it (`apps/harness` is Saucier School,
+`apps/security` is Line Cook Lab). Aliases are how a provider maps its
+catalogue onto the shared registry without renaming anything of its own.
 
 ### 3.2 LearningManifest (unsigned, returned by a provider)
 
@@ -112,29 +117,29 @@ produce. This is the object that lets an agent plan before the learner commits.
 {
   "protocol": "nema/0.1",
   "provider": {
-    "origin": "https://nema-harness.migarci2.dev",
-    "name": "Harness Engineering Lab",
-    "keyId": "harness-2026-09"
+    "origin": "https://saucier.migarci2.dev",
+    "name": "Saucier School",
+    "keyId": "saucier-2026-09"
   },
   "unit": {
-    "id": "agent-evals-foundations",
+    "id": "pan-sauces-foundations",
     "version": "1.0.0",
-    "title": "Designing Agent Evals",
+    "title": "Pan Sauces and Emulsions",
     "estimatedMinutes": 68,
     "language": "en",
     "price": "free"
   },
-  "outcomes": [ { "concept": "nema:agent-evals", "ability": "apply" } ],
-  "requirements": [ { "concept": "nema:software-testing", "ability": "apply" } ],
+  "outcomes": [ { "concept": "nema:pan-sauces", "ability": "apply" } ],
+  "requirements": [ { "concept": "nema:knife-skills", "ability": "apply" } ],
   "activities": [
     {
-      "id": "eval-design-lab",
+      "id": "fix-the-broken-sauce",
       "type": "interactive-lab",
-      "title": "Fix the broken harness",
-      "minutes": 18,
+      "title": "Fix the broken sauce",
+      "minutes": 12,
       "evidenceProduced": "application",
       "grader": "deterministic",
-      "outcomes": [ { "concept": "nema:agent-evals", "ability": "apply" } ],
+      "outcomes": [ { "concept": "nema:pan-sauces", "ability": "apply" } ],
       "skipIf": []
     }
   ]
@@ -157,9 +162,9 @@ worth running when a requirement came back `uncertain`.
 ```json
 {
   "protocol": "nema/0.1",
-  "audience": "https://nema-harness.migarci2.dev",
-  "purpose": "personalize-agent-evals-path",
-  "requirements": [ { "concept": "nema:software-testing", "ability": "apply" } ]
+  "audience": "https://saucier.migarci2.dev",
+  "purpose": "personalize-pan-sauces-path",
+  "requirements": [ { "concept": "nema:knife-skills", "ability": "apply" } ]
 }
 ```
 
@@ -173,13 +178,13 @@ exact question that was asked.
 {
   "type": "readiness-assertion",
   "protocol": "nema/0.1",
-  "audience": "https://nema-harness.migarci2.dev",
-  "purpose": "personalize-agent-evals-path",
+  "audience": "https://saucier.migarci2.dev",
+  "purpose": "personalize-pan-sauces-path",
   "requestHash": "sha256:6b1f...",
   "learnerKeyId": "lk_Qm9wS2pMbk4xR3Zq",
   "assertions": [
-    { "concept": "nema:software-testing", "ability": "apply", "status": "verified", "confidence": "high" },
-    { "concept": "nema:json-schema", "ability": "apply", "status": "uncertain", "confidence": "low" }
+    { "concept": "nema:knife-skills", "ability": "apply", "status": "verified", "confidence": "high" },
+    { "concept": "nema:ratios", "ability": "apply", "status": "uncertain", "confidence": "low" }
   ],
   "issuedAt": "2026-09-02T10:00:00Z",
   "expiresAt": "2026-09-02T10:30:00Z",
@@ -207,18 +212,18 @@ Rules:
   "type": "evidence-receipt",
   "protocol": "nema/0.1",
   "receiptId": "rcpt_8Kd2mQx1PbTa",
-  "issuer": "https://nema-harness.migarci2.dev",
-  "keyId": "harness-2026-09",
+  "issuer": "https://saucier.migarci2.dev",
+  "keyId": "saucier-2026-09",
   "subject": "lk_Qm9wS2pMbk4xR3Zq",
   "activity": {
-    "id": "eval-design-lab",
+    "id": "fix-the-broken-sauce",
     "version": "1.0.0",
-    "title": "Fix the broken harness",
+    "title": "Fix the broken sauce",
     "contentHash": "sha256:9ac3..."
   },
   "claims": [
     {
-      "concept": "nema:agent-evals",
+      "concept": "nema:pan-sauces",
       "ability": "apply",
       "evidenceType": "application",
       "result": "passed",
@@ -256,18 +261,18 @@ run the exercise without inventing the standard.
 ```json
 {
   "needId": "need_7fQ2xzLb",
-  "concept": "nema:agent-evals",
+  "concept": "nema:maillard-reaction",
   "ability": "discriminate",
   "kind": "discriminate",
-  "reason": ["application_is_strong", "no_discrimination_evidence", "active_goal_depends_on_this_concept"],
-  "urgency": 0.87,
+  "reason": ["application_is_strong", "no_discrimination_evidence"],
+  "urgency": 0.65,
   "minutes": 4,
-  "confusableWith": "nema:unit-testing",
-  "exerciseHint": "compare-and-contrast with one concrete failure case",
+  "confusableWith": "nema:caramelization",
+  "exerciseHint": "compare-and-contrast with one concrete case from the pass",
   "rubric": [
-    "distinguishes deterministic function checks from task level agent evaluation",
-    "mentions end to end behaviour",
-    "gives one example where unit tests pass but the agent fails"
+    "separates the browning of amino acids with reducing sugars from the browning of sugar alone",
+    "names the rough onset of each, about 140 C for Maillard, about 160 to 170 C for table sugar",
+    "gives one dish where both run at once and says which one is doing the work"
   ],
   "constraints": { "maxHints": 1, "doNotRevealAnswerBeforeSubmission": true }
 }
@@ -504,13 +509,15 @@ Behaviour that matters:
 ## 8. Tool catalog: provider role
 
 Both demo providers implement the same five tools, with one difference in the
-second one.
+second one. Saucier School (`apps/harness`, https://saucier.migarci2.dev)
+personalizes a path; Line Cook Lab (`apps/security`,
+https://linecook.migarci2.dev) checks prerequisites and unlocks labs.
 
 | tool | input | returns |
 |---|---|---|
 | `describe_learning_offer` | `{}` | `{ status:'ok', manifest }` |
-| `personalize_learning_path` (harness) | `{ assertionToken: string }` | `{ status:'personalized', learnerKeyId, requirements:[{concept,ability,status}], path:[{activityId,title,minutes,type,reason}], skipped:[{activityId,reason}], fullMinutes, personalMinutes }`, or `{ status:'rejected', reason }` |
-| `check_prerequisites` (security) | `{ assertionToken: string }` | `{ status:'checked', recognized:[{concept,ability,status,source:'readiness-assertion'}], unlocked:[activityId], locked:[{activityId, missing:[{concept,ability}]}], recommendedFirst, skippable:[activityId] }` |
+| `personalize_learning_path` (Saucier School) | `{ assertionToken: string }` | `{ status:'personalized', learnerKeyId, requirements:[{concept,ability,status}], path:[{activityId,title,minutes,type,reason}], skipped:[{activityId,reason}], fullMinutes, personalMinutes }`, or `{ status:'rejected', reason }` |
+| `check_prerequisites` (Line Cook Lab) | `{ assertionToken: string }` | `{ status:'checked', recognized:[{concept,ability,status,source:'readiness-assertion'}], unlocked:[activityId], locked:[{activityId, missing:[{concept,ability}]}], recommendedFirst, skippable:[activityId] }` |
 | `start_activity` | `{ activityId: string }` | `{ status:'started', activityId, title, type, minutes, whatTheLearnerDoes, note:'The learner completes this in the page. Poll get_attempt_status.' }` |
 | `get_attempt_status` | `{ activityId: string }` | `{ status:'not_started'\|'in_progress'\|'passed'\|'failed', attempts, hintsUsed, durationSeconds, feedback? }` |
 | `issue_evidence_receipt` | `{ activityId: string }` | `{ status:'issued', token, claims, activity, hint:'Take this token to the vault and call stage_evidence_receipt.' }`, or `{ status:'not-passed' }`. Idempotent: a repeat call returns the stored token. |
@@ -567,7 +574,7 @@ browser during the demo.
    the fixed key set of section 3.4, and `assertions` contains only concepts
    present in the request.
 7. **Derivation.** The seeded ledger produces the documented bands. Adding a
-   passing `json-schema.apply` receipt moves that band from `uncertain` to
+   passing `ratios.apply` receipt moves that band from `uncertain` to
    `usable`, and the vault shows the change.
 8. **Human gate.** `create_readiness_assertion` returns no token until a human
    clicks Approve. Denying returns `{ status:'denied' }` and writes nothing.
@@ -590,8 +597,8 @@ import { generateKeyPair } from '/shared/crypto.js';
 const { publicJwk, privateJwk } = await generateKeyPair();
 ```
 
-Publish `publicJwk` with a `keyId` such as `my-lab-2026-09`. Keep `privateJwk`
-on the server.
+Publish `publicJwk` with a `keyId` such as `my-kitchen-2026-09`. Keep
+`privateJwk` on the server.
 
 **2. Write the manifest (10 minutes).** One `LearningManifest` per unit. For
 each activity, declare `outcomes`, `evidenceProduced`, `grader`, and either

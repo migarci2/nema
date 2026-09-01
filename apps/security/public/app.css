@@ -1,9 +1,9 @@
-/* Agent Security, app specific layout and widgets.
+/* Line Cook Lab, app specific layout and widgets.
  *
  * Everything shared (buttons, pills, ledger, token box, activity strip) comes
  * from /shared/brand/brand.css. This file only adds what this provider needs:
- * the unit hero with its requirement rows, the activity list, the trace
- * timeline, the mitigation and incident cards, and the receipt block.
+ * the unit hero with its requirement rows, the activity list, the service log
+ * timeline, the fix list, the incident cards and the receipt block.
  *
  * Minimal pass: sections are separated by space, not by borders. Labels are
  * sentence case Inter; monospace is kept for ids, tokens, code and numbers.
@@ -13,8 +13,8 @@
  *   3  activity list
  *   4  stage
  *   5  lesson
- *   6  trace timeline
- *   7  mitigations
+ *   6  service log timeline
+ *   7  fixes
  *   8  incidents
  *   9  hints, feedback, receipt
  *  10  tool activity strip, more
@@ -175,6 +175,10 @@
 }
 .stage__title:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
 .stage__facts { font-size: var(--fs-12); color: var(--ink-3); }
+
+/* The stage stacks a heading, a briefing, a form and the grade. They are
+   separate moments, so space keeps them apart instead of rules. */
+[data-stage-body] { display: flex; flex-direction: column; gap: var(--sp-5); }
 .stage__does { color: var(--ink-2); font-size: var(--fs-13); max-width: 68ch; }
 
 .empty { font-size: var(--fs-13); color: var(--ink-2); max-width: 68ch; }
@@ -216,7 +220,7 @@
 }
 .lesson__points-list li { padding-left: var(--sp-3); border-left: 1px solid var(--line-soft); }
 
-/* --------------------------------------------------- 6. trace timeline -- */
+/* ---------------------------------------------- 6. service log timeline -- */
 
 .scenario { display: flex; flex-direction: column; gap: var(--sp-3); max-width: 68ch; color: var(--ink-2); }
 .scenario p { margin: 0; }
@@ -262,17 +266,14 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-2);
-  padding: var(--sp-3);
+  padding-bottom: var(--sp-3);
+  max-width: 80ch;
 }
 
 .trace__head { display: flex; align-items: baseline; gap: var(--sp-2); flex-wrap: wrap; }
 
-.trace__actor { font-size: var(--fs-12); color: var(--ink-2); }
-.trace__actor--user { color: var(--cyan); }
-.trace__actor--agent { color: var(--blue-ink); }
-.trace__actor--tool { color: var(--ink); }
+.trace__actor { font-size: var(--fs-12); color: var(--ink-3); }
+.trace__actor--cook { color: var(--ink); }
 
 .trace__label {
   font-family: var(--font-mono);
@@ -300,38 +301,39 @@
 .trace__check { align-self: flex-start; }
 
 .trace__verdict { display: flex; align-items: baseline; gap: var(--sp-2); flex-wrap: wrap; }
-.trace__why { font-size: var(--fs-12); color: var(--ink-2); }
+/* The verdict reads as one line: band word, then the sentence beside it. */
+.trace__why { flex: 1 1 24ch; min-width: 0; font-size: var(--fs-12); color: var(--ink-2); }
 
-.trace__item[data-mark='injected'] .trace__main { border-color: var(--danger); }
-.trace__item[data-mark='injected'] .trace__step { border-color: var(--danger); color: var(--danger); }
-.trace__item[data-mark='outside'] .trace__main { border-color: var(--yellow); }
-.trace__item[data-mark='outside'] .trace__step { border-color: var(--yellow); color: var(--yellow); }
-.trace__item[data-mark='inside'] .trace__step { border-color: var(--teal); color: var(--teal); }
+.trace__item[data-mark='unsafe'] .trace__step { border-color: var(--danger); color: var(--danger); }
+.trace__item[data-mark='unsafe'] .trace__content { box-shadow: inset 2px 0 0 var(--danger); }
+.trace__item[data-mark='safe'] .trace__step { border-color: var(--teal); color: var(--teal); }
 
-/* ------------------------------------------------------- 7. mitigations -- */
+/* ------------------------------------------------------------- 7. fixes -- */
 
-.mits { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--sp-3); }
+.mits { display: flex; flex-direction: column; gap: var(--sp-1); max-width: 68ch; }
 
 .mit {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-2);
-  padding: var(--sp-3);
+  border-radius: var(--r-1);
+  padding: var(--sp-2);
   cursor: pointer;
-  transition: border-color var(--dur-1) var(--ease-out);
+  transition: background var(--dur-1) var(--ease-out);
 }
-.mit:hover { border-color: var(--cyan-24); }
-.mit:focus-within { border-color: var(--cyan); }
+.mit:hover { background: var(--navy-2); }
+.mit:focus-within { background: var(--navy-2); }
 .mit__head { display: flex; align-items: flex-start; gap: var(--sp-2); flex-wrap: wrap; }
 .mit__head input { accent-color: var(--cyan); width: 16px; height: 16px; flex: none; margin-top: 2px; }
 .mit__label { flex: 1 1 12ch; min-width: 0; font-size: var(--fs-13); color: var(--ink); font-weight: 500; }
 .mit__detail { font-size: var(--fs-12); color: var(--ink-2); line-height: var(--lh-body); }
 .mit__verdict { font-size: var(--fs-12); color: var(--ink); font-weight: 500; line-height: var(--lh-body); }
 
-.mit[data-kind='effective'] { border-color: var(--teal); }
-.mit[data-kind='harmful'] { border-color: var(--danger); }
+/* A kind only exists once the attempt is graded, and then the fix carries a
+   hairline in its band instead of a box. */
+.mit[data-kind] { border-left: 2px solid var(--line-soft); padding-left: var(--sp-3); border-radius: 0; }
+.mit[data-kind='effective'] { border-left-color: var(--teal); }
+.mit[data-kind='harmful'] { border-left-color: var(--danger); }
 
 /* --------------------------------------------------------- 8. incidents -- */
 
@@ -348,19 +350,25 @@
   border-left: 2px solid var(--line-soft);
   padding-left: var(--sp-4);
 }
-.incident__legend { padding: 0; display: flex; flex-direction: column; gap: 2px; }
+/* A legend is lifted out of the fieldset's flex flow, so the gap above the
+   evidence has to be its own margin. */
+.incident__legend { padding: 0; display: flex; flex-direction: column; gap: 2px; margin-bottom: var(--sp-3); }
 .incident__index { font-size: var(--fs-12); color: var(--ink-3); }
 .incident__summary { font-size: var(--fs-14); color: var(--ink); font-weight: 500; }
 
 .incident__evidence { display: flex; flex-direction: column; gap: var(--sp-1); }
+/* Evidence lines are sentences with clock times and temperatures in them, not
+   code, so they are set in the UI face with tabular figures. The line breaks
+   are still the author's: one line per line, pre-wrap, textContent. */
 .incident__line {
   margin: 0;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  font-family: var(--font-mono);
-  font-size: var(--fs-12);
-  line-height: 1.6;
+  font-size: var(--fs-13);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--lh-body);
   color: var(--ink-2);
+  max-width: 68ch;
 }
 
 .incident__options { display: flex; flex-direction: column; gap: var(--sp-1); }
@@ -425,6 +433,17 @@
 }
 .meta dt { color: var(--ink-3); }
 .meta dd { margin: 0; color: var(--ink); font-family: var(--font-mono); overflow-wrap: anywhere; }
+
+/* Rule 2 of the minimal pass: no uppercase mono micro labels in the body. The
+   shared token box heads its panel that way, so it is overridden here. */
+.n-token__head {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-2);
+}
+.n-token__head code { font-family: var(--font-mono); color: var(--ink); }
 
 /* ----------------------------------------- 10. tool activity, and more -- */
 

@@ -1,7 +1,7 @@
 /**
- * nema provider UI: Agent Security.
+ * nema provider UI: Line Cook Lab.
  *
- * Renders the unit "Feedback Loop Attack Surface" from /content.js and owns all
+ * Renders the unit "Service Under Pressure" from /content.js and owns all
  * browser state for this origin. tools.js registers the five WebMCP tools and
  * calls into the controller functions exported at the bottom of this file, so a
  * tool call and a click always take the same code path and always repaint the
@@ -334,10 +334,10 @@ function renderPath() {
     }
     main.append(head);
 
-    /* One line, and only when there is something to say. What is missing is
+    /* One line, and only when there is something to say. Why an activity is
+       skippable is stated once above the list; what a lock is missing is
        spelled out on the activity stage, where the row is expanded. */
     if (locked) main.append(el('span', 'act__reason', plainReason(activity.lockedReason)));
-    else if (skippable) main.append(el('span', 'act__reason', plainReason(activity.skipReason)));
     row.append(main);
 
     const end = el('span', 'act__end');
@@ -423,13 +423,11 @@ function renderStage() {
   heading.tabIndex = -1;
   head.append(heading);
   head.append(
-    el(
-      'p',
-      'stage__facts',
-      `${sentenceCase(activity.type)}, ${activity.difficulty}, ${activity.grader} grading, ${activity.minutes} min`
-    )
+    el('p', 'stage__facts', `${sentenceCase(activity.type)}, ${activity.difficulty}, ${activity.minutes} min`)
   );
-  head.append(el('p', 'stage__does', activity.whatTheLearnerDoes));
+  /* A lab opens with its own scenario, which says the same thing better, so the
+     one line summary is only printed where nothing else briefs the learner. */
+  if (!activity.scenario) head.append(el('p', 'stage__does', activity.whatTheLearnerDoes));
   body.append(head);
 
   const locked = lockedEntry(activityId);
@@ -449,12 +447,17 @@ function renderStage() {
     return;
   }
 
+  /* Dispatch on the shape content.js gives us, not on an id: the unit can be
+     renamed and the right renderer still runs. */
   if (activity.type === 'lesson') renderLesson(body, activity);
-  else if (activityId === 'feedback-loop-attack-surface') renderAttackSurfaceLab(body, activity);
+  else if (Array.isArray(activity.trace)) renderAuditLab(body, activity);
   else renderTriageLab(body, activity);
 
-  body.append(renderHints(activity));
-  body.append(renderFeedback(activity));
+  /* Empty wrappers would still take a gap in the stage column. */
+  const hints = renderHints(activity);
+  if (hints.childElementCount) body.append(hints);
+  const feedback = renderFeedback(activity);
+  if (feedback.childElementCount) body.append(feedback);
 }
 
 function renderHints(activity) {
@@ -464,11 +467,13 @@ function renderHints(activity) {
   if (hints.length === 0) return wrap;
 
   const shown = Math.min(attempt.hintsUsed, hints.length);
-  const list = el('ul', 'hints__list');
-  for (let i = 0; i < shown; i += 1) {
-    list.append(el('li', 'hints__item', hints[i]));
+  if (shown > 0) {
+    const list = el('ul', 'hints__list');
+    for (let i = 0; i < shown; i += 1) {
+      list.append(el('li', 'hints__item', hints[i]));
+    }
+    wrap.append(list);
   }
-  wrap.append(list);
 
   /* Once the attempt is graded the hints have nothing left to help with, and a
      hint taken after the fact would still be counted in the receipt conditions.
@@ -487,7 +492,7 @@ function renderHints(activity) {
       announce(`Hint ${attempt.hintsUsed} shown. Hints used are recorded in the receipt.`);
     });
     wrap.append(button);
-    wrap.append(el('span', 'dim', 'Hints used go into the receipt conditions.'));
+    wrap.append(el('span', 'dim', 'Hints are recorded in the receipt.'));
   }
   return wrap;
 }
@@ -505,11 +510,15 @@ function renderFeedback(activity) {
   const variant = attempt.result === 'passed' ? 'usable' : attempt.result === 'partial' ? 'uncertain' : 'danger';
   const head = el('div', 'row row--tight');
   head.append(pill(attempt.result, variant));
-  /* Labelled, because these three numbers go into the receipt conditions and a
-     bare run of digits reads as one number. */
-  head.append(el('span', 'mono dim', `score ${Number(attempt.score || 0).toFixed(2)}`));
-  head.append(el('span', 'mono dim', `attempts ${attempt.attempts}`));
-  head.append(el('span', 'mono dim', `time ${durationSeconds(attempt)} s`));
+  /* One labelled line: these three numbers travel together into the receipt
+     conditions, and three separate chips read as three separate facts. */
+  head.append(
+    el(
+      'span',
+      'mono dim',
+      `score ${Number(attempt.score || 0).toFixed(2)}, attempts ${attempt.attempts}, ${durationSeconds(attempt)} s`
+    )
+  );
   wrap.append(head);
 
   const list = el('ul', 'feedback__list');
@@ -567,15 +576,15 @@ function renderLesson(body, activity) {
   body.append(wrap);
 }
 
-/* ----------------------------------------------- lab: the untrusted surface -- */
+/* ------------------------------------------------- lab: the service log -- */
 
-/* A mitigation `detail` may open with a sentence that names the verdict itself
-   ("Harmful. ...", "Neutral for prevention, ..."). That sentence is feedback,
-   not briefing: printed on an ungraded card it hands over the answer the lab is
-   asking for, so it is held back until the attempt is graded and shown next to
-   the kind pill. The strings still live in content.js, this only decides when
-   each half appears. Reported upstream: content.js should carry the verdict in
-   a field of its own so no parsing is needed here. */
+/* A fix `detail` explains why the fix works or does not, which is the answer
+   the lab is asking for, so the whole detail is held back until the attempt is
+   graded. Its first sentence often names the verdict outright ("Harmful. ...",
+   "Neutral for prevention, ..."); that half is split out and shown next to the
+   kind pill. The strings still live in content.js, this only decides when each
+   half appears. Reported upstream: content.js should carry the verdict in a
+   field of its own so no parsing is needed here. */
 const VERDICT_LEAD = /^(Harmful|Neutral|Effective)\b[^.]*\.\s+/;
 
 function splitVerdict(detail) {
@@ -585,7 +594,7 @@ function splitVerdict(detail) {
   return { verdict: match[0].trim(), body: text.slice(match[0].length) };
 }
 
-function renderAttackSurfaceLab(body, activity) {
+function renderAuditLab(body, activity) {
   const attempt = attemptFor(activity.id);
   const graded = attempt.result !== null;
   /* Graded reads the submission, ungraded reads the draft the last repaint saved. */
@@ -602,17 +611,17 @@ function renderAttackSurfaceLab(body, activity) {
   form.noValidate = true;
 
   const traceSet = el('fieldset', 'lab__set');
-  traceSet.append(el('legend', 'lab__legend', 'Mark every tool result authored outside your trust boundary.'));
+  traceSet.append(el('legend', 'lab__legend', 'Mark every station step that breaks a food safety rule.'));
 
   const trace = el('ol', 'trace');
   for (const entry of activity.trace) {
     const item = el('li', 'trace__item');
     item.dataset.actor = entry.actor;
-    if (graded) {
-      if (entry.injected) item.dataset.mark = 'injected';
-      else if (entry.untrusted) item.dataset.mark = 'outside';
-      else item.dataset.mark = 'inside';
-    }
+    /* Only a cook entry is a station step the learner can mark, so only a cook
+       entry carries a verdict. What the ticket and pass rows are doing here is
+       said once in the scenario above the list. */
+    const markable = entry.actor === 'cook';
+    if (graded && markable) item.dataset.mark = entry.untrusted ? 'unsafe' : 'safe';
 
     const rail = el('span', 'trace__rail');
     rail.append(el('span', 'trace__step mono', String(entry.step)));
@@ -629,7 +638,7 @@ function renderAttackSurfaceLab(body, activity) {
     content.textContent = entry.content;
     main.append(content);
 
-    if (entry.actor === 'tool') {
+    if (markable) {
       const label = el('label', 'n-check trace__check');
       const input = document.createElement('input');
       input.type = 'checkbox';
@@ -637,15 +646,13 @@ function renderAttackSurfaceLab(body, activity) {
       input.value = entry.id;
       input.checked = picked.has(entry.id);
       input.disabled = graded;
-      label.append(input, el('span', null, 'untrusted, authored outside the boundary'));
+      label.append(input, el('span', null, 'breaks a rule'));
       main.append(label);
     }
 
-    if (graded) {
+    if (graded && markable) {
       const badge = el('div', 'trace__verdict');
-      if (entry.injected) badge.append(pill('injected instruction', 'danger'));
-      else if (entry.untrusted) badge.append(pill('outside author', 'due'));
-      else badge.append(pill('inside the boundary', 'usable'));
+      badge.append(entry.untrusted ? pill('unsafe', 'danger') : pill('safe', 'usable'));
       badge.append(el('span', 'trace__why', entry.why));
       main.append(badge);
     }
@@ -657,7 +664,7 @@ function renderAttackSurfaceLab(body, activity) {
   form.append(traceSet);
 
   const mitSet = el('fieldset', 'lab__set');
-  mitSet.append(el('legend', 'lab__legend', 'Choose the mitigations you would actually ship.'));
+  mitSet.append(el('legend', 'lab__legend', 'Choose the fixes you would put in place tomorrow.'));
   const mitigations = el('div', 'mits');
   for (const mitigation of activity.mitigations) {
     const card = el('label', 'mit');
@@ -673,12 +680,16 @@ function renderAttackSurfaceLab(body, activity) {
     row.append(el('span', 'mit__label', mitigation.label));
     if (graded) row.append(pill(mitigation.kind, mitigation.kind === 'effective' ? 'usable' : mitigation.kind === 'harmful' ? 'danger' : 'unknown'));
     card.append(row);
-    const detail = splitVerdict(mitigation.detail);
-    /* A bare "Harmful." repeats the pill, so only a verdict that says more than
-       the kind is worth a line of its own. */
-    const saysMore = detail.verdict.replace(/\.$/, '').toLowerCase() !== mitigation.kind;
-    if (graded && detail.verdict && saysMore) card.append(el('span', 'mit__verdict', detail.verdict));
-    card.append(el('span', 'mit__detail', detail.body));
+    /* Ungraded the list is seven lines to choose from. The reasoning arrives
+       with the grade, where it is feedback instead of the answer. */
+    if (graded) {
+      const detail = splitVerdict(mitigation.detail);
+      /* A bare "Harmful." repeats the pill, so only a verdict that says more
+         than the kind is worth a line of its own. */
+      const saysMore = detail.verdict.replace(/\.$/, '').toLowerCase() !== mitigation.kind;
+      if (detail.verdict && saysMore) card.append(el('span', 'mit__verdict', detail.verdict));
+      card.append(el('span', 'mit__detail', detail.body));
+    }
     mitigations.append(card);
   }
   mitSet.append(mitigations);
@@ -695,7 +706,7 @@ function renderAttackSurfaceLab(body, activity) {
     retry.addEventListener('click', () => resetAttempt(activity.id));
     actions.append(retry);
   } else {
-    actions.append(el('span', 'dim', 'Graded on this origin. The agent has no tool that can answer for you.'));
+    actions.append(el('span', 'dim', 'Graded here. No tool can answer for you.'));
   }
   form.append(actions);
 
@@ -778,7 +789,7 @@ function renderTriageLab(body, activity) {
     retry.addEventListener('click', () => resetAttempt(activity.id));
     actions.append(retry);
   } else {
-    actions.append(el('span', 'dim', 'One action per incident. Over triage has a cost and the grader counts it.'));
+    actions.append(el('span', 'dim', 'One action per incident. Over reacting costs a table, and the grader counts it.'));
   }
   form.append(actions);
 
@@ -821,7 +832,8 @@ function renderReceipt() {
        is in the DOM, the Copy button puts the whole string on the clipboard,
        and the box clamps to a readable height instead of a resizable field. */
     const token = el('div', 'n-token');
-    const head = el('span', 'n-token__head', `evidence receipt, ${activityId}`);
+    const head = el('span', 'n-token__head', 'Signed receipt for ');
+    head.append(el('code', 'mono', activityId));
     const copy = el('button', 'n-btn n-btn--sm n-btn--mono', 'Copy');
     copy.type = 'button';
     copy.addEventListener('click', () => copyToClipboard(receipt.token, copy));
@@ -850,27 +862,32 @@ function renderReceipt() {
     });
     block.append(claims);
 
-    const meta = el('dl', 'receipt__meta mono');
+    /* Seven signed fields matter to a verifier and to nobody else on first
+       read, so they fold away under the claims they belong to. */
+    const details = el('details', 'more');
+    details.append(el('summary', 'more__summary', 'Signed fields'));
+    const meta = el('dl', 'meta');
     const rows = [
-      ['receipt', payload.receiptId],
-      ['issuer', `${payload.issuer}  key ${payload.keyId}`],
-      ['subject', payload.subject],
-      ['activity', `${payload.activity.id} ${payload.activity.version}`],
-      ['content hash', payload.activity.contentHash],
-      ['conditions', `attempts ${payload.conditions.attempts}, hints ${payload.conditions.hintsUsed}, ${payload.conditions.durationSeconds} s, grader ${payload.conditions.grader} v${payload.conditions.graderVersion}`],
-      ['issued', payload.issuedAt]
+      ['Receipt', payload.receiptId],
+      ['Issuer', `${payload.issuer}  key ${payload.keyId}`],
+      ['Subject', payload.subject],
+      ['Activity', `${payload.activity.id} ${payload.activity.version}`],
+      ['Content hash', payload.activity.contentHash],
+      ['Conditions', `attempts ${payload.conditions.attempts}, hints ${payload.conditions.hintsUsed}, ${payload.conditions.durationSeconds} s, grader ${payload.conditions.grader} v${payload.conditions.graderVersion}`],
+      ['Issued', payload.issuedAt]
     ];
-    for (const [key, value] of rows) meta.append(el('dt', 'dim', key), el('dd', null, value));
-    block.append(meta);
+    for (const [key, value] of rows) meta.append(el('dt', null, key), el('dd', null, value));
+    const metaWrap = el('div', 'more__body');
+    metaWrap.append(meta);
+    details.append(metaWrap);
+    block.append(details);
 
     const actions = el('div', 'row');
     const link = el('a', 'n-btn n-btn--primary', 'Send to vault');
     link.href = `${VAULT_ORIGIN}/#receipt=${encodeURIComponent(receipt.token)}`;
     link.rel = 'noopener';
     actions.append(link);
-    actions.append(
-      el('span', 'dim', 'The vault verifies the signature against its issuer list before anything moves.')
-    );
+    actions.append(el('span', 'receipt__note', 'The vault checks the signature before anything moves.'));
     block.append(actions);
 
     body.append(block);
@@ -936,6 +953,24 @@ function resetAttempt(activityId) {
   save();
   renderAll();
   announce('Attempt cleared. The trace is editable again.');
+}
+
+/**
+ * Put the origin back to how a first visitor finds it: no assertion, no
+ * attempts, no receipts. Local only, and it never touches a signed token that
+ * already left for the vault.
+ */
+function resetUnit() {
+  state = { ...EMPTY_STATE, attempts: {}, receipts: {} };
+  prereq = computePrereq();
+  assertionNote = '';
+  offerNote = '';
+  for (const key of Object.keys(drafts)) delete drafts[key];
+  stagedActivityId = null;
+  save();
+  renderAll();
+  toast('Unit reset.', 'ok');
+  announce('Unit reset. No assertion, no attempts, no receipts.');
 }
 
 /** Open an activity in the stage. Navigation only: it never answers anything. */
@@ -1166,9 +1201,18 @@ function describeOffer() {
 
 /* --------------------------------------------------------------- startup -- */
 
-injectHeader({ app: 'security', title: 'Agent Security' });
-injectFooter({ note: 'Agent Security. Deterministic grading, signed receipts, no account.' });
+injectHeader({ app: 'security', title: 'Line Cook Lab' });
+injectFooter({ note: 'Line Cook Lab. Deterministic grading, signed receipts, no account.' });
 mountActivityStrip($('[data-activity-strip]'));
+
+/* The unit names itself from the manifest, so the heading can never drift from
+   the content the tools describe. */
+const heroTitle = $('#hero-title');
+if (heroTitle) heroTitle.textContent = MANIFEST.unit.title;
+
+const resetButton = $('[data-action="reset"]');
+if (resetButton) resetButton.addEventListener('click', resetUnit);
+
 renderAll();
 
 document.addEventListener('nema:toolcall', () => {

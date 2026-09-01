@@ -1,5 +1,5 @@
 /**
- * nema: Harness Engineering Lab content and graders.
+ * nema: Saucier School content and graders.
  *
  * This module is imported by the browser page AND by the Cloudflare Worker, so
  * it is fully self contained: no imports, no DOM access, no globals beyond the
@@ -50,11 +50,12 @@
  *
  * interactive-lab
  *   { scenario: { html: string },
- *     brokenHarness: { json: object },      // render as pretty printed JSON
- *     beforeRun: string[],                  // console lines, run as-is
+ *     brokenHarness: { json: object },      // the method card as it was cooked,
+ *                                           // render as pretty printed JSON
+ *     beforeRun: string[],                  // pass and tasting notes, as-is
  *     checks: [{ id, label, detail, kind: 'required'|'harmful'|'neutral' }],
  *     stages: [{ id, label }],              // learner drags these into order
- *     afterRun: string[],                   // console lines, show after a pass
+ *     afterRun: string[],                   // notes from the remake, after a pass
  *     hints: string[],
  *     answerKey: { requiredChecks: [id], harmfulChecks: [id], stageOrder: [id] } }
  *   Submission: { checks: [id], stageOrder: [id] }.
@@ -71,9 +72,9 @@
  *   Grading (grader 'provider-rubric', weight 0.8): a criterion is met when any
  *   of its keywords appears in the text, case insensitive, at the start of a
  *   word. The trailing boundary is deliberately open so that inflections count:
- *   the stem 'unit test' matches "unit tests" and "unit testing", 'verif'
- *   matches "verifier", "verify" and "verification". Substrings that start
- *   inside another word never count, so "unittests" is not a match.
+ *   the stem 'droplet' matches "droplets", 'emulsif' matches "emulsifier",
+ *   "emulsify" and "emulsified". Substrings that start inside another word never
+ *   count, so "preheat" is not a match for 'heat'.
  *   All criteria met is 'passed', one short of all is 'partial', otherwise
  *   'failed'. Answers under minWords cannot pass: they are graded 'failed'
  *   with an explicit message.
@@ -81,24 +82,24 @@
  * ---------------------------------------------------------------------------
  * MINUTES ARITHMETIC (the 68 -> 27 -> 21 story)
  * ---------------------------------------------------------------------------
- *   1 agent-loop-primer      12   skipIf agent-loop.explain verified
- *   2 testing-refresher      15   skipIf software-testing.apply verified
- *   3 json-schema-diagnostic  6   onlyIf json-schema.apply uncertain
- *   4 json-schema-primer     14   skipIf json-schema.apply uncertain (or better)
- *   5 eval-anatomy            4   always
- *   6 eval-design-lab        12   always
- *   7 eval-retrieval          5   always
+ *   1 heat-control-primer      12   skipIf heat-control.explain verified
+ *   2 knife-skills-refresher   15   skipIf knife-skills.apply verified
+ *   3 ratios-diagnostic         6   onlyIf ratios.apply uncertain
+ *   4 ratios-primer            14   skipIf ratios.apply uncertain (or better)
+ *   5 pan-sauce-anatomy         4   always
+ *   6 fix-the-broken-sauce     12   always
+ *   7 explain-without-the-recipe 5  always
  *
  *   Full path (all seven):        12+15+6+14+4+12+5 = 68  = unit.estimatedMinutes
- *   Seed learner (software-testing verified, agent-loop verified,
- *   json-schema uncertain):       6+4+12+5          = 27
- *   After the diagnostic passes (json-schema verified):
+ *   Seed learner (knife-skills verified, heat-control verified,
+ *   ratios uncertain):            6+4+12+5          = 27
+ *   After the diagnostic passes (ratios verified):
  *                                 4+12+5            = 21
  *   No assertion presented yet
  *   (personalizePath(null)):      the whole offer   = 68
  *   Every requirement missing:    12+15+14+4+12+5   = 62
- *     (the diagnostic drops out: onlyIf matches a status exactly, and a learner
- *      with no JSON Schema evidence at all is sent straight to the primer, which
+ *     (the diagnostic drops out: onlyIf matches a status exactly, and a cook
+ *      with no evidence at all for ratios is sent straight to the primer, which
  *      is the cheaper thing to do for them.)
  *
  *   So 68 is the offer, not a personalized result: 62 is the longest path any
@@ -109,507 +110,511 @@
 /* Manifest                                                            */
 /* ------------------------------------------------------------------ */
 
-const PROVIDER_ORIGIN = 'https://nema-harness.migarci2.dev';
+const PROVIDER_ORIGIN = 'https://saucier.migarci2.dev';
 
 /* ------------------------------------------------------------------ */
 /* Activities                                                          */
 /* ------------------------------------------------------------------ */
 
 export const ACTIVITIES = {
-  'agent-loop-primer': {
-    id: 'agent-loop-primer',
+  'heat-control-primer': {
+    id: 'heat-control-primer',
     version: '1.0.0',
-    title: 'How an agent loop actually runs',
+    title: 'Heat is a rate, not a setting',
     type: 'lesson',
     minutes: 12,
     difficulty: 'introductory',
     grader: 'exposure',
     evidenceProduced: 'recognition',
-    outcomes: [{ concept: 'nema:agent-loop', ability: 'recognize' }],
-    skipIf: [{ concept: 'nema:agent-loop', ability: 'explain', status: 'verified' }],
-    includeReason: 'Included: no verified evidence that you can explain the agent loop.',
-    skipReason: 'Skipped: your vault already proves you can explain the agent loop.',
+    outcomes: [{ concept: 'nema:heat-control', ability: 'recognize' }],
+    skipIf: [{ concept: 'nema:heat-control', ability: 'explain', status: 'verified' }],
+    includeReason: 'Included: no verified evidence that you can explain heat control.',
+    skipReason: 'Skipped: your vault already proves you can explain heat control.',
     whatTheLearnerDoes: 'Reads three short sections and marks the lesson complete.',
     content: {
       intro:
-        'An agent is not a model with a personality. It is a loop. The model proposes an action, a tool executes it, the result is appended as text, and the loop runs again. Every lever you have as an engineer lives in that loop, not in the adjectives you put in the prompt.',
+        'A burner dial is not a temperature. It is a rate at which energy enters the pan, and what the food experiences depends on the metal, the mass, the fat and how much cold protein you just dropped in. Cooks who control heat are not guessing better. They are reading the pan.',
       sections: [
         {
-          heading: 'The loop is three moves',
+          heading: 'The pan is the thermostat',
           html:
-            '<p>Whatever the vendor calls it, a coding agent repeats three moves. It reads the current context. It emits either a final answer or a tool call. The harness runs the tool and appends the result to the context. That is the entire machine.</p>' +
-            '<p>The model has no memory between runs and no senses beyond what the harness writes down. If the build failed and nothing appended the failure, the agent does not know it failed. It is not being stubborn. It is reading the only world it has.</p>'
+            '<p>Turn a burner to high and the flame is instant. The pan is not. A 3 mm carbon steel or cast iron pan stores energy and gives it back slowly, so it holds temperature when food arrives. A thin stainless pan holds almost nothing: put six cold chicken thighs into it and the cooking surface falls 40 to 60 C in seconds.</p>' +
+            '<p>Preheat, then test: a drop of water flicked into a dry stainless pan over medium heat should ball up and skate across the surface rather than hiss and vanish. That is the Leidenfrost point, somewhere near 180 C, and it is the moment to add the oil. Then respect the mass you have: crowd the pan and every piece releases water, the surface drops under 100 C, and you are steaming meat in its own juices with no way back.</p>'
         },
         {
-          heading: 'The harness owns everything the model does not',
+          heading: 'The wall at 100 C, and the fat that carries you past it',
           html:
-            '<p>Four decisions belong to you, and none of them are prompt engineering.</p>' +
-            '<ul>' +
-            '<li><b>Tool surface.</b> What the agent is allowed to touch, and at what granularity.</li>' +
-            '<li><b>Result shape.</b> What the agent learns after each action, especially when the action fails.</li>' +
-            '<li><b>Budget.</b> How many turns, tokens and seconds the loop may spend before it stops.</li>' +
-            '<li><b>Termination.</b> Who decides that the work is done. The honest answer is never the agent.</li>' +
-            '</ul>' +
-            '<p>A blunt prompt inside a strict harness beats an elegant prompt inside a loose one, reliably enough that you should plan for it.</p>'
+            '<p>Wet food cannot exceed 100 C while it is still wet. Water boiling off holds the surface there, which is why a damp steak greys instead of browning. Blot it and salt it ahead so the surface dries.</p>' +
+            '<p>Browning is two reactions with two thresholds. Maillard, between amino acids and reducing sugars, runs usefully from about 140 C. Caramelization is sugar breaking down alone and needs roughly 160 to 170 C for sucrose. Both need a dry surface first.</p>' +
+            '<p>Fat is what moves that heat into the food evenly, and each fat has a ceiling. Refined neutral oil holds to about 230 C, clarified butter to roughly 250 C because the milk solids are gone, and whole butter browns at about 150 C and burns shortly after. That is exactly why you sear in oil and finish with butter.</p>'
         },
         {
-          heading: 'Where loops go wrong',
+          heading: 'Hotter is not faster',
           html:
-            '<p>Three shapes cover most incidents. The agent stops early because it believes its own summary. The agent thrashes, repeating a failing action because the error text is byte identical every time and carries no new information. The agent succeeds locally and breaks something that no tool result ever mentioned.</p>' +
-            '<p>All three are feedback problems before they are model problems. A loop that reports the real outcome of the real task can recover from a bad first attempt. A loop that reports only "tests passed" can only be lucky.</p>' +
-            '<p>The practical consequence is where you spend your afternoon. Rewriting the system prompt for the fourth time changes what the agent intends. Adding one tool result that names the actual failure changes what the agent can know, and a loop can only act on what it knows. When a run goes wrong, read the transcript as the agent received it, not as you imagine it. The answer is almost always a turn where the agent was told nothing useful and had to guess.</p>'
+            '<p>The most expensive belief in a kitchen is that more flame means less time. A ripping pan browns the outside of a thick chop in 90 seconds and leaves the middle at 40 C. Heat travels through meat at a rate the protein sets, not the burner. Sear hard, then drop to moderate heat or move to a 150 C oven and let the centre climb. Pull it 5 C under target, because carryover keeps cooking.</p>' +
+            '<p>Listen while you work. A hard, spitting sizzle is water leaving. A lower, drier crackle means the surface has dried and is browning. Silence with rising smoke means the fond is about to go from mahogany to bitter black: less flame and a splash of water, immediately.</p>' +
+            '<p>Sauces live at the other end of the scale. A butter emulsion holds between roughly 60 and 85 C and splits above about 90 C. So the last five minutes of a pan sauce are a heat control problem, not a recipe problem.</p>'
         }
       ],
       keyPoints: [
-        'An agent is a loop: context, action, result, repeat.',
-        'The model knows exactly what the harness wrote into the context, and nothing else.',
-        'Tool surface, result shape, budget and termination are engineering decisions.',
-        'Most agent failures are missing feedback rather than missing intelligence.'
+        'Heat is a rate of energy entering the food. The pan mass, not the dial, decides what the food feels.',
+        'Wet surfaces are stuck at 100 C. Dry the surface before you expect any browning.',
+        'Maillard from about 140 C, caramelization near 160 to 170 C, whole butter burns just past 150 C.',
+        'Hotter is not faster: a hard sear plus moderate finishing heat beats full flame throughout.',
+        'Butter emulsions hold between about 60 and 85 C and break above 90 C.'
       ],
       exposureClaim: {
-        concept: 'nema:agent-loop',
+        concept: 'nema:heat-control',
         ability: 'recognize',
         evidenceType: 'recognition'
       }
     }
   },
 
-  'testing-refresher': {
-    id: 'testing-refresher',
+  'knife-skills-refresher': {
+    id: 'knife-skills-refresher',
     version: '1.0.0',
-    title: 'Testing, refreshed for agents',
+    title: 'Knife skills, refreshed for the saucier station',
     type: 'lesson',
     minutes: 15,
     difficulty: 'introductory',
     grader: 'exposure',
     evidenceProduced: 'recognition',
-    outcomes: [{ concept: 'nema:software-testing', ability: 'recognize' }],
-    skipIf: [{ concept: 'nema:software-testing', ability: 'apply', status: 'verified' }],
-    includeReason: 'Included: no verified evidence that you can apply software testing.',
-    skipReason: 'Skipped: your vault already proves you can apply software testing.',
+    outcomes: [{ concept: 'nema:knife-skills', ability: 'recognize' }],
+    skipIf: [{ concept: 'nema:knife-skills', ability: 'apply', status: 'verified' }],
+    includeReason: 'Included: no verified evidence that you can apply knife skills.',
+    skipReason: 'Skipped: your vault already proves you can apply knife skills.',
     whatTheLearnerDoes: 'Reads three short sections and marks the lesson complete.',
     content: {
       intro:
-        'You already know how to write a test. This refresher is about what a test is evidence of, because that is the question an agent harness forces you to answer out loud.',
+        'You can already chop an onion. This refresher is about why a saucier cares how evenly you did it, because a pan sauce gives your shallots about 45 seconds before the pan takes them past sweet and into bitter.',
       sections: [
         {
-          heading: 'What a unit test actually buys you',
+          heading: 'Grip, guide hand, board',
           html:
-            '<p>A unit test is a claim about one function under inputs you chose. It buys you a fast, precise signal about a small piece of the system, and it buys you the courage to refactor. That is a lot. It is also all.</p>' +
-            '<p>The claim never extends past the boundary you drew. A green suite says the parts you thought to check behave the way you thought to check them. It says nothing about the parts you did not think of, and nothing at all about whether the user got what they asked for.</p>'
+            '<p>Take a pinch grip: thumb and forefinger on the flat of the blade just ahead of the bolster, the other three fingers wrapped around the handle. The knife stops being a stick you push and becomes an extension of the forearm, and it stops twisting on contact.</p>' +
+            '<p>The other hand does more work than the knife hand. Curl it into a claw, fingertips tucked back behind the knuckles, and let the flat of the blade ride against those knuckles. The knuckle sets the thickness of every slice, so a steady claw is what makes cuts uniform. Feed the food forward with the fingertips, in small steps.</p>' +
+            '<p>Put a damp cloth or a piece of wet paper towel under the board. A board that slides is the most common cause of a cut hand in a domestic kitchen. Use wood or polyethylene, never glass, marble or steel: those flatten an edge in a single session.</p>'
         },
         {
-          heading: 'The gap a test double leaves',
+          heading: 'The cuts have dimensions, and the dimensions have a reason',
           html:
-            '<p>Every mock, stub and fake is a small lie you agree to tell so the test can run fast. The lie is usually harmless and occasionally load bearing: the payment gateway that returns a shape the real one stopped returning last quarter, the database that never enforces a constraint, the migration that only exists in the fixture.</p>' +
-            '<p>Coverage counts lines the tests executed. It cannot count assumptions the doubles absorbed. This is why a suite can be at ninety percent and the deploy can still page you at midnight.</p>'
-        },
-        {
-          heading: 'From assertions to acceptance',
-          html:
-            '<p>Testing has always had two levels, and agents make the difference expensive to ignore.</p>' +
+            '<p>Classical cuts are a shared vocabulary with numbers attached.</p>' +
             '<ul>' +
-            '<li><b>Assertions</b> check a unit against inputs the author imagined.</li>' +
-            '<li><b>Acceptance</b> checks the delivered system against what somebody asked for.</li>' +
+            '<li><b>Julienne</b> 3 mm by 3 mm by 50 mm. <b>Brunoise</b> is julienne cut across, so 3 mm cubes.</li>' +
+            '<li><b>Batonnet</b> 6 mm by 6 mm by 60 mm. Cut across it and you have <b>small dice</b>, 6 mm.</li>' +
+            '<li><b>Medium dice</b> 12 mm, <b>large dice</b> 20 mm, <b>chiffonade</b> for rolled leaves.</li>' +
             '</ul>' +
-            '<p>A human who makes the assertions pass while missing the request gets caught in review. An agent will happily ship the same work, announce success in fluent prose, and move on. If the only gate is the unit suite, that prose is your acceptance criteria.</p>' +
-            '<p>So keep both levels and be honest about what each one is for. Unit tests stay fast, numerous and close to the code, and they are the reason a refactor is safe. Acceptance runs on a restored fixture, calls the system the way a caller would, and is the reason a release is safe. Agents do not change that split. They change the cost of getting it wrong, because an agent can produce a large, plausible, green diff faster than anyone can read it.</p>'
+            '<p>Uniformity is not decoration. Pieces of the same size reach doneness at the same moment. A shallot minced unevenly gives you scorched fragments alongside raw crescents, and both end up in the sauce.</p>' +
+            '<p>For that shallot: cut it in half through the root, peel, lay a half flat. Make two or three horizontal cuts toward the root without going through it, then vertical cuts down the length, then slice across. The root holds the whole thing together until the last cut.</p>'
+        },
+        {
+          heading: 'Sharp is safe, and staying sharp is a habit',
+          html:
+            '<p>A dull edge slides off an onion skin and into your knuckle. A sharp one bites where you put it. Most European knives are ground near 20 degrees per side, most Japanese knives near 15, and that angle is the number you hold against the stone.</p>' +
+            '<p>Honing and sharpening are different jobs. A steel or ceramic rod realigns an edge that has rolled over, and it is a thing you do every few uses, ten light strokes a side. Sharpening removes metal: 1000 grit to set the edge until a burr runs the length of it, then 3000 to 6000 to refine and strip the burr.</p>' +
+            '<p>The rest is discipline. Never leave a knife in a sink of water. Carry it point down against your leg. Wash and dry it by hand the moment you finish with it, because dishwasher heat and detergent will pit the steel and knock the edge off anyway.</p>'
         }
       ],
       keyPoints: [
-        'A unit test is evidence about one function, under inputs someone chose.',
-        'Test doubles trade fidelity for speed, and the missing fidelity is where incidents live.',
-        'Coverage measures executed lines, not the assumptions your fakes absorbed.',
-        'Acceptance asks a different question from assertion: did the requested outcome happen.'
+        'Pinch grip on the blade, claw on the guide hand, damp cloth under the board.',
+        'The guide-hand knuckle sets slice thickness, which is what makes cuts uniform.',
+        'Julienne 3 mm, batonnet 6 mm, small dice 6 mm, medium 12 mm, large 20 mm.',
+        'Uniform pieces finish at the same time, and a sauce gives shallots about 45 seconds.',
+        'Hone often to realign the edge, sharpen at 15 to 20 degrees to make a new one.'
       ],
       exposureClaim: {
-        concept: 'nema:software-testing',
+        concept: 'nema:knife-skills',
         ability: 'recognize',
         evidenceType: 'recognition'
       }
     }
   },
 
-  'json-schema-diagnostic': {
-    id: 'json-schema-diagnostic',
+  'ratios-diagnostic': {
+    id: 'ratios-diagnostic',
     version: '1.0.0',
-    title: 'Which schema holds the line',
+    title: 'Which vinaigrette holds',
     type: 'diagnostic',
     minutes: 6,
     difficulty: 'intermediate',
     grader: 'deterministic',
     evidenceProduced: 'application',
-    outcomes: [{ concept: 'nema:json-schema', ability: 'apply' }],
+    outcomes: [{ concept: 'nema:ratios', ability: 'apply' }],
     skipIf: [],
-    onlyIf: [{ concept: 'nema:json-schema', ability: 'apply', status: 'uncertain' }],
+    onlyIf: [{ concept: 'nema:ratios', ability: 'apply', status: 'uncertain' }],
     includeReason:
-      'Included: JSON Schema is uncertain in your vault. Six minutes here can replace the fourteen minute primer.',
-    skipReason: 'Skipped: your vault already proves you can apply JSON Schema.',
+      'Included: ratios are uncertain in your vault. Six minutes here can replace the fourteen minute primer.',
+    skipReason: 'Skipped: your vault already proves you can apply ratios.',
     notApplicableReason:
-      'Not applicable: this check only runs when JSON Schema is uncertain. With no evidence at all, the primer is the cheaper route.',
-    whatTheLearnerDoes: 'Reads four candidate schemas and picks the one that satisfies both requirements.',
+      'Not applicable: this check only runs when ratios are uncertain. With no evidence at all, the primer is the cheaper route.',
+    whatTheLearnerDoes: 'Reads four written vinaigrettes and picks the one that tastes right and still holds at the pass.',
     content: {
       prompt:
-        'A print service exposes one tool input. The schema must reject the first payload and accept the second. Which of the four schemas does both?',
+        'You need 400 ml of vinaigrette for a bitter leaf salad. It is mixed at 19:30 and the first salads are dressed at 19:40. Which of the four builds tastes balanced and is still one liquid ten minutes later?',
       context: {
         html:
-          '<p>The tool input validator sits in front of the print queue. Two payloads decide whether it is correct:</p>' +
-          '<pre><code>reject: { "copies": 0 }\naccept: { "copies": 3, "pageSize": "A4" }</code></pre>' +
-          '<p>Every candidate below is valid JSON Schema. Three of them let one of those two payloads through the wrong door.</p>'
+          '<p>The acid on the bench is a 5 percent cider vinegar. The oil is a mild cold pressed sunflower. There is Dijon, salt and a whisk.</p>' +
+          '<p>Two things have to be true at once, and each build below fails or passes on both counts independently:</p>' +
+          '<ul>' +
+          '<li><b>Balance.</b> Enough acid to cut the fat, not so much that it strips the leaf.</li>' +
+          '<li><b>Stability.</b> Something in the bowl keeping the oil in droplets while the dressing sits.</li>' +
+          '</ul>'
       },
       options: [
         {
-          id: 'schema-a',
+          id: 'ratio-a',
           html:
-            '<pre><code>{\n  "type": "object",\n  "properties": {\n    "copies": { "type": "integer" },\n    "pageSize": { "type": "string", "enum": ["A4", "Letter"] }\n  },\n  "required": ["copies"],\n  "additionalProperties": false\n}</code></pre>',
+            '<p><b>1 part oil to 1 part vinegar.</b> 200 ml oil, 200 ml cider vinegar, salt, whisked hard for a minute in a cold bowl.</p>',
           whyWrong:
-            'No lower bound on copies. Zero is a perfectly good integer, so { "copies": 0 } is accepted and the print queue receives a job that prints nothing.'
+            'Half the dressing is vinegar. That is roughly three times the acid a leaf can carry, it strips the palate before anyone tastes the salad, and nothing in the bowl is keeping the oil dispersed. Whisking harder fixes neither problem: it adds energy, not an emulsifier.'
         },
         {
-          id: 'schema-b',
+          id: 'ratio-b',
           html:
-            '<pre><code>{\n  "type": "object",\n  "properties": {\n    "copies": { "type": "integer", "minimum": 1 },\n    "pageSize": { "type": "string", "enum": ["A4", "Letter"] }\n  },\n  "required": ["copies"],\n  "additionalProperties": false\n}</code></pre>',
+            '<p><b>3 parts oil to 1 part acid, with mustard.</b> 100 ml cider vinegar, 1 heaped teaspoon of Dijon per 100 ml of finished dressing, salt dissolved in the vinegar first, then 300 ml of oil drizzled in while whisking.</p>',
           whyWrong: ''
         },
         {
-          id: 'schema-c',
+          id: 'ratio-c',
           html:
-            '<pre><code>{\n  "type": "object",\n  "properties": {\n    "copies": { "type": "string", "minLength": 1 },\n    "pageSize": { "type": "string", "enum": ["A4", "Letter"] }\n  },\n  "required": ["copies"],\n  "additionalProperties": false\n}</code></pre>',
+            '<p><b>3 parts oil to 1 part acid, no mustard.</b> 100 ml cider vinegar and 300 ml oil, salt, whisked cold in a bowl until it goes cloudy.</p>',
           whyWrong:
-            'The type is wrong. This one does reject { "copies": 0 }, but it rejects { "copies": 3 } too, because 3 is a number and the schema demands a string. A validator that refuses valid work is still a broken validator.'
+            'The ratio is right and the seasoning will be right, so this one tastes correct at 19:30. Nothing is stabilising the interface, though. Whisked oil and vinegar is a mechanical emulsion held only by the energy you put in, the droplets coalesce within a minute or two, and by 19:40 the oil is pooled on top and the last plates get dressed in vinegar.'
         },
         {
-          id: 'schema-d',
+          id: 'ratio-d',
           html:
-            '<pre><code>{\n  "type": "object",\n  "properties": {\n    "copies": { "type": "integer" },\n    "pageSize": { "type": "string", "enum": ["A4", "Letter"], "minimum": 1 }\n  },\n  "required": ["copies"],\n  "additionalProperties": false\n}</code></pre>',
+            '<p><b>1 part oil to 3 parts acid.</b> 300 ml cider vinegar, 100 ml oil, salt, whisked hard with a teaspoon of Dijon.</p>',
           whyWrong:
-            'The minimum is on the wrong property. Numeric keywords are ignored on a string, so this schema constrains nothing and { "copies": 0 } sails through.'
+            'The ratio is inverted. Three parts vinegar to one part oil is a marinade, not a dressing: it is sour enough to pucker, and the acid wilts and bleaches a bitter leaf on contact. The mustard is doing honest work here, which is what makes this one tempting, but a stable dressing that nobody can eat is still a failure.'
         }
       ],
-      answerKey: 'schema-b',
+      answerKey: 'ratio-b',
       explanation:
-        'Schema B is the only one that closes both doors. "type": "integer" with "minimum": 1 rejects 0 while still accepting 3, the enum keeps pageSize to values the printer understands, and additionalProperties: false stops an agent from smuggling in a field the service never validates. The other three fail in the three ways schemas usually fail: a missing constraint, a constraint on the wrong type, and a constraint on the wrong property.',
+        'Three parts oil to one part acid is the classical vinaigrette, and the teaspoon of Dijon per 100 ml is what turns a shake into a sauce. Mustard carries seed mucilage and proteins that sit at the boundary between oil and vinegar, lower the surface tension there and stop the droplets from merging back together, so the dressing is still one liquid at the pass. Dissolving the salt in the vinegar first matters too, because salt will not dissolve in oil. Drizzling the oil in slowly while whisking is what makes the droplets small in the first place, and small droplets are slow droplets. Adjust the ratio to the acid you actually have: a sharper 7 percent vinegar wants closer to 4 to 1, and lemon juice at roughly 6 percent acid sits in between.',
       hints: [
-        'Two payloads, two questions. Ask each schema: does it say no to zero, and does it still say yes to three.',
-        'A keyword only does work when it matches the type it is attached to. Numeric keywords on a string are decoration.'
+        'Two questions, not one. Does it taste balanced on a bitter leaf, and is there anything in the bowl that will still be holding the oil in ten minutes.',
+        'Whisking adds energy, it does not add an emulsifier. Ask what is physically sitting between the oil and the vinegar in each of the four.'
       ]
     }
   },
 
-  'json-schema-primer': {
-    id: 'json-schema-primer',
+  'ratios-primer': {
+    id: 'ratios-primer',
     version: '1.0.0',
-    title: 'JSON Schema for tool inputs',
+    title: 'Cooking by ratio',
     type: 'lesson',
     minutes: 14,
     difficulty: 'introductory',
     grader: 'exposure',
     evidenceProduced: 'recognition',
-    outcomes: [{ concept: 'nema:json-schema', ability: 'recognize' }],
-    skipIf: [{ concept: 'nema:json-schema', ability: 'apply', status: 'uncertain' }],
-    includeReason: 'Included: your vault has no usable evidence for JSON Schema.',
-    skipReason: 'Skipped: your vault already has evidence for JSON Schema at this level.',
+    outcomes: [{ concept: 'nema:ratios', ability: 'recognize' }],
+    skipIf: [{ concept: 'nema:ratios', ability: 'apply', status: 'uncertain' }],
+    includeReason: 'Included: your vault has no usable evidence for ratios.',
+    skipReason: 'Skipped: your vault already has evidence for ratios at this level.',
     whatTheLearnerDoes: 'Reads three short sections and marks the lesson complete.',
     content: {
       intro:
-        'For an agent, the input schema is not documentation. It is the only thing standing between a confidently generated payload and your production database. Write it like a gate, because that is what it is.',
+        'A recipe is one instance. A ratio is the structure underneath a whole family of them, and it fits in your head. Learn six ratios and you stop reading recipes for permission and start reading them for ideas.',
       sections: [
         {
-          heading: 'A schema is a gate, not documentation',
+          heading: 'Ratios are by weight, and that is not pedantry',
           html:
-            '<p>Models read schemas and mostly respect them, which is exactly why a permissive schema is dangerous. The agent will produce something the schema allows, and everything the schema allows is what you promised to handle.</p>' +
-            '<p>Descriptions steer the model. Constraints stop the request. Do not use one where you need the other. A field described as "a positive number of copies" with no <code>minimum</code> is a suggestion, and suggestions do not survive contact with a retry loop.</p>'
+            '<p>A cup of flour is anywhere between 120 and 150 g depending on how it was scooped, which is a 25 percent error before you have done anything. Weight removes the argument. Put the bowl on the scale, tare, and work in grams.</p>' +
+            '<p>Volume survives in one place, dressings and marinades, where the parts are liquids of similar density and nobody wants to weigh 15 ml of vinegar. Everywhere else, weigh it.</p>' +
+            '<p>Ratios also travel. Once you know that a vinaigrette is 3 parts oil to 1 part acid, you can make 60 ml for two plates or 2 litres for a wedding without looking anything up, and you can swap sherry vinegar for lemon by tasting rather than by searching for another recipe.</p>'
         },
         {
-          heading: 'Constraints that actually reject',
+          heading: 'Six that earn their place at the stove',
           html:
-            '<p>The keywords that earn their place are the ones that turn a payload away.</p>' +
             '<ul>' +
-            '<li><code>type</code> plus <code>minimum</code>, <code>maximum</code> or <code>exclusiveMinimum</code> for numbers.</li>' +
-            '<li><code>enum</code> or <code>pattern</code> for strings that stand for a closed set.</li>' +
-            '<li><code>minItems</code>, <code>maxItems</code> and <code>uniqueItems</code> for arrays that feed a loop.</li>' +
+            '<li><b>Vinaigrette</b> 3 : 1 oil to acid, plus about 5 g of Dijon per 100 ml as the emulsifier.</li>' +
+            '<li><b>Roux</b> 1 : 1 flour to butter by weight. For a medium bechamel, 60 g flour plus 60 g butter per litre of milk.</li>' +
+            '<li><b>Seasoning</b> 1 percent salt by the weight of the food, so 10 g per kilogram. A wet brine runs 5 to 6 percent for 8 to 12 hours.</li>' +
+            '<li><b>Beurre blanc</b> roughly 1 part acid reduction to 4 parts butter: 60 ml of reduced wine and vinegar carries 225 g of butter.</li>' +
+            '<li><b>Mounted pan sauce</b> about 2 parts reduced liquid to 1 part cold butter: 120 ml of reduction takes 60 g, which sauces four plates.</li>' +
+            '<li><b>Baked custard</b> 1 whole egg, or 2 yolks, per 240 ml of dairy.</li>' +
             '</ul>' +
-            '<p>Keywords only apply to the type they belong to. <code>minimum</code> on a string is silently ignored, and a validator that ignores you is worse than no validator, because it looks green.</p>'
+            '<p>Notice that two of those six are emulsions with an explicit fat to liquid limit. That limit is not style, it is capacity: one egg yolk will hold about 240 ml of oil as mayonnaise and no more, and a reduction that is too thin cannot carry the butter you want to put in it.</p>'
         },
         {
-          heading: 'Close the object',
+          heading: 'A ratio is a starting point, the palate is the instrument',
           html:
-            '<p>Two lines do most of the work: <code>required</code> for the fields you truly need, and <code>additionalProperties: false</code> so an invented field is a validation error instead of a silent no-op.</p>' +
-            '<p>Then make the failure useful. Return the failing path, the constraint that failed and the value received. An agent that reads "copies: 0 violates minimum 1" fixes itself on the next turn. An agent that reads "400 Bad Request" tries the same payload again, slower.</p>' +
-            '<p>Two habits keep tool schemas honest as they grow. First, write the schema against the payloads you must refuse, not only the ones you expect: one accepted example and one rejected example per field, kept next to the schema as a test. Second, treat any field the model invents as a signal. If the agent keeps sending <code>pages</code> and your service wants <code>pageSize</code>, the fix is usually a clearer name, not a stricter regex. A schema is where the model and the service agree, and both sides get a vote.</p>'
+            '<p>Ratios assume standard ingredients, and your ingredients are not standard. A 7 percent vinegar, a bitter oil, a stock already reduced by a previous cook: each one moves the numbers. So mix by the ratio, then taste and adjust in one direction at a time.</p>' +
+            '<p>Know what each adjustment does. Salt raises perceived sweetness and suppresses bitterness, so a flat sauce is usually under salted rather than under flavoured. Acid cuts fat and makes a rich sauce readable, which is why a few drops of vinegar at the end of a butter sauce wakes the whole thing up. Fat rounds off sharp edges: if a dressing bites, add oil before you reach for sugar.</p>' +
+            '<p>Write down what you changed. A ratio you have adjusted twice for your own vinegar is worth more than the one in the book, and it is the only way the next service starts where this one ended.</p>'
         }
       ],
       keyPoints: [
-        'The schema is the enforcement boundary, the description is only guidance.',
-        'Prefer keywords that reject: type with minimum, enum, pattern, minItems.',
-        'A keyword attached to the wrong type is ignored, not applied.',
-        'required plus additionalProperties: false closes the object.',
-        'Validation errors are agent feedback: name the path, the constraint and the value.'
+        'Work in grams. A cup of flour varies by 25 percent, a ratio by weight does not.',
+        'Vinaigrette 3 : 1 oil to acid, roux 1 : 1 flour to butter, seasoning 1 percent salt by weight.',
+        'Beurre blanc is about 1 part reduction to 4 parts butter, a pan sauce about 2 parts reduction to 1 part butter.',
+        'Emulsions have a capacity: one yolk holds roughly 240 ml of oil, a thin reduction cannot carry much butter.',
+        'Mix by the ratio, then taste: salt for flatness, acid for richness, fat for sharpness.'
       ],
       exposureClaim: {
-        concept: 'nema:json-schema',
+        concept: 'nema:ratios',
         ability: 'recognize',
         evidenceType: 'recognition'
       }
     }
   },
 
-  'eval-anatomy': {
-    id: 'eval-anatomy',
+  'pan-sauce-anatomy': {
+    id: 'pan-sauce-anatomy',
     version: '1.0.0',
-    title: 'Anatomy of an agent eval',
+    title: 'Anatomy of a pan sauce',
     type: 'lesson',
     minutes: 4,
     difficulty: 'intermediate',
     grader: 'exposure',
     evidenceProduced: 'recognition',
-    outcomes: [{ concept: 'nema:agent-evals', ability: 'recognize' }],
+    outcomes: [{ concept: 'nema:pan-sauces', ability: 'recognize' }],
     skipIf: [],
     includeReason: 'Included: this is the core lesson of the unit.',
     skipReason: '',
     whatTheLearnerDoes: 'Reads three short sections and marks the lesson complete.',
     content: {
       intro:
-        'A unit test asks whether a function is correct. An agent eval asks whether a task got done. The second question needs different parts, and forgetting one of them is how teams end up with green dashboards and angry users.',
+        'A pan sauce is not a recipe, it is a sequence. Five moves, always in the same order, and each one exists because the move before it left something behind.',
       sections: [
         {
-          heading: 'Fixture, task, verifier',
+          heading: 'Five moves',
           html:
-            '<p>An agent eval has exactly three parts, and each one is a piece of engineering.</p>' +
-            '<ul>' +
-            '<li><b>Fixture.</b> A repository, database and service state you can restore byte for byte. If the fixture drifts, the eval measures the drift.</li>' +
-            '<li><b>Task.</b> The request in the words a user would use, not the diff you expect. The moment you specify the diff, you are testing obedience instead of outcome.</li>' +
-            '<li><b>Verifier.</b> A program that inspects the world after the run and decides. It calls the endpoint, queries the table, runs the migration. It does not read the agent report.</li>' +
-            '</ul>'
+            '<p><b>Fond.</b> The browned protein and sugars welded to the pan after a sear. That is the flavour, and it is currently stuck to metal.</p>' +
+            '<p><b>Deglaze.</b> Wine, stock or water dissolves the fond and lifts it back into the liquid.</p>' +
+            '<p><b>Reduce.</b> Water leaves, flavour and gelatin concentrate, viscosity climbs.</p>' +
+            '<p><b>Mount.</b> Cold butter goes in off the heat and turns a thin brown liquid into a glossy sauce.</p>' +
+            '<p><b>Adjust.</b> Salt and a few drops of acid, tasted on a spoon, not guessed.</p>'
         },
         {
-          heading: 'The verifier writes to the agent, not only to you',
+          heading: 'Why each move is where it is',
           html:
-            '<p>This is the part most harnesses miss. The verifier output is not a dashboard entry, it is the next message in the loop. When it says "POST /print with copies 0 returned 500, expected 400", the agent has something to act on and can self-correct inside the same run.</p>' +
-            '<p>A boolean cannot do that. Pass or fail tells the agent that it is wrong, and nothing about which wrong it is. Feedback quality is the single variable that separates an agent that recovers from one that thrashes.</p>'
+            '<p>Deglazing is a solubility trick: those browned compounds dissolve in water and alcohol, not in the fat sitting on top of them, which is why you pour off most of the fat first. Reduction comes before enrichment because butter added to a watery pan cannot thicken it and will only sit on the surface.</p>' +
+            '<p>Mounting is the part that fails. Butter is already an emulsion, roughly 80 percent fat, 16 percent water and 2 percent milk solids, and those milk solids and the lecithin in them are the emulsifier you are relying on. Cold butter goes in slowly enough that the fat disperses as droplets instead of pooling, and off the heat because above about 90 C the emulsion breaks and you get oil on a puddle.</p>'
         },
         {
-          heading: 'The acceptance gate',
+          heading: 'The numbers, for four plates',
           html:
-            '<p>The gate runs last and is the only thing allowed to say done. It checks the task eval, the scope of the diff and the state of the system: migrations applied, no files touched outside the declared scope, no unrelated service broken.</p>' +
-            '<p>Keep it deterministic and keep it out of the agent reach. The moment the agent can mark its own work accepted, you no longer have an eval. You have a self assessment with extra steps.</p>' +
-            '<p>The gate is also where you decide what done means for your team, so write it down as code rather than as a habit. Ours says: the task eval passes on a restored fixture, the diff stays inside the declared scope, no migration is left pending, and the run cost stayed inside budget. Every clause was added the day an incident taught us it was missing, which is the only sound reason to add one.</p>'
+            '<p>Pour off the rendered fat, leaving about one tablespoon. Over medium heat, sweat one finely minced shallot for 45 seconds until translucent, not brown. Add 80 ml of dry white wine and scrape every stuck spot loose with a wooden spoon while it bubbles, then let it reduce almost dry.</p>' +
+            '<p>Add 240 ml of brown chicken stock and simmer until it is down to about 120 ml, three to four minutes, and coats the back of a spoon. Pull the pan off the flame, wait until it stops simmering, then swirl in 60 g of cold cubed butter a few pieces at a time. Salt, then four or five drops of sherry vinegar or lemon. Hold it between 60 and 70 C. It will not survive a second boil.</p>'
         }
       ],
       keyPoints: [
-        'An eval is fixture, task and verifier. All three or it is not an eval.',
-        'State the task the way a user would, never as the diff you expect.',
-        'Verifier output is agent feedback first and a metric second.',
-        'The acceptance gate is deterministic, runs last, and the agent cannot touch it.'
+        'The sequence is fond, deglaze, reduce, mount, adjust, and it does not reorder.',
+        'Pour off most of the fat first: fond dissolves in the liquid, not in the fat.',
+        'Concentration before enrichment. Butter cannot thicken a watery pan.',
+        'Butter is about 80 percent fat, 16 percent water and 2 percent milk solids, and the solids are the emulsifier.',
+        'Mount off the heat and hold between 60 and 70 C. Above roughly 90 C the sauce splits.'
       ],
       exposureClaim: {
-        concept: 'nema:agent-evals',
+        concept: 'nema:pan-sauces',
         ability: 'recognize',
         evidenceType: 'recognition'
       }
     }
   },
 
-  'eval-design-lab': {
-    id: 'eval-design-lab',
+  'fix-the-broken-sauce': {
+    id: 'fix-the-broken-sauce',
     version: '1.0.0',
-    title: 'Fix the broken harness',
+    title: 'Fix the broken sauce',
     type: 'interactive-lab',
     minutes: 12,
     difficulty: 'intermediate',
     grader: 'deterministic',
     evidenceProduced: 'application',
     outcomes: [
-      { concept: 'nema:agent-evals', ability: 'apply' },
-      { concept: 'nema:feedback-loops', ability: 'discriminate' }
+      { concept: 'nema:pan-sauces', ability: 'apply' },
+      { concept: 'nema:emulsions', ability: 'discriminate' }
     ],
     skipIf: [],
     includeReason: 'Included: this lab is where the unit outcome is earned.',
     skipReason: '',
     whatTheLearnerDoes:
-      'Selects the checks to add to a broken harness and orders the three stages, then runs the harness again.',
+      'Selects the steps to put into the remake and orders the three stages, then tastes the sauce again.',
     content: {
       scenario: {
         html:
-          '<p>The print service team runs a coding agent on a real ticket: <i>make copies default to 1 and reject copies: 0</i>.</p>' +
-          '<p>The agent finishes in four minutes. The unit suite is green, 128 passed. The harness prints "acceptance: passed". Twenty minutes later the on-call engineer gets a page: submitting a job with <code>copies: 0</code> returns a 500, the billing invoice template has changed, and migration <code>004_print_defaults.sql</code> is sitting in the repository unapplied.</p>' +
-          '<p>Nothing lied. The harness was asked one question, it answered that question honestly, and that question had nothing to do with the ticket. Below is the harness. Pick the checks that close the gap, drop the ones that would make it worse, then order the stages.</p>'
+          '<p>Dinner for six. Six duck breasts are out of the pan and resting under foil, the potatoes are in, and the sauce is due on the plates in four minutes.</p>' +
+          '<p>The commis made it while you were carving. He left all the rendered fat in the pan, dropped 120 g of cold butter straight into the dry, ripping hot saute pan, poured the wine in after the butter, never scraped the fond, and then boiled the whole thing hard for four minutes to thicken it. It is sitting there as two layers: clear fat floating over a thin brown liquid.</p>' +
+          '<p>You have one pan, four minutes and the same ingredients. Choose the steps that go into the remake, leave out the ones that would break it again, and put the three stages in order.</p>'
       },
       brokenHarness: {
         json: {
-          name: 'print-service-agent-harness',
-          version: 3,
-          stages: [{ id: 'unit-tests', run: 'npm test -- --silent' }],
-          scope: { allow: ['src/print/**', 'migrations/**'], enforced: false },
-          verifier: { source: 'agent-final-message' },
-          migrations: { check: false },
-          acceptance: { requires: ['unit-tests'] }
+          service: 'Saturday dinner, six covers, duck breast',
+          pan: '28 cm stainless saute, heavy dark fond, still welded to the base',
+          fatLeftInPan: '60 ml of rendered duck fat, none poured off',
+          method: [
+            '120 g cold butter dropped into the dry pan straight off the sear',
+            '150 ml wine poured in after the butter, fond never scraped loose',
+            'no stock added, no reduction, about 300 ml of liquid in the pan',
+            'held at a rolling boil for four minutes to thicken it'
+          ],
+          burner: 'high, never lowered',
+          seasoning: { salt: 'none since the sear', acid: 'none' },
+          onThePass: 'broken: a fat layer floating over a thin brown liquid'
         }
       },
       beforeRun: [
-        '$ harness run --task "make copies default to 1 and reject copies: 0"',
-        '[agent] edited src/print/options.js',
-        '[agent] edited src/billing/invoice.js (outside declared scope, not enforced)',
-        '[agent] wrote migrations/004_print_defaults.sql (never applied)',
-        '[harness] stage unit-tests: 128 passed, 0 failed',
-        '[harness] acceptance: passed, verifier source agent-final-message',
-        '[production] POST /print {"copies":0} -> 500 Internal Server Error'
+        '19:42 [pass] six breasts resting, sauce called for in four minutes',
+        '19:43 [look] separated, a clear fat layer sitting over a thin brown liquid',
+        '19:43 [spoon] runs straight off the back of the spoon and leaves no coat at all',
+        '19:44 [taste] greasy film across the lip first, then a thin, watery finish',
+        '19:44 [taste] flat: no salt lift, no acid, and it still tastes of raw wine',
+        '19:45 [chef] sauce rejected, remake it before the mains go out'
       ],
       checks: [
         {
-          id: 'task-eval',
-          label: 'Task eval against the running service',
+          id: 'deglaze-the-fond',
+          label: 'Deglaze the fond with wine or stock',
           detail:
-            'Restore the fixture, run the agent on the ticket, then call POST /print with {"copies":0} and with {"copies":3,"pageSize":"A4"} and assert the status codes.',
+            'Pour off all but a tablespoon of the duck fat, put the pan back on medium heat, add 80 ml of dry white wine and scrape every brown spot off the base with a wooden spoon while it bubbles.',
           kind: 'required'
         },
         {
-          id: 'scope-diff',
-          label: 'Scope check on the diff',
+          id: 'reduce-by-half',
+          label: 'Reduce by half before any butter goes in',
           detail:
-            'Fail the run when the agent changes files outside the declared scope, and report every offending path back into the loop.',
+            'Add 240 ml of brown chicken stock and simmer it down to about 120 ml, until it coats the back of a spoon and a finger drawn through leaves a line. Concentration before enrichment.',
           kind: 'required'
         },
         {
-          id: 'migration-state',
-          label: 'Migration state assertion',
+          id: 'mount-cold-butter-off-heat',
+          label: 'Mount with cold butter off the heat',
           detail:
-            'Assert that no migration is pending after the run, so a file written but never applied cannot pass as finished work.',
+            'Take the pan off the flame, let it fall out of the simmer to roughly 80 C, then swirl in 60 g of cold cubed butter three or four pieces at a time until the sauce turns glossy and opaque.',
           kind: 'required'
         },
         {
-          id: 'retry-until-green',
-          label: 'Retry until the suite is green',
+          id: 'boil-after-mounting',
+          label: 'Bring it back to a rolling boil after mounting',
           detail:
-            'Re-run the agent up to ten times and accept the first attempt where the unit suite passes.',
+            'Once the butter is in and the sauce looks right, put it back over high heat and boil it hard for a minute to tighten it further.',
           kind: 'harmful'
         },
         {
-          id: 'agent-self-accept',
-          label: 'Trust the agent completion report',
+          id: 'butter-into-dry-hot-pan',
+          label: 'Add the butter to the dry ripping hot pan',
           detail:
-            'Let the agent mark the task accepted when its final message says the work is done.',
+            'Drop the cold butter into the empty pan straight off the sear, before any liquid goes in, and let the residual heat melt it down.',
           kind: 'harmful'
         },
         {
-          id: 'format-lint',
-          label: 'Formatter check on changed files',
-          detail: 'Run the formatter over the diff and fail on style drift.',
+          id: 'warm-the-plates',
+          label: 'Warm the plates in the low oven',
+          detail:
+            'Hold the six plates at about 60 C so the sauce does not chill on the way from the pass to the table.',
           kind: 'neutral'
         },
         {
-          id: 'step-timing',
-          label: 'Per step timing log',
-          detail: 'Record wall clock duration and token spend for every step of the loop.',
+          id: 'pass-through-chinois',
+          label: 'Pass the sauce through a chinois',
+          detail:
+            'Strain out the shallot and the loose fragments of fond for a cleaner sheen before the sauce goes on the plate.',
           kind: 'neutral'
         },
         {
-          id: 'coverage-badge',
-          label: 'Coverage badge in the README',
-          detail: 'Publish the unit test coverage percentage as a badge on every merge.',
+          id: 'log-the-timings',
+          label: 'Log the reduction time on the prep sheet',
+          detail:
+            'Write down how long the reduction took at this volume so the next service can start it earlier.',
           kind: 'neutral'
         }
       ],
       stages: [
-        { id: 'task-eval-stage', label: 'Task eval' },
-        { id: 'self-correction-loop', label: 'Self-correction loop' },
-        { id: 'acceptance-gate', label: 'Acceptance gate' }
+        { id: 'deglaze', label: 'Deglaze' },
+        { id: 'reduce', label: 'Reduce' },
+        { id: 'mount', label: 'Mount' }
       ],
       afterRun: [
-        '$ harness run --task "make copies default to 1 and reject copies: 0"',
-        '[harness] stage task-eval: POST /print {"copies":0} -> expected 400, got 500 [FAIL]',
-        '[harness] feedback to agent: schema allows copies: 0, migration 004 pending, 1 file outside scope',
-        '[agent] added minimum: 1 to copies, applied migration 004, reverted src/billing/invoice.js',
-        '[harness] stage task-eval: {"copies":0} -> 400, {"copies":3,"pageSize":"A4"} -> 201 [PASS]',
-        '[harness] scope check: 2 files, all inside declared scope [PASS], migrations: 0 pending [PASS]',
-        '[harness] acceptance gate: passed'
+        '19:51 [pan] fat poured off, shallot sweated 45 seconds, 80 ml wine in, fond scraped clean',
+        '19:53 [pan] wine reduced almost dry, 240 ml of brown chicken stock added',
+        '19:55 [pan] down to about 120 ml, off the flame, 60 g of cold butter swirled in four pieces',
+        '19:56 [look] glossy and opaque, one sauce instead of two layers',
+        '19:56 [spoon] coats the back of the spoon, a finger drawn through leaves a clean line',
+        '19:57 [taste] round and savoury, salt adjusted, four drops of sherry vinegar to lift it',
+        '19:58 [pass] held at 65 C for twelve minutes, still holds on the pass, mains away'
       ],
       hints: [
-        'The unit suite was never wrong. It answered a question nobody asked. What question does the ticket ask, and what would it take to answer it against the running service?',
-        'Two of these checks make the harness better at hiding a failure. Ask which of them lets a bad run end with a green result.',
-        'Feedback has to reach the agent before anything is allowed to say done, so the gate cannot run in the middle.'
+        'Nothing in that pan ever met an emulsifier, and nothing was ever concentrated. Ask what is going to hold the fat and the water together, and what has to happen before there is anything worth holding.',
+        'Two of these make it worse. Butter is itself an emulsion, roughly 80 percent fat, 16 percent water and 2 percent milk solids. Ask what a hot dry pan does to each of those three, and what a rolling boil does to the finished sauce.',
+        'Concentration comes before enrichment. A sauce that is still thin when the butter goes in is a sauce you will be tempted to boil, and boiling it is what broke the first one.'
       ],
       answerKey: {
-        requiredChecks: ['task-eval', 'scope-diff', 'migration-state'],
-        harmfulChecks: ['retry-until-green', 'agent-self-accept'],
-        stageOrder: ['task-eval-stage', 'self-correction-loop', 'acceptance-gate']
+        requiredChecks: ['deglaze-the-fond', 'reduce-by-half', 'mount-cold-butter-off-heat'],
+        harmfulChecks: ['boil-after-mounting', 'butter-into-dry-hot-pan'],
+        stageOrder: ['deglaze', 'reduce', 'mount']
       }
     }
   },
 
-  'eval-retrieval': {
-    id: 'eval-retrieval',
+  'explain-without-the-recipe': {
+    id: 'explain-without-the-recipe',
     version: '1.0.0',
-    title: 'Explain it without the diagram',
+    title: 'Explain it without the recipe',
     type: 'free-recall',
     minutes: 5,
     difficulty: 'intermediate',
     grader: 'provider-rubric',
     evidenceProduced: 'explanation',
-    outcomes: [{ concept: 'nema:agent-evals', ability: 'explain' }],
+    outcomes: [{ concept: 'nema:pan-sauces', ability: 'explain' }],
     skipIf: [],
-    includeReason: 'Included: retrieval is what makes the lab stick.',
+    includeReason: 'Included: saying it from memory is what makes the lab stick.',
     skipReason: '',
     whatTheLearnerDoes: 'Writes a short paragraph from memory, with the lesson closed.',
     content: {
       prompt:
-        'Close the lesson. In your own words, explain to a teammate why a green unit suite is not evidence that a coding agent finished its task, what an agent eval checks instead, and how the harness gets the agent to fix itself. Write at least 40 words and include one concrete failure you would expect to see.',
+        'Close the lesson. In your own words, explain to a commis what a pan sauce physically is, what holds it together, and why the last one split on the pass. Write at least 40 words and name the temperature you would hold it at.',
       rubric: [
         {
-          id: 'task-outcome',
+          id: 'emulsion-named',
           criterion:
-            'Says that an agent eval checks the end to end outcome of the real task rather than an internal unit.',
+            'Names the sauce as an emulsion of fat and water rather than a liquid that was simply thickened.',
           keywords: [
-            'end to end',
-            'end-to-end',
-            'task outcome',
-            'task level',
-            'task-level',
-            'real task',
-            'actual task',
-            'user task',
-            'outcome of the task',
-            'whole task',
-            'task was done',
-            'task got done',
-            'task was completed',
-            'task actually'
+            'emulsion',
+            'emulsif',
+            'emulsify',
+            'fat and water',
+            'water and fat',
+            'oil and water',
+            'water and oil',
+            'fat in the water',
+            'fat into the water'
           ]
         },
         {
-          id: 'unit-boundary',
+          id: 'what-holds-it',
           criterion:
-            'Contrasts unit level checks with task level evaluation, or names what the unit suite cannot see.',
+            'Says what physically holds it: the fat dispersed as droplets, kept apart by an emulsifier such as mustard or the milk solids in butter.',
           keywords: [
-            'unit test',
-            'unit-test',
-            'unit level',
-            'unit-level',
-            'unit suite',
-            'unit check',
-            'test suite',
-            'isolation',
-            'single function',
-            'individual function',
-            'per function'
+            'droplet',
+            'dispers',
+            'suspend',
+            'emulsifier',
+            'mustard',
+            'lecithin',
+            'milk solid',
+            'butter protein',
+            'casein',
+            'coalesc'
           ]
         },
         {
-          id: 'feedback-gate',
+          id: 'heat-window',
           criterion:
-            'Mentions verifier feedback reaching the agent, or an acceptance gate that decides instead of the agent.',
+            'Names heat as what breaks it, or gives the temperature window where a butter emulsion holds.',
           keywords: [
-            'verif',
-            'feedback',
-            'self-correct',
-            'self correct',
-            'self correction',
-            'corrects itself',
-            'fix itself',
-            'fixes itself',
-            'acceptance',
-            'accepts the run',
-            'gate'
+            'temperature',
+            'heat',
+            'too hot',
+            'boil',
+            'simmer',
+            'degrees',
+            '85',
+            '90',
+            '65'
           ]
         }
       ],
@@ -629,27 +634,27 @@ export const MANIFEST = {
   protocol: 'nema/0.1',
   provider: {
     origin: PROVIDER_ORIGIN,
-    name: 'Harness Engineering Lab',
-    keyId: 'harness-2026-09'
+    name: 'Saucier School',
+    keyId: 'saucier-2026-09'
   },
   unit: {
-    id: 'agent-evals-foundations',
+    id: 'pan-sauces-foundations',
     version: '1.0.0',
-    title: 'Designing Agent Evals',
+    title: 'Pan Sauces and Emulsions',
     estimatedMinutes: FULL_MINUTES,
     language: 'en',
     price: 'free'
   },
   outcomes: [
-    { concept: 'nema:agent-evals', ability: 'apply' },
-    { concept: 'nema:agent-evals', ability: 'explain' },
-    { concept: 'nema:feedback-loops', ability: 'discriminate' },
-    { concept: 'nema:json-schema', ability: 'apply' }
+    { concept: 'nema:pan-sauces', ability: 'apply' },
+    { concept: 'nema:pan-sauces', ability: 'explain' },
+    { concept: 'nema:emulsions', ability: 'discriminate' },
+    { concept: 'nema:ratios', ability: 'apply' }
   ],
   requirements: [
-    { concept: 'nema:software-testing', ability: 'apply' },
-    { concept: 'nema:agent-loop', ability: 'explain' },
-    { concept: 'nema:json-schema', ability: 'apply' }
+    { concept: 'nema:knife-skills', ability: 'apply' },
+    { concept: 'nema:heat-control', ability: 'explain' },
+    { concept: 'nema:ratios', ability: 'apply' }
   ],
   activities: ACTIVITY_LIST.map((a) => {
     const entry = {
@@ -806,10 +811,10 @@ function uniqueStrings(value) {
 
 /**
  * Keywords are stems, not whole words: the match is anchored at a word
- * boundary on the left and left open on the right, so 'unit test' also
- * matches "unit tests" and "unit testing", and 'verif' matches "verifier",
- * "verify" and "verification". Anchoring on the left is what keeps
- * "unittests" and "taskoutcomes" from counting.
+ * boundary on the left and left open on the right, so 'droplet' also matches
+ * "droplets", and 'emulsif' matches "emulsifier", "emulsify" and "emulsified".
+ * Anchoring on the left is what keeps "preheat" and "nonemulsified" from
+ * counting.
  */
 function keywordHit(text, keyword) {
   const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -831,7 +836,7 @@ function gradeLesson(activity, submission) {
     result: 'passed',
     score: 1,
     feedback: [
-      'Lesson complete. This produces an exposure receipt, the weakest kind of evidence: it records that you read the material, not that you can use it.'
+      'Lesson complete. This produces an exposure receipt, the weakest kind of evidence: it records that you read the material, not that you can cook it.'
     ],
     claims: [
       claim(exposure.concept, exposure.ability, exposure.evidenceType, 'passed', activity.difficulty)
@@ -848,7 +853,7 @@ function gradeDiagnostic(activity, submission) {
     return {
       result: 'failed',
       score: 0,
-      feedback: ['Pick one of the four schemas.'],
+      feedback: ['Pick one of the four vinaigrettes.'],
       claims: []
     };
   }
@@ -857,7 +862,7 @@ function gradeDiagnostic(activity, submission) {
     return {
       result: 'failed',
       score: 0,
-      feedback: [chosen.whyWrong, 'Read the two payloads again and try once more.'],
+      feedback: [chosen.whyWrong, 'Read the four builds again with the pass in mind and try once more.'],
       claims: []
     };
   }
@@ -868,7 +873,7 @@ function gradeDiagnostic(activity, submission) {
     result: 'passed',
     score: 1,
     feedback: [activity.content.explanation],
-    claims: [claim('nema:json-schema', 'apply', 'application', 'passed', activity.difficulty)]
+    claims: [claim('nema:ratios', 'apply', 'application', 'passed', activity.difficulty)]
   };
 }
 
@@ -894,32 +899,32 @@ function gradeLab(activity, submission) {
 
   if (allRequired && noHarmful && orderOk) {
     feedback.push(
-      'The harness now answers the question the ticket asked. The task eval calls the real endpoint, the scope check catches the billing file, and the migration assertion refuses to call an unapplied migration finished work.'
+      'That is a sauce. The fond is back in the liquid instead of welded to the pan, 240 ml of stock is down to about 120, and cold butter off the heat has taken it glossy and opaque.'
     );
     feedback.push(
-      'Order matters as much as content: the verifier feedback reaches the agent first, so the agent repairs its own work, and only then does the gate decide.'
+      'The order carries as much weight as the steps: deglaze while there is fond to lift, reduce while there is still water to lose, mount last and below a simmer, because the butter emulsion is the one part of this that a boil can undo.'
     );
     return {
       result: 'passed',
       score: 1,
       feedback,
       claims: [
-        claim('nema:agent-evals', 'apply', 'application', 'passed', activity.difficulty),
-        claim('nema:feedback-loops', 'discriminate', 'discrimination', 'passed', activity.difficulty)
+        claim('nema:pan-sauces', 'apply', 'application', 'passed', activity.difficulty),
+        claim('nema:emulsions', 'discriminate', 'discrimination', 'passed', activity.difficulty)
       ]
     };
   }
 
   if (allRequired && noHarmful) {
-    feedback.push('The three checks are right. The stages are not in a workable order.');
+    feedback.push('The three steps are right. The stages are not in a workable order.');
     feedback.push(
-      'A gate that runs before the feedback reaches the agent decides on a run the agent never had the chance to repair.'
+      'Butter that goes in before the reduction has nothing concentrated to emulsify into, and a pan deglazed after the sauce is mounted is a butter sauce with the flavour left on the metal.'
     );
     return {
       result: 'partial',
       score: 0.7,
       feedback,
-      claims: [claim('nema:agent-evals', 'apply', 'application', 'partial', activity.difficulty)]
+      claims: [claim('nema:pan-sauces', 'apply', 'application', 'partial', activity.difficulty)]
     };
   }
 
@@ -927,17 +932,17 @@ function gradeLab(activity, submission) {
     const missing = answerKey.requiredChecks.length - requiredHit.length;
     feedback.push(
       missing === 1
-        ? 'One necessary check is still missing. Walk the incident again: which of the three symptoms is nothing in the harness watching for.'
-        : missing + ' necessary checks are still missing. Walk the incident again, symptom by symptom.'
+        ? 'One necessary step is still missing. Taste the notes again: which of the faults, greasy, thin or flat, is nothing in your remake addressing.'
+        : missing + ' necessary steps are still missing. Walk the tasting notes again, fault by fault.'
     );
   }
   if (!noHarmful) {
     feedback.push(
-      'At least one selected check makes the harness better at hiding a failure rather than finding one. Remove anything that lets a bad run end green.'
+      'At least one selected step is what breaks a sauce rather than what fixes it. Take out anything that puts butter into a dry hot pan or takes a mounted sauce back to a boil.'
     );
   }
   if (!orderOk) {
-    feedback.push('The three stages also need an order that lets the agent act on feedback before the gate decides.');
+    feedback.push('The three stages also need the order that lets each one leave something for the next.');
   }
 
   const score = round2(
@@ -1003,7 +1008,7 @@ function gradeFreeRecall(activity, submission) {
     claims:
       result === 'failed'
         ? []
-        : [claim('nema:agent-evals', 'explain', 'explanation', result, activity.difficulty)]
+        : [claim('nema:pan-sauces', 'explain', 'explanation', result, activity.difficulty)]
   };
 }
 

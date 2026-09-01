@@ -52,7 +52,7 @@ pseudonym. If the client does not support elicitation the request comes back
 `denied` with a hint, and the learner pre-approves a site from a shell:
 
 ```sh
-nema-mcp approve https://nema-harness.migarci2.dev --hours 1
+nema-mcp approve https://saucier.migarci2.dev --hours 1
 ```
 
 The agent cannot run that for the learner from inside a tool call.

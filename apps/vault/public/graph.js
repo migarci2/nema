@@ -1,25 +1,25 @@
 /* nema vault: the learning graph.
  *
  * A deterministic SVG. Concepts are square nodes coloured by their best band,
- * laid out in columns by prerequisite depth and connected by thin orthogonal
- * edges. No physics, no layout randomness, no animation beyond the 150 ms
- * colour transition that brand.css puts on every node. Given the same registry
- * and the same state it draws exactly the same picture, every time.
+ * laid out in columns by prerequisite depth and joined by thin curves. No
+ * physics, no layout randomness, no animation beyond the 150 ms colour
+ * transition that brand.css puts on every node. Given the same registry and
+ * the same state it draws exactly the same picture, every time.
  *
- * Labels sit centred under their node and every edge turns in the gap between
- * two label columns, so a line never crosses a word.
+ * Labels sit centred under their node, and edges are drawn under both, with a
+ * navy halo on the text so a line never runs through a word.
  */
 
 import { bestBand } from '/shared/inference.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-const NODE = 15;          /* node square, in viewBox units */
-const COL_W = 210;        /* horizontal pitch between depth columns */
-const ROW_H = 44;         /* vertical pitch between nodes in a column */
-const PAD_X = 100;        /* room for the widest label on the outer columns */
-const PAD_Y = 22;
-const LABEL_DY = 19;      /* label baseline below the node centre */
+const NODE = 11;          /* node square, in viewBox units */
+const COL_W = 200;        /* horizontal pitch between depth columns */
+const ROW_H = 28;         /* vertical pitch between nodes in a column */
+const PAD_X = 96;         /* room for the widest label on the outer columns */
+const PAD_Y = 14;
+const LABEL_DY = 13;      /* label baseline below the node centre */
 
 /**
  * Prerequisite depth for every concept: 0 for a root, otherwise one more than
@@ -101,8 +101,10 @@ export function renderGraph(container, { concepts, state, onSelect } = {}) {
   depthKeys.forEach((depth, columnIndex) => {
     const list = columns.get(depth);
     /* Centre short columns against the tallest one, so the drawing reads as a
-     * ladder rather than a ragged left edge. */
-    const offset = (rows - list.length) / 2;
+     * ladder rather than a ragged left edge. The offset is whole rows: half a
+     * row would put every long horizontal edge exactly on a label baseline in
+     * the columns it passes through. */
+    const offset = Math.round((rows - list.length) / 2);
     list.forEach((entry, rowIndex) => {
       layout.set(entry.id, {
         x: PAD_X + columnIndex * COL_W,
@@ -134,19 +136,17 @@ export function renderGraph(container, { concepts, state, onSelect } = {}) {
     for (const prereq of Array.isArray(entry.prereqs) ? entry.prereqs : []) {
       const from = layout.get(prereq);
       if (!from) continue;
-      /* Orthogonal elbow: out of the source, turn in the channel that runs
-       * between the source column and the next one, then straight into the
-       * target. The channel is always the gap right after the source, never
-       * the middle of a long span, so a turn can never land on a column of
-       * nodes. Each row nudges its own turn a little, so parallel edges stay
-       * readable instead of collapsing onto one line. */
-      const row = Math.round((to.y - PAD_Y) / ROW_H);
-      const turn = from.x + COL_W / 2 + ((row % 5) - 2) * 6;
+      /* A curve out of the source and into the target, both tangents
+       * horizontal. Orthogonal elbows drew long straight runs along the row
+       * grid, which turned the whole picture into a stack of nested boxes and
+       * laid a rule across the labels they passed. A curve leaves the row as
+       * soon as it starts, so it crosses a word at an angle instead. */
       const startX = from.x + NODE / 2 + 1;
       const endX = to.x - NODE / 2 - 1;
+      const bend = Math.max(28, (endX - startX) * 0.45);
       const line = el('path', {
         class: 'n-graph__edge',
-        d: `M ${startX} ${from.y} H ${turn.toFixed(1)} V ${to.y} H ${endX}`
+        d: `M ${startX} ${from.y} C ${(startX + bend).toFixed(1)} ${from.y}, ${(endX - bend).toFixed(1)} ${to.y}, ${endX} ${to.y}`
       });
       edgeLayer.appendChild(line);
       rememberEdge(entry.id, line);

@@ -27,17 +27,16 @@
   <header data-nema-header></header>
 
   <nav class="site-nav" aria-label="nema hub pages">
-    <a class="site-nav__link" href="/"><span class="site-nav__index">01</span> Hub</a>
-    <a class="site-nav__link" href="/judges.html" aria-current="page"><span class="site-nav__index">02</span> Judge guide</a>
-    <a class="site-nav__link" href="/protocol.html"><span class="site-nav__index">03</span> Protocol</a>
-    <a class="site-nav__link" href="/philosophy.html"><span class="site-nav__index">04</span> Philosophy</a>
-    <a class="site-nav__link" href="/brand.html"><span class="site-nav__index">05</span> Brand board</a>
+    <a class="site-nav__link" href="/">Hub</a>
+    <a class="site-nav__link" href="/judges.html" aria-current="page">Judge guide</a>
+    <a class="site-nav__link" href="/protocol.html">Protocol</a>
+    <a class="site-nav__link" href="/philosophy.html">Philosophy</a>
+    <a class="site-nav__link" href="/brand.html">Brand board</a>
   </nav>
 
   <main class="n-app__main site-main" id="main">
 
     <article class="doc doc--wide">
-      <p class="doc__kicker">docs / judge guide</p>
       <h1 class="doc__title">Judge guide</h1>
       <p>Three minutes to see the whole thing. Sixty seconds if you are behind schedule.</p>
       <blockquote class="quote">
@@ -460,63 +459,55 @@
       </p>
     </article>
 
-    <!-- tools dock ------------------------------------------------- -->
+    <!-- tools on this page ------------------------------------------ -->
     <section class="section" aria-labelledby="dock-title">
       <div class="section__head">
-        <span class="section__index">08</span>
         <h2 class="section__title" id="dock-title">Tools on this page</h2>
-        <span class="section__hint">explain_nema and open_app</span>
       </div>
 
-      <div class="n-panel">
-        <h3 class="n-panel__label">Ask this page, or jump to an app</h3>
-        <div class="n-panel__body dock__grid">
-          <div class="stack">
-            <p class="n-help">
-              Pick a topic, or ask an agent to call <span class="mono">explain_nema</span>. Both go through
-              <span class="mono">document.modelContext.executeTool</span>.
-            </p>
-            <div class="topics">
-              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="overview" aria-pressed="false">overview</button>
-              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="protocol" aria-pressed="false">protocol</button>
-              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="privacy" aria-pressed="false">privacy</button>
-              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="vault" aria-pressed="false">vault</button>
-              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="providers" aria-pressed="false">providers</button>
-              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="judges" aria-pressed="false">judges</button>
-            </div>
-            <div class="explain-out" data-explain-out data-state="empty" role="status" aria-live="polite">
-              <span class="explain-out__head" data-explain-head>explain_nema, no topic yet</span>
-              <p class="explain-out__text" data-explain-text>
-                The answer prints here, and the call appears in the tool activity strip with its duration.
-              </p>
-            </div>
+      <div class="dock__grid">
+        <div class="ask">
+          <p class="minor">Ask this page, or have an agent call <span class="mono">explain_nema</span>.</p>
+          <div class="topics">
+            <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="overview" aria-pressed="false">overview</button>
+            <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="protocol" aria-pressed="false">protocol</button>
+            <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="privacy" aria-pressed="false">privacy</button>
+            <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="vault" aria-pressed="false">vault</button>
+            <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="providers" aria-pressed="false">providers</button>
+            <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="judges" aria-pressed="false">judges</button>
           </div>
-
-          <div class="stack">
-            <form class="open-app" id="open-app" toolname="open_app"
-                  tooldescription="Open one of the nema apps in this tab. Navigates this page to the app the learner picked and returns the app key and the URL."
-                  toolautosubmit>
-              <div class="n-field">
-                <label class="n-label" for="open-app-select">Open an app</label>
-                <select class="n-select" id="open-app-select" name="app" required
-                        toolparamdescription="Which nema app to open: coach, vault, harness, security or site.">
-                  <option value="coach">Coach, the nema agent</option>
-                  <option value="vault">Vault</option>
-                  <option value="harness">Harness Lab</option>
-                  <option value="security">Agent Security</option>
-                  <option value="site">Hub</option>
-                </select>
-              </div>
-              <button class="n-btn n-btn--primary" type="submit">Open</button>
-            </form>
-            <p class="n-help" data-open-status role="status" aria-live="polite">
-              The declarative half of this page's WebMCP surface. A person uses it as a form, an agent calls
-              it as open_app.
-            </p>
-            <span class="activity-strip__head">tool activity, last 8 calls</span>
-            <div data-activity></div>
+          <div class="explain-out" data-explain-out data-state="empty" role="status" aria-live="polite">
+            <span class="explain-out__head" data-explain-head>explain_nema</span>
+            <p class="explain-out__text" data-explain-text>Pick a topic and the answer prints here.</p>
           </div>
         </div>
+
+        <div class="ask">
+          <form class="open-app" id="open-app" toolname="open_app"
+                tooldescription="Open one of the nema apps in this tab. Navigates this page to the app the learner picked and returns the app key and the URL."
+                toolautosubmit>
+            <div class="n-field">
+              <label class="n-label" for="open-app-select">Open an app</label>
+              <select class="n-select" id="open-app-select" name="app" required
+                      toolparamdescription="Which nema app to open: coach, vault, harness, security or site.">
+                <option value="coach">Coach, the nema agent</option>
+                <option value="vault">Vault</option>
+                <option value="harness">Saucier School</option>
+                <option value="security">Line Cook Lab</option>
+                <option value="site">Hub</option>
+              </select>
+            </div>
+            <button class="n-btn n-btn--primary" type="submit">Open</button>
+          </form>
+          <p class="n-help" data-open-status role="status" aria-live="polite">
+            A form for a person, the open_app tool for an agent. Either way this tab navigates.
+          </p>
+        </div>
+      </div>
+
+      <div class="feed">
+        <span class="activity-strip__head">Tool activity</span>
+        <div data-activity></div>
       </div>
     </section>
 

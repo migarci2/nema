@@ -20,7 +20,7 @@ try {
   ok(empty.status === 'ok' && empty.receipts === 0, 'empty vault summary: ' + JSON.stringify(empty).slice(0, 120));
   await page.evaluate(`document.querySelector('[data-action="load-demo"]').click(); new Promise(r => setTimeout(r, 3000))`);
   const sum = parse(await page.evaluate(tool('get_vault_summary', {})));
-  ok(sum.receipts >= 60 && sum.fragile === 7 && sum.reviewsDue === 4 && (sum.durable + sum.usable) === 18, `demo summary: receipts ${sum.receipts} durable ${sum.durable} usable ${sum.usable} fragile ${sum.fragile} due ${sum.reviewsDue}`);
+  ok(sum.receipts >= 40 && sum.fragile === 7 && sum.reviewsDue === 4 && (sum.durable + sum.usable) === 18, `demo summary: receipts ${sum.receipts} durable ${sum.durable} usable ${sum.usable} fragile ${sum.fragile} due ${sum.reviewsDue}`);
   const state = parse(await page.evaluate(tool('get_learner_state', { concepts: ['nema:ratios', 'nema:pan-sauces', 'nema:knife-skills'] })));
   const band = c => state.state.find(x => x.concept === c)?.bands;
   ok(band('nema:ratios')?.apply === 'uncertain' && (band('nema:pan-sauces')?.apply || 'unknown') === 'unknown', `bands: ratios.apply=${band('nema:ratios')?.apply} pan-sauces.apply=${band('nema:pan-sauces')?.apply} knife-skills.apply=${band('nema:knife-skills')?.apply}`);

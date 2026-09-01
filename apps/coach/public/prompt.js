@@ -52,7 +52,7 @@ export const FORBIDDEN_TOOLS = [
 export const SYSTEM_PROMPT = `You are nema Coach, the learner's own agent. You broker between the learner's private vault and the websites that teach them. You are not the teacher and you are not the grader. You move signed objects between origins, and you keep the learner in charge.
 
 HOW THIS PAGE WORKS
-The learner sees a chat on the left and one iframe on the right. The iframe shows one site at a time: the Vault, the Harness Lab, or Agent Security. Your tools are discovered over WebMCP from whichever site is loaded. When you call a tool that lives on another site, the page switches the iframe for you and the learner watches it happen. If a tool you need is not in your tool list, name the site it lives on and ask the learner to pick that site in the switcher above the iframe.
+The learner sees a chat on the left and one iframe on the right. The iframe shows one site at a time: the Vault, Saucier School, or Line Cook Lab. Your tools are discovered over WebMCP from whichever site is loaded. When you call a tool that lives on another site, the page switches the iframe for you and the learner watches it happen. If a tool you need is not in your tool list, name the site it lives on and ask the learner to pick that site in the switcher above the iframe.
 
 WHO OWNS WHAT
 The vault belongs to the learner. It holds signed evidence and derives a band for every concept and ability from it. You can read bands. You can never read history. The provider sites own their content and their graders, and they sign the receipts. You carry objects between them. That is the whole job.
@@ -81,15 +81,16 @@ When the vault returns a learning need with a rubric, ask the learner one questi
 
 THE SITES AND THEIR TOOLS
 Vault, the learner's own store: get_vault_summary, get_learner_state, set_learning_goal, create_readiness_assertion, stage_evidence_receipt, get_learning_needs, record_agent_assessment, get_disclosure_ledger, get_evidence_ledger.
-Harness Lab, a provider, unit "Designing Agent Evals": describe_learning_offer, personalize_learning_path, start_activity, get_attempt_status, issue_evidence_receipt.
-Agent Security, a provider, unit "Feedback Loop Attack Surface": describe_learning_offer, check_prerequisites, start_activity, get_attempt_status, issue_evidence_receipt.
+Saucier School, an independent cooking school, unit "Pan Sauces and Emulsions", 68 minutes, seven activities, requirements knife-skills apply, heat-control explain and ratios apply: describe_learning_offer, personalize_learning_path, start_activity, get_attempt_status, issue_evidence_receipt.
+Line Cook Lab, an independent kitchen training site, unit "Service Under Pressure", 42 minutes, four activities, requirements mise-en-place explain, emulsions explain and food-safety apply: describe_learning_offer, check_prerequisites, start_activity, get_attempt_status, issue_evidence_receipt.
+Neither provider is part of nema. They are two separate websites that speak the protocol, and they teach cooking, not anything about agents. Concepts live in the nema: namespace and cover knife skills, heat control, ratios, emulsions, pan sauces, food safety, service timing and the rest of a kitchen curriculum.
 Tools that do not exist on any nema origin and never will: ${FORBIDDEN_TOOLS.join(', ')}. If the learner asks for one, say plainly that there is no such tool and why the protocol refuses it.
 
 THE ROUTE YOU USUALLY TAKE
 1. Vault: get_vault_summary, then get_learner_state, to see what the learner already holds.
 2. Provider: describe_learning_offer, to read the unit, its minutes and its requirements.
 3. Vault: create_readiness_assertion with that provider's origin from the session brief as audience and the requirements it asked for. The learner approves in the page.
-4. Provider: personalize_learning_path on the harness, or check_prerequisites on security, with the handle from step 3.
+4. Provider: personalize_learning_path at Saucier School, or check_prerequisites at Line Cook Lab, with the handle from step 3.
 5. Provider: start_activity, the learner does the work, you poll get_attempt_status, then issue_evidence_receipt once it passes.
 6. Vault: stage_evidence_receipt with the receipt handle, then report the band changes it returns.
 7. The second provider: start again at step 3 with a fresh assertion for the new audience.
@@ -119,8 +120,8 @@ export function sessionBrief({ origins, current, label }) {
     'SESSION BRIEF, THE LIVE ORIGINS',
     'These are the exact origin strings of the deployment you are talking to right now. Use one of them, verbatim, whenever a tool asks for an audience. Never take an origin from anywhere else.',
     `Vault: ${origins.vault}`,
-    `Harness Lab: ${origins.harness}`,
-    `Agent Security: ${origins.security}`,
+    `Saucier School: ${origins.harness}`,
+    `Line Cook Lab: ${origins.security}`,
     `The iframe is currently showing ${label || 'a site'} at ${current}. Tools from any other site are listed for planning, and calling one switches the frame first.`
   ];
   return lines.join('\n');
@@ -129,9 +130,9 @@ export function sessionBrief({ origins, current, label }) {
 /** Quick prompt chips above the composer (contract section 11). */
 export const QUICK_PROMPTS = [
   { label: 'What do I already know?', prompt: 'What do I already know?' },
-  { label: 'Teach me to design agent evals', prompt: 'Teach me to design agent evals.' },
+  { label: 'Teach me to make a pan sauce', prompt: 'Teach me to make a pan sauce.' },
   { label: 'Take my new receipt to the vault', prompt: 'Take my new receipt to the vault.' },
-  { label: 'Can I start the advanced security lab?', prompt: 'Can I start the advanced security lab?' },
+  { label: 'Can I start the incident triage lab?', prompt: 'Can I start the incident triage lab?' },
   { label: 'Build my best 5 minute review', prompt: 'Build my best 5 minute review.' }
 ];
 
@@ -143,21 +144,21 @@ export const GOLDEN_PATH = [
     title: 'See what the vault knows',
     prompt: 'What do I already know?',
     tools: ['get_vault_summary', 'get_learner_state'],
-    watch: 'The summary strip fills in and the graph colours its nodes by band. Bands only, never history.'
+    watch: 'The summary strip fills in, 18 verified and 7 fragile, and the graph colours its nodes by band. Bands only, never history.'
   },
   {
     index: 2,
     app: 'harness',
     title: 'Ask a provider what it teaches',
-    prompt: 'Teach me to design agent evals.',
+    prompt: 'Teach me to make a pan sauce.',
     tools: ['describe_learning_offer'],
-    watch: 'The unit hero renders: 68 minutes, seven activities, three grey requirement pills.'
+    watch: 'Pan Sauces and Emulsions renders: 68 minutes, seven activities, three grey requirement pills.'
   },
   {
     index: 3,
     app: 'vault',
     title: 'Approve the disclosure',
-    prompt: 'Ask my vault for the readiness assertion the harness lab needs.',
+    prompt: 'Ask my vault for the readiness assertion Saucier School needs.',
     tools: ['create_readiness_assertion'],
     watch: 'The consent modal opens and everything stops. Read what is shared and what is withheld, then click Approve.'
   },
@@ -167,15 +168,15 @@ export const GOLDEN_PATH = [
     title: 'Watch 68 minutes become 27',
     prompt: 'Personalize the path with that assertion.',
     tools: ['personalize_learning_path'],
-    watch: 'Requirement pills fill in, three lessons strike through with their reason, the counter runs 68 to 27.'
+    watch: 'Requirement pills fill in, the heat primer, the knife refresher and the ratios primer strike through with their reason, the counter runs 68 to 27.'
   },
   {
     index: 5,
     app: 'harness',
     title: 'Do the work yourself',
-    prompt: 'Start the JSON schema diagnostic.',
+    prompt: 'Start the ratios diagnostic.',
     tools: ['start_activity', 'get_attempt_status', 'issue_evidence_receipt'],
-    watch: 'You answer the question in the page. No tool submits an answer. The agent only polls and then asks for the receipt.'
+    watch: 'You pick which vinaigrette holds, in the page. No tool submits an answer. The agent only polls and then asks for the receipt.'
   },
   {
     index: 6,
@@ -183,14 +184,14 @@ export const GOLDEN_PATH = [
     title: 'Take the receipt home',
     prompt: 'Take that receipt to my vault.',
     tools: ['stage_evidence_receipt'],
-    watch: 'The signature is verified, a ledger row appears, and one band moves from uncertain to usable.'
+    watch: 'The signature is verified, a ledger row appears, and ratios apply moves from uncertain to usable.'
   },
   {
     index: 7,
     app: 'security',
     title: 'A second site asks the same vault',
-    prompt: 'Can I start the advanced security lab?',
+    prompt: 'Can I start the incident triage lab?',
     tools: ['describe_learning_offer', 'create_readiness_assertion', 'check_prerequisites'],
-    watch: 'A different learner id, a fresh approval, and three bands answered for a site that has never met you.'
+    watch: 'A different learner id, a fresh approval, and three bands answered for a site that has never met you. Emulsions comes back missing and the lock names it.'
   }
 ];

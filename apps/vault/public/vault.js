@@ -174,7 +174,7 @@ export function conceptTitle(id) {
   return entry ? entry.title : shortConcept(id);
 }
 
-/** `nema:agent-evals` reads as `agent-evals` in dense rows and effect text. */
+/** `nema:pan-sauces` reads as `agent-evals` in dense rows and effect text. */
 export function shortConcept(id) {
   return String(id || '').replace(/^nema:/, '');
 }

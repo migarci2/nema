@@ -517,7 +517,7 @@ function renderReceipt() {
   /* Left: the token itself, and the one link that matters. */
   const left = el('div', 'stack');
   const box = el('div', 'n-token');
-  const boxHead = el('span', 'n-token__head', 'Evidence receipt');
+  const boxHead = el('span', 'n-token__head', 'Signed token');
   boxHead.append(el('span', 'n-pill n-pill--durable', 'signed'));
   const copy = el('button', 'n-btn n-btn--sm n-btn--mono', 'Copy');
   copy.type = 'button';
@@ -738,7 +738,7 @@ async function requestReceipt(activityId) {
   renderStagePanel();
   flash(dom.receiptPanel);
   scrollToPanel(dom.receiptPanel);
-  toast('Receipt signed by the Harness Engineering Lab. Take it to your vault.', 'ok');
+  toast(`Receipt signed by ${MANIFEST.provider.name}. Take it to your vault.`, 'ok');
   return { status: 'issued', token: body.token, payload: body.payload, repeat: false };
 }
 
@@ -802,7 +802,7 @@ function resetLab() {
 
 /* ----------------------------------------------------------------- boot -- */
 
-injectHeader({ app: 'harness', title: 'Harness Lab' });
+injectHeader({ app: 'harness', title: MANIFEST.provider.name });
 injectFooter({ note: 'Provider. Signs evidence receipts, never writes to your vault.' });
 mountActivityStrip(dom.strip);
 

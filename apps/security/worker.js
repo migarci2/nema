@@ -1,5 +1,5 @@
 /**
- * nema provider worker: Agent Security.
+ * nema provider worker: Line Cook Lab.
  *
  * Two endpoints in front of the static assets (contract section 10):
  *

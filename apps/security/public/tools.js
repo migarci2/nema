@@ -1,5 +1,5 @@
 /**
- * nema WebMCP tools: Agent Security provider (contract section 10).
+ * nema WebMCP tools: Line Cook Lab provider (contract section 10).
  *
  * Five tools, registered through the shared helper so every call is normalized,
  * broadcast on `nema:toolcall` and drawn in the activity strip. The controller
@@ -22,7 +22,7 @@ const ACTIVITY_INPUT = {
     activityId: {
       type: 'string',
       description:
-        'Activity id from the manifest: tool-calling-intro, threat-modeling-intro, feedback-loop-attack-surface or injection-triage-advanced.'
+        'Activity id from the manifest: mise-en-place-intro, food-safety-intro, service-log-audit or incident-triage.'
     }
   },
   required: ['activityId'],

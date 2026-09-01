@@ -4,45 +4,45 @@
   "now": "2026-09-01T12:00:00Z",
   "goals": [
     {
-      "goalId": "goal_trusted_agent",
-      "title": "Ship an agent I can trust in production",
+      "goalId": "goal_service_ready",
+      "title": "Hold every sauce through a full service",
       "concepts": [
-        "nema:agent-evals",
-        "nema:feedback-loops",
-        "nema:prompt-injection"
+        "nema:emulsions",
+        "nema:seasoning",
+        "nema:allergen-handling"
       ],
       "createdAt": "2026-08-20T09:00:00Z"
     }
   ],
   "misconceptions": [
     {
-      "concept": "nema:agent-evals",
-      "id": "unit_tests_are_equivalent_to_agent_evals",
-      "text": "If the unit tests pass, the agent works.",
+      "concept": "nema:emulsions",
+      "id": "a_sauce_can_be_boiled_once_it_holds",
+      "text": "Once an emulsion holds, it is stable and can be boiled.",
       "recordedAt": "2026-08-28T09:00:00Z"
     }
   ],
   "receipts": [
     {
-      "receiptId": "rcpt_seed_01_testing_fundamentals_lab",
+      "receiptId": "rcpt_seed_01_heat_control_lab",
       "status": "verified",
       "daysAgo": 30,
       "payload": {
         "type": "evidence-receipt",
         "protocol": "nema/0.1",
-        "receiptId": "rcpt_seed_01_testing_fundamentals_lab",
+        "receiptId": "rcpt_seed_01_heat_control_lab",
         "issuer": "urn:nema:seed",
         "keyId": "seed",
         "subject": "lk_seed_learner",
         "activity": {
-          "id": "testing-fundamentals-lab",
+          "id": "heat-control-lab",
           "version": "1.0.0",
-          "title": "Testing fundamentals lab",
-          "contentHash": "sha256:seed-testing-fundamentals-lab"
+          "title": "Heat control lab",
+          "contentHash": "sha256:seed-heat-control-lab"
         },
         "claims": [
           {
-            "concept": "nema:software-testing",
+            "concept": "nema:heat-control",
             "ability": "apply",
             "evidenceType": "application",
             "result": "passed",
@@ -59,32 +59,32 @@
       }
     },
     {
-      "receiptId": "rcpt_seed_02_regression_suite_lab",
+      "receiptId": "rcpt_seed_02_reduction_lab",
       "status": "verified",
       "daysAgo": 12,
       "payload": {
         "type": "evidence-receipt",
         "protocol": "nema/0.1",
-        "receiptId": "rcpt_seed_02_regression_suite_lab",
+        "receiptId": "rcpt_seed_02_reduction_lab",
         "issuer": "urn:nema:seed",
         "keyId": "seed",
         "subject": "lk_seed_learner",
         "activity": {
-          "id": "regression-suite-lab",
+          "id": "reduction-lab",
           "version": "1.0.0",
-          "title": "Build a regression suite that fails loudly",
-          "contentHash": "sha256:seed-regression-suite-lab"
+          "title": "Reduce a sauce until it coats the spoon",
+          "contentHash": "sha256:seed-reduction-lab"
         },
         "claims": [
           {
-            "concept": "nema:software-testing",
+            "concept": "nema:heat-control",
             "ability": "apply",
             "evidenceType": "application",
             "result": "passed",
             "difficulty": "intermediate"
           },
           {
-            "concept": "nema:unit-testing",
+            "concept": "nema:reduction",
             "ability": "apply",
             "evidenceType": "application",
             "result": "passed",
@@ -101,25 +101,25 @@
       }
     },
     {
-      "receiptId": "rcpt_seed_03_tool_calling_explainer",
+      "receiptId": "rcpt_seed_03_stock_explainer",
       "status": "verified",
       "daysAgo": 25,
       "payload": {
         "type": "evidence-receipt",
         "protocol": "nema/0.1",
-        "receiptId": "rcpt_seed_03_tool_calling_explainer",
+        "receiptId": "rcpt_seed_03_stock_explainer",
         "issuer": "urn:nema:seed",
         "keyId": "seed",
         "subject": "lk_seed_learner",
         "activity": {
-          "id": "tool-calling-explainer",
+          "id": "stock-explainer",
           "version": "1.0.0",
-          "title": "Explain a tool call end to end",
-          "contentHash": "sha256:seed-tool-calling-explainer"
+          "title": "Explain a stock from bones to chinois",
+          "contentHash": "sha256:seed-stock-explainer"
         },
         "claims": [
           {
-            "concept": "nema:tool-calling",
+            "concept": "nema:stocks",
             "ability": "explain",
             "evidenceType": "explanation",
             "result": "passed",
@@ -136,25 +136,25 @@
       }
     },
     {
-      "receiptId": "rcpt_seed_04_agent_loop_explainer",
+      "receiptId": "rcpt_seed_04_ratio_explainer",
       "status": "verified",
       "daysAgo": 20,
       "payload": {
         "type": "evidence-receipt",
         "protocol": "nema/0.1",
-        "receiptId": "rcpt_seed_04_agent_loop_explainer",
+        "receiptId": "rcpt_seed_04_ratio_explainer",
         "issuer": "urn:nema:seed",
         "keyId": "seed",
         "subject": "lk_seed_learner",
         "activity": {
-          "id": "agent-loop-explainer",
+          "id": "ratio-explainer",
           "version": "1.0.0",
-          "title": "Describe the agent loop in your own words",
-          "contentHash": "sha256:seed-agent-loop-explainer"
+          "title": "Describe the ratios you cook by",
+          "contentHash": "sha256:seed-ratio-explainer"
         },
         "claims": [
           {
-            "concept": "nema:agent-loop",
+            "concept": "nema:ratios",
             "ability": "explain",
             "evidenceType": "explanation",
             "result": "passed",
@@ -171,25 +171,25 @@
       }
     },
     {
-      "receiptId": "rcpt_seed_05_threat_model_a_tool_server",
+      "receiptId": "rcpt_seed_05_station_safety_audit",
       "status": "verified",
       "daysAgo": 15,
       "payload": {
         "type": "evidence-receipt",
         "protocol": "nema/0.1",
-        "receiptId": "rcpt_seed_05_threat_model_a_tool_server",
+        "receiptId": "rcpt_seed_05_station_safety_audit",
         "issuer": "urn:nema:seed",
         "keyId": "seed",
         "subject": "lk_seed_learner",
         "activity": {
-          "id": "threat-model-a-tool-server",
+          "id": "station-safety-audit",
           "version": "1.0.0",
-          "title": "Threat model a tool server",
-          "contentHash": "sha256:seed-threat-model-a-tool-server"
+          "title": "Audit a station for food safety",
+          "contentHash": "sha256:seed-station-safety-audit"
         },
         "claims": [
           {
-            "concept": "nema:threat-modeling",
+            "concept": "nema:food-safety",
             "ability": "apply",
             "evidenceType": "application",
             "result": "passed",
@@ -206,25 +206,25 @@
       }
     },
     {
-      "receiptId": "rcpt_seed_06_tool_interface_lab",
+      "receiptId": "rcpt_seed_06_stock_day_lab",
       "status": "verified",
       "daysAgo": 9,
       "payload": {
         "type": "evidence-receipt",
         "protocol": "nema/0.1",
-        "receiptId": "rcpt_seed_06_tool_interface_lab",
+        "receiptId": "rcpt_seed_06_stock_day_lab",
         "issuer": "urn:nema:seed",
         "keyId": "seed",
         "subject": "lk_seed_learner",
         "activity": {
-          "id": "tool-interface-lab",
+          "id": "stock-day-lab",
           "version": "1.0.0",
-          "title": "Design a tool interface an agent cannot misuse",
-          "contentHash": "sha256:seed-tool-interface-lab"
+          "title": "Stock day",
+          "contentHash": "sha256:seed-stock-day-lab"
         },
         "claims": [
           {
-            "concept": "nema:tool-calling",
+            "concept": "nema:stocks",
             "ability": "apply",
             "evidenceType": "application",
             "result": "passed",
@@ -241,25 +241,25 @@
       }
     },
     {
-      "receiptId": "rcpt_seed_07_agent_loop_trace_lab",
+      "receiptId": "rcpt_seed_07_ratio_scaling_lab",
       "status": "verified",
       "daysAgo": 6,
       "payload": {
         "type": "evidence-receipt",
         "protocol": "nema/0.1",
-        "receiptId": "rcpt_seed_07_agent_loop_trace_lab",
+        "receiptId": "rcpt_seed_07_ratio_scaling_lab",
         "issuer": "urn:nema:seed",
         "keyId": "seed",
         "subject": "lk_seed_learner",
         "activity": {
-          "id": "agent-loop-trace-lab",
+          "id": "ratio-scaling-lab",
           "version": "1.0.0",
-          "title": "Read a broken agent trace",
-          "contentHash": "sha256:seed-agent-loop-trace-lab"
+          "title": "Scale a vinaigrette for sixty covers",
+          "contentHash": "sha256:seed-ratio-scaling-lab"
         },
         "claims": [
           {
-            "concept": "nema:agent-loop",
+            "concept": "nema:ratios",
             "ability": "apply",
             "evidenceType": "application",
             "result": "passed",
@@ -276,32 +276,32 @@
       }
     },
     {
-      "receiptId": "rcpt_seed_08_least_privilege_review",
+      "receiptId": "rcpt_seed_08_cold_chain_review",
       "status": "verified",
       "daysAgo": 5,
       "payload": {
         "type": "evidence-receipt",
         "protocol": "nema/0.1",
-        "receiptId": "rcpt_seed_08_least_privilege_review",
+        "receiptId": "rcpt_seed_08_cold_chain_review",
         "issuer": "urn:nema:seed",
         "keyId": "seed",
         "subject": "lk_seed_learner",
         "activity": {
-          "id": "least-privilege-review",
+          "id": "cold-chain-review",
           "version": "1.0.0",
-          "title": "Review an agent's permissions",
-          "contentHash": "sha256:seed-least-privilege-review"
+          "title": "Delivery and walk in review",
+          "contentHash": "sha256:seed-cold-chain-review"
         },
         "claims": [
           {
-            "concept": "nema:threat-modeling",
+            "concept": "nema:food-safety",
             "ability": "apply",
             "evidenceType": "application",
             "result": "passed",
             "difficulty": "intermediate"
           },
           {
-            "concept": "nema:least-privilege",
+            "concept": "nema:cold-chain",
             "ability": "explain",
             "evidenceType": "explanation",
             "result": "passed",
@@ -318,25 +318,25 @@
       }
     },
     {
-      "receiptId": "rcpt_seed_09_json_schema_self_check",
+      "receiptId": "rcpt_seed_09_knife_cuts_self_check",
       "status": "verified",
       "daysAgo": 40,
       "payload": {
         "type": "evidence-receipt",
         "protocol": "nema/0.1",
-        "receiptId": "rcpt_seed_09_json_schema_self_check",
+        "receiptId": "rcpt_seed_09_knife_cuts_self_check",
         "issuer": "urn:nema:seed",
         "keyId": "seed",
         "subject": "lk_seed_learner",
         "activity": {
-          "id": "json-schema-self-check",
+          "id": "knife-cuts-self-check",
           "version": "1.0.0",
-          "title": "Self check: JSON Schema",
-          "contentHash": "sha256:seed-json-schema-self-check"
+          "title": "Self check: knife cuts",
+          "contentHash": "sha256:seed-knife-cuts-self-check"
         },
         "claims": [
           {
-            "concept": "nema:json-schema",
+            "concept": "nema:knife-skills",
             "ability": "apply",
             "evidenceType": "application",
             "result": "partial",
@@ -353,26 +353,26 @@
       }
     }
   ],
-  "harnessReceipt": {
-    "receiptId": "rcpt_harness_eval_lab",
+  "saucierReceipt": {
+    "receiptId": "rcpt_saucier_pan_sauce_lab",
     "status": "verified",
     "daysAgo": 0,
     "payload": {
       "type": "evidence-receipt",
       "protocol": "nema/0.1",
-      "receiptId": "rcpt_harness_eval_lab",
-      "issuer": "https://nema-harness.example",
-      "keyId": "harness-2026-09",
+      "receiptId": "rcpt_saucier_pan_sauce_lab",
+      "issuer": "https://saucier.example",
+      "keyId": "saucier-2026-09",
       "subject": "lk_seed_learner",
       "activity": {
-        "id": "eval-design-lab",
+        "id": "fix-the-broken-sauce",
         "version": "1.0.0",
-        "title": "Fix the broken harness",
-        "contentHash": "sha256:seed-eval-design-lab"
+        "title": "Fix the broken sauce",
+        "contentHash": "sha256:seed-fix-the-broken-sauce"
       },
       "claims": [
         {
-          "concept": "nema:agent-evals",
+          "concept": "nema:emulsions",
           "ability": "apply",
           "evidenceType": "application",
           "result": "passed",

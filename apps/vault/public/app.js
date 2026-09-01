@@ -8,7 +8,7 @@
 
 import { injectHeader, injectFooter, toast, copyToClipboard, escapeHtml } from '/shared/brand/brand.js';
 import { mountActivityStrip, isNative } from '/shared/webmcp.js';
-import { ABILITIES } from '/shared/inference.js';
+import { ABILITIES, bestBand } from '/shared/inference.js';
 import { decodeToken } from '/shared/protocol.js';
 import * as vault from '/vault.js';
 import { renderGraph } from '/graph.js';
@@ -16,9 +16,11 @@ import { register, evidenceRows, disclosureRows } from '/tools.js';
 
 const esc = escapeHtml;
 const DAY_MS = 86400000;
-const EVIDENCE_PREVIEW = 8;
+const EVIDENCE_PREVIEW = 3;
+const STATE_PREVIEW = 10;
 
 const BANDS = ['durable', 'usable', 'fragile', 'uncertain', 'unknown'];
+const BAND_RANK = { unknown: 0, uncertain: 1, fragile: 2, usable: 3, durable: 4 };
 const ABILITY_SHORT = {
   recognize: 'rec',
   retrieve: 'ret',
@@ -41,6 +43,7 @@ const PANEL_IDS = {
 
 const refs = {};
 let showAllEvidence = false;
+let showAllState = false;
 let consentState = null;
 let consentTimeoutMs = 120000;
 
@@ -50,8 +53,11 @@ function $(selector) {
   return document.querySelector(selector);
 }
 
-function pillClass(band) {
-  return BANDS.includes(band) ? `n-pill n-pill--${band}` : 'n-pill n-pill--unknown';
+/* A band is a dot and a word. Pills are kept for the few states that carry a
+ * decision: requirement status, receipt signature, disclosure expiry. */
+function bandChip(band, label) {
+  const known = BANDS.includes(band) ? band : 'unknown';
+  return `<span class="v-band v-band--${known}">${esc(label || band)}</span>`;
 }
 
 function statusPill(status) {
@@ -113,17 +119,15 @@ function renderSummary() {
   const receipts = vault.getReceipts();
   const pending = receipts.filter((entry) => entry.status === 'pending').length;
   const agent = receipts.filter((entry) => entry.payload && entry.payload.keyId === 'agent').length;
-  const verified = receipts.length - pending - agent;
-  const registrySize = vault.getConcepts().length;
 
+  /* Four numbers, and only numbers that move while the demo runs. "Verified"
+   * is the protocol word for a band a provider would accept: usable or
+   * durable. */
   const stats = [
-    { value: summary.concepts, label: 'concepts tracked', className: 'n-stat n-stat--accent' },
-    { value: summary.durable, label: 'durable' },
-    { value: summary.usable, label: 'usable' },
+    { value: summary.concepts, label: 'concepts with evidence' },
+    { value: summary.durable + summary.usable, label: 'verified' },
     { value: summary.fragile, label: 'fragile' },
-    { value: summary.uncertain, label: 'uncertain' },
-    { value: summary.reviewsDue, label: 'reviews due', className: 'n-stat v-stat--due' },
-    { value: receipts.length, label: 'receipts held' }
+    { value: summary.reviewsDue, label: 'reviews due', className: summary.reviewsDue > 0 ? 'n-stat v-stat--due' : 'n-stat' }
   ];
 
   refs.summaryStats.innerHTML = stats.map((stat) => `
@@ -132,37 +136,56 @@ function renderSummary() {
       <span class="n-stat__label">${esc(stat.label)}</span>
     </div>`).join('');
 
-  const parts = [`${registrySize} concepts in registry, ${summary.concepts} with evidence`];
   if (receipts.length === 0) {
-    parts.push('no receipts yet, load the demo learner to see a vault that has been used');
+    refs.summaryLine.textContent = 'No receipts yet.';
   } else {
-    const receiptBits = [`${plural(verified, 'signed receipt')} verified`];
-    if (agent > 0) receiptBits.push(`${agent} agent assessed`);
-    if (pending > 0) receiptBits.push(`${pending} pending`);
-    parts.push(receiptBits.join(', '));
-    parts.push(`${plural(vault.getGoals().length, 'goal')}, ${plural(vault.getDisclosures().length, 'disclosure')} approved`);
+    const held = [`${plural(receipts.length, 'receipt')} held`];
+    if (agent > 0) held.push(`${agent} agent assessed`);
+    if (pending > 0) held.push(`${pending} pending`);
+    refs.summaryLine.textContent = `${held.join(', ')}. ${plural(vault.getGoals().length, 'goal')}, ${plural(vault.getDisclosures().length, 'disclosure')}.`;
   }
-  refs.summaryLine.textContent = `${parts.join('. ')}.`;
+
+  /* The primary button has one job, and it is done once evidence is in. */
+  refs.demoButton.hidden = receipts.length > 0;
 }
 
 /* -------------------------------------------------------------- graph -- */
 
+/* The graph draws the concepts the learner has touched plus whatever an active
+ * goal points at. The rest of the registry is not part of this learner's
+ * picture, so it is not drawn. */
+function graphConcepts(state) {
+  const wanted = new Set(Object.keys(state));
+  for (const goal of vault.getGoals()) {
+    for (const id of goal.concepts || []) wanted.add(id);
+  }
+  return vault.getConcepts().filter((entry) => wanted.has(entry.id));
+}
+
 function renderGraphPanel() {
   const { state } = vault.derived();
-  renderGraph(refs.graph, {
-    concepts: vault.getConcepts(),
-    state,
-    onSelect: showGraphDetail
-  });
+  const concepts = graphConcepts(state);
 
+  if (concepts.length === 0) {
+    refs.graph.innerHTML = '<p class="n-empty">The graph draws itself once the vault holds evidence.</p>';
+    refs.graphLegend.innerHTML = '';
+    refs.graphDetail.innerHTML = '';
+    return;
+  }
+
+  renderGraph(refs.graph, { concepts, state, onSelect: showGraphDetail });
+
+  const present = new Set(concepts.map((entry) => bestBand(state[entry.id] || {})));
+  const anyDue = concepts.some((entry) => vault.nextReviewFor(entry.id).reviewDue);
   refs.graphLegend.innerHTML = BANDS
-    .map((band) => `<span class="${pillClass(band)}">${band}</span>`)
-    .join('') + '<span class="v-legend__due mono">review due</span>';
+    .filter((band) => present.has(band))
+    .map((band) => bandChip(band))
+    .join('') + (anyDue ? bandChip('due', 'review due') : '');
 }
 
 function showGraphDetail(conceptId) {
   if (!conceptId) {
-    refs.graphDetail.innerHTML = '<span class="dim mono">Focus or hover a node to read its bands.</span>';
+    refs.graphDetail.innerHTML = '';
     return;
   }
   const { state } = vault.derived();
@@ -170,76 +193,76 @@ function showGraphDetail(conceptId) {
   const { nextReview, reviewDue } = vault.nextReviewFor(conceptId);
   const bands = ABILITIES
     .filter((ability) => abilities[ability])
-    .map((ability) => `<span class="${pillClass(abilities[ability].band)}">${ABILITY_SHORT[ability]} ${abilities[ability].band}</span>`)
+    .map((ability) => bandChip(abilities[ability].band, `${ability} ${abilities[ability].band}`))
     .join('');
 
   refs.graphDetail.innerHTML = `
     <span class="v-graph__name">${esc(vault.conceptTitle(conceptId))}</span>
-    <span class="mono dim">${esc(conceptId)}</span>
-    ${bands || '<span class="dim mono">no evidence yet</span>'}
+    ${bands || '<span class="v-band v-band--unknown">no evidence yet</span>'}
     ${nextReview
-      ? `<span class="${reviewDue ? 'n-pill n-pill--due' : 'mono dim'}">review ${relTime(nextReview)}</span>`
+      ? `<span class="v-review${reviewDue ? ' v-review--due' : ''}">review ${relTime(nextReview)}</span>`
       : ''}`;
 }
 
 /* ------------------------------------------------------- state table -- */
 
+/* One line per concept: title, best band, next review. The per ability
+ * breakdown is a row you open, not a wall of pills. Reviews that are due come
+ * first, then the weakest bands, because that is the order a learner acts in. */
 function renderStateTable() {
   const { state, now } = vault.derived();
   const nowMs = Date.parse(now);
-  const concepts = vault.getConcepts();
-  const withEvidence = concepts.filter((entry) => state[entry.id]);
-  const without = concepts.filter((entry) => !state[entry.id]);
+  const concepts = vault.getConcepts()
+    .filter((entry) => state[entry.id])
+    .map((entry) => ({
+      concept: entry,
+      band: bestBand(state[entry.id]),
+      review: vault.nextReviewFor(entry.id)
+    }))
+    .sort((a, b) => (
+      Number(b.review.reviewDue) - Number(a.review.reviewDue)
+      || BAND_RANK[a.band] - BAND_RANK[b.band]
+      || a.concept.title.localeCompare(b.concept.title)
+    ));
 
-  if (withEvidence.length === 0) {
-    refs.stateTable.innerHTML = `
-      <p class="n-empty">No evidence yet</p>
-      <p class="n-panel__note">Every band on this page comes from a signed receipt. Load the demo learner, or stage a receipt from a provider, and the table fills in.</p>`;
+  if (concepts.length === 0) {
+    refs.stateTable.innerHTML = '<p class="n-empty">No evidence yet, so there is no state to derive.</p>';
+    refs.stateToggle.hidden = true;
     return;
   }
 
-  const head = `
-    <tr>
-      <th scope="col">concept</th>
-      ${ABILITIES.map((ability) => `<th scope="col"><abbr title="${ability}">${ABILITY_SHORT[ability]}</abbr></th>`).join('')}
-      <th scope="col">next review</th>
-    </tr>`;
+  const visible = showAllState ? concepts : concepts.slice(0, STATE_PREVIEW);
 
-  const rows = withEvidence.map((concept) => {
+  refs.stateTable.innerHTML = visible.map(({ concept, band, review }) => {
     const abilities = state[concept.id] || {};
-    const cells = ABILITIES.map((ability) => {
-      const entry = abilities[ability];
-      if (!entry) {
-        return `<td><span class="v-none"><span class="sr-only">${ability} unknown</span></span></td>`;
-      }
-      return `<td><span class="${pillClass(entry.band)}" title="${ability} ${entry.band}, confidence ${entry.confidence}">${entry.band}</span></td>`;
-    }).join('');
-
-    const { nextReview, reviewDue } = vault.nextReviewFor(concept.id);
-    const review = nextReview
-      ? (reviewDue
-        ? `<span class="n-pill n-pill--due">due ${relTime(nextReview, nowMs)}</span>`
-        : `<span class="mono dim">${relTime(nextReview, nowMs)}</span>`)
-      : '<span class="mono dim">none</span>';
+    const breakdown = ABILITIES
+      .filter((ability) => abilities[ability])
+      .map((ability) => bandChip(abilities[ability].band, `${ability} ${abilities[ability].band}`))
+      .join('');
+    const next = review.nextReview
+      ? (review.reviewDue
+        ? `<span class="v-review v-review--due v-row__review">due ${relTime(review.nextReview, nowMs)}</span>`
+        : `<span class="v-review v-row__review">${relTime(review.nextReview, nowMs)}</span>`)
+      : '<span class="v-review v-row__review"></span>';
 
     return `
-      <tr data-concept="${esc(concept.id)}">
-        <th scope="row"><span class="v-table__title">${esc(concept.title)}</span><span class="v-table__id mono">${esc(shortConcept(concept.id))}</span></th>
-        ${cells}
-        <td class="v-table__review">${review}</td>
-      </tr>`;
+      <details class="v-row" data-concept="${esc(concept.id)}">
+        <summary class="v-row__head">
+          <span class="v-row__title">${esc(concept.title)}</span>
+          <span class="v-row__band">${bandChip(band)}</span>
+          ${next}
+        </summary>
+        <div class="v-row__body">
+          <span class="v-row__id">${esc(concept.id)}</span>
+          ${breakdown}
+        </div>
+      </details>`;
   }).join('');
 
-  const missing = without.length > 0
-    ? `<p class="v-table__missing mono">${plural(without.length, 'concept')} in the registry with no evidence yet: ${without.map((entry) => esc(shortConcept(entry.id))).join(', ')}</p>`
-    : '';
-
-  refs.stateTable.innerHTML = `
-    <div class="v-table__wrap"><table class="v-table">
-      <caption class="sr-only">Learner state, one row per concept and one column per ability</caption>
-      <thead>${head}</thead>
-      <tbody>${rows}</tbody>
-    </table></div>${missing}`;
+  refs.stateToggle.hidden = concepts.length <= STATE_PREVIEW;
+  refs.stateToggle.textContent = showAllState
+    ? `Show ${STATE_PREVIEW}`
+    : `Show all ${concepts.length}`;
 }
 
 /* Misconceptions are part of the learner model and are named in the fixed
@@ -248,16 +271,15 @@ function renderStateTable() {
 function renderMisconceptions() {
   const items = vault.getMisconceptions();
   if (items.length === 0) {
-    refs.misconceptions.innerHTML = '';
+    refs.misconceptions.innerHTML = '<p class="n-empty">Nothing recorded. These never leave the vault.</p>';
     return;
   }
   refs.misconceptions.innerHTML = `
-    <p class="v-mis__cap mono">Recorded misconceptions, held here, never disclosed</p>
     <ul class="v-mis">
       ${items.map((item) => `
         <li class="v-mis__row">
           <span class="v-mis__text">${esc(item.text)}</span>
-          <span class="v-mis__meta mono">${esc(shortConcept(item.concept))}, recorded ${esc(isoDate(item.recordedAt))}</span>
+          <span class="v-mis__meta">${esc(shortConcept(item.concept))}, ${esc(isoDate(item.recordedAt))}</span>
         </li>`).join('')}
     </ul>`;
 }
@@ -275,8 +297,8 @@ function renderNeeds(explicitNeeds, budgetOverride) {
 
   if (needs.length === 0) {
     refs.needsList.innerHTML = vault.getReceipts().length === 0
-      ? '<p class="n-empty">Nothing to plan yet</p>'
-      : '<p class="n-empty">Nothing is due inside that budget</p>';
+      ? '<p class="n-empty">Nothing to plan yet.</p>'
+      : '<p class="n-empty">Nothing is due inside that budget.</p>';
     return;
   }
 
@@ -285,14 +307,14 @@ function renderNeeds(explicitNeeds, budgetOverride) {
     <div class="n-path__row">
       <span class="n-path__index">${String(index + 1).padStart(2, '0')}</span>
       <span class="n-path__main">
-        <span class="n-path__title"><span class="v-need__kind mono">${esc(humanize(need.kind))}</span> ${esc(vault.conceptTitle(need.concept))}, ${esc(need.ability)}</span>
+        <span class="n-path__title">${esc(vault.conceptTitle(need.concept))}, <span class="v-need__ability">${esc(need.ability)}</span></span>
         <span class="n-path__reason">${esc((need.reason || []).map(humanize).join(', '))}${need.confusableWith ? `, against ${esc(shortConcept(need.confusableWith))}` : ''}</span>
       </span>
       <span class="n-path__minutes">${need.minutes} min</span>
     </div>`).join('');
 
   refs.needsList.innerHTML = `${rows}
-    <div class="n-path__total"><span>planned</span><b>${minutes}</b><span>minutes over ${plural(needs.length, 'need')}</span></div>`;
+    <p class="v-path__total">${minutes} minutes over ${plural(needs.length, 'need')}.</p>`;
 }
 
 /* ------------------------------------------------- disclosure ledger -- */
@@ -300,21 +322,18 @@ function renderNeeds(explicitNeeds, budgetOverride) {
 function renderDisclosures() {
   const rows = disclosureRows();
   if (rows.length === 0) {
-    refs.disclosureLedger.innerHTML = `
-      <p class="n-empty">Nothing has left the vault</p>
-      <p class="n-panel__note">A provider has to ask, and you have to approve, before a single band is shared. Approved disclosures are listed here with what was shared and when it expires.</p>`;
+    refs.disclosureLedger.innerHTML = '<p class="n-empty">Nothing has left the vault.</p>';
     return;
   }
 
   const auto = vault.autoApprovals();
   const autoRow = auto.map((entry) => `
-      <div class="n-ledger__row n-ledger__row--flag">
-        <span class="n-ledger__id">auto</span>
-        <span class="n-ledger__main">
-          <span class="n-ledger__title">${esc(vault.audienceName(entry.audience))} is auto approved</span>
-          <span class="n-ledger__meta"><span>ends ${esc(relTime(entry.until))}</span><span>you can stop this at any time</span></span>
-        </span>
-        <span class="n-ledger__end"><button class="n-btn n-btn--sm n-btn--secondary" type="button" data-stop-auto="${esc(entry.audience)}">Stop</button></span>
+      <div class="v-erow v-erow--flag">
+        <div class="v-erow__head">
+          <span class="v-erow__title">${esc(vault.audienceName(entry.audience))} is auto approved</span>
+          <span class="v-erow__meta">ends ${esc(relTime(entry.until))}</span>
+          <span class="v-erow__end"><button class="n-btn n-btn--sm n-btn--secondary" type="button" data-stop-auto="${esc(entry.audience)}">Stop</button></span>
+        </div>
       </div>`).join('');
 
   const stored = vault.getDisclosures().slice().reverse();
@@ -325,18 +344,20 @@ function renderDisclosures() {
       .join('');
     const viaAuto = Boolean(stored[index] && stored[index].auto);
     return `
-      <div class="n-ledger__row">
-        <span class="n-ledger__id" title="${esc(row.audience)}">${esc(shortOrigin(row.audience))}</span>
-        <span class="n-ledger__main">
-          <span class="n-ledger__title">${esc(row.audienceName)}${viaAuto ? '<span class="v-auto mono">auto approved</span>' : ''}</span>
-          <span class="n-ledger__meta"><span>${esc(row.purpose)}</span><span>${plural(row.shared.length, 'band')} shared</span><span>${plural(row.withheld.length, 'category', 'categories')} withheld</span></span>
+      <details class="v-erow">
+        <summary class="v-erow__head">
+          <span class="v-erow__title">${esc(row.audienceName)}${viaAuto ? ', auto approved' : ''}</span>
+          <span class="v-erow__meta">${esc(row.purpose)}</span>
+          <span class="v-erow__date">${esc(isoDate(row.sharedAt))}</span>
+          <span class="v-erow__end"><span class="n-pill n-pill--pending" data-expires="${esc(row.expiresAt)}">expires</span></span>
+        </summary>
+        <div class="v-erow__body">
+          <span class="v-erow__date">${esc(shortOrigin(row.audience))}</span>
           <span class="v-claims">${shared}</span>
-        </span>
-        <span class="n-ledger__end">
-          <span class="n-pill n-pill--pending" data-expires="${esc(row.expiresAt)}">expires</span>
+          <span class="v-effect">${plural(row.withheld.length, 'category', 'categories')} withheld.</span>
           <button class="n-btn n-btn--sm n-btn--secondary" type="button" data-copy-token="${index}">Copy token</button>
-        </span>
-      </div>`;
+        </div>
+      </details>`;
   }).join('');
 
   tickExpiries();
@@ -353,9 +374,7 @@ function signaturePill(signature) {
 function renderEvidence() {
   const receipts = vault.getReceipts();
   if (receipts.length === 0) {
-    refs.evidenceLedger.innerHTML = `
-      <p class="n-empty">The ledger is empty</p>
-      <p class="n-panel__note">Receipts arrive from a provider through the agent, or by hand in the receipt inbox below. Every one of them is verified against the issuer list before it can move a band.</p>`;
+    refs.evidenceLedger.innerHTML = '<p class="n-empty">No receipts yet.</p>';
     refs.evidenceToggle.hidden = true;
     return;
   }
@@ -365,35 +384,30 @@ function renderEvidence() {
 
   refs.evidenceLedger.innerHTML = visible.map((row) => {
     const entry = receipts.find((item) => item.receiptId === row.receiptId);
-    const demo = entry ? vault.isSeedReceipt(entry) : false;
     const claims = row.claims
       .map((claim) => `<span class="v-claim v-claim--${esc(claim.result)}">${esc(shortConcept(claim.concept))}.${esc(claim.ability)} ${esc(claim.result)}</span>`)
       .join('');
     const effect = (row.effect || []).join('. ');
     return `
-      <div class="n-ledger__row${row.signature === 'pending' ? ' n-ledger__row--flag' : ''}">
-        <span class="n-ledger__id" title="${esc(row.receiptId)}">${esc(shortReceiptId(row.receiptId))}</span>
-        <span class="n-ledger__main">
-          <span class="n-ledger__title">${esc(row.activity)}</span>
-          <span class="n-ledger__meta">
-            <span>${esc(row.issuerName)}</span>
-            <span>grader ${esc(row.grader)}</span>
-            <span>${esc(isoDate(entry && entry.payload ? entry.payload.issuedAt : row.receivedAt))}</span>
-          </span>
+      <details class="v-erow${row.signature === 'pending' ? ' v-erow--flag' : ''}">
+        <summary class="v-erow__head">
+          <span class="v-erow__title">${esc(row.activity)}</span>
+          <span class="v-erow__meta">${esc(row.issuerName)}</span>
+          <span class="v-erow__date">${esc(isoDate(entry && entry.payload ? entry.payload.issuedAt : row.receivedAt))}</span>
+          <span class="v-erow__end">${signaturePill(row.signature)}</span>
+        </summary>
+        <div class="v-erow__body">
+          <span class="v-erow__date">${esc(row.receiptId)}, grader ${esc(row.grader)}</span>
           <span class="v-claims">${claims}</span>
-          ${effect ? `<span class="v-effect mono">${esc(effect)}</span>` : ''}
-        </span>
-        <span class="n-ledger__end">
-          ${demo ? '<span class="n-pill n-pill--nodot v-demo">Demo seed</span>' : ''}
-          ${signaturePill(row.signature)}
-        </span>
-      </div>`;
+          ${effect ? `<span class="v-effect">${esc(effect)}</span>` : ''}
+        </div>
+      </details>`;
   }).join('');
 
   refs.evidenceToggle.hidden = rows.length <= EVIDENCE_PREVIEW;
   refs.evidenceToggle.textContent = showAllEvidence
-    ? `Show the ${EVIDENCE_PREVIEW} newest receipts`
-    : `Show all ${rows.length} receipts`;
+    ? `Show ${EVIDENCE_PREVIEW}`
+    : `Show all ${rows.length}`;
 }
 
 /* -------------------------------------------------------------- goals -- */
@@ -401,18 +415,20 @@ function renderEvidence() {
 function renderGoals() {
   const goals = vault.getGoals();
   if (goals.length === 0) {
-    refs.goalList.innerHTML = '<p class="n-empty">No active goal</p>';
+    refs.goalList.innerHTML = '<p class="n-empty">No active goal.</p>';
     return;
   }
   refs.goalList.innerHTML = goals.map((goal) => `
-    <div class="n-ledger__row">
-      <span class="n-ledger__main">
-        <span class="n-ledger__title">${esc(goal.title)}</span>
+    <div class="v-erow">
+      <div class="v-erow__head">
+        <span class="v-erow__title">${esc(goal.title)}</span>
+        <span class="v-erow__end">
+          <button class="v-text-btn" type="button" data-remove-goal="${esc(goal.goalId)}">Remove</button>
+        </span>
+      </div>
+      <div class="v-erow__body">
         <span class="v-claims">${goal.concepts.map((id) => `<span class="v-claim">${esc(shortConcept(id))}</span>`).join('')}</span>
-      </span>
-      <span class="n-ledger__end">
-        <button class="n-btn n-btn--sm n-btn--secondary" type="button" data-remove-goal="${esc(goal.goalId)}">Remove</button>
-      </span>
+      </div>
     </div>`).join('');
 }
 
@@ -492,7 +508,6 @@ function askForConsent(request, { signal }) {
     $('[data-consent-title]').textContent = `${request.audienceName} asks to know`;
     $('[data-consent-origin]').textContent = request.audience;
     $('[data-consent-purpose]').textContent = `Purpose: ${request.purpose}`;
-    $('[data-consent-key]').textContent = `Learner id for this site: ${request.learnerKeyId}`;
     $('[data-consent-shared]').innerHTML = request.shared.map((item) => `
       <div class="n-ledger__row">
         <span class="n-ledger__main">
@@ -676,6 +691,10 @@ function flash(panel, note) {
   const section = heading ? heading.closest('.n-panel') : null;
   if (!section) return;
 
+  /* A panel folded into "More" opens first. A tool call the learner cannot
+   * see is a tool call the learner cannot check. */
+  openDetailsAround(section);
+
   section.classList.remove('v-flash');
   /* Restart the flash even when the same panel is touched twice in a row. */
   void section.offsetWidth;
@@ -683,13 +702,25 @@ function flash(panel, note) {
   setTimeout(() => section.classList.remove('v-flash'), 1400);
 
   if (!note) return;
-  let readout = heading.querySelector('.v-read');
+  /* The summary has no visible heading, so its note sits on the section. */
+  const anchor = heading.classList.contains('sr-only') ? section : heading;
+  let readout = anchor.querySelector(':scope > .v-read');
   if (!readout) {
     readout = document.createElement('span');
-    readout.className = 'v-read mono';
-    heading.appendChild(readout);
+    readout.className = 'v-read';
+    anchor.appendChild(readout);
   }
   readout.textContent = note;
+}
+
+function openDetailsAround(element) {
+  let node = element;
+  while (node) {
+    const block = node.closest('details');
+    if (!block) return;
+    block.open = true;
+    node = block.parentElement;
+  }
 }
 
 /* --------------------------------------------------------------- boot -- */
@@ -697,10 +728,12 @@ function flash(panel, note) {
 function collectRefs() {
   refs.summaryStats = $('[data-summary-stats]');
   refs.summaryLine = $('[data-summary-line]');
+  refs.demoButton = $('[data-action="load-demo"]');
   refs.graph = $('[data-graph]');
   refs.graphDetail = $('[data-graph-detail]');
   refs.graphLegend = $('[data-graph-legend]');
   refs.stateTable = $('[data-state-table]');
+  refs.stateToggle = $('[data-action="toggle-state"]');
   refs.misconceptions = $('[data-misconceptions]');
   refs.needsForm = $('[data-needs-form]');
   refs.budgetInput = $('#budget-minutes');
@@ -814,6 +847,12 @@ function wireActions() {
     if (action === 'toggle-evidence') {
       showAllEvidence = !showAllEvidence;
       renderEvidence();
+      return;
+    }
+
+    if (action === 'toggle-state') {
+      showAllState = !showAllState;
+      renderStateTable();
     }
   });
 

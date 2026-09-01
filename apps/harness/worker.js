@@ -1,5 +1,5 @@
 /**
- * nema harness worker: the Harness Engineering Lab provider API.
+ * nema saucier worker: the Saucier School provider API.
  *
  * Contract section 10. Two endpoints, everything else falls through to the
  * static assets:
@@ -27,7 +27,7 @@ import { buildReceiptPayload, sha256, signToken } from '../../shared/protocol.js
  * origin, so a receipt signed as "http://localhost:8782" would be an unknown
  * issuer everywhere except one developer's machine.
  */
-const ISSUER_ORIGIN = 'https://nema-harness.migarci2.dev';
+const ISSUER_ORIGIN = 'https://saucier.migarci2.dev';
 
 /** Bumped whenever a grader in content.js changes its verdict for old work. */
 const GRADER_VERSION = '1';

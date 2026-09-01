@@ -136,7 +136,7 @@ export const TOOLS = [
         concepts: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Concept ids such as nema:agent-evals. Omit for every concept that has evidence.'
+          description: 'Concept ids such as nema:pan-sauces. Omit for every concept that has evidence.'
         }
       },
       required: [],
@@ -160,7 +160,7 @@ export const TOOLS = [
         concepts: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Concept ids from the nema registry, for example nema:agent-evals.'
+          description: 'Concept ids from the nema registry, for example nema:pan-sauces.'
         }
       },
       required: ['title', 'concepts'],
@@ -180,8 +180,8 @@ export const TOOLS = [
     inputSchema: {
       type: 'object',
       properties: {
-        audience: { type: 'string', description: 'Origin of the site that will verify the token, for example https://nema-harness.migarci2.dev.' },
-        purpose: { type: 'string', description: 'Short machine readable purpose, for example personalize-agent-evals-path.' },
+        audience: { type: 'string', description: 'Origin of the site that will verify the token, for example https://saucier.migarci2.dev.' },
+        purpose: { type: 'string', description: 'Short machine readable purpose, for example personalize-pan-sauces-path.' },
         requirements: {
           type: 'array',
           description: 'The concept and ability pairs the site asked about. Nothing outside this list can be disclosed.',

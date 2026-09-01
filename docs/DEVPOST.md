@@ -16,15 +16,16 @@ your learning state, everywhere.
 
 Your learning state is trapped inside every site that teaches you. nema puts it
 in a vault you own. Websites ask for signed, purpose-bound readiness, your agent
-carries it, you approve the disclosure, and a 68 minute course becomes 27.
+carries it, you approve the disclosure, and a 68 minute cooking course becomes
+27.
 
 ## Live URLs
 
 - Hub: https://nema.migarci2.dev
 - Coach (the agent): https://nema-coach.migarci2.dev
 - Vault: https://nema-vault.migarci2.dev
-- Harness Lab (provider 1): https://nema-harness.migarci2.dev
-- Agent Security (provider 2): https://nema-security.migarci2.dev
+- Saucier School (provider 1): https://saucier.migarci2.dev
+- Line Cook Lab (provider 2): https://linecook.migarci2.dev
 - Repository: https://github.com/migarci2/nema (MIT)
 - Judge guide: https://github.com/migarci2/nema/blob/main/docs/JUDGE_GUIDE.md
 
@@ -54,27 +55,28 @@ Word count: 195.
 
 ## Required answer 2: How it improves the user experience
 
-Today you finish a course, open a second site, and start from zero. You sit
-through a lesson on something you applied at work last month, because the site
-cannot know and cannot ask.
+Today you open a second site and start from zero. You sit through fifteen
+minutes on how to hold a knife, a month after you learned it elsewhere, because
+the site cannot know and cannot ask.
 
-With nema the agent asks. The Harness Lab needs three prerequisites. The vault
-answers with three status bands, after the learner approves a modal listing
-what is shared and what is not. Three lessons are struck through with
-the reason next to each one, 41 minutes of them, and a short diagnostic survives
-the cut because one prerequisite came back uncertain. 68 minutes becomes 27. The
-learner passes the diagnostic, the receipt goes to the vault, the path recomputes
-to 21.
+With nema the agent asks. Saucier School's pan sauce unit needs three
+prerequisites: knife skills, heat control, ratios. The vault answers with three
+status bands, after the learner approves a modal listing what is shared and what
+is not. Three lessons strike through with the reason beside each, 41 minutes of
+them, and a six minute vinaigrette diagnostic survives because one prerequisite
+came back uncertain. 68 minutes
+becomes 27. The learner passes it, the receipt goes to the vault, the path
+recomputes to 21.
 
-Then a second, unrelated site asks the same vault about its own prerequisites.
-Two come back verified from evidence it never produced and cannot look up, so
-its intro lessons go grey. The one that is missing is named precisely, so the
-agent knows what to coach.
+Then a second, unrelated site, a drill for line cooks, asks the same vault about
+its own. Two come back verified from evidence it never produced, so its intro
+lessons go grey. The missing one is named precisely, so the agent knows what to
+coach.
 
 The other half is what does not happen. The vault never sends history. The agent
 cannot answer for you. Nothing moves without a click.
 
-Word count: 186.
+Word count: 189.
 
 ## Required answer 3: What human and agent collaboration becomes possible
 
@@ -133,8 +135,8 @@ The same tool table also runs outside the browser: `packages/nema-mcp` boots the
 
 ### Inspiration
 
-Two facts that do not fit together. First, almost every good technical
-explanation on the internet is on a site that will never know you again. Second,
+Two facts that do not fit together. First, almost every good explanation on the
+internet, of anything, is on a site that will never know you again. Second,
 every platform that does remember you keeps that memory, and it is the most
 valuable thing your studying produced.
 
@@ -159,12 +161,19 @@ When you complete an activity, the site signs an `EvidenceReceipt`. Your agent
 carries it back. The vault verifies the signature against a small issuer list,
 rejects replays, and recomputes your bands.
 
-In the demo: a 68 minute course collapses to 27 minutes on the strength of what
-you already know, then to 21 after a short diagnostic. A second, unrelated site
-asks the same vault about three different concepts, recognises two of them from
-evidence it never produced, names the third as missing, and unlocks its advanced
-lab once the agent has coached that gap and the vault has recorded it. Two
-websites, one vault, no shared accounts, no partnership.
+The two example sites teach cooking, deliberately. Saucier School runs a unit on
+pan sauces and emulsions; Line Cook Lab drills service under pressure. A course
+about agents would have been read as a description of nema rather than as an
+example of it, and a pan sauce is a better test anyway: it is a real skill with
+an answer you can taste.
+
+In the demo: a 68 minute unit on pan sauces collapses to 27 minutes on the
+strength of what the learner already holds, then to 21 after a six minute
+vinaigrette diagnostic. A second, unrelated site asks the same vault about three
+different concepts, recognises mise en place and food safety from evidence it
+never produced, names emulsions as missing, and unlocks its labs once the agent
+has coached that gap and the vault has recorded it. Two websites, one vault, no
+shared accounts, no partnership.
 
 ### How we built it
 
@@ -203,6 +212,12 @@ Deciding what the vault refuses to do took longer than writing the vault. The
 rule we settled on: if a capability could let an agent claim something about the
 learner that no human action supports, the tool does not exist.
 
+The example courses used to teach agent engineering, and every early reader
+mistook them for a description of nema itself. We moved both providers to
+cooking and gave each its own brand, its own palette and its own domain, so the
+demo now shows three surfaces a person can tell apart at a glance: a vault, and
+two websites that have nothing to do with us.
+
 ### Accomplishments that we are proud of
 
 The consent modal. A tool call stops, the page asks, and the token does not
@@ -213,6 +228,12 @@ account, no API key, and each one recognises prerequisites it did not teach,
 because it verifies one signature from the vault and checks that the token was
 minted for its own origin. The vault answers with bands and nothing else, so
 neither site learns where the evidence came from.
+
+The two identities. The providers do not wear our brand. They are re-themed down
+to the ground colour and the display face, they render their own headers, and
+they carry one discreet "Works with nema" badge. When the demo cuts from a warm
+paper cooking school to a near black kitchen tool and the vault answers both,
+the claim is being shown rather than asserted.
 
 The absence list. `set_mastery`, `get_full_history`,
 `submit_answer_for_learner`, `disable_review`, `export_vault`. None of them
@@ -257,7 +278,7 @@ did not write.
 
 `webmcp`, `agentic-web`, `learning`, `edtech`, `privacy`, `user-owned-data`,
 `cryptography`, `interoperability`, `protocol`, `cloudflare-workers`,
-`human-in-the-loop`, `verifiable-credentials`
+`human-in-the-loop`, `verifiable-credentials`, `cooking`
 
 ## Video
 

@@ -29,8 +29,8 @@ import {
   isToken
 } from '../shared/protocol.js';
 
-const HARNESS = 'https://nema-harness.migarci2.dev';
-const SECURITY = 'https://nema-security.migarci2.dev';
+const HARNESS = 'https://saucier.migarci2.dev';
+const SECURITY = 'https://linecook.migarci2.dev';
 const NOW = '2026-09-02T10:00:00Z';
 
 const ORIGINS = {
@@ -48,22 +48,22 @@ function minutesAfter(iso, minutes) {
 function sampleRequest(audience = HARNESS) {
   return buildReadinessRequest({
     audience,
-    purpose: 'personalize-agent-evals-path',
+    purpose: 'personalize-pan-sauces-path',
     requirements: [
-      { concept: 'nema:software-testing', ability: 'apply' },
-      { concept: 'nema:agent-loop', ability: 'explain' }
+      { concept: 'nema:knife-skills', ability: 'apply' },
+      { concept: 'nema:heat-control', ability: 'explain' }
     ]
   });
 }
 
 const SAMPLE_STATUSES = [
   {
-    concept: 'nema:software-testing',
+    concept: 'nema:knife-skills',
     ability: 'apply',
     status: 'verified',
     confidence: 'high'
   },
-  { concept: 'nema:agent-loop', ability: 'explain', status: 'uncertain', confidence: 'low' }
+  { concept: 'nema:heat-control', ability: 'explain', status: 'uncertain', confidence: 'low' }
 ];
 
 async function issueAssertion(overrides = {}) {
@@ -83,7 +83,7 @@ async function issueAssertion(overrides = {}) {
 function sampleReceiptInput(overrides = {}) {
   return {
     issuer: HARNESS,
-    keyId: 'harness-2026-09',
+    keyId: 'saucier-2026-09',
     subject: 'lk_5NIcERfrWDlOO6bR',
     activity: {
       id: 'eval-design-lab',
@@ -93,7 +93,7 @@ function sampleReceiptInput(overrides = {}) {
     },
     claims: [
       {
-        concept: 'nema:agent-evals',
+        concept: 'nema:pan-sauces',
         ability: 'apply',
         evidenceType: 'application',
         result: 'passed',
@@ -183,7 +183,7 @@ test('buildReadinessRequest normalizes and requestHash is stable', async () => {
   const request = sampleRequest();
   assert.deepEqual(Object.keys(request), ['protocol', 'audience', 'purpose', 'requirements']);
   assert.deepEqual(request.requirements[0], {
-    concept: 'nema:software-testing',
+    concept: 'nema:knife-skills',
     ability: 'apply'
   });
 
@@ -326,7 +326,7 @@ test('an assertion never discloses a concept the request did not ask about', asy
       buildAssertionPayload({
         request,
         statuses: [
-          { concept: 'nema:software-testing', ability: 'transfer', status: 'verified', confidence: 'high' }
+          { concept: 'nema:knife-skills', ability: 'transfer', status: 'verified', confidence: 'high' }
         ],
         vaultPublicJwk: vault.publicJwk,
         now: NOW
@@ -441,7 +441,7 @@ test('a receipt payload has the documented shape', () => {
 test('a receipt from a known issuer verifies', async () => {
   const harness = await generateKeyPair();
   const issuers = {
-    'harness-2026-09': { origin: HARNESS, jwk: harness.publicJwk, name: 'Saucier School', id: 'harness' }
+    'saucier-2026-09': { origin: HARNESS, jwk: harness.publicJwk, name: 'Saucier School', id: 'harness' }
   };
   const token = await signToken(buildReceiptPayload(sampleReceiptInput()), harness.privateJwk);
 
@@ -455,7 +455,7 @@ test('a receipt from an unknown issuer is not accepted', async () => {
   const stranger = await generateKeyPair();
   const harness = await generateKeyPair();
   const issuers = {
-    'harness-2026-09': { origin: HARNESS, jwk: harness.publicJwk, name: 'Saucier School' }
+    'saucier-2026-09': { origin: HARNESS, jwk: harness.publicJwk, name: 'Saucier School' }
   };
 
   const unknownKeyId = await signToken(
@@ -479,7 +479,7 @@ test('a receipt from an unknown issuer is not accepted', async () => {
 test('a receipt signed by the wrong key is rejected', async () => {
   const harness = await generateKeyPair();
   const mallory = await generateKeyPair();
-  const issuers = { 'harness-2026-09': { origin: HARNESS, jwk: harness.publicJwk } };
+  const issuers = { 'saucier-2026-09': { origin: HARNESS, jwk: harness.publicJwk } };
 
   const token = await signToken(buildReceiptPayload(sampleReceiptInput()), mallory.privateJwk);
   const result = await verifyReceipt(token, issuers);
@@ -489,7 +489,7 @@ test('a receipt signed by the wrong key is rejected', async () => {
 
 test('a duplicate receipt is rejected', async () => {
   const harness = await generateKeyPair();
-  const issuers = { 'harness-2026-09': { origin: HARNESS, jwk: harness.publicJwk } };
+  const issuers = { 'saucier-2026-09': { origin: HARNESS, jwk: harness.publicJwk } };
   const token = await signToken(buildReceiptPayload(sampleReceiptInput()), harness.privateJwk);
 
   const seenReceiptIds = new Set();
@@ -509,7 +509,7 @@ test('a duplicate receipt is rejected', async () => {
 
 test('a malformed receipt is reported as malformed, never as unknown-issuer', async () => {
   const harness = await generateKeyPair();
-  const issuers = { 'harness-2026-09': { origin: HARNESS, jwk: harness.publicJwk } };
+  const issuers = { 'saucier-2026-09': { origin: HARNESS, jwk: harness.publicJwk } };
 
   const extraKey = await signToken(
     { ...buildReceiptPayload(sampleReceiptInput()), learnerEmail: 'nobody@example.com' },
@@ -572,14 +572,14 @@ test('assertShape rejects an assertion with wrongly typed fields', async () => {
   assert.throws(() => assertShape({ ...payload, learnerKeyId: [] }, ASSERTION_TYPE), /learnerKeyId/);
   assert.throws(() => assertShape({ ...payload, expiresAt: 'soon' }, ASSERTION_TYPE), /expiresAt/);
   assert.throws(
-    () => assertShape({ ...payload, assertions: ['nema:agent-evals'] }, ASSERTION_TYPE),
+    () => assertShape({ ...payload, assertions: ['nema:pan-sauces'] }, ASSERTION_TYPE),
     /assertions\[0\]/
   );
 });
 
 test('a receipt with wrongly typed fields is malformed, and never verifies', async () => {
   const harness = await generateKeyPair();
-  const issuers = { 'harness-2026-09': { origin: HARNESS, jwk: harness.publicJwk } };
+  const issuers = { 'saucier-2026-09': { origin: HARNESS, jwk: harness.publicJwk } };
 
   // Signed by the real key, so only the shape check can catch it. Without the
   // scalar checks the duplicate guard would end up comparing "[object Object]".
@@ -618,35 +618,27 @@ test('receipt conditions must be numbers, not anything Number() will swallow', (
 
 test('buildIssuerMap joins issuers with origins and names', () => {
   const issuersJson = {
-    harness: { kid: 'harness-2026-09', jwk: { kty: 'EC', crv: 'P-256', x: 'x1', y: 'y1' } },
-    security: { kid: 'security-2026-09', jwk: { kty: 'EC', crv: 'P-256', x: 'x2', y: 'y2' } },
+    harness: { kid: 'saucier-2026-09', jwk: { kty: 'EC', crv: 'P-256', x: 'x1', y: 'y1' } },
+    security: { kid: 'linecook-2026-09', jwk: { kty: 'EC', crv: 'P-256', x: 'x2', y: 'y2' } },
     seed: { kid: 'seed-2026-09', jwk: { kty: 'EC', crv: 'P-256', x: 'x3', y: 'y3' } }
   };
 
   const map = buildIssuerMap(issuersJson, ORIGINS);
-  assert.deepEqual(Object.keys(map).sort(), [
-    'harness-2026-09',
-    'security-2026-09',
-    'seed-2026-09'
-  ]);
-  assert.deepEqual(map['harness-2026-09'], {
+  assert.deepEqual(Object.keys(map).sort(), ['linecook-2026-09', 'saucier-2026-09', 'seed-2026-09']);
+  assert.deepEqual(map['saucier-2026-09'], {
     origin: HARNESS,
     jwk: issuersJson.harness.jwk,
     name: 'Saucier School',
     id: 'harness'
   });
-  assert.equal(map['security-2026-09'].name, 'Line Cook Lab');
+  assert.equal(map['linecook-2026-09'].name, 'Line Cook Lab');
   assert.equal(map['seed-2026-09'].origin, SEED_ORIGIN);
   assert.equal(map['seed-2026-09'].name, 'nema demo seed');
 
   // One malformed entry is skipped: it must not disable the other issuers.
   assert.deepEqual(buildIssuerMap({ broken: { kid: 'k' } }, ORIGINS), {});
   const partial = buildIssuerMap({ ...issuersJson, broken: { kid: 'k' } }, ORIGINS);
-  assert.deepEqual(Object.keys(partial).sort(), [
-    'harness-2026-09',
-    'security-2026-09',
-    'seed-2026-09'
-  ]);
+  assert.deepEqual(Object.keys(partial).sort(), ['linecook-2026-09', 'saucier-2026-09', 'seed-2026-09']);
 });
 
 test('an unusable issuer registry throws instead of silently trusting nobody', () => {
@@ -667,7 +659,7 @@ test('the full handoff works end to end: assertion out, receipt back', async () 
   const vault = await generateKeyPair();
   const harness = await generateKeyPair();
   const issuers = {
-    'harness-2026-09': { origin: HARNESS, jwk: harness.publicJwk, name: 'Saucier School' }
+    'saucier-2026-09': { origin: HARNESS, jwk: harness.publicJwk, name: 'Saucier School' }
   };
 
   // 1. The provider asks, the vault answers with bands only.
@@ -700,5 +692,5 @@ test('the full handoff works end to end: assertion out, receipt back', async () 
   const staged = await verifyReceipt(receiptToken, issuers, { seenReceiptIds: new Set() });
   assert.equal(staged.ok, true);
   assert.equal(staged.payload.subject, await learnerKeyId(vault.publicJwk, HARNESS));
-  assert.equal(staged.payload.claims[0].concept, 'nema:agent-evals');
+  assert.equal(staged.payload.claims[0].concept, 'nema:pan-sauces');
 });

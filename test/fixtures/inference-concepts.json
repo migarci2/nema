@@ -1,34 +1,34 @@
 [
   {
-    "id": "nema:agent-evals",
-    "title": "Agent evals",
-    "summary": "Task level evaluation of an agent's end to end behaviour, as opposed to unit tests of its functions.",
+    "id": "nema:emulsions",
+    "title": "Emulsions",
+    "summary": "Fat held as droplets in water, or the reverse, kept apart by an emulsifier such as mustard, egg yolk lecithin or the proteins in butter.",
     "prereqs": [
-      "nema:software-testing",
-      "nema:agent-loop"
+      "nema:heat-control",
+      "nema:ratios"
     ],
     "confusableWith": [
-      "nema:unit-testing"
+      "nema:reduction"
     ],
     "misconceptions": [
       {
-        "id": "unit_tests_are_equivalent_to_agent_evals",
-        "text": "If the unit tests pass, the agent works."
+        "id": "a_sauce_can_be_boiled_once_it_holds",
+        "text": "Once an emulsion holds, it is stable and can be boiled."
       }
     ],
     "rubric": {
       "explain": [
-        "describes evaluation at the level of a whole task, not a single function",
-        "names at least one signal that only appears end to end"
+        "names the three parts: dispersed fat, a continuous water phase and an emulsifier",
+        "explains why droplet size and steady agitation decide how stable the sauce is"
       ],
       "apply": [
-        "writes an eval that fails when the agent takes a wrong path",
-        "states an acceptance condition before running the agent"
+        "mounts a pan sauce with cold butter off the heat, a cube at a time, and keeps it glossy",
+        "builds a vinaigrette at 3 parts oil to 1 part acid with mustard and holds it through service"
       ],
       "discriminate": [
-        "distinguishes deterministic function checks from task level agent evaluation",
-        "mentions end to end behaviour",
-        "gives one example where unit tests pass but the agent fails"
+        "separates a sauce held by emulsion from one thickened by reduction or by starch",
+        "separates a broken sauce from a merely thin one and gives the fix for each",
+        "separates a temporary emulsion from one stabilised by an emulsifier"
       ]
     },
     "minutes": {
@@ -39,20 +39,20 @@
     }
   },
   {
-    "id": "nema:unit-testing",
-    "title": "Unit testing",
-    "summary": "Checking a single function against expected outputs in isolation.",
+    "id": "nema:reduction",
+    "title": "Reduction",
+    "summary": "Boiling water out of a liquid to concentrate flavour, gelatin and body, which concentrates salt and acid at the same rate.",
     "prereqs": [
-      "nema:software-testing"
+      "nema:heat-control"
     ],
     "confusableWith": [
-      "nema:agent-evals"
+      "nema:emulsions"
     ],
     "misconceptions": [],
     "rubric": {
       "explain": [
-        "isolates one unit",
-        "states the expected output before running"
+        "explains that a reduction concentrates salt and acid along with the flavour",
+        "explains what gelatin from a stock does to body as the liquid falls"
       ]
     },
     "minutes": {
@@ -63,18 +63,18 @@
     }
   },
   {
-    "id": "nema:software-testing",
-    "title": "Software testing",
-    "summary": "Deciding what to check, at which level, and what a failing check tells you.",
+    "id": "nema:heat-control",
+    "title": "Heat control",
+    "summary": "Matching the energy under the pan to what the food needs: a rate of heat transfer you steer by sound, colour and smell, not a number on a dial.",
     "prereqs": [],
     "confusableWith": [],
     "misconceptions": [],
     "rubric": {
       "explain": [
-        "separates the thing under test from the check"
+        "distinguishes conduction, convection and radiation and gives one pan example of each"
       ],
       "apply": [
-        "chooses a level of testing that matches the risk"
+        "preheats a heavy pan to roughly 190 to 200 C for a sear and lets it recover between batches"
       ]
     },
     "minutes": {
@@ -85,16 +85,16 @@
     }
   },
   {
-    "id": "nema:agent-loop",
-    "title": "Agent loop",
-    "summary": "The perceive, decide, act, observe cycle that an agent runs until a stop condition.",
+    "id": "nema:ratios",
+    "title": "Cooking ratios",
+    "summary": "The fixed proportions by weight underneath a recipe: 1:1 roux, 3:1 vinaigrette, a 5 percent brine, 3:2:1 shortcrust. They scale where a cup measure does not.",
     "prereqs": [],
     "confusableWith": [],
     "misconceptions": [],
     "rubric": {
       "explain": [
-        "names the four stages",
-        "states one stop condition"
+        "states at least three working ratios by weight and what each one produces",
+        "explains why a ratio by weight survives scaling where a volume measure drifts"
       ]
     },
     "minutes": {
@@ -105,16 +105,16 @@
     }
   },
   {
-    "id": "nema:json-schema",
-    "title": "JSON Schema",
-    "summary": "Declaring the shape of an object so bad payloads are rejected before they reach the code.",
+    "id": "nema:knife-skills",
+    "title": "Knife skills",
+    "summary": "Grip, guiding hand and a small set of cuts held to a consistent size, so every piece on the board cooks at the same rate.",
     "prereqs": [],
     "confusableWith": [],
     "misconceptions": [],
     "rubric": {
       "apply": [
-        "rejects the payload that violates the constraint",
-        "keeps additionalProperties closed"
+        "cuts a brunoise, a julienne and a batonnet within about a millimetre of the standard size",
+        "keeps the tip on the board and cuts with a forward slicing stroke rather than chopping down"
       ]
     },
     "minutes": {
@@ -125,26 +125,26 @@
     }
   },
   {
-    "id": "nema:feedback-loops",
-    "title": "Feedback loops",
-    "summary": "Routing the result of an action back into the next decision, and what that does to failure modes.",
+    "id": "nema:seasoning",
+    "title": "Seasoning",
+    "summary": "Salt used in layers through the cooking, judged by weight, around 1 percent of the food for most savoury dishes, and confirmed by tasting at every stage.",
     "prereqs": [
-      "nema:agent-loop"
+      "nema:ratios"
     ],
     "confusableWith": [
-      "nema:feedforward"
+      "nema:acid-balance"
     ],
     "misconceptions": [],
     "rubric": {
       "explain": [
-        "describes the return path",
-        "names one way the loop amplifies an error"
+        "explains what salt does to perceived sweetness and bitterness, not only to saltiness",
+        "explains why salt added early has time to diffuse into the food"
       ],
       "apply": [
-        "closes the loop with a check the agent cannot skip"
+        "seasons in layers and tastes at each stage instead of once at the pass"
       ],
       "discriminate": [
-        "separates a loop that corrects from a loop that amplifies"
+        "separates a dish that is under salted from one that is flat and needs acid"
       ]
     },
     "minutes": {
@@ -155,15 +155,15 @@
     }
   },
   {
-    "id": "nema:observability",
-    "title": "Observability",
-    "summary": "Being able to answer a new question about a running system without shipping new code.",
+    "id": "nema:mise-en-place",
+    "title": "Mise en place",
+    "summary": "Everything measured, cut and placed within reach before the first pan goes on, so that cooking is execution rather than searching.",
     "prereqs": [],
     "confusableWith": [],
     "misconceptions": [],
     "rubric": {
       "explain": [
-        "separates logs, traces and metrics by the question each answers"
+        "lists what a station holds: prepped components, tools, waste bin, towels and a wiped rail"
       ]
     },
     "minutes": {
@@ -174,18 +174,18 @@
     }
   },
   {
-    "id": "nema:tool-calling",
-    "title": "Tool calling",
-    "summary": "Letting a model select a named function and produce arguments that satisfy its schema.",
+    "id": "nema:stocks",
+    "title": "Stocks",
+    "summary": "Water drawn through bones, mirepoix and aromatics below a simmer, so gelatin and flavour come out without emulsifying the fat into the liquid.",
     "prereqs": [
-      "nema:json-schema"
+      "nema:knife-skills"
     ],
     "confusableWith": [],
     "misconceptions": [],
     "rubric": {
       "explain": [
-        "names the schema as the contract",
-        "states who executes the call"
+        "explains why a stock is never boiled: it emulsifies the fat and clouds the pot",
+        "gives working times, roughly four hours for veal or beef and forty five minutes for fish"
       ]
     },
     "minutes": {
@@ -196,16 +196,16 @@
     }
   },
   {
-    "id": "nema:cost-latency",
-    "title": "Cost and latency",
-    "summary": "Budgeting tokens, calls and wall clock time as first class design constraints.",
+    "id": "nema:plating",
+    "title": "Plating",
+    "summary": "Composing the plate for the guest and for the pass: hot food on hot plates, clean rims, and a layout that survives the walk to the table.",
     "prereqs": [],
     "confusableWith": [],
     "misconceptions": [],
     "rubric": {
       "explain": [
-        "names one cost driver and one latency driver",
-        "states a budget per turn"
+        "explains why plate temperature matters as much as the arrangement",
+        "explains how the placement of the sauce changes the first bite"
       ]
     },
     "minutes": {
@@ -216,15 +216,15 @@
     }
   },
   {
-    "id": "nema:memory-design",
-    "title": "Memory design",
-    "summary": "Choosing what an agent carries forward, for how long, and what it is allowed to forget.",
+    "id": "nema:kitchen-communication",
+    "title": "Kitchen communication",
+    "summary": "The spoken protocol of a working line: calls and callbacks, corners and hot pans, and saying the problem out loud while it is still small.",
     "prereqs": [],
     "confusableWith": [],
     "misconceptions": [],
     "rubric": {
       "explain": [
-        "separates working context from durable memory"
+        "explains why every call gets a callback"
       ]
     },
     "minutes": {
@@ -235,22 +235,22 @@
     }
   },
   {
-    "id": "nema:threat-modeling",
-    "title": "Threat modeling",
-    "summary": "Naming who can attack a system, through which surface, and what they gain by it.",
+    "id": "nema:food-safety",
+    "title": "Food safety",
+    "summary": "Keeping food out of the 5 to 63 C danger zone, cooking to a verified core temperature, and keeping raw product away from anything ready to eat.",
     "prereqs": [],
     "confusableWith": [
-      "nema:attack-surface"
+      "nema:cross-contamination"
     ],
     "misconceptions": [],
     "rubric": {
       "explain": [
-        "names an attacker with a motive",
-        "names the surface the attacker reaches"
+        "states the danger zone, 5 to 63 C, and what the time limits inside it are",
+        "gives a verified cook temperature such as 75 C for poultry, or 70 C held for two minutes"
       ],
       "apply": [
-        "lists one concrete attack path end to end",
-        "states the mitigation that closes it"
+        "probes the thickest part of the product and records the reading in the log",
+        "cools cooked food from 60 to 21 C within two hours and to 5 C within four more"
       ]
     },
     "minutes": {
@@ -261,18 +261,18 @@
     }
   },
   {
-    "id": "nema:least-privilege",
-    "title": "Least privilege",
-    "summary": "Granting the smallest permission that still lets the work happen, and nothing beyond it.",
+    "id": "nema:cold-chain",
+    "title": "Cold chain",
+    "summary": "Unbroken refrigeration from the delivery door to the plate, chilled at or below 5 C and frozen at minus 18 C, logged rather than assumed.",
     "prereqs": [
-      "nema:threat-modeling"
+      "nema:food-safety"
     ],
     "confusableWith": [],
     "misconceptions": [],
     "rubric": {
       "explain": [
-        "states the permission and the task it exists for",
-        "names what is denied by default"
+        "gives the working targets: 5 C or below chilled, minus 18 C frozen",
+        "explains why a delivery is probed at the door rather than after it is put away"
       ]
     },
     "minutes": {
@@ -283,21 +283,21 @@
     }
   },
   {
-    "id": "nema:prompt-injection",
-    "title": "Prompt injection",
-    "summary": "Untrusted content reaching a model as if it were instruction from the operator.",
+    "id": "nema:allergen-handling",
+    "title": "Allergen handling",
+    "summary": "Treating a declared allergen as a separate workflow: a dedicated station, clean tools, a checked ingredient deck and a spoken handover on every ticket.",
     "prereqs": [
-      "nema:threat-modeling"
+      "nema:food-safety"
     ],
     "confusableWith": [],
     "misconceptions": [],
     "rubric": {
       "explain": [
-        "separates instruction from data",
-        "names one channel the injected text arrives on"
+        "explains why an allergen is dose sensitive in a way a pathogen count is not",
+        "explains why removing the visible allergen does not make the plate safe"
       ],
       "apply": [
-        "blocks the injected instruction without blocking the task"
+        "plates an allergen ticket at a dedicated station with clean tools and a fresh pan"
       ]
     },
     "minutes": {
@@ -308,18 +308,18 @@
     }
   },
   {
-    "id": "nema:attack-surface",
-    "title": "Attack surface",
-    "summary": "Every input, tool and boundary an attacker can reach, counted rather than assumed.",
+    "id": "nema:cross-contamination",
+    "title": "Cross contamination",
+    "summary": "Pathogens moving from raw product to ready to eat food along hands, boards, cloths, probes and shared utensils.",
     "prereqs": [],
     "confusableWith": [
-      "nema:threat-modeling"
+      "nema:food-safety"
     ],
     "misconceptions": [],
     "rubric": {
       "explain": [
-        "enumerates the reachable inputs",
-        "states one way the surface grows"
+        "names the usual routes: hands, boards, cloths, probes and shared utensils",
+        "explains why colour coded boards only work if the whole station keeps to them"
       ]
     },
     "minutes": {

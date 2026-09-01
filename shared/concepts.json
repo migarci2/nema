@@ -1,963 +1,999 @@
 [
   {
-    "id": "nema:software-testing",
-    "title": "Software testing",
-    "summary": "The practice of checking that code behaves as specified through repeatable automated checks written at the cheapest level that can catch the defect.",
+    "id": "nema:knife-skills",
+    "title": "Knife skills",
+    "summary": "Grip, guiding hand and a small set of cuts held to a consistent size, so every piece on the board cooks at the same rate.",
     "prereqs": [],
-    "confusableWith": [
-      "nema:unit-testing",
-      "nema:agent-evals"
-    ],
+    "confusableWith": [],
     "misconceptions": [
       {
-        "id": "coverage_means_correctness",
-        "text": "High line coverage means the code is correct."
+        "id": "a_sharp_knife_is_more_dangerous",
+        "text": "A sharp knife is more dangerous than a dull one."
       }
     ],
     "rubric": {
       "explain": [
-        "states what a test asserts and what it cannot assert",
-        "names at least three test levels and says what each one isolates",
-        "explains why a suite is a design constraint and not only a safety net"
+        "names the pinch grip and the clawed guiding hand and says what each one controls",
+        "explains why a dull blade slips off the skin of an onion where a sharp one bites",
+        "states why uniform size matters more than the shape of the cut"
       ],
       "apply": [
-        "writes a failing test before the fix and shows it turn green",
-        "chooses the cheapest level that can catch the defect",
-        "keeps each test independent of execution order and shared state"
+        "cuts a brunoise, a julienne and a batonnet within about a millimetre of the standard size",
+        "keeps the tip on the board and cuts with a forward slicing stroke rather than chopping down",
+        "hones the edge on a steel between tasks and stops to sharpen when honing stops working"
       ],
       "discriminate": [
-        "separates a unit test from an integration test by what it isolates",
-        "separates coverage from correctness with one concrete example",
-        "separates a flaky test from a genuinely failing test by the evidence"
+        "separates honing, which realigns the edge, from sharpening, which removes steel",
+        "separates a dice from a mince by the finished size and by what the cut is for",
+        "separates slicing across the grain from slicing with it and says what each does to texture"
       ]
     },
     "minutes": {
-      "retrieve": 5,
+      "retrieve": 4,
+      "explain": 4,
+      "apply": 8,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "blade-work",
+      "security": "knife-handling"
+    }
+  },
+  {
+    "id": "nema:heat-control",
+    "title": "Heat control",
+    "summary": "Matching the energy under the pan to what the food needs: a rate of heat transfer you steer by sound, colour and smell, not a number on a dial.",
+    "prereqs": [],
+    "confusableWith": [
+      "nema:temperature-control"
+    ],
+    "misconceptions": [
+      {
+        "id": "hotter_is_always_faster",
+        "text": "Turning the heat up always cooks the food faster."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "distinguishes conduction, convection and radiation and gives one pan example of each",
+        "explains why a heavy pan holds a steadier surface temperature than a thin one",
+        "explains what happens to the pan surface the moment cold food lands in it"
+      ],
+      "apply": [
+        "preheats a heavy pan to roughly 190 to 200 C for a sear and lets it recover between batches",
+        "holds a simmer at 85 to 95 C without letting it break into a rolling boil",
+        "adjusts the flame in response to the sound in the pan rather than to a fixed setting"
+      ],
+      "discriminate": [
+        "separates the heat going into the pan from the temperature inside the food",
+        "separates shimmering oil, a first wisp of smoke and a scorching pan as three different states",
+        "separates a sear, which needs high dry heat, from a sweat, which needs low covered heat"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
+      "explain": 4,
+      "apply": 8,
+      "discriminate": 5
+    },
+    "aliases": {
+      "harness": "pan-heat",
+      "security": "burner-control"
+    }
+  },
+  {
+    "id": "nema:mise-en-place",
+    "title": "Mise en place",
+    "summary": "Everything measured, cut and placed within reach before the first pan goes on, so that cooking is execution rather than searching.",
+    "prereqs": [],
+    "confusableWith": [],
+    "misconceptions": [
+      {
+        "id": "prep_is_wasted_time",
+        "text": "Prep is dead time you can save by starting the pan earlier."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "lists what a station holds: prepped components, tools, waste bin, towels and a wiped rail",
+        "explains why the layout of the station follows the order of the cooking",
+        "explains how prep moves decisions out of service and into the quiet part of the day"
+      ],
+      "apply": [
+        "writes a prep list ordered by longest lead time first and works it from the top",
+        "sets a station so every component of the dish is reachable without stepping away",
+        "resets and wipes the station between courses instead of only at the end of service"
+      ],
+      "discriminate": [
+        "separates mise en place from simply prepping ingredients in advance",
+        "separates a station reset from a deep clean",
+        "separates a hold-up caused by missing prep from one caused by oven or burner space"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
       "explain": 4,
       "apply": 7,
       "discriminate": 4
     },
     "aliases": {
-      "harness": "testing-fundamentals",
-      "security": "software-testing"
+      "harness": "station-setup",
+      "security": "mise"
     }
   },
   {
-    "id": "nema:json-schema",
-    "title": "JSON Schema",
-    "summary": "A declarative vocabulary for constraining the shape of JSON documents so an invalid payload is rejected before it reaches application code.",
+    "id": "nema:ratios",
+    "title": "Cooking ratios",
+    "summary": "The fixed proportions by weight underneath a recipe: 1:1 roux, 3:1 vinaigrette, a 5 percent brine, 3:2:1 shortcrust. They scale where a cup measure does not.",
     "prereqs": [],
-    "confusableWith": [
-      "nema:output-validation"
-    ],
+    "confusableWith": [],
     "misconceptions": [
       {
-        "id": "types_are_validation",
-        "text": "If the property types match, the payload is valid."
+        "id": "volume_measures_are_close_enough",
+        "text": "Measuring flour by the cup is as reliable as weighing it."
       }
     ],
     "rubric": {
       "explain": [
-        "distinguishes type, required and additionalProperties by what each one rejects",
-        "names one invariant a schema cannot express, such as a cross field rule",
-        "describes what a validator returns on failure and how a caller uses it"
+        "states at least three working ratios by weight and what each one produces",
+        "explains why a ratio by weight survives scaling where a volume measure drifts",
+        "says which ingredient in a ratio is the reference and which one moves"
       ],
       "apply": [
-        "writes a schema that rejects a named bad payload and accepts the good one",
-        "sets additionalProperties to false where the interface is closed",
-        "uses enum or const instead of a free string where the value set is fixed"
+        "scales a 3:1 vinaigrette from 60 g to 900 g without rebuilding the recipe",
+        "weighs a 1:1 roux and reads a finished sauce back to about 100 g of roux per litre",
+        "brines at 5 percent salt by weight of water and sets the time by the thickness of the cut"
       ],
       "discriminate": [
-        "separates schema validation from business rule validation",
-        "separates a schema that constrains from one that only documents",
-        "separates a parse failure from a validation failure"
+        "separates a ratio from a recipe by what stays fixed when the yield changes",
+        "separates baker's percentage, where flour is 100 percent, from a percentage of the total weight",
+        "separates a ratio that holds by weight from one that only works at one scale by volume"
       ]
     },
     "minutes": {
-      "retrieve": 5,
+      "retrieve": 4,
       "explain": 4,
       "apply": 6,
       "discriminate": 4
     },
     "aliases": {
-      "harness": "schema-basics",
-      "security": "payload-schemas"
+      "harness": "sauce-ratios",
+      "security": "recipe-ratios"
     }
   },
   {
-    "id": "nema:tool-calling",
-    "title": "Tool calling",
-    "summary": "The mechanism by which a model requests a named function with structured arguments and then has to interpret the structured result it gets back.",
-    "prereqs": [],
+    "id": "nema:seasoning",
+    "title": "Seasoning",
+    "summary": "Salt used in layers through the cooking, judged by weight, around 1 percent of the food for most savoury dishes, and confirmed by tasting at every stage.",
+    "prereqs": [
+      "nema:ratios"
+    ],
     "confusableWith": [
-      "nema:tool-interface-design"
+      "nema:acid-balance"
     ],
     "misconceptions": [
       {
-        "id": "model_executes_the_tool",
-        "text": "The model runs the tool itself, so the application cannot refuse the call."
+        "id": "salt_only_at_the_end",
+        "text": "Salt belongs at the end, so the dish does not get too salty."
       }
     ],
     "rubric": {
       "explain": [
-        "describes the round trip from tool declaration to arguments to result",
-        "states that the application, not the model, decides whether to execute",
-        "explains what happens when arguments do not match the declared schema"
+        "explains what salt does to perceived sweetness and bitterness, not only to saltiness",
+        "explains why salt added early has time to diffuse into the food",
+        "gives a working target by weight, about 1 percent for most savoury food"
       ],
       "apply": [
-        "declares a tool with a schema the model can fill without extra prose",
-        "handles a malformed or missing argument without throwing to the caller",
-        "returns a result the model can act on, with a status field and no free text blob"
+        "seasons in layers and tastes at each stage instead of once at the pass",
+        "weighs salt for a brine or a forcemeat rather than measuring by pinch",
+        "brings a flat dish back by changing one thing at a time and naming which one it needed"
       ],
       "discriminate": [
-        "separates the call protocol from the design of the tool interface",
-        "separates a tool result from a model assertion about the world",
-        "separates a refused call from a failed call in the trace"
+        "separates a dish that is under salted from one that is flat and needs acid",
+        "separates seasoning by weight from seasoning by taste and says when each is used",
+        "separates fine salt from coarse salt by weight for the same spoon"
       ]
     },
     "minutes": {
-      "retrieve": 5,
+      "retrieve": 4,
       "explain": 4,
       "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "seasoning-layers",
+      "security": "seasoning"
+    }
+  },
+  {
+    "id": "nema:maillard-reaction",
+    "title": "Maillard reaction",
+    "summary": "The browning between amino acids and reducing sugars that runs usefully on a dry surface above about 140 C and builds the crust, the fond and most of the aroma.",
+    "prereqs": [
+      "nema:heat-control"
+    ],
+    "confusableWith": [
+      "nema:caramelization"
+    ],
+    "misconceptions": [
+      {
+        "id": "searing_seals_in_juices",
+        "text": "Searing meat seals in the juices."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states what the reaction needs: amino acids, reducing sugars and a dry surface above about 140 C",
+        "explains why a wet surface stalls near 100 C until the water has gone",
+        "says what browning actually adds, which is colour and aroma rather than sealed in moisture"
+      ],
+      "apply": [
+        "dries and salts the surface, then sears in a pan held near 200 C without crowding it",
+        "leaves the protein alone until it releases from the pan instead of moving it early",
+        "keeps the fond in the pan and builds the sauce on it"
+      ],
+      "discriminate": [
+        "separates Maillard browning, which needs protein, from caramelization of sugar alone",
+        "separates a crust built by dry heat from a colour built by a sugar glaze",
+        "gives one case where a seared piece of meat loses more juice than an unseared one"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
+      "explain": 4,
+      "apply": 8,
       "discriminate": 3
     },
     "aliases": {
-      "harness": "tool-invocation",
-      "security": "tool-calling"
+      "harness": "browning-and-fond",
+      "security": "searing"
     }
   },
   {
-    "id": "nema:unit-testing",
-    "title": "Unit testing",
-    "summary": "Isolated checks of one function or module with its collaborators replaced, fast enough to run on every save.",
+    "id": "nema:caramelization",
+    "title": "Caramelization",
+    "summary": "The thermal breakdown of sugar on its own, starting near 160 to 170 C for sucrose, which builds colour and then bitterness with no protein involved.",
     "prereqs": [
-      "nema:software-testing"
+      "nema:heat-control"
     ],
     "confusableWith": [
-      "nema:agent-evals",
-      "nema:regression-testing",
-      "nema:software-testing"
-    ],
-    "misconceptions": [],
-    "rubric": {
-      "explain": [
-        "states what is replaced at the unit boundary and why",
-        "explains why a unit test must not depend on network or clock",
-        "says what a unit test proves about the whole system, which is little"
-      ],
-      "apply": [
-        "replaces one collaborator with a double and asserts on the observable result",
-        "names the test after the behaviour rather than after the function",
-        "covers the boundary case that motivated the code, not only the happy path"
-      ],
-      "discriminate": [
-        "separates a unit test from a task level agent eval by what fails when it fails",
-        "separates a stub from a mock by what each one asserts",
-        "separates a slow unit test from an integration test that is mislabelled"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
-      "explain": 4,
-      "apply": 6,
-      "discriminate": 4
-    },
-    "aliases": {
-      "harness": "unit-tests",
-      "security": "unit-testing"
-    }
-  },
-  {
-    "id": "nema:agent-loop",
-    "title": "Agent loop",
-    "summary": "The cycle of observe, decide, act and record that turns a single model call into a process able to make progress across many steps.",
-    "prereqs": [
-      "nema:tool-calling"
-    ],
-    "confusableWith": [
-      "nema:state-management",
-      "nema:feedback-loops"
+      "nema:maillard-reaction"
     ],
     "misconceptions": [
       {
-        "id": "loop_is_just_retry",
-        "text": "An agent loop is a retry loop around one prompt."
+        "id": "onions_caramelize_in_ten_minutes",
+        "text": "Onions caramelize in ten minutes over high heat."
       }
     ],
     "rubric": {
       "explain": [
-        "names the four phases and what carries information between them",
-        "states what makes the loop terminate, including the failure exits",
-        "explains why the record phase is what makes the next decision better"
+        "gives an approximate onset for sucrose, about 160 to 170 C, and what happens past deep amber",
+        "explains why the last twenty seconds of a caramel change it more than the first two minutes",
+        "explains how a wet caramel and a dry caramel behave differently in the pan"
       ],
       "apply": [
-        "writes a loop with an explicit step budget and a stop condition",
-        "passes the tool result back as evidence rather than as a new instruction",
-        "records each step so the run can be read afterwards"
+        "takes a dry caramel to a deep amber and stops it with cream or butter off the heat",
+        "cooks onions slowly with a little salt for roughly 40 minutes, deglazing as fond builds",
+        "reads colour and smell to stop the pan a moment before it turns bitter"
       ],
       "discriminate": [
-        "separates the loop from the state it reads and writes",
-        "separates a planning step from an acting step in a trace",
-        "separates a loop that makes progress from one that repeats itself"
+        "separates caramelization from Maillard browning by what is reacting",
+        "separates genuinely caramelized onions from onions merely browned in ten minutes",
+        "separates a seized caramel from a crystallized one and gives the fix for each"
       ]
     },
     "minutes": {
-      "retrieve": 5,
-      "explain": 5,
-      "apply": 7,
-      "discriminate": 4
-    },
-    "aliases": {
-      "harness": "agent-control-loop",
-      "security": "agent-loop"
-    }
-  },
-  {
-    "id": "nema:tool-interface-design",
-    "title": "Tool interface design",
-    "summary": "Choosing the name, schema, description and return shape of a tool so a model can call it correctly without reading the implementation.",
-    "prereqs": [
-      "nema:json-schema",
-      "nema:tool-calling"
-    ],
-    "confusableWith": [
-      "nema:tool-calling"
-    ],
-    "misconceptions": [
-      {
-        "id": "more_tools_is_more_capability",
-        "text": "Adding more tools always makes the agent more capable."
-      }
-    ],
-    "rubric": {
-      "explain": [
-        "explains why the description is part of the interface and not documentation",
-        "states why a closed schema reduces the number of invalid calls",
-        "describes how the return shape changes what the model does next"
-      ],
-      "apply": [
-        "rewrites an ambiguous tool name and description into an unambiguous pair",
-        "collapses two overlapping tools into one with an explicit mode argument",
-        "returns a structured error the model can recover from instead of a thrown exception"
-      ],
-      "discriminate": [
-        "separates interface design from the transport that carries the call",
-        "separates a missing capability from a badly described one",
-        "separates a tool the model misuses from a tool the model should not have"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
-      "explain": 5,
-      "apply": 8,
-      "discriminate": 4
-    },
-    "aliases": {
-      "harness": "tool-design",
-      "security": "tool-surface-design"
-    }
-  },
-  {
-    "id": "nema:acceptance-criteria",
-    "title": "Acceptance criteria",
-    "summary": "Concrete checkable statements of what a finished task must satisfy, written before the work starts.",
-    "prereqs": [
-      "nema:software-testing"
-    ],
-    "confusableWith": [
-      "nema:rubric-grading",
-      "nema:feedforward"
-    ],
-    "misconceptions": [],
-    "rubric": {
-      "explain": [
-        "states why a criterion must be checkable by someone who did not do the work",
-        "explains what a criterion excludes as well as what it requires",
-        "says who writes them and at what point in the task"
-      ],
-      "apply": [
-        "turns a vague request into three criteria with an observable verdict each",
-        "writes one criterion that would fail a plausible wrong solution",
-        "keeps implementation choices out of the criteria"
-      ],
-      "discriminate": [
-        "separates an acceptance criterion from a rubric line used for scoring",
-        "separates a criterion from a preference stated as a requirement",
-        "separates done from good enough for this task"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
-      "explain": 4,
-      "apply": 6,
-      "discriminate": 4
-    },
-    "aliases": {
-      "harness": "acceptance-criteria",
-      "security": "success-criteria"
-    }
-  },
-  {
-    "id": "nema:context-design",
-    "title": "Context design",
-    "summary": "Deciding what information enters the model window at each step, in what order, and what is deliberately left out.",
-    "prereqs": [
-      "nema:agent-loop"
-    ],
-    "confusableWith": [
-      "nema:memory-design",
-      "nema:retrieval-augmentation",
-      "nema:cost-latency"
-    ],
-    "misconceptions": [
-      {
-        "id": "more_context_always_helps",
-        "text": "More context always improves the agent."
-      }
-    ],
-    "rubric": {
-      "explain": [
-        "explains how irrelevant context changes the model's ranking of next actions",
-        "names the cost of context in tokens, latency and attention dilution",
-        "states one rule for what to drop when the window is full"
-      ],
-      "apply": [
-        "cuts a bloated prompt and shows the task still passes its checks",
-        "orders the context so the task statement is not buried by evidence",
-        "marks which blocks are untrusted data rather than instructions"
-      ],
-      "discriminate": [
-        "separates context design from long term memory design",
-        "separates retrieval quality from placement in the window",
-        "separates a prompt that lacks information from one that has too much"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
-      "explain": 5,
-      "apply": 7,
-      "discriminate": 4
-    },
-    "aliases": {
-      "harness": "context-engineering",
-      "security": "context-design"
-    }
-  },
-  {
-    "id": "nema:feedback-loops",
-    "title": "Feedback loops",
-    "summary": "Structures that return the result of an action to the agent so the next decision is corrected by evidence instead of by guessing.",
-    "prereqs": [
-      "nema:agent-loop"
-    ],
-    "confusableWith": [
-      "nema:feedforward",
-      "nema:recovery",
-      "nema:agent-loop"
-    ],
-    "misconceptions": [
-      {
-        "id": "any_output_is_feedback",
-        "text": "Showing the agent its own output counts as a feedback loop."
-      }
-    ],
-    "rubric": {
-      "explain": [
-        "names the signal, the channel and the decision the signal changes",
-        "explains why a loop with no verdict in it is not a feedback loop",
-        "states what makes a loop converge rather than oscillate"
-      ],
-      "apply": [
-        "adds a check whose verdict reaches the agent before its next action",
-        "shortens a loop so the correction happens in the same run",
-        "shows one run where the loop changed the agent's second attempt"
-      ],
-      "discriminate": [
-        "separates feedback from feedforward by when the information arrives",
-        "separates a verdict returned to the agent from a log written for a human",
-        "separates recovery from feedback by what each one restores"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
-      "explain": 5,
-      "apply": 7,
-      "discriminate": 5
-    },
-    "aliases": {
-      "harness": "feedback-loops",
-      "security": "agent-feedback-channel"
-    }
-  },
-  {
-    "id": "nema:feedforward",
-    "title": "Feedforward",
-    "summary": "Information given to the agent before it acts, such as the target, the constraints and the shape of a good answer, so fewer corrections are needed later.",
-    "prereqs": [
-      "nema:agent-loop",
-      "nema:acceptance-criteria"
-    ],
-    "confusableWith": [
-      "nema:feedback-loops",
-      "nema:acceptance-criteria"
-    ],
-    "misconceptions": [
-      {
-        "id": "feedforward_is_a_longer_prompt",
-        "text": "Feedforward is just writing a longer prompt."
-      }
-    ],
-    "rubric": {
-      "explain": [
-        "states that feedforward arrives before the action and feedback after it",
-        "names three things worth stating in advance, such as the target and the format",
-        "explains why a worked example is feedforward and a score is not"
-      ],
-      "apply": [
-        "rewrites a task brief so the success condition is stated before the first action",
-        "supplies the answer shape and one counterexample up front",
-        "shows the attempt count dropping after the brief is improved"
-      ],
-      "discriminate": [
-        "separates feedforward from feedback by the moment it is delivered",
-        "separates a constraint given in advance from a correction given afterwards",
-        "separates acceptance criteria from the feedforward that carries them"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
-      "explain": 4,
-      "apply": 6,
-      "discriminate": 4
-    },
-    "aliases": {
-      "harness": "feedforward-briefing",
-      "security": "pre-task-briefing"
-    }
-  },
-  {
-    "id": "nema:state-management",
-    "title": "State management",
-    "summary": "Keeping the facts a run depends on in an explicit store that survives a step boundary, a retry or a restart.",
-    "prereqs": [
-      "nema:agent-loop"
-    ],
-    "confusableWith": [
-      "nema:memory-design",
-      "nema:agent-loop"
-    ],
-    "misconceptions": [
-      {
-        "id": "the_transcript_is_the_state",
-        "text": "The conversation transcript is a good enough place to keep state."
-      }
-    ],
-    "rubric": {
-      "explain": [
-        "names what belongs in explicit state rather than in the transcript",
-        "explains what a step boundary is and what must survive it",
-        "states how state is reconciled after a partial failure"
-      ],
-      "apply": [
-        "moves a fact out of the transcript into a keyed store and reads it back",
-        "makes one step idempotent so a retry does not duplicate its effect",
-        "writes state before the side effect, not after it"
-      ],
-      "discriminate": [
-        "separates run state from long lived memory",
-        "separates state the agent may write from state only the system may write",
-        "separates a lost fact from a fact the agent chose to ignore"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
-      "explain": 5,
-      "apply": 8,
-      "discriminate": 4
-    },
-    "aliases": {
-      "harness": "run-state",
-      "security": "state-management"
-    }
-  },
-  {
-    "id": "nema:threat-modeling",
-    "title": "Threat modeling",
-    "summary": "Enumerating who can influence a system, what they want and which trust boundaries their input crosses, before choosing any mitigation.",
-    "prereqs": [
-      "nema:agent-loop"
-    ],
-    "confusableWith": [
-      "nema:attack-surface",
-      "nema:red-teaming"
-    ],
-    "misconceptions": [
-      {
-        "id": "threat_modeling_is_a_checklist",
-        "text": "Threat modeling is running through a checklist of known vulnerabilities."
-      }
-    ],
-    "rubric": {
-      "explain": [
-        "names actor, asset, trust boundary and abuse case as separate things",
-        "explains why the model comes before the mitigation list",
-        "states how a threat model is invalidated by a design change"
-      ],
-      "apply": [
-        "draws the trust boundaries of an agent that reads the web and writes to a repository",
-        "lists three abuse cases with the actor and the asset named in each",
-        "ranks them by impact and by how cheap the mitigation is"
-      ],
-      "discriminate": [
-        "separates a threat from a vulnerability and from a mitigation",
-        "separates the attack surface from the threat model that reasons about it",
-        "separates an untrusted input from an input that is merely unvalidated"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
-      "explain": 5,
-      "apply": 8,
-      "discriminate": 5
-    },
-    "aliases": {
-      "harness": "threat-modeling",
-      "security": "threat-modelling"
-    }
-  },
-  {
-    "id": "nema:deterministic-verification",
-    "title": "Deterministic verification",
-    "summary": "Checking a result with code that returns the same verdict every time, so the check itself never has to be trusted twice.",
-    "prereqs": [
-      "nema:unit-testing",
-      "nema:acceptance-criteria"
-    ],
-    "confusableWith": [
-      "nema:rubric-grading"
-    ],
-    "misconceptions": [
-      {
-        "id": "a_model_can_grade_anything",
-        "text": "A model judge is a fine substitute for a deterministic check."
-      }
-    ],
-    "rubric": {
-      "explain": [
-        "states what makes a check deterministic, including the absence of a model in it",
-        "explains why a deterministic verdict can gate an action and a scored one cannot",
-        "names one property that cannot be checked deterministically"
-      ],
-      "apply": [
-        "replaces a judged criterion with an executable check that returns pass or fail",
-        "pins the inputs so the same run gives the same verdict twice",
-        "keeps the check independent of the code path that produced the result"
-      ],
-      "discriminate": [
-        "separates a deterministic check from a rubric score",
-        "separates a check that is flaky from one that is genuinely failing",
-        "separates verification of the output from verification of the process"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
+      "retrieve": 4,
       "explain": 4,
       "apply": 7,
       "discriminate": 4
     },
     "aliases": {
-      "harness": "deterministic-checks",
-      "security": "deterministic-verification"
+      "harness": "sugar-browning",
+      "security": "caramelizing"
     }
   },
   {
-    "id": "nema:regression-testing",
-    "title": "Regression testing",
-    "summary": "Re-running a pinned set of cases after every change so a fix that breaks earlier behaviour is caught at the moment it is introduced.",
+    "id": "nema:blanching",
+    "title": "Blanching",
+    "summary": "A short plunge into heavily salted boiling water followed by an ice bath, to set colour, loosen skins or part cook a vegetable for a fast pickup.",
     "prereqs": [
-      "nema:unit-testing",
-      "nema:acceptance-criteria"
+      "nema:heat-control"
     ],
     "confusableWith": [
-      "nema:unit-testing",
-      "nema:agent-evals",
-      "nema:eval-dataset-design"
+      "nema:poaching"
     ],
-    "misconceptions": [],
+    "misconceptions": [
+      {
+        "id": "blanching_water_needs_little_salt",
+        "text": "Blanching water only needs a small pinch of salt."
+      }
+    ],
     "rubric": {
       "explain": [
-        "explains why a case is added to the suite when a bug is found, not before",
-        "states what pinning means and why the expected values are stored",
-        "says how the suite is kept fast enough to actually run"
+        "states the purposes: fix the colour, stop enzyme activity, part cook for service",
+        "explains why the water must be at a rolling boil and salted to about 1 percent",
+        "explains why the ice bath is part of the technique rather than an optional extra"
       ],
       "apply": [
-        "adds the failing case to the suite before fixing the defect",
-        "pins the expected output and shows the diff on a regression",
-        "quarantines a flaky case instead of deleting the signal"
+        "blanches green vegetables in water salted to about 10 g per litre and shocks them within seconds",
+        "works in batches small enough that the water comes back to the boil quickly",
+        "drains and dries the vegetables before storing so they do not sit in water"
       ],
       "discriminate": [
-        "separates a regression from a new requirement",
-        "separates a pinned expectation from a golden file nobody reviews",
-        "separates a regression suite from an eval set"
+        "separates blanching from poaching by temperature and by intent",
+        "separates shocking in ice water from simply draining and cooling on a tray",
+        "separates a vegetable blanched for a pickup from one cooked all the way through"
       ]
     },
     "minutes": {
-      "retrieve": 5,
+      "retrieve": 4,
       "explain": 4,
       "apply": 6,
       "discriminate": 4
     },
     "aliases": {
-      "harness": "regression-suite",
-      "security": "regression-testing"
+      "harness": "blanch-and-shock",
+      "security": "blanching"
     }
   },
   {
-    "id": "nema:human-in-the-loop",
-    "title": "Human in the loop",
-    "summary": "Placing an explicit human decision point in an automated flow at the steps where a wrong action is expensive or irreversible.",
+    "id": "nema:poaching",
+    "title": "Poaching",
+    "summary": "Cooking gently in liquid held below a simmer, roughly 60 to 80 C, so delicate proteins set without tightening, curdling or breaking apart.",
     "prereqs": [
-      "nema:agent-loop"
+      "nema:heat-control"
     ],
     "confusableWith": [
-      "nema:permission-boundaries"
+      "nema:blanching"
     ],
     "misconceptions": [
       {
-        "id": "approval_prompts_are_free",
-        "text": "Adding an approval prompt to every action makes the system safe."
+        "id": "a_poach_should_bubble",
+        "text": "Poaching liquid should hold a gentle bubble."
       }
     ],
     "rubric": {
       "explain": [
-        "names the two properties that make a step worth interrupting, cost and reversibility",
-        "explains how approval fatigue turns a control into a rubber stamp",
-        "states what the human must see for the decision to be real"
+        "gives the working range, about 60 to 80 C, and says what a bubble at the surface means",
+        "explains why an egg white sets near 62 C and the yolk near 65 C",
+        "says what the poaching liquid contributes: seasoning, acid and aromatics"
       ],
       "apply": [
-        "picks the one step in a flow that deserves an approval and justifies the choice",
-        "shows the human the exact effect, not a summary of it",
-        "records the decision with who made it and what was shown"
+        "holds the pot at 70 to 75 C and corrects the flame before the surface breaks",
+        "poaches fish to an internal 50 to 55 C and lets it rest in the warm liquid",
+        "seasons the poaching liquid so the finished piece is seasoned through, not only on the outside"
       ],
       "discriminate": [
-        "separates an approval gate from a permission boundary enforced by code",
-        "separates a human decision from a human notification",
-        "separates a control that changes behaviour from one that only reassures"
+        "separates poaching from simmering and boiling by temperature and by surface movement",
+        "separates poaching from blanching by intent and by how the food is finished",
+        "separates a protein that is just set from one that is overcooked and grainy"
       ]
     },
     "minutes": {
-      "retrieve": 5,
+      "retrieve": 4,
       "explain": 4,
       "apply": 6,
       "discriminate": 4
     },
     "aliases": {
-      "harness": "human-checkpoints",
-      "security": "human-in-the-loop"
+      "harness": "gentle-poach",
+      "security": "poaching"
     }
   },
   {
-    "id": "nema:cost-latency",
-    "title": "Cost and latency",
-    "summary": "Treating tokens, wall clock time and tool round trips as a budget that shapes the design rather than a number to look at afterwards.",
+    "id": "nema:roasting",
+    "title": "Roasting",
+    "summary": "Cooking in dry oven heat, where the surface browns while the core climbs slowly, managed with oven temperature, a probe, resting and carryover.",
     "prereqs": [
-      "nema:agent-loop"
+      "nema:heat-control"
     ],
     "confusableWith": [
-      "nema:context-design"
-    ],
-    "misconceptions": [],
-    "rubric": {
-      "explain": [
-        "names the three budgets, tokens, time and round trips, and how they trade off",
-        "explains why the step count usually dominates the per call cost",
-        "states where caching changes the shape of the budget"
-      ],
-      "apply": [
-        "measures one run and attributes its cost to steps rather than to the total",
-        "removes one round trip and shows the task still passes",
-        "sets a step budget that fails the run instead of spending without a bound"
-      ],
-      "discriminate": [
-        "separates a slow model from a chatty loop",
-        "separates cost per run from cost per successful run",
-        "separates a context problem from a latency problem"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
-      "explain": 4,
-      "apply": 6,
-      "discriminate": 3
-    },
-    "aliases": {
-      "harness": "cost-and-latency",
-      "security": "resource-budget"
-    }
-  },
-  {
-    "id": "nema:rubric-grading",
-    "title": "Rubric grading",
-    "summary": "Scoring open ended work against named criteria that a second grader could apply to the same answer and reach the same verdict.",
-    "prereqs": [
-      "nema:acceptance-criteria"
-    ],
-    "confusableWith": [
-      "nema:deterministic-verification",
-      "nema:acceptance-criteria"
+      "nema:braising"
     ],
     "misconceptions": [
       {
-        "id": "a_score_is_a_measurement",
-        "text": "A rubric score is a measurement, so it can be compared across rubrics."
+        "id": "resting_is_optional",
+        "text": "Resting a roast only lets it go cold."
       }
     ],
     "rubric": {
       "explain": [
-        "states what makes a criterion independently checkable by two graders",
-        "explains why a rubric line must describe observable evidence, not quality",
-        "says how disagreement between graders is used to fix the rubric"
+        "explains carryover cooking and why a roast comes out below its target temperature",
+        "explains why a rack and a dry surface matter more than frequent basting",
+        "explains what resting does to the juices and to the internal temperature"
       ],
       "apply": [
-        "turns a vague quality into three criteria with a yes or no verdict each",
-        "grades one answer and shows which criterion each verdict came from",
-        "revises a criterion that two graders read differently"
+        "pulls a chicken at 71 C in the thigh, or a beef rib at 52 C for medium rare, and rests it",
+        "uses two oven stages, hot for colour and moderate to finish, or the reverse",
+        "probes at the thickest point away from bone and confirms with a second reading"
       ],
       "discriminate": [
-        "separates a rubric score from a deterministic pass or fail",
-        "separates a criterion about evidence from one about style",
-        "separates grader disagreement from learner error"
+        "separates roasting from braising by the cooking medium and the texture aimed at",
+        "separates oven temperature from the internal temperature of the food",
+        "separates a roast that needs more time from one that only needs more colour"
       ]
     },
     "minutes": {
-      "retrieve": 5,
-      "explain": 4,
-      "apply": 6,
-      "discriminate": 4
-    },
-    "aliases": {
-      "harness": "rubric-grading",
-      "security": "criteria-scoring"
-    }
-  },
-  {
-    "id": "nema:agent-evals",
-    "title": "Agent evals",
-    "summary": "Task level evaluation of an agent's end to end behaviour, as opposed to unit tests of its functions.",
-    "prereqs": [
-      "nema:agent-loop",
-      "nema:deterministic-verification"
-    ],
-    "confusableWith": [
-      "nema:unit-testing",
-      "nema:regression-testing",
-      "nema:software-testing",
-      "nema:harness-iteration",
-      "nema:eval-dataset-design"
-    ],
-    "misconceptions": [
-      {
-        "id": "unit_tests_are_equivalent_to_agent_evals",
-        "text": "If the unit tests pass, the agent works."
-      }
-    ],
-    "rubric": {
-      "explain": [
-        "states what an eval measures that a unit test cannot, which is task completion",
-        "names the three parts of an eval case, the task, the environment and the verdict",
-        "explains why an eval needs a deterministic verdict to be comparable over time"
-      ],
-      "apply": [
-        "writes one eval case with a task, a fixed environment and an executable check",
-        "adds a task level check to a harness that already has passing unit tests",
-        "reports the result as a rate over cases rather than as a single run"
-      ],
-      "discriminate": [
-        "distinguishes deterministic function checks from task level agent evaluation",
-        "mentions end to end behaviour",
-        "gives one example where unit tests pass but the agent fails"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
+      "retrieve": 4,
       "explain": 5,
       "apply": 8,
       "discriminate": 4
     },
     "aliases": {
-      "harness": "agent-evaluation",
-      "security": "agent-evals"
+      "harness": "oven-roasting",
+      "security": "roasting"
     }
   },
   {
-    "id": "nema:observability",
-    "title": "Observability",
-    "summary": "Emitting enough structured signal from a running agent that a question about a past run can be answered without reproducing it.",
+    "id": "nema:braising",
+    "title": "Braising",
+    "summary": "Browning first, then cooking partly submerged at 85 to 95 C until collagen becomes gelatin, usually two to four hours for a working cut.",
     "prereqs": [
-      "nema:state-management"
+      "nema:maillard-reaction",
+      "nema:reduction"
     ],
     "confusableWith": [
-      "nema:trace-analysis"
+      "nema:roasting"
     ],
     "misconceptions": [
       {
-        "id": "logs_are_observability",
-        "text": "If everything is logged, the system is observable."
+        "id": "tough_cuts_need_a_hard_boil",
+        "text": "A braise cooks faster at a hard boil."
       }
     ],
     "rubric": {
       "explain": [
-        "states the question first and the signal needed to answer it second",
-        "names what must be on every step record, such as the step id and the inputs",
-        "explains why unstructured logs cannot answer a question about a rate"
+        "explains collagen turning to gelatin above about 70 C given enough time",
+        "explains why the liquid comes part way up the meat rather than covering it",
+        "explains why a hard boil tightens the muscle fibres and dries the meat out"
       ],
       "apply": [
-        "adds a structured step record with a stable id and correlates two steps by it",
-        "emits the tool arguments and the verdict, not only the final answer",
-        "answers one concrete question from stored records without rerunning the agent"
+        "browns the cut hard, deglazes, then holds the oven at 150 to 160 C for a bare simmer",
+        "tests doneness with a probe that slides out without resistance rather than by the clock",
+        "cools the meat in its liquid and lifts the set fat off the next day"
       ],
       "discriminate": [
-        "separates emitting signal from reading a trace",
-        "separates a metric from an example",
-        "separates a missing signal from a signal nobody queried"
+        "separates braising from stewing by the size of the pieces and the depth of the liquid",
+        "separates braising from roasting by the transfer medium and the finished texture",
+        "separates meat that is still tough because it is underdone from meat dried out by too much heat"
       ]
     },
     "minutes": {
-      "retrieve": 5,
+      "retrieve": 4,
       "explain": 5,
+      "apply": 9,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "braise-and-glaze",
+      "security": "braising"
+    }
+  },
+  {
+    "id": "nema:reduction",
+    "title": "Reduction",
+    "summary": "Boiling water out of a liquid to concentrate flavour, gelatin and body, which concentrates salt and acid at the same rate.",
+    "prereqs": [
+      "nema:heat-control"
+    ],
+    "confusableWith": [
+      "nema:emulsions"
+    ],
+    "misconceptions": [
+      {
+        "id": "reduce_to_thicken_anything",
+        "text": "Any thin sauce can be fixed by reducing it further."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "explains that a reduction concentrates salt and acid along with the flavour",
+        "explains what gelatin from a stock does to body as the liquid falls",
+        "explains why a wide pan reduces faster than a tall narrow one"
+      ],
+      "apply": [
+        "reduces wine and stock by about half and reads the body on the back of a spoon",
+        "seasons after the reduction rather than before it",
+        "keeps a lively simmer in a wide pan and stops while the sauce still moves freely"
+      ],
+      "discriminate": [
+        "separates thickening by reduction from thickening by starch or by emulsion",
+        "separates a sauce that is thin from one that is simply under seasoned",
+        "separates a correct reduction from one that has gone sticky and oversalted"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
+      "explain": 4,
       "apply": 7,
       "discriminate": 4
     },
     "aliases": {
-      "harness": "run-observability",
-      "security": "observability"
+      "harness": "reduction",
+      "security": "reducing"
     }
   },
   {
-    "id": "nema:harness-iteration",
-    "title": "Harness iteration",
-    "summary": "Improving the scaffolding around the model, the tools, the briefs and the checks, instead of reaching for a bigger model when a task fails.",
+    "id": "nema:emulsions",
+    "title": "Emulsions",
+    "summary": "Fat held as droplets in water, or the reverse, kept apart by an emulsifier such as mustard, egg yolk lecithin or the proteins in butter.",
     "prereqs": [
-      "nema:feedback-loops",
-      "nema:deterministic-verification"
+      "nema:ratios",
+      "nema:heat-control"
     ],
     "confusableWith": [
-      "nema:agent-evals"
+      "nema:reduction"
     ],
     "misconceptions": [
       {
-        "id": "a_better_model_fixes_the_harness",
-        "text": "A failing task means the model is not good enough."
+        "id": "a_sauce_can_be_boiled_once_it_holds",
+        "text": "Once an emulsion holds, it is stable and can be boiled."
       }
     ],
     "rubric": {
       "explain": [
-        "names three parts of the harness that can be changed before the model is",
-        "explains why a change is kept only when the eval rate moves",
-        "states how one change at a time keeps the attribution honest"
+        "names the three parts: dispersed fat, a continuous water phase and an emulsifier",
+        "explains why droplet size and steady agitation decide how stable the sauce is",
+        "gives the window where butter and yolk sauces break, above roughly 85 C for a hollandaise"
       ],
       "apply": [
-        "diagnoses a failing run and names the harness part responsible",
-        "makes one change, reruns the eval set and reports the rate before and after",
-        "reverts a change that did not move the rate"
+        "mounts a pan sauce with cold butter off the heat, a cube at a time, and keeps it glossy",
+        "builds a vinaigrette at 3 parts oil to 1 part acid with mustard and holds it through service",
+        "rescues a broken sauce by restarting with a spoonful of intact base and whisking the split sauce back in"
       ],
       "discriminate": [
-        "separates a harness defect from a model capability limit",
-        "separates iterating on the harness from iterating on the eval set",
-        "separates a real improvement from noise across a small case set"
+        "separates a sauce held by emulsion from one thickened by reduction or by starch",
+        "separates a broken sauce from a merely thin one and gives the fix for each",
+        "separates a temporary emulsion from one stabilised by an emulsifier"
       ]
     },
     "minutes": {
-      "retrieve": 5,
-      "explain": 5,
-      "apply": 8,
-      "discriminate": 5
+      "retrieve": 4,
+      "explain": 4,
+      "apply": 7,
+      "discriminate": 4
     },
     "aliases": {
-      "harness": "harness-iteration",
-      "security": "scaffold-iteration"
+      "harness": "pan-sauce-emulsion",
+      "security": "sauce-stability"
     }
   },
   {
-    "id": "nema:attack-surface",
-    "title": "Attack surface",
-    "summary": "The complete set of inputs, tools and side channels through which an untrusted party can influence what an agent does.",
+    "id": "nema:stocks",
+    "title": "Stocks",
+    "summary": "Water drawn through bones, mirepoix and aromatics below a simmer, so gelatin and flavour come out without emulsifying the fat into the liquid.",
     "prereqs": [
-      "nema:threat-modeling",
-      "nema:tool-interface-design"
+      "nema:knife-skills",
+      "nema:heat-control"
     ],
-    "confusableWith": [
-      "nema:threat-modeling",
-      "nema:prompt-injection"
-    ],
+    "confusableWith": [],
     "misconceptions": [
       {
-        "id": "only_user_input_is_untrusted",
-        "text": "Only what the user types is untrusted input."
+        "id": "boiling_makes_a_stronger_stock",
+        "text": "A hard boil pulls more flavour out of the bones."
       }
     ],
     "rubric": {
       "explain": [
-        "lists the entry points of an agent, including tool results and retrieved documents",
-        "explains why every write capable tool widens the surface twice, on read and on write",
-        "states how the surface changes when a new tool is added"
+        "explains why a stock is never boiled: it emulsifies the fat and clouds the pot",
+        "gives working times, roughly four hours for veal or beef and forty five minutes for fish",
+        "states the standard mirepoix, two parts onion to one carrot and one celery by weight"
       ],
       "apply": [
-        "enumerates the surface of a given agent and marks each entry trusted or untrusted",
-        "identifies the two entry points that carry the most authority",
-        "proposes one reduction that removes an entry point rather than filtering it"
+        "holds the pot at 82 to 90 C and skims the scum through the first thirty minutes",
+        "strains through a chinois without pressing, then chills it fast in a shallow tray",
+        "judges the finished stock by the set on a chilled spoonful, not by tasting it hot"
       ],
       "discriminate": [
-        "separates the attack surface from a specific attack such as injection",
-        "separates an entry point from a vulnerability at that point",
-        "separates surface reduction from input filtering"
+        "separates a white stock from a brown stock by how the bones were treated",
+        "separates stock from broth by what goes in the pot and how the result is used",
+        "separates cloudiness caused by boiling from cloudiness caused by unskimmed scum"
       ]
     },
     "minutes": {
-      "retrieve": 5,
+      "retrieve": 4,
       "explain": 5,
       "apply": 8,
       "discriminate": 4
     },
     "aliases": {
-      "harness": "input-surface",
-      "security": "attack-surface"
+      "harness": "stock-making",
+      "security": "stocks-and-bases"
     }
   },
   {
-    "id": "nema:prompt-injection",
-    "title": "Prompt injection",
-    "summary": "An attack in which text the agent reads as data is treated as instructions, usually arriving through a tool result the agent already trusts.",
+    "id": "nema:roux",
+    "title": "Roux",
+    "summary": "Equal weights of flour and fat cooked together so the starch hydrates cleanly, taken from white through blond to brown as thickening power falls away.",
     "prereqs": [
-      "nema:threat-modeling",
-      "nema:feedback-loops"
+      "nema:ratios",
+      "nema:heat-control"
     ],
     "confusableWith": [
-      "nema:output-validation",
-      "nema:attack-surface",
-      "nema:tool-result-provenance"
+      "nema:thickeners"
     ],
     "misconceptions": [
       {
-        "id": "instructions_can_forbid_injection",
-        "text": "Telling the model to ignore injected instructions prevents prompt injection."
+        "id": "darker_roux_thickens_more",
+        "text": "A darker roux thickens more than a pale one."
       }
     ],
     "rubric": {
       "explain": [
-        "names the path from untrusted source to context to action",
-        "explains why the model cannot reliably tell data from instructions",
-        "states why a mitigation must sit outside the model to hold"
+        "states the 1:1 ratio by weight and explains why it is weighed rather than scooped",
+        "explains what cooking out the flour removes and how long it takes",
+        "explains why a brown roux thickens less than a white one"
       ],
       "apply": [
-        "marks which entries in a given trace are untrusted and which action they reached",
-        "adds one control outside the model, such as an allowlist or a confirmation",
-        "shows the same payload failing after the control is added"
+        "cooks a blond roux for about five minutes, then adds liquid in stages to a smooth base",
+        "uses roughly 100 g of roux per litre for a medium sauce and adjusts on the spoon",
+        "avoids lumps by matching temperatures and whisking steadily as the liquid goes in"
       ],
       "discriminate": [
-        "separates injection at the input from unvalidated output at the exit",
-        "separates a jailbreak of the assistant from an injection through a tool result",
-        "separates a prompt level mitigation from an enforced one"
+        "separates roux from a slurry or a beurre manie by when it is added and how it cooks out",
+        "separates a pasty sauce from an under thickened one",
+        "separates white, blond and brown roux by cooking time and by use"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "roux",
+      "security": "roux-thickening"
+    }
+  },
+  {
+    "id": "nema:thickeners",
+    "title": "Thickeners",
+    "summary": "The working set beyond roux: cornstarch slurry, beurre manie, gelatin, purees and reduction, each with its own gloss, clarity and tolerance for heat.",
+    "prereqs": [
+      "nema:roux",
+      "nema:ratios"
+    ],
+    "confusableWith": [
+      "nema:roux"
+    ],
+    "misconceptions": [
+      {
+        "id": "cornstarch_and_flour_are_interchangeable",
+        "text": "Cornstarch and flour thicken the same way at the same weight."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states that cornstarch thickens at roughly twice the power of flour by weight",
+        "explains why cornstarch gives a clear gloss where flour gives an opaque sauce",
+        "explains why a starch sauce that has thinned cannot be fixed by boiling it longer"
+      ],
+      "apply": [
+        "stirs a cold slurry into a simmering sauce and cooks it out for a minute",
+        "finishes a sauce at the pass with beurre manie when it is a touch thin",
+        "chooses the thickener by what service needs: clarity, hold time and reheating"
+      ],
+      "discriminate": [
+        "separates a starch thickened sauce from an emulsion by how each one fails",
+        "separates roux from a slurry by when each is introduced",
+        "separates a sauce thinned by enzyme activity from one that was never thickened enough"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "liaison-and-thickeners",
+      "security": "thickening-agents"
+    }
+  },
+  {
+    "id": "nema:deglazing",
+    "title": "Deglazing",
+    "summary": "Dissolving the browned fond off the bottom of the pan with wine, stock or vinegar, so the crust that formed under the protein becomes the base of the sauce.",
+    "prereqs": [
+      "nema:maillard-reaction",
+      "nema:heat-control"
+    ],
+    "confusableWith": [
+      "nema:reduction"
+    ],
+    "misconceptions": [
+      {
+        "id": "burnt_fond_still_makes_sauce",
+        "text": "Black bits in the pan are just extra flavour."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "explains what fond is and why it sticks to the pan",
+        "explains why the liquid goes in while the pan is hot and how that lifts the fond",
+        "explains why burnt fond makes the sauce bitter and cannot be rescued"
+      ],
+      "apply": [
+        "pours off excess fat, then deglazes off the flame and scrapes with a wooden spoon",
+        "cooks the alcohol out of the wine before the stock goes in",
+        "reads the pan first and starts again when the fond is black rather than brown"
+      ],
+      "discriminate": [
+        "separates deglazing from simply adding liquid to a pan",
+        "separates brown fond worth lifting from burnt fond that has to be discarded",
+        "separates the deglaze from the reduction that follows it"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "deglazing",
+      "security": "pan-deglaze"
+    }
+  },
+  {
+    "id": "nema:pan-sauces",
+    "title": "Pan sauces",
+    "summary": "A sauce built in the pan the protein just left: fond, deglaze, reduce, mount with cold butter, season and send, inside a few minutes.",
+    "prereqs": [
+      "nema:deglazing",
+      "nema:reduction",
+      "nema:emulsions"
+    ],
+    "confusableWith": [
+      "nema:mother-sauces"
+    ],
+    "misconceptions": [
+      {
+        "id": "a_pan_sauce_needs_cream_to_hold",
+        "text": "A pan sauce needs cream to stop it splitting."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names the sequence: fond, deglaze, reduce, mount, season",
+        "explains why the butter goes in cold and off the heat",
+        "explains why a pan sauce is made to order rather than held on the stove"
+      ],
+      "apply": [
+        "reduces the deglazed liquid by about half before anything is mounted into it",
+        "mounts roughly 30 to 60 g of cold butter per portion, swirling rather than whisking hard",
+        "corrects with salt and acid and tastes again before the sauce leaves the pan"
+      ],
+      "discriminate": [
+        "separates a pan sauce from a mother sauce by where the body comes from",
+        "separates a sauce that has split from one that is simply too thin",
+        "separates a sauce that needs more reduction from one that needs more butter"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
+      "explain": 4,
+      "apply": 8,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "pan-sauce",
+      "security": "sauce-pickup"
+    }
+  },
+  {
+    "id": "nema:mother-sauces",
+    "title": "Mother sauces",
+    "summary": "The classical bases, bechamel, veloute, espagnole, tomate and hollandaise, and the small sauces built on top of each one.",
+    "prereqs": [
+      "nema:roux",
+      "nema:stocks",
+      "nema:thickeners"
+    ],
+    "confusableWith": [
+      "nema:pan-sauces"
+    ],
+    "misconceptions": [
+      {
+        "id": "every_sauce_starts_from_a_mother_sauce",
+        "text": "Every sauce in a restaurant is a derivative of a mother sauce."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names the five bases and the thickener behind each one",
+        "explains what a small sauce adds to the mother it comes from",
+        "explains why hollandaise sits apart from the roux based sauces"
+      ],
+      "apply": [
+        "builds a veloute from a blond roux and a light stock and cooks it out for twenty minutes",
+        "derives a small sauce, a supreme for example, by finishing a veloute with cream",
+        "holds a bechamel under a cartouche or a film of butter so it does not skin"
+      ],
+      "discriminate": [
+        "separates a mother sauce from a pan sauce by how the body is built",
+        "separates a veloute from a bechamel by the liquid each one starts with",
+        "separates a derivative sauce from a new sauce"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
+      "explain": 5,
+      "apply": 8,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "grand-sauces",
+      "security": "mother-sauces"
+    }
+  },
+  {
+    "id": "nema:acid-balance",
+    "title": "Acid balance",
+    "summary": "Vinegar, citrus, wine and fermented ingredients used to cut fat and lift a dish, in small increments, where more salt would not help.",
+    "prereqs": [
+      "nema:seasoning"
+    ],
+    "confusableWith": [
+      "nema:seasoning"
+    ],
+    "misconceptions": [
+      {
+        "id": "acid_only_means_sour",
+        "text": "Adding acid just makes the dish taste sour."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "explains what acid does to perceived richness and sweetness",
+        "names three acids and what each brings besides sourness",
+        "explains why acid goes in at the end and in small increments"
+      ],
+      "apply": [
+        "lifts a flat, fatty sauce with a few drops of vinegar and tastes again before adding more",
+        "balances a dressing by tasting it on the ingredient it will dress, not off the spoon",
+        "pulls back a reduction that has gone sharp with fat, sweetness or more stock"
+      ],
+      "discriminate": [
+        "separates a dish that needs salt from one that needs acid",
+        "separates brightness from sourness in a finished sauce",
+        "separates acid used for balance from acid used to cure or to denature"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "acid-balance",
+      "security": "acidity"
+    }
+  },
+  {
+    "id": "nema:tasting-and-adjusting",
+    "title": "Tasting and adjusting",
+    "summary": "The loop that closes every dish: taste, name what is missing, change one thing, taste again, and write down what the fix was.",
+    "prereqs": [
+      "nema:seasoning",
+      "nema:acid-balance"
+    ],
+    "confusableWith": [
+      "nema:seasoning"
+    ],
+    "misconceptions": [
+      {
+        "id": "taste_once_at_the_end",
+        "text": "Tasting once before the plate goes out is enough."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names the axes and the order they are checked in: salt, acid, fat, sweetness, texture, temperature",
+        "explains why only one change at a time teaches you anything",
+        "explains palate fatigue and how to reset between tastes"
+      ],
+      "apply": [
+        "tastes from a clean spoon, names the missing axis, makes one change and tastes again",
+        "tastes the dish as it will be eaten, with its garnish and at serving temperature",
+        "records the correction so the next service starts closer to right"
+      ],
+      "discriminate": [
+        "separates a dish that is flat from one that is under salted",
+        "separates a fault in a component from a fault in the assembly",
+        "separates a matter of preference from an actual fault when two cooks disagree"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "tasting-and-correcting",
+      "security": "taste-and-adjust"
+    }
+  },
+  {
+    "id": "nema:plating",
+    "title": "Plating",
+    "summary": "Composing the plate for the guest and for the pass: hot food on hot plates, clean rims, and a layout that survives the walk to the table.",
+    "prereqs": [
+      "nema:knife-skills",
+      "nema:mise-en-place"
+    ],
+    "confusableWith": [],
+    "misconceptions": [
+      {
+        "id": "plating_is_decoration",
+        "text": "Plating is decoration you add at the end if there is time."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "explains why plate temperature matters as much as the arrangement",
+        "explains how the placement of the sauce changes the first bite",
+        "explains why everything on the plate has to be edible and deliberate"
+      ],
+      "apply": [
+        "plates the same dish twice to the same footprint and the same weight",
+        "wipes the rim and checks the plate under the pass light before it goes",
+        "plates in an order that keeps nothing waiting: sauce, protein, garnish"
+      ],
+      "discriminate": [
+        "separates a plate that reads clean from one that is merely empty",
+        "separates a garnish that adds flavour from one that only adds height",
+        "separates a plating problem from a cooking problem when a dish comes back"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "sauce-plating",
+      "security": "plating"
+    }
+  },
+  {
+    "id": "nema:menu-planning",
+    "title": "Menu planning",
+    "summary": "Designing a menu the kitchen can actually execute: shared prep, station load at peak, contribution margin and what is in season.",
+    "prereqs": [
+      "nema:cost-control",
+      "nema:plating",
+      "nema:tasting-and-adjusting"
+    ],
+    "confusableWith": [
+      "nema:cost-control"
+    ],
+    "misconceptions": [
+      {
+        "id": "more_dishes_means_more_covers",
+        "text": "A longer menu sells more covers."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "explains cross utilisation of prep across dishes",
+        "explains why the menu is limited by station load at peak rather than by the recipe list",
+        "explains contribution margin per dish against food cost percentage"
+      ],
+      "apply": [
+        "maps every dish to its station and finds the bottleneck at peak covers",
+        "prices a dish from a costed recipe with a target margin and a waste allowance",
+        "cuts or reworks a dish that shares no prep with anything else on the menu"
+      ],
+      "discriminate": [
+        "separates a menu problem from an execution problem when tickets back up",
+        "separates food cost percentage from contribution margin per plate",
+        "separates seasonality from novelty as a reason to change a dish"
       ]
     },
     "minutes": {
@@ -967,222 +1003,42 @@
       "discriminate": 5
     },
     "aliases": {
-      "harness": "prompt-injection",
-      "security": "indirect-prompt-injection"
+      "harness": "menu-design",
+      "security": "menu-planning"
     }
   },
   {
-    "id": "nema:permission-boundaries",
-    "title": "Permission boundaries",
-    "summary": "The explicit line between what an agent may do without asking and what needs a separate authority, enforced outside the model.",
+    "id": "nema:cost-control",
+    "title": "Cost control",
+    "summary": "Yield, trim, portioning and costed recipes: knowing what a plate costs before it is sold, and where the money leaves the building.",
     "prereqs": [
-      "nema:tool-interface-design",
-      "nema:threat-modeling"
+      "nema:mise-en-place",
+      "nema:knife-skills"
     ],
     "confusableWith": [
-      "nema:least-privilege",
-      "nema:human-in-the-loop"
+      "nema:menu-planning"
     ],
     "misconceptions": [
       {
-        "id": "the_system_prompt_is_a_boundary",
-        "text": "A rule in the system prompt is a permission boundary."
+        "id": "cheaper_ingredients_lower_food_cost",
+        "text": "Food cost is fixed by buying cheaper ingredients."
       }
     ],
     "rubric": {
       "explain": [
-        "states where the boundary is enforced and by which component",
-        "explains why a boundary written in the prompt is advice, not enforcement",
-        "names what crosses the boundary, the authority rather than the request"
+        "defines yield percentage and shows where trim loss lands in a costed recipe",
+        "explains portion control as the link between the recipe and the plate cost",
+        "explains why waste, staff food and comps belong in the number"
       ],
       "apply": [
-        "splits a tool set into a group that runs freely and a group that needs authority",
-        "enforces the split in the tool layer and shows a denied call",
-        "records the denial so it can be read afterwards"
+        "costs a dish from purchase price through yield to plated cost",
+        "portions by weight at the station rather than by eye",
+        "tracks waste for a week and names the two largest sources"
       ],
       "discriminate": [
-        "separates a boundary from a least privilege grant inside it",
-        "separates enforcement in code from an instruction to the model",
-        "separates an approval gate for a human from a boundary between components"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
-      "explain": 5,
-      "apply": 7,
-      "discriminate": 4
-    },
-    "aliases": {
-      "harness": "capability-boundaries",
-      "security": "permission-boundaries"
-    }
-  },
-  {
-    "id": "nema:recovery",
-    "title": "Recovery",
-    "summary": "Returning a run to a known good state after a failed step, by retry, compensation or rollback, without losing what was already verified.",
-    "prereqs": [
-      "nema:feedback-loops",
-      "nema:state-management"
-    ],
-    "confusableWith": [
-      "nema:failure-taxonomy",
-      "nema:feedback-loops"
-    ],
-    "misconceptions": [
-      {
-        "id": "retry_is_recovery",
-        "text": "Retrying the failed step is a recovery strategy."
-      }
-    ],
-    "rubric": {
-      "explain": [
-        "names retry, compensation and rollback and when each one applies",
-        "explains why a non idempotent side effect cannot simply be retried",
-        "states what a known good state means for a given run"
-      ],
-      "apply": [
-        "adds a compensating action for a step that cannot be rolled back",
-        "makes a retry safe by keying the side effect on a stable id",
-        "shows a run that fails mid way and resumes without repeating verified work"
-      ],
-      "discriminate": [
-        "separates recovery from retrying the same call again",
-        "separates a recoverable failure from one that must stop the run",
-        "separates the failure taxonomy from the recovery it selects"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
-      "explain": 5,
-      "apply": 8,
-      "discriminate": 4
-    },
-    "aliases": {
-      "harness": "run-recovery",
-      "security": "failure-recovery"
-    }
-  },
-  {
-    "id": "nema:memory-design",
-    "title": "Memory design",
-    "summary": "Choosing what an agent keeps across runs, in what form, and what causes it to be written, read or forgotten.",
-    "prereqs": [
-      "nema:state-management",
-      "nema:context-design"
-    ],
-    "confusableWith": [
-      "nema:context-design",
-      "nema:retrieval-augmentation",
-      "nema:state-management"
-    ],
-    "misconceptions": [
-      {
-        "id": "memory_is_a_bigger_window",
-        "text": "Memory is just a larger context window."
-      }
-    ],
-    "rubric": {
-      "explain": [
-        "names the write trigger, the read trigger and the forget rule as separate decisions",
-        "explains why unbounded memory degrades rather than improves behaviour",
-        "states how a stale memory is detected"
-      ],
-      "apply": [
-        "defines what is written after a run and what is deliberately dropped",
-        "reads memory into the window only when a named trigger fires",
-        "expires or supersedes an entry rather than accumulating contradictions"
-      ],
-      "discriminate": [
-        "separates memory from run state that dies with the run",
-        "separates memory from retrieval over an external corpus",
-        "separates a stale memory from a wrong one"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
-      "explain": 5,
-      "apply": 7,
-      "discriminate": 4
-    },
-    "aliases": {
-      "harness": "agent-memory",
-      "security": "memory-design"
-    }
-  },
-  {
-    "id": "nema:retrieval-augmentation",
-    "title": "Retrieval augmentation",
-    "summary": "Fetching relevant documents at query time and placing them in the context so an answer is grounded in a source that can be cited.",
-    "prereqs": [
-      "nema:context-design"
-    ],
-    "confusableWith": [
-      "nema:memory-design",
-      "nema:context-design"
-    ],
-    "misconceptions": [
-      {
-        "id": "retrieval_guarantees_grounding",
-        "text": "If the document is in the context, the answer is grounded in it."
-      }
-    ],
-    "rubric": {
-      "explain": [
-        "names the three stages, index, retrieve and place, and what fails at each",
-        "explains why recall and precision pull the chunk size in opposite directions",
-        "states how a citation is checked rather than assumed"
-      ],
-      "apply": [
-        "chooses a chunking rule for a given corpus and justifies it with one failure case",
-        "measures whether the retrieved passage actually contains the answer",
-        "requires a citation and rejects an answer whose citation does not support it"
-      ],
-      "discriminate": [
-        "separates retrieval failure from generation failure using the retrieved text",
-        "separates retrieval from memory by where the content lives",
-        "separates a grounded answer from one that merely quotes"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
-      "explain": 5,
-      "apply": 8,
-      "discriminate": 4
-    },
-    "aliases": {
-      "harness": "retrieval-augmentation",
-      "security": "grounded-retrieval"
-    }
-  },
-  {
-    "id": "nema:tool-result-provenance",
-    "title": "Tool result provenance",
-    "summary": "Tracking where each piece of content in an agent's context came from, so trusted and untrusted material can be treated differently.",
-    "prereqs": [
-      "nema:feedback-loops",
-      "nema:tool-interface-design"
-    ],
-    "confusableWith": [
-      "nema:output-validation",
-      "nema:prompt-injection"
-    ],
-    "misconceptions": [],
-    "rubric": {
-      "explain": [
-        "states why provenance has to travel with the content and not beside it",
-        "explains what changes once a block is labelled untrusted",
-        "names one decision that should read the label before acting"
-      ],
-      "apply": [
-        "labels each context block with its source and trust level",
-        "blocks an action whose only justification came from an untrusted block",
-        "keeps the label through a summarisation step"
-      ],
-      "discriminate": [
-        "separates provenance from validation of the content itself",
-        "separates a trusted source from a verified claim",
-        "separates a labelled block from a quoted one"
+        "separates a yield problem from a purchasing problem",
+        "separates food cost percentage from gross margin per plate",
+        "separates waste that is trim from waste that is spoilage"
       ]
     },
     "minutes": {
@@ -1192,171 +1048,175 @@
       "discriminate": 4
     },
     "aliases": {
-      "harness": "context-provenance",
-      "security": "tool-result-provenance"
+      "harness": "recipe-costing",
+      "security": "food-cost"
     }
   },
   {
-    "id": "nema:trace-analysis",
-    "title": "Trace analysis",
-    "summary": "Reading a recorded run step by step to locate the first decision that went wrong rather than the step where the error surfaced.",
+    "id": "nema:food-safety",
+    "title": "Food safety",
+    "summary": "Keeping food out of the 5 to 63 C danger zone, cooking to a verified core temperature, and keeping raw product away from anything ready to eat.",
     "prereqs": [
-      "nema:observability"
+      "nema:mise-en-place"
     ],
     "confusableWith": [
-      "nema:observability",
-      "nema:failure-taxonomy"
+      "nema:cross-contamination"
     ],
     "misconceptions": [
       {
-        "id": "the_last_error_is_the_cause",
-        "text": "The step that threw the error is the step that caused the failure."
+        "id": "rinsing_chicken_makes_it_safer",
+        "text": "Rinsing raw chicken washes the bacteria off."
       }
     ],
     "rubric": {
       "explain": [
-        "explains why the first wrong decision is usually earlier than the visible error",
-        "names what to read at each step, the inputs, the choice and the verdict",
-        "states how two runs are compared to isolate the difference"
+        "states the danger zone, 5 to 63 C, and what the time limits inside it are",
+        "gives a verified cook temperature such as 75 C for poultry, or 70 C held for two minutes",
+        "explains why rinsing raw poultry spreads bacteria around the sink instead of removing it"
       ],
       "apply": [
-        "walks a failing trace and marks the first step whose decision was wrong",
-        "quotes the evidence in that step that should have changed the decision",
-        "names the harness change that would have prevented it"
+        "probes the thickest part of the product and records the reading in the log",
+        "cools cooked food from 60 to 21 C within two hours and to 5 C within four more",
+        "labels and dates everything that leaves its original packaging"
       ],
       "discriminate": [
-        "separates reading a trace from emitting the signal that made it readable",
-        "separates the first wrong decision from the last error",
-        "separates a single trace finding from a pattern across runs"
+        "separates a time and temperature failure from a cross contamination failure",
+        "separates food that is safe to serve from food that merely looks and smells fine",
+        "separates cleaning from sanitising and says what each step removes"
       ]
     },
     "minutes": {
-      "retrieve": 5,
+      "retrieve": 4,
       "explain": 5,
-      "apply": 8,
-      "discriminate": 4
-    },
-    "aliases": {
-      "harness": "trace-analysis",
-      "security": "run-forensics"
-    }
-  },
-  {
-    "id": "nema:failure-taxonomy",
-    "title": "Failure taxonomy",
-    "summary": "A named and mutually exclusive set of failure modes that makes counts comparable across runs and points at a specific fix.",
-    "prereqs": [
-      "nema:observability"
-    ],
-    "confusableWith": [
-      "nema:trace-analysis",
-      "nema:recovery"
-    ],
-    "misconceptions": [],
-    "rubric": {
-      "explain": [
-        "states why categories must be mutually exclusive to be counted",
-        "explains how a category is tied to the part of the harness that owns it",
-        "says what happens to the taxonomy when a new failure does not fit"
-      ],
-      "apply": [
-        "labels twenty failed runs with a taxonomy of at most six categories",
-        "reports the counts and names the category worth fixing first",
-        "splits a category that turned out to hide two different causes"
-      ],
-      "discriminate": [
-        "separates a failure mode from a single failing trace",
-        "separates a symptom category from a cause category",
-        "separates a rare category from a badly defined one"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
-      "explain": 4,
       "apply": 7,
       "discriminate": 4
     },
     "aliases": {
-      "harness": "failure-taxonomy",
-      "security": "failure-classes"
+      "harness": "kitchen-hygiene",
+      "security": "food-safety"
     }
   },
   {
-    "id": "nema:sandboxing",
-    "title": "Sandboxing",
-    "summary": "Running agent actions inside an environment whose reachable resources are limited by the runtime, not by the agent's intentions.",
+    "id": "nema:cross-contamination",
+    "title": "Cross contamination",
+    "summary": "Pathogens moving from raw product to ready to eat food along hands, boards, cloths, probes and shared utensils.",
     "prereqs": [
-      "nema:permission-boundaries"
+      "nema:food-safety"
     ],
     "confusableWith": [
-      "nema:least-privilege"
+      "nema:allergen-handling",
+      "nema:food-safety"
     ],
     "misconceptions": [
       {
-        "id": "a_container_is_a_sandbox",
-        "text": "Running the code in a container makes it sandboxed."
+        "id": "a_wipe_is_enough_between_tasks",
+        "text": "Wiping the board with a cloth between tasks is enough."
       }
     ],
     "rubric": {
       "explain": [
-        "names what a sandbox limits, the filesystem, the network and the process table",
-        "explains why the limit must be enforced by the runtime and not requested by the code",
-        "states what escapes a sandbox, such as a shared credential or a mounted path"
+        "names the usual routes: hands, boards, cloths, probes and shared utensils",
+        "explains why colour coded boards only work if the whole station keeps to them",
+        "explains the difference between cleaning a surface and sanitising it"
       ],
       "apply": [
-        "chooses the resources an agent task actually needs and denies the rest by default",
-        "shows one denied operation and what the agent does after the denial",
-        "keeps the credential outside the sandbox and passes a scoped token in"
+        "stores raw protein below ready to eat food in the fridge, never above it",
+        "changes gloves and washes hands between raw and cooked handling",
+        "sanitises the probe between products instead of wiping it on a cloth"
       ],
       "discriminate": [
-        "separates sandboxing, which limits reach, from least privilege, which limits grant",
-        "separates isolation from filtering",
-        "separates a sandbox from a sandbox with a shared writable mount"
+        "separates a cross contamination incident from an allergen transfer",
+        "separates a cleaned surface from a sanitised one",
+        "separates a batch that has to be discarded from one that can still be cooked through"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "cross-contact",
+      "security": "cross-contamination"
+    }
+  },
+  {
+    "id": "nema:allergen-handling",
+    "title": "Allergen handling",
+    "summary": "Treating a declared allergen as a separate workflow: a dedicated station, clean tools, a checked ingredient deck and a spoken handover on every ticket.",
+    "prereqs": [
+      "nema:food-safety"
+    ],
+    "confusableWith": [
+      "nema:cross-contamination"
+    ],
+    "misconceptions": [
+      {
+        "id": "picking_the_allergen_out_is_enough",
+        "text": "You can pick the nuts off the plate and send it."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "explains why an allergen is dose sensitive in a way a pathogen count is not",
+        "explains why removing the visible allergen does not make the plate safe",
+        "says where the ingredient deck lives and who is responsible for keeping it current"
+      ],
+      "apply": [
+        "plates an allergen ticket at a dedicated station with clean tools and a fresh pan",
+        "reads the ingredient deck for the sauce instead of trusting memory",
+        "calls the allergen ticket out loud and hears it confirmed back at the pass"
+      ],
+      "discriminate": [
+        "separates an allergen incident from a general hygiene failure",
+        "separates a trace risk from a declared ingredient on the plate",
+        "separates a dish that can be adapted from one that has to be refused"
       ]
     },
     "minutes": {
       "retrieve": 5,
       "explain": 5,
-      "apply": 8,
-      "discriminate": 5
+      "apply": 6,
+      "discriminate": 4
     },
     "aliases": {
-      "harness": "execution-sandbox",
-      "security": "sandboxing"
+      "harness": "allergen-service",
+      "security": "allergen-handling"
     }
   },
   {
-    "id": "nema:least-privilege",
-    "title": "Least privilege",
-    "summary": "Granting each component only the authority its current task needs, for only as long as it needs it.",
+    "id": "nema:cold-chain",
+    "title": "Cold chain",
+    "summary": "Unbroken refrigeration from the delivery door to the plate, chilled at or below 5 C and frozen at minus 18 C, logged rather than assumed.",
     "prereqs": [
-      "nema:permission-boundaries"
+      "nema:food-safety",
+      "nema:temperature-control"
     ],
     "confusableWith": [
-      "nema:sandboxing",
-      "nema:permission-boundaries"
+      "nema:temperature-control"
     ],
     "misconceptions": [
       {
-        "id": "read_only_access_is_harmless",
-        "text": "Read only access cannot cause damage."
+        "id": "refreezing_is_fine_if_it_still_feels_cold",
+        "text": "Food that still feels cold can go back in the freezer."
       }
     ],
     "rubric": {
       "explain": [
-        "states the two dimensions of a grant, the scope and the duration",
-        "explains why a read grant can still leak an asset",
-        "names how a grant is revoked when the task ends"
+        "gives the working targets: 5 C or below chilled, minus 18 C frozen",
+        "explains why a delivery is probed at the door rather than after it is put away",
+        "explains why thawing on the bench is a break in the cold chain"
       ],
       "apply": [
-        "rewrites a broad token into a task scoped one and names what it can no longer do",
-        "sets an expiry that matches the task rather than the session",
-        "shows the agent completing the task under the narrower grant"
+        "probes a delivery and rejects chilled goods that arrive above 8 C",
+        "thaws under refrigeration on a tray, below anything ready to eat",
+        "logs the walk in temperature at set times and escalates a drift within the shift"
       ],
       "discriminate": [
-        "separates a narrow grant from an isolated environment",
-        "separates least privilege from asking for approval",
-        "separates a scoped credential from a filtered interface over a broad one"
+        "separates a cold chain break from a cooking temperature failure",
+        "separates the air temperature in the walk in from the core temperature of the product",
+        "separates stock that has to be discarded from stock that can be cooked immediately"
       ]
     },
     "minutes": {
@@ -1366,89 +1226,263 @@
       "discriminate": 4
     },
     "aliases": {
-      "harness": "scoped-authority",
-      "security": "least-privilege"
+      "harness": "cold-storage",
+      "security": "cold-chain"
     }
   },
   {
-    "id": "nema:output-validation",
-    "title": "Output validation",
-    "summary": "Checking what comes back from a model or a tool against a schema and a policy before any of it is allowed to affect the world.",
+    "id": "nema:temperature-control",
+    "title": "Temperature control",
+    "summary": "Measuring and holding the temperature of the food itself: calibrated probes, hot holding above 63 C and cooking to a verified core.",
     "prereqs": [
-      "nema:json-schema",
-      "nema:prompt-injection"
+      "nema:heat-control"
     ],
     "confusableWith": [
-      "nema:prompt-injection",
-      "nema:json-schema",
-      "nema:tool-result-provenance"
+      "nema:cold-chain"
     ],
     "misconceptions": [
       {
-        "id": "valid_shape_is_safe_content",
-        "text": "If the output parses against the schema, it is safe to act on."
+        "id": "the_probe_reads_instantly",
+        "text": "The probe reads the true temperature the moment it touches the food."
       }
     ],
     "rubric": {
       "explain": [
-        "separates shape validation from policy validation and says why both are needed",
-        "explains why validation belongs at the exit, before the side effect",
-        "states what the system does with an output that fails, other than retrying"
+        "explains probe calibration in iced water at 0 C and in boiling water at 100 C",
+        "states hot holding above 63 C and explains why that is a holding number, not a target",
+        "explains why the core reading is taken at the thickest point, away from bone"
       ],
       "apply": [
-        "validates a tool argument against a closed schema and rejects an extra field",
-        "adds a policy check, such as an allowlisted destination, on top of the schema",
-        "shows an injected instruction failing at the exit even though it parsed"
+        "calibrates the probe at the start of the shift and records the check",
+        "holds sauces above 63 C or works in small batches remade every hour",
+        "re-probes after resting so carryover is part of the reading"
       ],
       "discriminate": [
-        "separates validating what comes out from sanitising what goes in",
-        "separates a schema violation from a policy violation",
-        "separates a rejected output from a retried one"
+        "separates the temperature of the food from the temperature of the equipment",
+        "separates hot holding from cooking and from reheating",
+        "separates a probe that has drifted from a product that is genuinely cold"
       ]
     },
     "minutes": {
-      "retrieve": 5,
+      "retrieve": 4,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "probe-and-hold",
+      "security": "temperature-control"
+    }
+  },
+  {
+    "id": "nema:service-timing",
+    "title": "Service timing",
+    "summary": "Sequencing tickets so every component of every plate on a table lands at the pass hot and at the same moment.",
+    "prereqs": [
+      "nema:mise-en-place",
+      "nema:kitchen-communication"
+    ],
+    "confusableWith": [
+      "nema:kitchen-communication"
+    ],
+    "misconceptions": [
+      {
+        "id": "start_everything_at_once",
+        "text": "Start every dish on the ticket at the same time."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "explains firing backwards from the component with the longest cook time",
+        "explains what a fire, a pickup and a hold each mean at the pass",
+        "explains why a table is timed as a whole rather than plate by plate"
+      ],
+      "apply": [
+        "fires a table of four with different cook times so the plates land together",
+        "calls a hold on the station that has run ahead of the others",
+        "rebuilds the order of the board when a table adds a course mid service"
+      ],
+      "discriminate": [
+        "separates a timing failure from a capacity failure",
+        "separates a dish that is late from one that was fired late",
+        "separates holding a plate from remaking it"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
+      "explain": 4,
+      "apply": 7,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "sauce-pickup-timing",
+      "security": "service-timing"
+    }
+  },
+  {
+    "id": "nema:kitchen-communication",
+    "title": "Kitchen communication",
+    "summary": "The spoken protocol of a working line: calls and callbacks, corners and hot pans, and saying the problem out loud while it is still small.",
+    "prereqs": [
+      "nema:mise-en-place"
+    ],
+    "confusableWith": [
+      "nema:service-timing"
+    ],
+    "misconceptions": [
+      {
+        "id": "silence_means_it_is_under_control",
+        "text": "A quiet line is a line in control."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "explains why every call gets a callback",
+        "names the standard calls, behind, corner, hot, sharp, and what each one prevents",
+        "explains why a problem called early costs less than one found at the pass"
+      ],
+      "apply": [
+        "repeats the ticket back to the expediter word for word",
+        "calls a shortfall the moment it is known rather than at pickup",
+        "hands the station over with a spoken list of what is down and what is prepped"
+      ],
+      "discriminate": [
+        "separates a communication failure from a timing failure",
+        "separates a call that carries information from one that only adds noise",
+        "separates escalating to the chef from quietly working around the problem"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "pass-calls",
+      "security": "line-communication"
+    }
+  },
+  {
+    "id": "nema:fermentation",
+    "title": "Fermentation",
+    "summary": "Controlled microbial transformation steered by salt, temperature and time, from a 2 percent vegetable brine to a levain.",
+    "prereqs": [
+      "nema:temperature-control",
+      "nema:food-safety"
+    ],
+    "confusableWith": [],
+    "misconceptions": [
+      {
+        "id": "fermentation_is_spoilage",
+        "text": "Fermented food is just controlled spoilage and is never really safe."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "explains why a 2 percent brine selects for lactic acid bacteria",
+        "explains how temperature changes both the speed and the flavour of a ferment",
+        "explains what a pH below 4.6 means for safety"
+      ],
+      "apply": [
+        "brines vegetables at 2 percent by weight and keeps everything under the surface",
+        "tracks a ferment by taste, smell and pH rather than by the number of days",
+        "moves the jar to the fridge to hold the flavour once it is where it should be"
+      ],
+      "discriminate": [
+        "separates a healthy ferment from spoilage by smell, colour and pH",
+        "separates kahm yeast from mould",
+        "separates a lactic ferment from an alcoholic one"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
       "explain": 5,
       "apply": 7,
       "discriminate": 4
     },
     "aliases": {
-      "harness": "output-checks",
-      "security": "output-validation"
+      "harness": "ferments",
+      "security": "fermentation"
     }
   },
   {
-    "id": "nema:red-teaming",
-    "title": "Red teaming",
-    "summary": "Deliberately attacking your own agent with adversarial inputs to find failures that ordinary evaluation will never produce.",
+    "id": "nema:bread-basics",
+    "title": "Bread basics",
+    "summary": "Flour, water, salt and leavening read as baker's percentages, developed by time or by mixing, and baked with steam for the first minutes.",
     "prereqs": [
-      "nema:attack-surface",
-      "nema:prompt-injection"
+      "nema:ratios",
+      "nema:fermentation"
     ],
     "confusableWith": [
-      "nema:threat-modeling"
+      "nema:pastry-basics"
     ],
     "misconceptions": [
       {
-        "id": "red_teaming_is_a_one_off",
-        "text": "A red team pass at the end of the project is enough."
+        "id": "more_kneading_is_always_better",
+        "text": "Bread dough always needs long kneading."
       }
     ],
     "rubric": {
       "explain": [
-        "states what a red team run produces, a reproducible attack case, not an opinion",
-        "explains why attacks are written against the surface, entry point by entry point",
-        "says how a found attack becomes a permanent regression case"
+        "reads a formula in baker's percentages with the flour at 100 percent",
+        "explains hydration and what a 65 percent dough feels like next to an 80 percent one",
+        "explains what steam in the first minutes does to oven spring and to the crust"
       ],
       "apply": [
-        "writes three attack cases against named entry points of a given agent",
-        "records one successful attack as a reproducible case with the expected refusal",
-        "adds the case to the suite so a regression is caught later"
+        "mixes a 70 percent hydration dough and develops it with folds instead of long kneading",
+        "proofs to the dough rather than to the clock and checks it with the poke test",
+        "bakes with steam for the first fifteen minutes, then dry to set the crust"
       ],
       "discriminate": [
-        "separates red teaming from evaluating normal task performance",
-        "separates an attack case from a threat model entry",
-        "separates a real bypass from a refusal that only looks like one"
+        "separates under proofed dough from over proofed dough by crumb and by spring",
+        "separates a hydration problem from a development problem",
+        "separates commercial yeast from a levain in timing and in flavour"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
+      "explain": 5,
+      "apply": 9,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "bread-and-doughs",
+      "security": "bread-basics"
+    }
+  },
+  {
+    "id": "nema:pastry-basics",
+    "title": "Pastry basics",
+    "summary": "The pastry disciplines that reward weighing and cold hands: 3:2:1 shortcrust, laminated dough, and custards that set at a temperature.",
+    "prereqs": [
+      "nema:ratios",
+      "nema:temperature-control"
+    ],
+    "confusableWith": [
+      "nema:bread-basics"
+    ],
+    "misconceptions": [
+      {
+        "id": "pastry_can_be_improvised_like_savoury",
+        "text": "You can adjust pastry by feel the way you adjust a sauce."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states the 3:2:1 shortcrust ratio by weight, flour to fat to water",
+        "explains why cold fat gives a flaky texture where warm fat gives a sandy one",
+        "explains why a creme anglaise sets in a narrow window around 82 to 84 C"
+      ],
+      "apply": [
+        "makes a shortcrust with cold butter and rests it before rolling and again before baking",
+        "cooks a creme anglaise to 82 to 84 C and strains it straight into a cold bowl",
+        "blind bakes with weight until the base is set and coloured before the filling goes in"
+      ],
+      "discriminate": [
+        "separates a tough crust from a sandy one and names the cause of each",
+        "separates a custard that curdled from one that never set",
+        "separates a chemical leavener from a mechanical one"
       ]
     },
     "minutes": {
@@ -1458,54 +1492,8 @@
       "discriminate": 4
     },
     "aliases": {
-      "harness": "adversarial-testing",
-      "security": "red-teaming"
-    }
-  },
-  {
-    "id": "nema:eval-dataset-design",
-    "title": "Eval dataset design",
-    "summary": "Assembling a set of tasks whose coverage, difficulty and answer keys make an eval score mean something over time.",
-    "prereqs": [
-      "nema:agent-evals",
-      "nema:rubric-grading"
-    ],
-    "confusableWith": [
-      "nema:agent-evals",
-      "nema:regression-testing"
-    ],
-    "misconceptions": [
-      {
-        "id": "more_cases_is_a_better_eval",
-        "text": "A larger eval set is always a better eval set."
-      }
-    ],
-    "rubric": {
-      "explain": [
-        "explains why coverage of failure modes matters more than raw case count",
-        "states how a saturated set stops distinguishing two harnesses",
-        "names the risk of tuning on the same set the score is reported from"
-      ],
-      "apply": [
-        "selects cases so each known failure mode has at least two of them",
-        "holds out a slice and reports the rate on it separately",
-        "retires a case that every version now passes and records why"
-      ],
-      "discriminate": [
-        "separates the dataset from the eval harness that runs it",
-        "separates an eval set from a regression suite by what each protects",
-        "separates a hard case from a badly specified one"
-      ]
-    },
-    "minutes": {
-      "retrieve": 5,
-      "explain": 5,
-      "apply": 8,
-      "discriminate": 4
-    },
-    "aliases": {
-      "harness": "eval-set-design",
-      "security": "attack-case-set"
+      "harness": "pastry-fundamentals",
+      "security": "pastry-basics"
     }
   }
 ]

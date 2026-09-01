@@ -1,82 +1,68 @@
 {
-  "baseDate": "2026-09-01T09:00:00Z",
+  "baseDate": "2026-09-02T09:00:00Z",
   "goals": [
     {
-      "title": "Design evals for coding agents",
+      "title": "Cook a pan sauce I can hold through service",
       "concepts": [
-        "nema:agent-evals",
-        "nema:feedback-loops",
-        "nema:deterministic-verification"
+        "nema:pan-sauces",
+        "nema:emulsions",
+        "nema:heat-control"
       ]
     }
   ],
   "misconceptions": [
     {
-      "concept": "nema:context-design",
-      "id": "more_context_always_helps",
-      "text": "More context always improves the agent."
+      "concept": "nema:maillard-reaction",
+      "id": "searing_seals_in_juices",
+      "text": "Searing meat seals in the juices."
     }
   ],
   "receipts": [
     {
-      "daysAgo": 243.7917,
+      "daysAgo": 252.29,
       "activity": {
-        "id": "agent-engineering-course-intake",
+        "id": "culinary-school-intake",
         "version": "1.0.0",
-        "title": "Agent engineering course: intake self check"
+        "title": "Culinary school intake practical"
       },
       "claims": [
         {
-          "concept": "nema:harness-iteration",
+          "concept": "nema:knife-skills",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:mise-en-place",
           "ability": "explain",
           "evidenceType": "explanation",
           "result": "passed",
           "difficulty": "introductory"
         },
         {
-          "concept": "nema:failure-taxonomy",
+          "concept": "nema:heat-control",
           "ability": "explain",
           "evidenceType": "explanation",
           "result": "passed",
           "difficulty": "introductory"
         },
         {
-          "concept": "nema:tool-result-provenance",
+          "concept": "nema:ratios",
           "ability": "explain",
           "evidenceType": "explanation",
           "result": "passed",
           "difficulty": "introductory"
         },
         {
-          "concept": "nema:least-privilege",
-          "ability": "explain",
-          "evidenceType": "explanation",
+          "concept": "nema:food-safety",
+          "ability": "apply",
+          "evidenceType": "application",
           "result": "passed",
           "difficulty": "introductory"
         },
         {
-          "concept": "nema:sandboxing",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:observability",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:trace-analysis",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:rubric-grading",
+          "concept": "nema:kitchen-communication",
           "ability": "explain",
           "evidenceType": "explanation",
           "result": "passed",
@@ -86,174 +72,94 @@
       "conditions": {
         "attempts": 1,
         "hintsUsed": 0,
-        "durationSeconds": 900,
-        "grader": "self-report",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 230.5417,
-      "activity": {
-        "id": "reliability-and-containment-notes",
-        "version": "1.0.0",
-        "title": "Reading week: reliability and containment notes"
-      },
-      "claims": [
-        {
-          "concept": "nema:failure-taxonomy",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:harness-iteration",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:tool-result-provenance",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:least-privilege",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:sandboxing",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 780,
-        "grader": "self-report",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 202.5417,
-      "activity": {
-        "id": "course-workshop-agents-and-tools",
-        "version": "1.1.0",
-        "title": "Course workshop: agents and tools"
-      },
-      "claims": [
-        {
-          "concept": "nema:agent-loop",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:tool-calling",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:context-design",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:cost-latency",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:retrieval-augmentation",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:tool-interface-design",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:state-management",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 1,
-        "durationSeconds": 2100,
+        "durationSeconds": 5400,
         "grader": "provider-rubric",
         "graderVersion": "1"
       }
     },
     {
-      "daysAgo": 188.5417,
+      "daysAgo": 245.33,
       "activity": {
-        "id": "course-workshop-verification-and-criteria",
-        "version": "1.1.0",
-        "title": "Course workshop: verification and criteria"
+        "id": "cuts-and-yields-workshop",
+        "version": "1.0.0",
+        "title": "Cuts and yields workshop"
       },
       "claims": [
         {
-          "concept": "nema:acceptance-criteria",
+          "concept": "nema:knife-skills",
           "ability": "apply",
           "evidenceType": "application",
           "result": "passed",
           "difficulty": "introductory"
         },
         {
-          "concept": "nema:deterministic-verification",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:regression-testing",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:threat-modeling",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:human-in-the-loop",
+          "concept": "nema:mise-en-place",
           "ability": "explain",
           "evidenceType": "explanation",
           "result": "passed",
           "difficulty": "introductory"
         },
         {
-          "concept": "nema:memory-design",
+          "concept": "nema:plating",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:cost-control",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 4800,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 238.29,
+      "activity": {
+        "id": "food-handler-certification",
+        "version": "1.0.0",
+        "title": "Food handler certification"
+      },
+      "claims": [
+        {
+          "concept": "nema:food-safety",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:cold-chain",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:allergen-handling",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:kitchen-communication",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:mise-en-place",
           "ability": "explain",
           "evidenceType": "explanation",
           "result": "passed",
@@ -261,997 +167,1280 @@
         }
       ],
       "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 7200,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 231.33,
+      "activity": {
+        "id": "stock-kitchen-rotation",
+        "version": "1.0.0",
+        "title": "Stock kitchen rotation"
+      },
+      "claims": [
+        {
+          "concept": "nema:stocks",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:heat-control",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:knife-skills",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:seasoning",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:reduction",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 6300,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 224.29,
+      "activity": {
+        "id": "dry-heat-practical",
+        "version": "1.0.0",
+        "title": "Dry heat practical: sear, roast, caramelize"
+      },
+      "claims": [
+        {
+          "concept": "nema:maillard-reaction",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:caramelization",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:roasting",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:heat-control",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:seasoning",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:tasting-and-adjusting",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 6000,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 217.33,
+      "activity": {
+        "id": "moist-heat-practical",
+        "version": "1.0.0",
+        "title": "Moist heat practical: blanch, poach, braise"
+      },
+      "claims": [
+        {
+          "concept": "nema:blanching",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:poaching",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:braising",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:heat-control",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:ratios",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:mise-en-place",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "introductory"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 6000,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 210.29,
+      "activity": {
+        "id": "sauce-week-roux-and-thickening",
+        "version": "1.0.0",
+        "title": "Sauce week: roux and thickening"
+      },
+      "claims": [
+        {
+          "concept": "nema:roux",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:thickeners",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:reduction",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:ratios",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:stocks",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:deglazing",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 5700,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 203.33,
+      "activity": {
+        "id": "term-one-practical-exam",
+        "version": "1.0.0",
+        "title": "Term one practical exam"
+      },
+      "claims": [
+        {
+          "concept": "nema:knife-skills",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:food-safety",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:seasoning",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:stocks",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:roasting",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:braising",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:plating",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:maillard-reaction",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:deglazing",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:caramelization",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:blanching",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:poaching",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:roux",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:acid-balance",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:cost-control",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 9000,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 196.29,
+      "activity": {
+        "id": "term-two-practical-exam",
+        "version": "1.0.0",
+        "title": "Term two practical exam: sauces and service"
+      },
+      "claims": [
+        {
+          "concept": "nema:ratios",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:seasoning",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:roux",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:reduction",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:deglazing",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:caramelization",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:roasting",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:braising",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:plating",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:kitchen-communication",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:maillard-reaction",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:allergen-handling",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:cold-chain",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:tasting-and-adjusting",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:thickeners",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:acid-balance",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:pastry-basics",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 9000,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 189.33,
+      "activity": {
+        "id": "pastry-rotation-assessment",
+        "version": "1.0.0",
+        "title": "Pastry rotation assessment"
+      },
+      "claims": [
+        {
+          "concept": "nema:pastry-basics",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:ratios",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:tasting-and-adjusting",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:plating",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:cold-chain",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:allergen-handling",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 5400,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 182.29,
+      "activity": {
+        "id": "vegetable-station-block",
+        "version": "1.0.0",
+        "title": "Vegetable station block"
+      },
+      "claims": [
+        {
+          "concept": "nema:blanching",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:poaching",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:knife-skills",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:seasoning",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:mise-en-place",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:kitchen-communication",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "introductory"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 5400,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 175.33,
+      "activity": {
+        "id": "sauce-and-fond-block",
+        "version": "1.0.0",
+        "title": "Sauce and fond block"
+      },
+      "claims": [
+        {
+          "concept": "nema:deglazing",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:reduction",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:maillard-reaction",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:caramelization",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:stocks",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:roux",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:food-safety",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 5400,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 168.29,
+      "activity": {
+        "id": "service-block-first-solo",
+        "version": "1.0.0",
+        "title": "Service block: first solo station"
+      },
+      "claims": [
+        {
+          "concept": "nema:kitchen-communication",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:plating",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:mise-en-place",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:heat-control",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:braising",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:roasting",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:food-safety",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:tasting-and-adjusting",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 7200,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 40.29,
+      "activity": {
+        "id": "prep-list-rewrite",
+        "version": "1.0.0",
+        "title": "Prep list rewrite"
+      },
+      "claims": [
+        {
+          "concept": "nema:mise-en-place",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:kitchen-communication",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 1500,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 38.33,
+      "activity": {
+        "id": "knife-skills-bootcamp",
+        "version": "1.0.0",
+        "title": "Knife skills bootcamp"
+      },
+      "claims": [
+        {
+          "concept": "nema:knife-skills",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:mise-en-place",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
         "attempts": 2,
         "hintsUsed": 1,
+        "durationSeconds": 3600,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 35.33,
+      "activity": {
+        "id": "menu-design-seminar",
+        "version": "1.0.0",
+        "title": "Menu design seminar"
+      },
+      "claims": [
+        {
+          "concept": "nema:menu-planning",
+          "ability": "recognize",
+          "evidenceType": "recognition",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:mother-sauces",
+          "ability": "recognize",
+          "evidenceType": "recognition",
+          "result": "passed",
+          "difficulty": "introductory"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 3600,
+        "grader": "exposure",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 34.29,
+      "activity": {
+        "id": "stock-day",
+        "version": "1.0.0",
+        "title": "Stock day"
+      },
+      "claims": [
+        {
+          "concept": "nema:stocks",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "advanced"
+        },
+        {
+          "concept": "nema:heat-control",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "advanced"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 7200,
+        "grader": "deterministic",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 33.33,
+      "activity": {
+        "id": "brine-and-cure-calculations",
+        "version": "1.0.0",
+        "title": "Brine and cure calculations"
+      },
+      "claims": [
+        {
+          "concept": "nema:ratios",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 1800,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 31.33,
+      "activity": {
+        "id": "vegetable-station-blanch-and-shock",
+        "version": "1.0.0",
+        "title": "Vegetable station: blanch and shock"
+      },
+      "claims": [
+        {
+          "concept": "nema:blanching",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:poaching",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:seasoning",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
         "durationSeconds": 2400,
         "grader": "provider-rubric",
         "graderVersion": "1"
       }
     },
     {
-      "daysAgo": 119.625,
+      "daysAgo": 30.29,
       "activity": {
-        "id": "json-schema-payloads",
-        "version": "1.2.0",
-        "title": "JSON Schema for API payloads"
-      },
-      "claims": [
-        {
-          "concept": "nema:json-schema",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1480,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 118.0417,
-      "activity": {
-        "id": "security-reading-self-check",
+        "id": "thermometer-drill",
         "version": "1.0.0",
-        "title": "Security reading self check"
+        "title": "Thermometer drill"
       },
       "claims": [
         {
-          "concept": "nema:tool-result-provenance",
-          "ability": "explain",
-          "evidenceType": "explanation",
+          "concept": "nema:food-safety",
+          "ability": "apply",
+          "evidenceType": "application",
           "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:least-privilege",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:sandboxing",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:harness-iteration",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:failure-taxonomy",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
+          "difficulty": "intermediate"
         }
       ],
       "conditions": {
         "attempts": 1,
         "hintsUsed": 0,
-        "durationSeconds": 480,
-        "grader": "self-report",
+        "durationSeconds": 900,
+        "grader": "deterministic",
         "graderVersion": "1"
       }
     },
     {
-      "daysAgo": 114.7917,
+      "daysAgo": 28.33,
       "activity": {
-        "id": "reliable-agents-talk",
+        "id": "pastry-rotation-tart-shells",
         "version": "1.0.0",
-        "title": "Conference talk: building reliable agents"
+        "title": "Pastry rotation: tart shells and creme anglaise"
       },
       "claims": [
         {
-          "concept": "nema:agent-loop",
-          "ability": "recognize",
-          "evidenceType": "recognition",
+          "concept": "nema:pastry-basics",
+          "ability": "apply",
+          "evidenceType": "application",
           "result": "passed",
-          "difficulty": "introductory"
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 4200,
+        "grader": "deterministic",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 27.29,
+      "activity": {
+        "id": "braise-day",
+        "version": "1.0.0",
+        "title": "Braise day"
+      },
+      "claims": [
+        {
+          "concept": "nema:braising",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "advanced"
         },
         {
-          "concept": "nema:context-design",
-          "ability": "recognize",
-          "evidenceType": "recognition",
+          "concept": "nema:maillard-reaction",
+          "ability": "apply",
+          "evidenceType": "application",
           "result": "passed",
-          "difficulty": "introductory"
+          "difficulty": "advanced"
         },
         {
-          "concept": "nema:state-management",
-          "ability": "recognize",
-          "evidenceType": "recognition",
+          "concept": "nema:deglazing",
+          "ability": "apply",
+          "evidenceType": "application",
           "result": "passed",
-          "difficulty": "introductory"
-        },
+          "difficulty": "advanced"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 5400,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 26.33,
+      "activity": {
+        "id": "costing-workshop",
+        "version": "1.0.0",
+        "title": "Costing workshop"
+      },
+      "claims": [
         {
-          "concept": "nema:tool-calling",
-          "ability": "recognize",
-          "evidenceType": "recognition",
+          "concept": "nema:cost-control",
+          "ability": "apply",
+          "evidenceType": "application",
           "result": "passed",
-          "difficulty": "introductory"
+          "difficulty": "intermediate"
         }
       ],
       "conditions": {
         "attempts": 1,
         "hintsUsed": 0,
         "durationSeconds": 2700,
-        "grader": "exposure",
+        "grader": "deterministic",
         "graderVersion": "1"
       }
     },
     {
-      "daysAgo": 111.5417,
+      "daysAgo": 25.29,
       "activity": {
-        "id": "agent-engineering-podcast-check",
+        "id": "roast-station-rotation",
         "version": "1.0.0",
-        "title": "Agent engineering podcast self check"
+        "title": "Roast station rotation"
       },
       "claims": [
         {
-          "concept": "nema:tool-interface-design",
+          "concept": "nema:roasting",
           "ability": "apply",
           "evidenceType": "application",
           "result": "passed",
-          "difficulty": "introductory"
+          "difficulty": "intermediate"
         },
         {
-          "concept": "nema:human-in-the-loop",
+          "concept": "nema:maillard-reaction",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:heat-control",
           "ability": "explain",
           "evidenceType": "explanation",
           "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:cost-latency",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:observability",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:tool-result-provenance",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
+          "difficulty": "intermediate"
         }
       ],
       "conditions": {
         "attempts": 1,
         "hintsUsed": 0,
-        "durationSeconds": 540,
+        "durationSeconds": 4500,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 24.33,
+      "activity": {
+        "id": "palate-training-salt-and-acid",
+        "version": "1.0.0",
+        "title": "Palate training: salt and acid"
+      },
+      "claims": [
+        {
+          "concept": "nema:acid-balance",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 1800,
+        "grader": "deterministic",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 22.29,
+      "activity": {
+        "id": "sauce-thickening-clinic",
+        "version": "1.0.0",
+        "title": "Sauce thickening clinic"
+      },
+      "claims": [
+        {
+          "concept": "nema:thickeners",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:roux",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 2100,
+        "grader": "deterministic",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 21.29,
+      "activity": {
+        "id": "fridge-and-probe-audit",
+        "version": "1.0.0",
+        "title": "Fridge and probe audit"
+      },
+      "claims": [
+        {
+          "concept": "nema:food-safety",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 1800,
+        "grader": "deterministic",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 20.33,
+      "activity": {
+        "id": "onion-and-caramel-drill",
+        "version": "1.0.0",
+        "title": "Onion and caramel drill"
+      },
+      "claims": [
+        {
+          "concept": "nema:caramelization",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:heat-control",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 3000,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 19.33,
+      "activity": {
+        "id": "self-check-vegetable-cookery",
+        "version": "1.0.0",
+        "title": "Self check: vegetable cookery"
+      },
+      "claims": [
+        {
+          "concept": "nema:blanching",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:poaching",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:seasoning",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 360,
         "grader": "self-report",
         "graderVersion": "1"
       }
     },
     {
-      "daysAgo": 107.7917,
+      "daysAgo": 18.29,
       "activity": {
-        "id": "testing-chapter-check",
+        "id": "reduction-and-glaze-drill",
         "version": "1.0.0",
-        "title": "Testing chapter self check"
+        "title": "Reduction and glaze drill"
       },
       "claims": [
         {
-          "concept": "nema:software-testing",
+          "concept": "nema:reduction",
           "ability": "apply",
           "evidenceType": "application",
           "result": "passed",
-          "difficulty": "introductory"
+          "difficulty": "intermediate"
         },
         {
-          "concept": "nema:unit-testing",
+          "concept": "nema:stocks",
           "ability": "apply",
           "evidenceType": "application",
           "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:regression-testing",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:deterministic-verification",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "introductory"
+          "difficulty": "intermediate"
         }
       ],
       "conditions": {
         "attempts": 1,
         "hintsUsed": 0,
-        "durationSeconds": 460,
-        "grader": "self-report",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 105.625,
-      "activity": {
-        "id": "evaluation-and-memory-check",
-        "version": "1.0.0",
-        "title": "Evaluation and memory series self check"
-      },
-      "claims": [
-        {
-          "concept": "nema:rubric-grading",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:memory-design",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:retrieval-augmentation",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:trace-analysis",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 420,
-        "grader": "self-report",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 102.9583,
-      "activity": {
-        "id": "threat-and-criteria-check",
-        "version": "1.0.0",
-        "title": "Threat modeling and criteria self check"
-      },
-      "claims": [
-        {
-          "concept": "nema:threat-modeling",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:acceptance-criteria",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 400,
-        "grader": "self-report",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 90.0417,
-      "activity": {
-        "id": "agent-engineering-intake",
-        "version": "1.0.0",
-        "title": "Agent engineering intake self check"
-      },
-      "claims": [
-        {
-          "concept": "nema:recovery",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:harness-iteration",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:least-privilege",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:sandboxing",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 420,
-        "grader": "self-report",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 87.875,
-      "activity": {
-        "id": "unit-testing-pure-functions",
-        "version": "1.1.0",
-        "title": "Unit testing pure functions"
-      },
-      "claims": [
-        {
-          "concept": "nema:unit-testing",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 1180,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 79.7917,
-      "activity": {
-        "id": "working-memory-clinic",
-        "version": "1.0.0",
-        "title": "Working memory for long tasks"
-      },
-      "claims": [
-        {
-          "concept": "nema:memory-design",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 1,
-        "durationSeconds": 1350,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 77.625,
-      "activity": {
-        "id": "trace-triage-clinic",
-        "version": "1.0.0",
-        "title": "Trace triage clinic"
-      },
-      "claims": [
-        {
-          "concept": "nema:trace-analysis",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1460,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 76.5417,
-      "activity": {
-        "id": "regression-gate-lab",
-        "version": "1.0.0",
-        "title": "Regression gate for tool schemas"
-      },
-      "claims": [
-        {
-          "concept": "nema:regression-testing",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 0,
-        "durationSeconds": 1720,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 76.0417,
-      "activity": {
-        "id": "grounded-answers-lab",
-        "version": "1.0.0",
-        "title": "Grounding answers in retrieved context"
-      },
-      "claims": [
-        {
-          "concept": "nema:retrieval-augmentation",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 3,
-        "hintsUsed": 2,
-        "durationSeconds": 2110,
+        "durationSeconds": 2400,
         "grader": "deterministic",
         "graderVersion": "1"
       }
     },
     {
-      "daysAgo": 73.875,
+      "daysAgo": 17.29,
       "activity": {
-        "id": "latency-budget-clinic",
+        "id": "self-check-pan-sauce-steps",
         "version": "1.0.0",
-        "title": "Latency budgets for tool chains"
+        "title": "Self check: pan sauce steps"
       },
       "claims": [
         {
-          "concept": "nema:cost-latency",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 1180,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 71.7083,
-      "activity": {
-        "id": "grading-and-signal-self-check",
-        "version": "1.0.0",
-        "title": "Grading and signal self check"
-      },
-      "claims": [
-        {
-          "concept": "nema:rubric-grading",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:observability",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 380,
-        "grader": "self-report",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 69.5417,
-      "activity": {
-        "id": "feedforward-brief-clinic",
-        "version": "1.0.0",
-        "title": "Feedforward briefs for agents"
-      },
-      "claims": [
-        {
-          "concept": "nema:feedforward",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1290,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 66.875,
-      "activity": {
-        "id": "approval-gates-lab",
-        "version": "1.3.0",
-        "title": "Approval gates and permission boundaries"
-      },
-      "claims": [
-        {
-          "concept": "nema:human-in-the-loop",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        },
-        {
-          "concept": "nema:permission-boundaries",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 1,
-        "durationSeconds": 1610,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 65.7917,
-      "activity": {
-        "id": "tool-schema-clinic",
-        "version": "1.1.0",
-        "title": "Tool schema clinic"
-      },
-      "claims": [
-        {
-          "concept": "nema:tool-interface-design",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1740,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 62.5417,
-      "activity": {
-        "id": "state-handoff-clinic",
-        "version": "1.0.0",
-        "title": "State handoff between steps"
-      },
-      "claims": [
-        {
-          "concept": "nema:state-management",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 2,
-        "durationSeconds": 1560,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 62.0417,
-      "activity": {
-        "id": "acceptance-criteria-lab",
-        "version": "1.0.0",
-        "title": "Writing acceptance criteria"
-      },
-      "claims": [
-        {
-          "concept": "nema:acceptance-criteria",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 1120,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 59.875,
-      "activity": {
-        "id": "context-budgeting-clinic",
-        "version": "1.0.0",
-        "title": "Prompt context budgeting"
-      },
-      "claims": [
-        {
-          "concept": "nema:context-design",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1440,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 57.7083,
-      "activity": {
-        "id": "test-doubles-clinic",
-        "version": "1.2.0",
-        "title": "Test doubles and seams"
-      },
-      "claims": [
-        {
-          "concept": "nema:software-testing",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1830,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 52.0417,
-      "activity": {
-        "id": "agent-loop-walkthrough",
-        "version": "1.1.0",
-        "title": "The agent loop, step by step"
-      },
-      "claims": [
-        {
-          "concept": "nema:agent-loop",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 1,
-        "durationSeconds": 1290,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 51.7917,
-      "activity": {
-        "id": "mid-course-confidence-check",
-        "version": "1.0.0",
-        "title": "Mid course confidence check"
-      },
-      "claims": [
-        {
-          "concept": "nema:deterministic-verification",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:threat-modeling",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 340,
-        "grader": "self-report",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 48.0417,
-      "activity": {
-        "id": "failed-run-readthrough",
-        "version": "1.0.0",
-        "title": "Reading a failed run end to end"
-      },
-      "claims": [
-        {
-          "concept": "nema:trace-analysis",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1520,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 44.7917,
-      "activity": {
-        "id": "tool-calling-fundamentals",
-        "version": "1.4.0",
-        "title": "Tool calling fundamentals"
-      },
-      "claims": [
-        {
-          "concept": "nema:tool-calling",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 1260,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 43.9583,
-      "activity": {
-        "id": "regression-triage-clinic",
-        "version": "1.0.0",
-        "title": "Regression triage clinic"
-      },
-      "claims": [
-        {
-          "concept": "nema:regression-testing",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1610,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 43.7083,
-      "activity": {
-        "id": "context-budget-lab",
-        "version": "1.0.0",
-        "title": "Context budget lab"
-      },
-      "claims": [
-        {
-          "concept": "nema:memory-design",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        },
-        {
-          "concept": "nema:cost-latency",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 2040,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 41.5417,
-      "activity": {
-        "id": "ask-the-human-clinic",
-        "version": "1.0.0",
-        "title": "When to ask the human"
-      },
-      "claims": [
-        {
-          "concept": "nema:human-in-the-loop",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 1140,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 41.0417,
-      "activity": {
-        "id": "chunking-recall-clinic",
-        "version": "1.1.0",
-        "title": "Chunking and recall clinic"
-      },
-      "claims": [
-        {
-          "concept": "nema:retrieval-augmentation",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 2,
-        "durationSeconds": 1480,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 36.7083,
-      "activity": {
-        "id": "failure-metrics-clinic",
-        "version": "1.0.0",
-        "title": "Metrics that predict failures"
-      },
-      "claims": [
-        {
-          "concept": "nema:observability",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1390,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 35.625,
-      "activity": {
-        "id": "rubric-grading-lab",
-        "version": "1.2.0",
-        "title": "Grading with rubrics lab"
-      },
-      "claims": [
-        {
-          "concept": "nema:rubric-grading",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1720,
-        "grader": "deterministic",
-        "graderVersion": "3"
-      }
-    },
-    {
-      "daysAgo": 34.0417,
-      "activity": {
-        "id": "coding-agent-threat-model",
-        "version": "1.1.0",
-        "title": "Threat model of a coding agent"
-      },
-      "claims": [
-        {
-          "concept": "nema:threat-modeling",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "intermediate"
-        },
-        {
-          "concept": "nema:permission-boundaries",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 2260,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 33.7083,
-      "activity": {
-        "id": "tool-interface-self-check",
-        "version": "1.0.0",
-        "title": "Tool interface self check"
-      },
-      "claims": [
-        {
-          "concept": "nema:tool-interface-design",
+          "concept": "nema:deglazing",
           "ability": "apply",
           "evidenceType": "application",
           "result": "passed",
@@ -1267,22 +1456,29 @@
       }
     },
     {
-      "daysAgo": 31.875,
+      "daysAgo": 16.33,
       "activity": {
-        "id": "criteria-and-briefs-clinic",
+        "id": "service-simulation-two-seatings",
         "version": "1.0.0",
-        "title": "Acceptance criteria and feedforward briefs"
+        "title": "Service simulation: two seatings"
       },
       "claims": [
         {
-          "concept": "nema:acceptance-criteria",
+          "concept": "nema:kitchen-communication",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:plating",
           "ability": "apply",
           "evidenceType": "application",
           "result": "passed",
           "difficulty": "intermediate"
         },
         {
-          "concept": "nema:feedforward",
+          "concept": "nema:mise-en-place",
           "ability": "explain",
           "evidenceType": "explanation",
           "result": "passed",
@@ -1290,144 +1486,41 @@
         }
       ],
       "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1660,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 30.7917,
-      "activity": {
-        "id": "long-run-context-review",
-        "version": "1.0.0",
-        "title": "Long run context and state review"
-      },
-      "claims": [
-        {
-          "concept": "nema:context-design",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        },
-        {
-          "concept": "nema:state-management",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
+        "attempts": 1,
         "hintsUsed": 0,
-        "durationSeconds": 2180,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 28.625,
-      "activity": {
-        "id": "retry-rollback-lab",
-        "version": "1.0.0",
-        "title": "Retry and rollback lab"
-      },
-      "claims": [
-        {
-          "concept": "nema:recovery",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 3,
-        "hintsUsed": 2,
-        "durationSeconds": 1940,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 27.5417,
-      "activity": {
-        "id": "mutation-testing-kata",
-        "version": "1.1.0",
-        "title": "Mutation testing kata"
-      },
-      "claims": [
-        {
-          "concept": "nema:software-testing",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "intermediate"
-        },
-        {
-          "concept": "nema:unit-testing",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 2410,
-        "grader": "deterministic",
-        "graderVersion": "3"
-      }
-    },
-    {
-      "daysAgo": 27.0417,
-      "activity": {
-        "id": "verification-and-failures-clinic",
-        "version": "1.0.0",
-        "title": "Verification and failure modes clinic"
-      },
-      "claims": [
-        {
-          "concept": "nema:deterministic-verification",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "intermediate"
-        },
-        {
-          "concept": "nema:failure-taxonomy",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1580,
+        "durationSeconds": 5400,
         "grader": "provider-rubric",
         "graderVersion": "1"
       }
     },
     {
-      "daysAgo": 26.7083,
+      "daysAgo": 15.29,
       "activity": {
-        "id": "json-schema-self-check",
+        "id": "self-check-allergens-and-storage",
         "version": "1.0.0",
-        "title": "JSON Schema self check"
+        "title": "Self check: allergens and storage"
       },
       "claims": [
         {
-          "concept": "nema:json-schema",
+          "concept": "nema:allergen-handling",
           "ability": "apply",
           "evidenceType": "application",
           "result": "passed",
-          "difficulty": "introductory"
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:cold-chain",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:tasting-and-adjusting",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
         }
       ],
       "conditions": {
@@ -1439,542 +1532,419 @@
       }
     },
     {
-      "daysAgo": 22.7083,
+      "daysAgo": 13.33,
       "activity": {
-        "id": "midpoint-review-drill",
+        "id": "self-check-vinaigrette-that-holds",
         "version": "1.0.0",
-        "title": "Midpoint review drill"
+        "title": "Self check: a vinaigrette that holds"
       },
       "claims": [
         {
-          "concept": "nema:software-testing",
+          "concept": "nema:ratios",
           "ability": "apply",
           "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "intermediate"
-        },
-        {
-          "concept": "nema:unit-testing",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "intermediate"
-        },
-        {
-          "concept": "nema:agent-loop",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        },
-        {
-          "concept": "nema:tool-calling",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        },
-        {
-          "concept": "nema:context-design",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        },
-        {
-          "concept": "nema:state-management",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 3200,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 20.5417,
-      "activity": {
-        "id": "tool-call-anatomy",
-        "version": "1.0.0",
-        "title": "Tool call anatomy"
-      },
-      "claims": [
-        {
-          "concept": "nema:tool-calling",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
+          "result": "partial",
           "difficulty": "intermediate"
         }
       ],
       "conditions": {
         "attempts": 1,
         "hintsUsed": 0,
-        "durationSeconds": 1080,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 18.9583,
-      "activity": {
-        "id": "agent-loop-review",
-        "version": "1.0.0",
-        "title": "Agent loop review"
-      },
-      "claims": [
-        {
-          "concept": "nema:agent-loop",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 1,
-        "durationSeconds": 1220,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 10.875,
-      "activity": {
-        "id": "trace-analysis-lab",
-        "version": "1.2.0",
-        "title": "Trace analysis lab"
-      },
-      "claims": [
-        {
-          "concept": "nema:trace-analysis",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "advanced"
-        },
-        {
-          "concept": "nema:observability",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "advanced"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1840,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 10.7917,
-      "activity": {
-        "id": "criteria-and-rubrics-clinic",
-        "version": "1.1.0",
-        "title": "Acceptance criteria and rubrics clinic"
-      },
-      "claims": [
-        {
-          "concept": "nema:acceptance-criteria",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "advanced"
-        },
-        {
-          "concept": "nema:rubric-grading",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "advanced"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 1490,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 10.5417,
-      "activity": {
-        "id": "context-assembly-lab",
-        "version": "1.0.0",
-        "title": "Context assembly lab"
-      },
-      "claims": [
-        {
-          "concept": "nema:context-design",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "advanced"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 0,
-        "durationSeconds": 1930,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 10.0417,
-      "activity": {
-        "id": "tool-surface-threat-drill",
-        "version": "1.0.0",
-        "title": "Tool surface threat drill"
-      },
-      "claims": [
-        {
-          "concept": "nema:threat-modeling",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "advanced"
-        },
-        {
-          "concept": "nema:tool-interface-design",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "advanced"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 2140,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 9.9583,
-      "activity": {
-        "id": "escalation-policies-clinic",
-        "version": "1.0.0",
-        "title": "Escalation policies clinic"
-      },
-      "claims": [
-        {
-          "concept": "nema:human-in-the-loop",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "advanced"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 1210,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 9.7917,
-      "activity": {
-        "id": "regression-repair-drill",
-        "version": "1.0.0",
-        "title": "Regression and unit test repair drill"
-      },
-      "claims": [
-        {
-          "concept": "nema:regression-testing",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "advanced"
-        },
-        {
-          "concept": "nema:unit-testing",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "advanced"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 2260,
-        "grader": "deterministic",
-        "graderVersion": "3"
-      }
-    },
-    {
-      "daysAgo": 9.7083,
-      "activity": {
-        "id": "state-snapshots-lab",
-        "version": "1.1.0",
-        "title": "State snapshots lab"
-      },
-      "claims": [
-        {
-          "concept": "nema:state-management",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "advanced"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 1770,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 9.625,
-      "activity": {
-        "id": "retrieval-quality-clinic",
-        "version": "1.0.0",
-        "title": "Retrieval quality clinic"
-      },
-      "claims": [
-        {
-          "concept": "nema:retrieval-augmentation",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "advanced"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1520,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 8.9583,
-      "activity": {
-        "id": "cost-and-memory-budget-clinic",
-        "version": "1.0.0",
-        "title": "Cost and memory budget clinic"
-      },
-      "claims": [
-        {
-          "concept": "nema:cost-latency",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "advanced"
-        },
-        {
-          "concept": "nema:memory-design",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "advanced"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1580,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 8.7083,
-      "activity": {
-        "id": "test-pyramid-audit",
-        "version": "1.0.0",
-        "title": "Test pyramid audit"
-      },
-      "claims": [
-        {
-          "concept": "nema:software-testing",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "advanced"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 1650,
-        "grader": "deterministic",
-        "graderVersion": "3"
-      }
-    },
-    {
-      "daysAgo": 7.625,
-      "activity": {
-        "id": "deterministic-checks-review",
-        "version": "1.0.0",
-        "title": "Deterministic checks review"
-      },
-      "claims": [
-        {
-          "concept": "nema:deterministic-verification",
-          "ability": "apply",
-          "evidenceType": "application",
-          "result": "passed",
-          "difficulty": "advanced"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 1,
-        "durationSeconds": 1340,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 6.5417,
-      "activity": {
-        "id": "agent-loop-debugging-lab",
-        "version": "1.0.0",
-        "title": "Agent loop debugging lab"
-      },
-      "claims": [
-        {
-          "concept": "nema:agent-loop",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "advanced"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 2010,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 6.0417,
-      "activity": {
-        "id": "tool-calling-drill",
-        "version": "1.0.0",
-        "title": "Tool calling drill"
-      },
-      "claims": [
-        {
-          "concept": "nema:tool-calling",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "advanced"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 1120,
-        "grader": "deterministic",
-        "graderVersion": "2"
-      }
-    },
-    {
-      "daysAgo": 4.9583,
-      "activity": {
-        "id": "harness-iteration-clinic",
-        "version": "1.0.0",
-        "title": "Harness iteration clinic"
-      },
-      "claims": [
-        {
-          "concept": "nema:harness-iteration",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 2,
-        "durationSeconds": 1360,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 3.875,
-      "activity": {
-        "id": "containment-clinic",
-        "version": "1.0.0",
-        "title": "Sandboxing and least privilege clinic"
-      },
-      "claims": [
-        {
-          "concept": "nema:sandboxing",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        },
-        {
-          "concept": "nema:least-privilege",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 2,
-        "hintsUsed": 1,
-        "durationSeconds": 1980,
-        "grader": "provider-rubric",
-        "graderVersion": "1"
-      }
-    },
-    {
-      "daysAgo": 1.7083,
-      "activity": {
-        "id": "taxonomy-and-provenance-check",
-        "version": "1.0.0",
-        "title": "Failure taxonomy and provenance self check"
-      },
-      "claims": [
-        {
-          "concept": "nema:failure-taxonomy",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "intermediate"
-        },
-        {
-          "concept": "nema:tool-result-provenance",
-          "ability": "explain",
-          "evidenceType": "explanation",
-          "result": "passed",
-          "difficulty": "introductory"
-        }
-      ],
-      "conditions": {
-        "attempts": 1,
-        "hintsUsed": 0,
-        "durationSeconds": 380,
+        "durationSeconds": 300,
         "grader": "self-report",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 13.29,
+      "activity": {
+        "id": "self-check-service-handover",
+        "version": "1.0.0",
+        "title": "Self check: service handover"
+      },
+      "claims": [
+        {
+          "concept": "nema:kitchen-communication",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 300,
+        "grader": "self-report",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 12.29,
+      "activity": {
+        "id": "sauce-week-review",
+        "version": "1.0.0",
+        "title": "Sauce week review"
+      },
+      "claims": [
+        {
+          "concept": "nema:roux",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:reduction",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:deglazing",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:seasoning",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:stocks",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 4200,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 11.33,
+      "activity": {
+        "id": "stock-quality-check",
+        "version": "1.0.0",
+        "title": "Stock quality check: gelatin set and clarity"
+      },
+      "claims": [
+        {
+          "concept": "nema:stocks",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 1200,
+        "grader": "deterministic",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 10.33,
+      "activity": {
+        "id": "vegetable-cookery-review",
+        "version": "1.0.0",
+        "title": "Vegetable cookery review"
+      },
+      "claims": [
+        {
+          "concept": "nema:blanching",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:poaching",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:caramelization",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 3000,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 9.29,
+      "activity": {
+        "id": "knife-skills-retest",
+        "version": "1.0.0",
+        "title": "Knife skills retest"
+      },
+      "claims": [
+        {
+          "concept": "nema:knife-skills",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 1800,
+        "grader": "deterministic",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 8.33,
+      "activity": {
+        "id": "self-check-cold-chain-log",
+        "version": "1.0.0",
+        "title": "Self check: cold chain log"
+      },
+      "claims": [
+        {
+          "concept": "nema:allergen-handling",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:cold-chain",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:tasting-and-adjusting",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 360,
+        "grader": "self-report",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 7.29,
+      "activity": {
+        "id": "roast-and-braise-pickup",
+        "version": "1.0.0",
+        "title": "Roast and braise pickup"
+      },
+      "claims": [
+        {
+          "concept": "nema:roasting",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:braising",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:plating",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:maillard-reaction",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 4200,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 6.33,
+      "activity": {
+        "id": "line-simulation-safety-audit",
+        "version": "1.0.0",
+        "title": "Line simulation: food safety audit"
+      },
+      "claims": [
+        {
+          "concept": "nema:food-safety",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:mise-en-place",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 2700,
+        "grader": "deterministic",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 5.29,
+      "activity": {
+        "id": "sear-station-drill",
+        "version": "1.0.0",
+        "title": "Sear station drill"
+      },
+      "claims": [
+        {
+          "concept": "nema:maillard-reaction",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "advanced"
+        },
+        {
+          "concept": "nema:heat-control",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "advanced"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 2100,
+        "grader": "deterministic",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 4.33,
+      "activity": {
+        "id": "self-check-allergen-deck",
+        "version": "1.0.0",
+        "title": "Self check: allergen deck and walk in log"
+      },
+      "claims": [
+        {
+          "concept": "nema:allergen-handling",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        },
+        {
+          "concept": "nema:cold-chain",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 300,
+        "grader": "self-report",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 3.29,
+      "activity": {
+        "id": "ratio-drill-vinaigrette-and-brine",
+        "version": "1.0.0",
+        "title": "Ratio drill: vinaigrette and brine"
+      },
+      "claims": [
+        {
+          "concept": "nema:ratios",
+          "ability": "explain",
+          "evidenceType": "explanation",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 1800,
+        "grader": "provider-rubric",
+        "graderVersion": "1"
+      }
+    },
+    {
+      "daysAgo": 2.33,
+      "activity": {
+        "id": "sauce-bible-reading-week",
+        "version": "1.0.0",
+        "title": "Sauce bible reading week"
+      },
+      "claims": [
+        {
+          "concept": "nema:mother-sauces",
+          "ability": "recognize",
+          "evidenceType": "recognition",
+          "result": "passed",
+          "difficulty": "introductory"
+        },
+        {
+          "concept": "nema:menu-planning",
+          "ability": "recognize",
+          "evidenceType": "recognition",
+          "result": "passed",
+          "difficulty": "introductory"
+        }
+      ],
+      "conditions": {
+        "attempts": 1,
+        "hintsUsed": 0,
+        "durationSeconds": 3600,
+        "grader": "exposure",
         "graderVersion": "1"
       }
     }

@@ -318,10 +318,10 @@ function renderLab(activity, attempt, handlers) {
   frag.append(head(activity));
   frag.append(html('div', 'prose', content.scenario.html));
 
-  frag.append(consoleBlock('Run 1, the harness as it stands', content.beforeRun));
+  frag.append(consoleBlock('Run 1, as it stands', content.beforeRun));
 
   const harness = el('div', 'stack stack--tight');
-  harness.append(el('span', 'lab-cap mono', 'harness.json'));
+  harness.append(el('span', 'lab-cap mono', 'method.json'));
   const pre = el('pre', 'code-panel');
   pre.append(el('code', null, JSON.stringify(content.brokenHarness.json, null, 2)));
   harness.append(pre);
@@ -331,7 +331,7 @@ function renderLab(activity, attempt, handlers) {
   const checksField = el('fieldset', 'checks');
   checksField.append(el('legend', 'lab-cap', 'Checks to add'));
   checksField.append(
-    el('p', 'lab-note', 'Three of these close the gap the incident opened. Two of them make the harness better at hiding a failure. The rest are free either way.')
+    el('p', 'lab-note', 'Three of these close the gap the incident opened. Two would break it again. The rest are free either way.')
   );
 
   for (const check of content.checks) {
@@ -374,7 +374,7 @@ function renderLab(activity, attempt, handlers) {
   const orderWrap = el('div', 'stack stack--tight');
   orderWrap.append(el('span', 'lab-cap', 'Stage order'));
   orderWrap.append(
-    el('p', 'lab-note', 'Move the three stages into the order the harness should run them. Use the arrows or the keyboard.')
+    el('p', 'lab-note', 'Move the three stages into the order they should run.')
   );
 
   const list = el('ol', 'order');
@@ -430,7 +430,7 @@ function renderLab(activity, attempt, handlers) {
   if (hints) frag.append(hints);
 
   frag.append(
-    actionsBlock(activity, attempt, handlers, 'Run the harness', () => {
+    actionsBlock(activity, attempt, handlers, 'Run the remake', () => {
       handlers.submit({ checks: Array.from(selected), stageOrder: order.slice() });
     })
   );
@@ -448,7 +448,7 @@ function renderLab(activity, attempt, handlers) {
     );
   } else {
     frag.append(
-      el('p', 'lab-note', 'The second run appears here once the harness answers the question the ticket asked.')
+      el('p', 'lab-note', 'The second run appears here once the remake works.')
     );
   }
   return frag;
