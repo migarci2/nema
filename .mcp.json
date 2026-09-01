@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "nema": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "packages/nema-mcp/bin.mjs"
+      ],
+      "env": {}
+    }
+  }
+}

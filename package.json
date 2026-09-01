@@ -10,7 +10,8 @@
     "dev": "bash scripts/dev.sh",
     "deploy": "bash scripts/deploy.sh",
     "seed": "node scripts/make-seed.mjs",
-    "e2e": "node scripts/e2e/golden-providers.mjs"
+    "e2e": "node scripts/e2e/golden-providers.mjs",
+    "test:mcp": "cd packages/nema-mcp && npm test"
   },
   "devDependencies": {
     "wrangler": "^4.128.0"
