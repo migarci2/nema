@@ -68,6 +68,12 @@ function shortOrigin(origin) {
   return String(origin || '').replace(/^https?:\/\//, '');
 }
 
+/* Every receipt id starts with the same five characters, and the id column is
+ * narrow. Dropping the prefix is what makes two rows tell each other apart. */
+function shortReceiptId(id) {
+  return String(id || '').replace(/^rcpt_/, '');
+}
+
 function isoDate(iso) {
   if (!iso) return '';
   return String(iso).slice(0, 10);
@@ -236,6 +242,26 @@ function renderStateTable() {
     </table></div>${missing}`;
 }
 
+/* Misconceptions are part of the learner model and are named in the fixed
+ * "Not shared" list of every disclosure. Showing them here is what makes that
+ * promise legible: this is the sort of thing a provider never gets to see. */
+function renderMisconceptions() {
+  const items = vault.getMisconceptions();
+  if (items.length === 0) {
+    refs.misconceptions.innerHTML = '';
+    return;
+  }
+  refs.misconceptions.innerHTML = `
+    <p class="v-mis__cap mono">Recorded misconceptions, held here, never disclosed</p>
+    <ul class="v-mis">
+      ${items.map((item) => `
+        <li class="v-mis__row">
+          <span class="v-mis__text">${esc(item.text)}</span>
+          <span class="v-mis__meta mono">${esc(shortConcept(item.concept))}, recorded ${esc(isoDate(item.recordedAt))}</span>
+        </li>`).join('')}
+    </ul>`;
+}
+
 /* -------------------------------------------------------------- needs -- */
 
 function currentBudget() {
@@ -291,15 +317,18 @@ function renderDisclosures() {
         <span class="n-ledger__end"><button class="n-btn n-btn--sm n-btn--secondary" type="button" data-stop-auto="${esc(entry.audience)}">Stop</button></span>
       </div>`).join('');
 
+  const stored = vault.getDisclosures().slice().reverse();
+
   refs.disclosureLedger.innerHTML = autoRow + rows.map((row, index) => {
     const shared = row.shared
       .map((item) => `<span class="v-claim v-claim--${item.status}">${esc(shortConcept(item.concept))}.${esc(item.ability)} ${esc(item.status)}</span>`)
       .join('');
+    const viaAuto = Boolean(stored[index] && stored[index].auto);
     return `
       <div class="n-ledger__row">
         <span class="n-ledger__id" title="${esc(row.audience)}">${esc(shortOrigin(row.audience))}</span>
         <span class="n-ledger__main">
-          <span class="n-ledger__title">${esc(row.audienceName)}</span>
+          <span class="n-ledger__title">${esc(row.audienceName)}${viaAuto ? '<span class="v-auto mono">auto approved</span>' : ''}</span>
           <span class="n-ledger__meta"><span>${esc(row.purpose)}</span><span>${plural(row.shared.length, 'band')} shared</span><span>${plural(row.withheld.length, 'category', 'categories')} withheld</span></span>
           <span class="v-claims">${shared}</span>
         </span>
@@ -343,7 +372,7 @@ function renderEvidence() {
     const effect = (row.effect || []).join('. ');
     return `
       <div class="n-ledger__row${row.signature === 'pending' ? ' n-ledger__row--flag' : ''}">
-        <span class="n-ledger__id" title="${esc(row.receiptId)}">${esc(row.receiptId)}</span>
+        <span class="n-ledger__id" title="${esc(row.receiptId)}">${esc(shortReceiptId(row.receiptId))}</span>
         <span class="n-ledger__main">
           <span class="n-ledger__title">${esc(row.activity)}</span>
           <span class="n-ledger__meta">
@@ -393,6 +422,7 @@ function render() {
   renderSummary();
   renderGraphPanel();
   renderStateTable();
+  renderMisconceptions();
   renderNeeds();
   renderDisclosures();
   renderEvidence();
@@ -671,6 +701,7 @@ function collectRefs() {
   refs.graphDetail = $('[data-graph-detail]');
   refs.graphLegend = $('[data-graph-legend]');
   refs.stateTable = $('[data-state-table]');
+  refs.misconceptions = $('[data-misconceptions]');
   refs.needsForm = $('[data-needs-form]');
   refs.budgetInput = $('#budget-minutes');
   refs.needsList = $('[data-needs-list]');

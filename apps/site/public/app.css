@@ -386,6 +386,13 @@
 .s-table td:first-child { color: var(--ink); }
 .s-table .mono { font-size: var(--fs-12); overflow-wrap: anywhere; }
 
+/* Two column reference tables (the forbidden tool lists) read better when the
+ * name column stays narrow, so the reason sits next to the name it explains. */
+@media (min-width: 720px) {
+  .s-table--pairs th:first-child,
+  .s-table--pairs td:first-child { width: 30ch; }
+}
+
 .refuse__name {
   font-family: var(--font-mono);
   font-size: var(--fs-13);
@@ -515,6 +522,8 @@
 .doc p { color: var(--ink-2); line-height: var(--lh-body); }
 .doc p strong, .doc li strong { color: var(--ink); font-weight: 600; }
 .doc a { overflow-wrap: anywhere; }
+.doc a.mono { border-bottom: 1px solid var(--blue-40); }
+.doc a.mono:hover { color: var(--ink); border-bottom-color: var(--blue); }
 
 .doc__list { display: flex; flex-direction: column; gap: var(--sp-2); color: var(--ink-2); }
 .doc__list li { position: relative; padding-left: 20px; line-height: var(--lh-body); }

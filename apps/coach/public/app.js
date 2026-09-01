@@ -10,7 +10,7 @@
  * whatever the site itself does inside the frame.
  */
 
-import { ORIGINS } from '/shared/origins.js';
+import { ORIGINS, ORIGINS_BY_ENV, isDev } from '/shared/origins.js';
 import { injectHeader, injectFooter, toast, copyToClipboard, escapeHtml } from '/shared/brand/brand.js';
 import {
   createAgent,
@@ -21,7 +21,7 @@ import {
   summarizeArgs,
   toolSchema
 } from '/agent.js';
-import { SYSTEM_PROMPT, QUICK_PROMPTS, GOLDEN_PATH, SITE_TOOLS } from '/prompt.js';
+import { SYSTEM_PROMPT, QUICK_PROMPTS, GOLDEN_PATH, SITE_TOOLS, sessionBrief } from '/prompt.js';
 
 /* ------------------------------------------------------------- state -- */
 
@@ -40,6 +40,48 @@ const SITES = [
 
 const SITE_LABEL = Object.fromEntries(SITES.map((site) => [site.key, site.label]));
 
+/**
+ * Production origin to the origin actually being served, when the coach runs on
+ * localhost. The provider manifests name their production deployment, so a model
+ * reading one and handing that string to the vault would mint an assertion for
+ * an audience no local server can verify. The learner's own broker fixes that,
+ * in one place, and says so on the tool card.
+ */
+const LOCAL_ORIGIN = isDev
+  ? Object.fromEntries(
+      Object.entries(ORIGINS_BY_ENV.prod)
+        .filter(([app]) => ORIGINS_BY_ENV.dev[app])
+        .map(([app, origin]) => [origin, ORIGINS_BY_ENV.dev[app]])
+    )
+  : {};
+
+/**
+ * Rewrite every production origin inside a tool argument onto the origin this
+ * dev server serves. Returns the value unchanged in production.
+ * @returns {{ value: any, rewrote: string[] }}
+ */
+function localizeOrigins(value, rewrote = []) {
+  if (typeof value === 'string') {
+    let out = value;
+    for (const [from, to] of Object.entries(LOCAL_ORIGIN)) {
+      if (out.includes(from)) {
+        out = out.split(from).join(to);
+        rewrote.push(`${hostOf(from)} to ${hostOf(to)}`);
+      }
+    }
+    return { value: out, rewrote };
+  }
+  if (Array.isArray(value)) {
+    return { value: value.map((item) => localizeOrigins(item, rewrote).value), rewrote };
+  }
+  if (value && typeof value === 'object') {
+    const out = {};
+    for (const [key, item] of Object.entries(value)) out[key] = localizeOrigins(item, rewrote).value;
+    return { value: out, rewrote };
+  }
+  return { value, rewrote };
+}
+
 /** The site currently in the frame. `custom` carries whatever URL was typed. */
 let current = { key: 'vault', origin: ORIGINS.vault, url: `${ORIGINS.vault}/` };
 /** Live tool descriptors for `current.origin`, refreshed by the discovery poll. */
@@ -55,6 +97,7 @@ let clockTimer = null;
 let sheetReturnFocus = null;
 
 const el = {
+  app: document.querySelector('.co-app'),
   transcript: document.querySelector('[data-transcript]'),
   form: document.querySelector('[data-chat-form]'),
   input: document.querySelector('#chat-input'),
@@ -150,9 +193,19 @@ function inline(text) {
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 }
 
+/**
+ * House style, applied to model prose before it is drawn: no em dashes and no
+ * en dash used as a dash. The prompt asks for the same thing, this is the belt.
+ */
+function houseStyle(text) {
+  return String(text || '')
+    .replace(/\s*\u2014\s*/g, ', ')
+    .replace(/(\S)\s\u2013\s(\S)/g, '$1, $2');
+}
+
 /** A small block renderer: paragraphs, single line breaks and simple lists. */
 function richText(text) {
-  const blocks = String(text || '').trim().split(/\n{2,}/);
+  const blocks = houseStyle(text).trim().split(/\n{2,}/);
   return blocks
     .map((block) => {
       const lines = block.split('\n').filter((line) => line.trim() !== '');
@@ -268,7 +321,7 @@ function recordActivity(entry) {
 
 /* -------------------------------------------------------- transcript -- */
 
-function toolCard({ name, args, status, ms, origin, running }) {
+function toolCard({ name, args, status, ms, origin, note, running }) {
   const card = document.createElement('div');
   card.className = running ? 'co-tool co-tool--running' : 'co-tool';
 
@@ -295,6 +348,13 @@ function toolCard({ name, args, status, ms, origin, running }) {
     const line = document.createElement('div');
     line.className = 'co-tool__args';
     line.textContent = summary;
+    card.append(line);
+  }
+
+  if (note) {
+    const line = document.createElement('div');
+    line.className = 'co-tool__note';
+    line.textContent = note;
     card.append(line);
   }
 
@@ -402,6 +462,18 @@ async function refreshDiscovery() {
 function startDiscoveryPoll() {
   if (discoveryTimer !== null) clearInterval(discoveryTimer);
   discoveryTimer = setInterval(refreshDiscovery, DISCOVERY_POLL_MS);
+  /* Contract section 11: discover on load and on toolchange. A native browser
+   * fires it on document.modelContext, the polyfill on the document, and the
+   * poll above covers anything that fires neither. */
+  document.addEventListener('toolchange', refreshDiscovery);
+  try {
+    const context = document.modelContext;
+    if (context && typeof context.addEventListener === 'function') {
+      context.addEventListener('toolchange', refreshDiscovery);
+    }
+  } catch {
+    /* A plain object modelContext has no events. The poll still covers it. */
+  }
 }
 
 /**
@@ -507,8 +579,13 @@ function finishCall(call, outcome) {
  * token in the answer is collapsed back to a handle on the way out.
  */
 async function runTool(call) {
-  const args = call.arguments && typeof call.arguments === 'object' ? call.arguments : {};
-  pending = { name: call.name, args, origin: current.origin };
+  const asked = call.arguments && typeof call.arguments === 'object' ? call.arguments : {};
+  const localized = localizeOrigins(asked);
+  const args = localized.value;
+  const note = localized.rewrote.length > 0
+    ? `origin rewritten for this dev server: ${Array.from(new Set(localized.rewrote)).join(', ')}`
+    : '';
+  pending = { name: call.name, args, origin: current.origin, note };
   renderTranscript(agent.entries());
 
   const notFound = (status, message) => {
@@ -517,6 +594,7 @@ async function runTool(call) {
       status,
       ms: 0,
       args,
+      note,
       origin: current.origin,
       content: resultToContent(result)
     });
@@ -529,7 +607,7 @@ async function runTool(call) {
     if (candidates.length === 1) {
       toast(`Switching the frame to ${SITE_LABEL[candidates[0]]} for ${call.name}.`);
       await switchAndWait(candidates[0]);
-      pending = { name: call.name, args, origin: current.origin };
+      pending = { name: call.name, args, origin: current.origin, note };
       renderTranscript(agent.entries());
       tool = liveTools.find((entry) => entry.name === call.name);
     } else if (candidates.length > 1) {
@@ -561,6 +639,7 @@ async function runTool(call) {
     status,
     ms,
     args,
+    note,
     origin: tool.origin || current.origin,
     content: resultToContent(collapsed)
   });
@@ -570,7 +649,13 @@ async function runTool(call) {
 
 const agent = createAgent({
   endpoint: '/api/chat',
-  system: SYSTEM_PROMPT,
+  /* Re-read every turn: the brief names the live origins and the site the
+   * learner is looking at right now. */
+  system: () => `${SYSTEM_PROMPT}\n\n${sessionBrief({
+    origins: ORIGINS,
+    current: current.origin,
+    label: SITE_LABEL[current.key] || hostOf(current.origin)
+  })}`,
   getTools: async () => {
     await refreshDiscovery();
     return toolsForModel();
@@ -661,6 +746,9 @@ function openSheet() {
   sheetReturnFocus = document.activeElement;
   el.sheet.hidden = false;
   el.scrim.hidden = false;
+  /* The sheet is a modal: everything behind it leaves the tab order and the
+   * accessibility tree while it is open. */
+  if (el.app) el.app.inert = true;
   const first = el.sheet.querySelector('button');
   if (first) first.focus();
 }
@@ -669,6 +757,7 @@ function closeSheet() {
   if (el.sheet.hidden) return;
   el.sheet.hidden = true;
   el.scrim.hidden = true;
+  if (el.app) el.app.inert = false;
   if (sheetReturnFocus && typeof sheetReturnFocus.focus === 'function') sheetReturnFocus.focus();
   sheetReturnFocus = null;
 }
@@ -761,6 +850,9 @@ function boot() {
   });
 
   document.querySelector('[data-action="open-script"]').addEventListener('click', openSheet);
+  /* /#script opens the sheet on load, so the judge guide and the video can link
+   * straight at the seven steps. */
+  if (location.hash === '#script') openSheet();
   document.querySelector('[data-action="close-script"]').addEventListener('click', closeSheet);
   el.scrim.addEventListener('click', closeSheet);
 

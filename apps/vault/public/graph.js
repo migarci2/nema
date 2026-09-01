@@ -14,7 +14,7 @@ import { bestBand } from '/shared/inference.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-const NODE = 12;          /* node square, in viewBox units */
+const NODE = 15;          /* node square, in viewBox units */
 const COL_W = 210;        /* horizontal pitch between depth columns */
 const ROW_H = 44;         /* vertical pitch between nodes in a column */
 const PAD_X = 100;        /* room for the widest label on the outer columns */

@@ -151,6 +151,7 @@
   font-variant-numeric: tabular-nums;
 }
 .co-tool__args,
+.co-tool__note,
 .co-tool__site {
   font-family: var(--font-mono);
   font-size: var(--fs-11);
@@ -159,6 +160,7 @@
   overflow-wrap: anywhere;
 }
 .co-tool__site { color: var(--ink-3); }
+.co-tool__note { color: var(--yellow); }
 .co-tool--running { border-color: var(--cyan-24); }
 .co-tool--running .co-tool__name { color: var(--cyan); }
 
@@ -399,6 +401,16 @@
 }
 
 /* ------------------------------------------------------- responsive -- */
+
+/* A 1080p screen recording of this page is one of the deliverables, and the
+ * script records it at about 1164 logical pixels wide. On a short viewport the
+ * frame gives up some height so the token clipboard and the tool activity strip
+ * stay above the fold while a tool call lands. */
+@media (min-width: 1121px) and (max-height: 940px) {
+  .co-app { --chat-h: clamp(440px, calc(100vh - 300px), 620px); }
+  .co-frame iframe { height: clamp(320px, 44vh, 560px); }
+  .co-lede__line { font-size: var(--fs-12); }
+}
 
 @media (max-width: 1120px) {
   .co-layout { grid-template-columns: minmax(0, 1fr); }

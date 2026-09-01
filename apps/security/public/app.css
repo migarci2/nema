@@ -405,6 +405,7 @@
 .mit__head input { accent-color: var(--cyan); width: 16px; height: 16px; flex: none; margin-top: 2px; }
 .mit__label { flex: 1 1 12ch; min-width: 0; font-size: var(--fs-13); color: var(--ink); font-weight: 500; }
 .mit__detail { font-size: var(--fs-12); color: var(--ink-2); line-height: var(--lh-body); }
+.mit__verdict { font-size: var(--fs-12); color: var(--ink); font-weight: 500; line-height: var(--lh-body); }
 
 .mit[data-kind='effective'] { border-color: var(--teal); }
 .mit[data-kind='harmful'] { border-color: var(--danger); }
@@ -483,7 +484,10 @@
 /* --------------------------------------- 9. hints, feedback and receipt -- */
 
 .hints { display: flex; flex-direction: column; gap: var(--sp-2); align-items: flex-start; font-size: var(--fs-12); }
-.hints__list { display: flex; flex-direction: column; gap: var(--sp-2); }
+/* The lists sit in flex columns with align-items: flex-start, so they size to
+   their content. Stretching them keeps a long grader line, a URL for example,
+   inside the panel instead of widening the page on a phone. */
+.hints__list { display: flex; flex-direction: column; gap: var(--sp-2); align-self: stretch; min-width: 0; }
 .hints__item {
   color: var(--ink-2);
   border-left: 2px solid var(--sky);
@@ -493,13 +497,14 @@
 
 .feedback { display: flex; flex-direction: column; gap: var(--sp-3); align-items: flex-start; }
 .feedback:empty { display: none; }
-.feedback__list { display: flex; flex-direction: column; gap: var(--sp-2); }
+.feedback__list { display: flex; flex-direction: column; gap: var(--sp-2); align-self: stretch; min-width: 0; }
 .feedback__item {
   font-size: var(--fs-13);
   color: var(--ink-2);
   border-left: 2px solid var(--line);
   padding-left: var(--sp-3);
   max-width: 84ch;
+  overflow-wrap: anywhere;
 }
 
 .receipt { display: flex; flex-direction: column; gap: var(--sp-3); }
@@ -520,4 +525,9 @@
   .receipt__meta { grid-template-columns: minmax(0, 1fr); }
   .prereq-meta dt,
   .receipt__meta dt { padding-top: var(--sp-2); }
+
+  /* On a phone the injected sentence is the whole point of the trace, and a
+     nested scrollbar hides it. Let every entry run to full height and scroll
+     the page instead. */
+  .trace__content { max-height: none; overflow: visible; }
 }

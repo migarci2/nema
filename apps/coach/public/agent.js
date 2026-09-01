@@ -197,6 +197,15 @@ export async function executeTool(tool, args) {
   } catch (err) {
     result = { status: 'error', error: err && err.message ? err.message : String(err) };
   }
+  /* Contract section 16: native executeTool returns the result serialized as a
+   * JSON string, the polyfill returns the object. Accept both. */
+  if (typeof result === 'string') {
+    try {
+      result = JSON.parse(result);
+    } catch {
+      result = { status: 'ok', text: result };
+    }
+  }
   if (result == null) result = { status: 'ok', value: null };
   if (typeof result !== 'object') result = { status: 'ok', value: result };
   if (typeof result.status !== 'string') {
@@ -240,7 +249,9 @@ export function resultToContent(result) {
  *
  * @param {object} options
  * @param {string} options.endpoint         chat endpoint, usually /api/chat
- * @param {string} options.system           the system prompt
+ * @param {string|Function} options.system  the system prompt, or a function
+ *                                          returning it, so runtime facts like
+ *                                          the live origins can be appended
  * @param {Function} options.getTools       async () => Array<toolSchema>
  * @param {Function} options.runTool        async (call) => { result, ms, status, origin }
  * @param {Function} options.onChange       called after every transcript change
@@ -252,6 +263,9 @@ export function createAgent({ endpoint, system, getTools, runTool, onChange, onS
   let running = false;
   let abort = null;
   let backend = '';
+
+  /** The system prompt for this request. A function is re-read every turn. */
+  const systemPrompt = () => (typeof system === 'function' ? system() : String(system || ''));
 
   const emit = () => onChange(transcript.slice());
   const state = (round = 0) => onState({ running, round });
@@ -287,7 +301,7 @@ export function createAgent({ endpoint, system, getTools, runTool, onChange, onS
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ system, messages: toMessages(), tools }),
+      body: JSON.stringify({ system: systemPrompt(), messages: toMessages(), tools }),
       signal
     });
     let data = null;
@@ -356,6 +370,7 @@ export function createAgent({ endpoint, system, getTools, runTool, onChange, onS
             name: call.name,
             args: outcome.args ?? call.arguments ?? {},
             origin: outcome.origin || '',
+            note: outcome.note || '',
             status: outcome.status,
             ms: outcome.ms,
             content: outcome.content

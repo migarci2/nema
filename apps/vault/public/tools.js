@@ -12,6 +12,7 @@
  */
 
 import { registerTools, EXPOSED_TO } from '/shared/webmcp.js';
+import { ABILITIES } from '/shared/inference.js';
 import * as vault from '/vault.js';
 
 const PRIVACY = 'Only bands are returned. Evidence history never leaves the vault.';
@@ -29,10 +30,18 @@ function minutesUntil(iso) {
 
 function stateRows(ids) {
   const { state, now } = vault.derived();
-  const wanted = Array.isArray(ids) && ids.length > 0 ? ids : Object.keys(state).sort();
+  const asked = Array.isArray(ids) && ids.length > 0;
+  const wanted = asked ? ids : Object.keys(state).sort();
   return wanted.map((concept) => {
     const abilities = state[concept] || {};
     const bands = {};
+    /* A concept the caller named explicitly answers for every ability, so
+     * "no evidence" comes back as `unknown` rather than as an absent key that
+     * an agent could read as an omission. An unfiltered listing stays terse
+     * and only names the abilities that have evidence. */
+    if (asked) {
+      for (const ability of ABILITIES) bands[ability] = 'unknown';
+    }
     let soonest = null;
     let due = false;
     for (const [ability, entry] of Object.entries(abilities)) {

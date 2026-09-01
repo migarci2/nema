@@ -43,6 +43,12 @@
 }
 .v-flash { animation: v-flash-ring 1400ms var(--ease-out); }
 
+/* The border colour still marks the panel the agent touched. Only the pulse
+ * goes away, so the signal survives without the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .v-flash { animation: none; }
+}
+
 /* ---------------------------------------------------------- summary -- */
 
 .v-registry {
@@ -119,7 +125,14 @@
 
 /* ------------------------------------------------------ state table -- */
 
-.v-table__wrap { overflow-x: auto; }
+/* The table is wider than a phone and scrolls inside its own box. `contain`
+ * is load bearing, not decoration: without it Chrome still counts the table's
+ * full width in the scrollable overflow of the document, so the whole page
+ * scrolls sideways behind an empty gutter. */
+.v-table__wrap {
+  overflow-x: auto;
+  contain: paint;
+}
 
 .v-table {
   width: 100%;
@@ -169,6 +182,33 @@
   overflow-wrap: anywhere;
 }
 
+/* --------------------------------------------------- misconceptions -- */
+
+/* Named in the "Not shared" list of every disclosure. Printed here so that
+ * promise has something concrete behind it. */
+.v-mis__cap {
+  font-size: var(--fs-10);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-label);
+  margin-bottom: var(--sp-2);
+}
+.v-mis {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.v-mis__row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  padding-left: var(--sp-3);
+  border-left: 2px solid var(--yellow);
+}
+.v-mis__text { font-size: var(--fs-13); color: var(--ink-2); }
+.v-mis__meta { font-size: var(--fs-10); color: var(--ink-label); }
+
 /* ------------------------------------------------------------ needs -- */
 
 .v-budget { gap: var(--sp-2); }
@@ -183,6 +223,15 @@
 
 /* An origin with a port needs a little more room than the shared 12ch id. */
 [data-disclosure-ledger] .n-ledger__id { width: 15ch; }
+
+/* A disclosure that went through without a modal says so, in its own row. */
+.v-auto {
+  margin-left: var(--sp-2);
+  font-size: var(--fs-10);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--yellow);
+}
 
 /* ----------------------------------------------------------- claims -- */
 
@@ -228,6 +277,17 @@
 
 /* ----------------------------------------------------------- consent -- */
 
+/* The dialog takes focus when it opens so a screen reader lands on the
+ * question. That focus is programmatic, not a tab stop, so the cyan edge is
+ * drawn as a permanent border instead of a focus ring: the modal always reads
+ * as the one live thing on the page, and the ring stays for the controls. */
+.n-modal__dialog { border-color: var(--cyan); }
+.n-modal__dialog:focus,
+.n-modal__dialog:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-3), var(--focus-hairline);
+}
+
 .v-consent__origin { font-size: var(--fs-11); color: var(--ink-2); overflow-wrap: anywhere; }
 .v-consent__key { font-size: var(--fs-11); color: var(--ink-label); overflow-wrap: anywhere; }
 .v-consent__purpose { font-size: var(--fs-13); color: var(--ink-2); }
@@ -258,6 +318,20 @@
   height: 1px;
   flex: none;
   background: var(--ink-3);
+}
+/* Expiry, auto approval and the two buttons are the decision, so they live in
+ * the sticky foot together. On a phone the disclosure lists are taller than the
+ * dialog and scroll: a checkbox that scrolls out of a consent dialog is a
+ * checkbox nobody reads. */
+.v-consent__foot { padding-top: var(--sp-3); }
+.v-consent__decide {
+  flex: 1 0 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-5);
+  flex-wrap: wrap;
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--line);
 }
 .v-consent__expiry { font-size: var(--fs-12); color: var(--ink-2); }
 .v-consent__timer {

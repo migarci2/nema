@@ -49,6 +49,13 @@ let prereq = computePrereq();
 let assertionNote = '';
 let offerNote = '';
 
+/* The rejection alert belongs to the moment it happened. Any later action that
+   repaints the prerequisites panel drops it, so a refused token from ten minutes
+   ago cannot sit in red above an assertion that is still standing. */
+function clearAssertionNote() {
+  assertionNote = '';
+}
+
 /* Unsaved form selections for the activity on the stage, kept in memory only so
  * a repaint (a hint, a tool call) never throws away what the learner ticked. */
 const drafts = {};
@@ -515,7 +522,10 @@ function renderHints(activity) {
   }
   wrap.append(list);
 
-  if (shown < hints.length) {
+  /* Once the attempt is graded the hints have nothing left to help with, and a
+     hint taken after the fact would still be counted in the receipt conditions.
+     The ones already revealed stay on screen. */
+  if (shown < hints.length && attempt.status !== 'passed') {
     const button = el('button', 'n-btn n-btn--sm n-btn--secondary', shown === 0 ? 'Show a hint' : 'Show another hint');
     button.type = 'button';
     button.addEventListener('click', () => {
@@ -547,9 +557,11 @@ function renderFeedback(activity) {
   const variant = attempt.result === 'passed' ? 'usable' : attempt.result === 'partial' ? 'uncertain' : 'danger';
   const head = el('div', 'row row--tight');
   head.append(pill(attempt.result, variant));
-  head.append(el('span', 'mono dim', `score ${attempt.score}`));
-  head.append(el('span', 'mono dim', `attempt ${attempt.attempts}`));
-  head.append(el('span', 'mono dim', `${durationSeconds(attempt)} s`));
+  /* Labelled, because these three numbers go into the receipt conditions and a
+     bare run of digits reads as one number. */
+  head.append(el('span', 'mono dim', `score ${Number(attempt.score || 0).toFixed(2)}`));
+  head.append(el('span', 'mono dim', `attempts ${attempt.attempts}`));
+  head.append(el('span', 'mono dim', `time ${durationSeconds(attempt)} s`));
   wrap.append(head);
 
   const list = el('ul', 'feedback__list');
@@ -610,6 +622,22 @@ function renderLesson(body, activity) {
 }
 
 /* ----------------------------------------------- lab: the untrusted surface -- */
+
+/* A mitigation `detail` may open with a sentence that names the verdict itself
+   ("Harmful. ...", "Neutral for prevention, ..."). That sentence is feedback,
+   not briefing: printed on an ungraded card it hands over the answer the lab is
+   asking for, so it is held back until the attempt is graded and shown next to
+   the kind pill. The strings still live in content.js, this only decides when
+   each half appears. Reported upstream: content.js should carry the verdict in
+   a field of its own so no parsing is needed here. */
+const VERDICT_LEAD = /^(Harmful|Neutral|Effective)\b[^.]*\.\s+/;
+
+function splitVerdict(detail) {
+  const text = typeof detail === 'string' ? detail : '';
+  const match = VERDICT_LEAD.exec(text);
+  if (!match) return { verdict: '', body: text };
+  return { verdict: match[0].trim(), body: text.slice(match[0].length) };
+}
 
 function renderAttackSurfaceLab(body, activity) {
   const attempt = attemptFor(activity.id);
@@ -706,7 +734,12 @@ function renderAttackSurfaceLab(body, activity) {
     row.append(el('span', 'mit__label', mitigation.label));
     if (graded) row.append(pill(mitigation.kind, mitigation.kind === 'effective' ? 'usable' : mitigation.kind === 'harmful' ? 'danger' : 'unknown'));
     card.append(row);
-    card.append(el('span', 'mit__detail', mitigation.detail));
+    const detail = splitVerdict(mitigation.detail);
+    /* A bare "Harmful." repeats the pill, so only a verdict that says more than
+       the kind is worth a line of its own. */
+    const saysMore = detail.verdict.replace(/\.$/, '').toLowerCase() !== mitigation.kind;
+    if (graded && detail.verdict && saysMore) card.append(el('span', 'mit__verdict', detail.verdict));
+    card.append(el('span', 'mit__detail', detail.body));
     mitigations.append(card);
   }
   mitSet.append(mitigations);
@@ -850,6 +883,12 @@ function renderReceipt() {
     const payload = receipt.payload;
     const block = el('div', 'receipt');
 
+    /* CONTRACT DEVIATION (section 10): the contract says "token in a textarea
+       with Copy button". The token box here is the shared .n-token component
+       (brand.css component 10), which is what the harness provider and the
+       vault also use, so the three token surfaces look the same. The full token
+       is in the DOM, the Copy button puts the whole string on the clipboard,
+       and the box clamps to a readable height instead of a resizable field. */
     const token = el('div', 'n-token');
     const head = el('span', 'n-token__head', `evidence receipt, ${activityId}`);
     const copy = el('button', 'n-btn n-btn--sm n-btn--mono', 'Copy');
@@ -920,6 +959,7 @@ function renderAll() {
 function submit(activityId, submission) {
   const activity = ACTIVITIES[activityId];
   if (!activity) return null;
+  clearAssertionNote();
   const attempt = attemptFor(activityId);
   const result = grade(activityId, submission);
 
@@ -947,6 +987,7 @@ function submit(activityId, submission) {
 }
 
 function resetAttempt(activityId) {
+  clearAssertionNote();
   const attempt = attemptFor(activityId);
   attempt.result = null;
   attempt.feedback = [];
@@ -972,6 +1013,7 @@ function startActivity(activityId) {
   if (!activity) {
     return { status: 'unknown-activity', activityId, known: ACTIVITY_ORDER };
   }
+  clearAssertionNote();
   state.currentActivityId = activityId;
 
   const locked = lockedEntry(activityId);
@@ -1042,6 +1084,7 @@ function attemptStatus(activityId) {
  * end up with two signed receipts carrying different receipt ids.
  */
 function issueReceipt(activityId) {
+  clearAssertionNote();
   if (issuing[activityId]) return issuing[activityId];
   const pending = requestReceipt(activityId).finally(() => {
     delete issuing[activityId];
@@ -1151,6 +1194,10 @@ async function presentAssertion(assertionToken) {
   save();
   renderAll();
   toast('Readiness assertion verified. Prerequisites recognised.', 'ok');
+  announce(
+    `Readiness assertion verified. ${prereq.unlocked.length} of ${ACTIVITY_ORDER.length} activities unlocked, ` +
+      `${prereq.skippable.length} already covered by your vault.`
+  );
 
   return {
     status: 'checked',

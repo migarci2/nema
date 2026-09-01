@@ -184,7 +184,13 @@ export function toAnthropicRequest({ system, messages, tools }, model = ANTHROPI
       for (const call of callsOf(message)) {
         content.push({ type: 'tool_use', id: call.id, name: call.name, input: call.arguments ?? {} });
       }
-      if (content.length > 0) out.push({ role: 'assistant', content });
+      if (content.length === 0) continue;
+      /* The browser pushes text and tool calls as two entries so the transcript
+       * can render them apart. Anthropic wants one assistant turn, and rejects
+       * two in a row, so they are merged back here. */
+      const last = out[out.length - 1];
+      if (last && last.role === 'assistant' && Array.isArray(last.content)) last.content.push(...content);
+      else out.push({ role: 'assistant', content });
     }
   }
 

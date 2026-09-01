@@ -142,6 +142,32 @@ function scrollToPanel(panel) {
   panel.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'start' });
 }
 
+/* Rows that left the path on the most recent personalization. They strike
+ * through one after the other on the next render, then the set is emptied so a
+ * later render draws the same path without replaying the animation. */
+let strikeQueue = new Set();
+
+/**
+ * Count a number up or down in place, so the minutes counter reads as a change
+ * rather than as a different page. Reduced motion gets the final value at once,
+ * which is the same information without the movement.
+ */
+function countTo(node, from, to, ms = 700) {
+  if (reduceMotion.matches || from === to || !Number.isFinite(from)) {
+    node.textContent = String(to);
+    return;
+  }
+  const startedAt = performance.now();
+  node.textContent = String(from);
+  function step(at) {
+    const t = Math.min(1, (at - startedAt) / ms);
+    const eased = 1 - (1 - t) * (1 - t) * (1 - t);
+    node.textContent = String(Math.round(from + (to - from) * eased));
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 function pillClassFor(status) {
   if (status === 'verified') return 'n-pill--durable';
   if (status === 'uncertain') return 'n-pill--uncertain';
@@ -181,7 +207,7 @@ function requirementRows() {
   });
 }
 
-function renderUnit() {
+function renderUnit({ countMinutesFrom = null } = {}) {
   /* The hero reads from the manifest, so the page and the API can never drift. */
   dom.unitTitle.textContent = MANIFEST.unit.title;
   dom.unitProvider.textContent = MANIFEST.provider.name;
@@ -211,7 +237,11 @@ function renderUnit() {
   dom.unitStats.textContent = '';
   for (const stat of stats) {
     const item = el('span', `n-stat${stat.accent ? ' n-stat--accent' : ''}`);
-    item.append(el('span', 'n-stat__value', stat.value));
+    const value = el('span', 'n-stat__value', stat.value);
+    if (stat.accent && countMinutesFrom !== null && personal !== null) {
+      countTo(value, countMinutesFrom, personal);
+    }
+    item.append(value);
     item.append(el('span', 'n-stat__label', stat.label));
     dom.unitStats.append(item);
   }
@@ -276,6 +306,7 @@ function currentPathView() {
 function renderPath() {
   const view = currentPathView();
   dom.pathList.textContent = '';
+  let strikeIndex = 0;
 
   view.entries.forEach((entry, index) => {
     const row = el('button', 'n-path__row lab-path__row');
@@ -286,6 +317,12 @@ function renderPath() {
       'aria-label',
       `${entry.activity.title}, ${entry.activity.minutes} minutes, ${entry.skipped ? 'skipped' : 'included'}. Open it.`
     );
+
+    if (strikeQueue.has(entry.activity.id)) {
+      row.classList.add('lab-path__row--striking');
+      row.style.setProperty('--strike-delay', `${strikeIndex * 240}ms`);
+      strikeIndex += 1;
+    }
 
     row.append(el('span', 'n-path__index', String(index + 1).padStart(2, '0')));
     const main = el('span', 'n-path__main');
@@ -312,6 +349,7 @@ function renderPath() {
   total.append(el('b', null, view.personalMinutes));
   total.append(el('span', null, `of ${FULL_MINUTES} minutes`));
   dom.pathList.append(total);
+  strikeQueue = new Set();
 
   if (state.path) {
     const removed = FULL_MINUTES - state.path.personalMinutes;
@@ -553,14 +591,17 @@ function renderReceipt() {
   }
   right.append(ledger);
 
+  /* The keys are set in small caps by .kv__key, so they are written here as
+   * words rather than as the camelCase field names: "ISSUEDAT" is a typo to
+   * read, "ISSUED AT" is a label. The value is always the field verbatim. */
   const meta = el('dl', 'kv');
   const entries = [
     ['issuer', payload.issuer],
-    ['keyId', payload.keyId],
-    ['receiptId', payload.receiptId],
+    ['key id', payload.keyId],
+    ['receipt id', payload.receiptId],
     ['subject', payload.subject],
     ['activity', `${payload.activity.id} ${payload.activity.version}`],
-    ['contentHash', payload.activity.contentHash || 'not stated'],
+    ['content hash', payload.activity.contentHash || 'not stated'],
     [
       'conditions',
       payload.conditions
@@ -569,7 +610,7 @@ function renderReceipt() {
           `${payload.conditions.durationSeconds ?? 0} s`
         : 'none',
     ],
-    ['issuedAt', payload.issuedAt]
+    ['issued at', payload.issuedAt]
   ];
   for (const [key, value] of entries) {
     meta.append(el('dt', 'kv__key mono', key));
@@ -753,6 +794,15 @@ function applyPersonalization(payload) {
   }
 
   const result = personalizePath(statuses);
+  /* Only the rows that were on the path a moment ago get the strike animation.
+   * A second personalization of an already personalized path animates the one
+   * row that actually changed, not the three that were struck through before. */
+  const wasSkipped = new Set((state.path ? state.path.skipped : []).map((item) => item.activityId));
+  strikeQueue = new Set(
+    result.skipped.map((item) => item.activityId).filter((id) => !wasSkipped.has(id))
+  );
+  const minutesBefore = state.path ? state.path.personalMinutes : FULL_MINUTES;
+
   state.assertion = { payload, receivedAt: new Date().toISOString() };
   state.learnerKeyId = payload.learnerKeyId;
   state.path = {
@@ -763,7 +813,7 @@ function applyPersonalization(payload) {
   };
   saveState();
 
-  renderUnit();
+  renderUnit({ countMinutesFrom: minutesBefore });
   renderPath();
   renderStagePanel();
   setBanner(

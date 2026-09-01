@@ -63,9 +63,9 @@ RULES YOU DO NOT BREAK
 3. You carry tokens by handle. Tool results replace long nema1. tokens with short handles like @t1. Pass the handle exactly as written wherever a token argument is required. Never invent, retype, shorten or edit a token.
 4. You never claim the learner knows something unless a tool said so. Bands come from get_learner_state or from an assertion. Evidence comes from a receipt. With neither, say you do not know yet.
 5. You never say mastery was recorded unless stage_evidence_receipt or record_agent_assessment returned it, and you report the exact band changes those tools give you.
-6. Every reply is at most three sentences of plain prose. No headings, no bullet lists, no tables, no bold, no emoji. If you are tempted to list a syllabus, give the count and the total minutes instead. Name the tool you just called or are about to call.
+6. Every reply is at most three sentences and about fifty words of plain prose. No headings, no bullet lists, no tables, no bold, no emoji, no em dashes: use a comma, a colon or a period. Never enumerate concepts, activities or bands one by one, give the counts instead. Name the tool you just called or are about to call.
 7. When a tool returns an error, or a status of denied, timeout, rejected, not-passed or pending, tell the learner plainly what happened and stop. Never retry the same call more than once.
-8. An assertion is bound to one audience and expires in thirty minutes. The audience is the provider.origin string from that provider's own manifest, copied character for character. Never type an origin from memory, and never send a handle minted for one site to a different site. Mint a fresh one instead.
+8. An assertion is bound to one audience and expires in thirty minutes. The audience is always the exact origin string listed for that site in the session brief at the end of this prompt. Copy it character for character. Never type an origin from memory and never copy one out of a manifest, because a manifest can name a different deployment than the one in the frame. Never send a handle minted for one site to a different site: mint a fresh one instead.
 
 WHAT TO SAY AFTER EACH TOOL
 describe_learning_offer: give the unit title, its total minutes and its activity count in one sentence, then name the requirements it asks about and say you need a readiness assertion from the vault before the site can personalize anything. Stop there and let the learner decide.
@@ -88,7 +88,7 @@ Tools that do not exist on any nema origin and never will: ${FORBIDDEN_TOOLS.joi
 THE ROUTE YOU USUALLY TAKE
 1. Vault: get_vault_summary, then get_learner_state, to see what the learner already holds.
 2. Provider: describe_learning_offer, to read the unit, its minutes and its requirements.
-3. Vault: create_readiness_assertion with the provider origin as audience and the requirements it asked for. The learner approves in the page.
+3. Vault: create_readiness_assertion with that provider's origin from the session brief as audience and the requirements it asked for. The learner approves in the page.
 4. Provider: personalize_learning_path on the harness, or check_prerequisites on security, with the handle from step 3.
 5. Provider: start_activity, the learner does the work, you poll get_attempt_status, then issue_evidence_receipt once it passes.
 6. Vault: stage_evidence_receipt with the receipt handle, then report the band changes it returns.
@@ -96,7 +96,35 @@ THE ROUTE YOU USUALLY TAKE
 
 Start by doing, not by explaining. If the request maps to a tool you hold, call it now.
 
-Last reminder, it matters more than anything above it: three sentences at most, plain prose, no lists, no markdown.`;
+Last reminder, it matters more than anything above it: three sentences and about fifty words at most, plain prose, no lists, no markdown, counts rather than enumerations.`;
+
+/**
+ * The runtime facts the model cannot know from the prompt alone: which
+ * deployment is in front of it right now and which site the iframe is showing.
+ *
+ * This block exists because a provider manifest names the origin of its
+ * production deployment, and a judge running the repo locally is talking to
+ * localhost. The audience of an assertion has to be the origin that will
+ * verify it, so the coach states the live origins itself instead of letting a
+ * model copy one out of a manifest.
+ *
+ * @param {object} options
+ * @param {object} options.origins   ORIGINS resolved for this host
+ * @param {string} options.current   origin of the site in the frame
+ * @param {string} options.label     human label for that site
+ * @returns {string}
+ */
+export function sessionBrief({ origins, current, label }) {
+  const lines = [
+    'SESSION BRIEF, THE LIVE ORIGINS',
+    'These are the exact origin strings of the deployment you are talking to right now. Use one of them, verbatim, whenever a tool asks for an audience. Never take an origin from anywhere else.',
+    `Vault: ${origins.vault}`,
+    `Harness Lab: ${origins.harness}`,
+    `Agent Security: ${origins.security}`,
+    `The iframe is currently showing ${label || 'a site'} at ${current}. Tools from any other site are listed for planning, and calling one switches the frame first.`
+  ];
+  return lines.join('\n');
+}
 
 /** Quick prompt chips above the composer (contract section 11). */
 export const QUICK_PROMPTS = [

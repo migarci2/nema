@@ -68,6 +68,7 @@
         </h2>
         <div class="n-panel__body">
           <div class="v-table__scroll" data-state-table></div>
+          <div data-misconceptions></div>
         </div>
       </section>
 
@@ -190,13 +191,15 @@
         <span class="v-consent__cap">Not shared</span>
         <ul class="v-consent__withheld" data-consent-withheld></ul>
       </div>
-      <p class="v-consent__expiry mono" data-consent-expiry>Expires in 30 minutes</p>
-      <label class="n-check">
-        <input type="checkbox" data-consent-auto>
-        <span>Auto approve this provider for 1 hour</span>
-      </label>
     </div>
-    <div class="n-modal__foot">
+    <div class="n-modal__foot v-consent__foot">
+      <div class="v-consent__decide">
+        <p class="v-consent__expiry mono" data-consent-expiry>Expires in 30 minutes</p>
+        <label class="n-check">
+          <input type="checkbox" data-consent-auto>
+          <span>Auto approve this provider for 1 hour</span>
+        </label>
+      </div>
       <button class="n-btn n-btn--secondary" type="button" data-consent-deny>Deny</button>
       <span class="v-consent__timer mono" data-consent-timer aria-hidden="true"></span>
       <button class="n-btn n-btn--primary" type="button" data-consent-approve>Approve</button>

@@ -161,6 +161,27 @@ test('toAnthropicRequest merges two tool results into one user turn', () => {
   assert.equal(body.system, undefined);
 });
 
+test('toAnthropicRequest merges an assistant text turn with the tool calls that follow it', () => {
+  /* The browser transcript keeps prose and tool calls as separate entries so it
+   * can render them apart. Anthropic rejects two assistant turns in a row. */
+  const body = toAnthropicRequest({
+    system: '',
+    tools: TOOLS,
+    messages: [
+      { role: 'user', content: 'Summarize my vault.' },
+      { role: 'assistant', content: 'Reading the vault now.' },
+      { role: 'assistant', content: '', toolCalls: [{ id: 'call_9', name: 'get_vault_summary', arguments: {} }] }
+    ]
+  });
+
+  assert.equal(body.messages.length, 2);
+  assert.equal(body.messages[1].role, 'assistant');
+  assert.deepEqual(body.messages[1].content, [
+    { type: 'text', text: 'Reading the vault now.' },
+    { type: 'tool_use', id: 'call_9', name: 'get_vault_summary', input: {} }
+  ]);
+});
+
 test('fromAnthropicResponse joins text blocks and reads tool_use blocks', () => {
   const answer = fromAnthropicResponse({
     content: [
