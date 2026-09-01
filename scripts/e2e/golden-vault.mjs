@@ -1,0 +1,86 @@
+// Golden path, vault half, on native WebMCP (Chrome for Testing canary).
+// Usage: CHROME=<chrome with WebMCP> node scripts/e2e/golden-vault.mjs [vaultOrigin] [harnessOrigin]
+import { launch, tool } from './cdp.mjs';
+import { fileURLToPath } from 'node:url';
+const REPO = fileURLToPath(new URL('../..', import.meta.url)).replace(/\/$/, '');
+const [V = 'http://localhost:8781', H = 'http://localhost:8782'] = process.argv.slice(2);
+const bin = process.env.CHROME;
+if (!bin) { console.error('set CHROME to a Chrome binary with native WebMCP'); process.exit(2); }
+const proto = await import(REPO + '/shared/protocol.js');
+const content = await import(REPO + '/apps/harness/public/content.js');
+const parse = s => JSON.parse(s);
+const ok = (cond, msg) => { console.log((cond ? 'PASS ' : 'FAIL ') + msg); if (!cond) process.exitCode = 1; };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const page = await launch(bin);
+try {
+  await page.goto(V + '/', 2500);
+  await page.evaluate(`localStorage.clear(); true`);
+  await page.goto(V + '/', 2500);
+  const empty = parse(await page.evaluate(tool('get_vault_summary', {})));
+  ok(empty.status === 'ok' && empty.receipts === 0, 'empty vault summary: ' + JSON.stringify(empty).slice(0, 120));
+  await page.evaluate(`document.querySelector('[data-action="load-demo"]').click(); new Promise(r => setTimeout(r, 3000))`);
+  const sum = parse(await page.evaluate(tool('get_vault_summary', {})));
+  ok(sum.receipts >= 60 && sum.fragile === 7 && sum.reviewsDue === 4 && (sum.durable + sum.usable) === 18, `demo summary: receipts ${sum.receipts} durable ${sum.durable} usable ${sum.usable} fragile ${sum.fragile} due ${sum.reviewsDue}`);
+  const state = parse(await page.evaluate(tool('get_learner_state', { concepts: ['nema:json-schema', 'nema:agent-evals', 'nema:software-testing'] })));
+  const band = c => state.state.find(x => x.concept === c)?.bands;
+  ok(band('nema:json-schema')?.apply === 'uncertain' && !band('nema:agent-evals')?.apply || band('nema:agent-evals')?.apply === 'unknown', `bands: json-schema.apply=${band('nema:json-schema')?.apply} agent-evals.apply=${band('nema:agent-evals')?.apply} software-testing.apply=${band('nema:software-testing')?.apply}`);
+  ok(JSON.stringify(state).includes('evidence') === false || !JSON.stringify(state).includes('receiptId'), 'learner state carries no receipt ids');
+
+  // Consent flow: start the tool, approve in the page, collect the token.
+  const req = { audience: H, purpose: 'personalize-agent-evals-path', requirements: [
+    { concept: 'nema:software-testing', ability: 'apply' }, { concept: 'nema:agent-loop', ability: 'explain' }, { concept: 'nema:json-schema', ability: 'apply' } ] };
+  await page.evaluate(`window.__p = ${tool('create_readiness_assertion', req)}; true`);
+  await sleep(800);
+  const modalVisible = await page.evaluate(`!document.getElementById('consent-modal').hidden`);
+  ok(modalVisible, 'consent modal is shown');
+  await page.shot('/tmp/nema-e2e-consent.png');
+  await page.evaluate(`document.querySelector('[data-consent-approve]').click(); true`);
+  const a = parse(await page.evaluate(`window.__p`));
+  ok(a.status === 'approved' && typeof a.token === 'string' && a.token.startsWith('nema1.'), 'assertion approved: ' + a.status + ' shared=' + JSON.stringify(a.shared?.map(s => s.status)));
+  const v = await proto.verifyAssertion(a.token, { audience: H, now: new Date().toISOString() });
+  ok(v.ok && v.payload.assertions.length === 3 && Object.keys(v.payload).every(k => proto.ALLOWED_ASSERTION_KEYS.includes(k)), 'assertion verifies for the harness audience with only allowed keys: ' + (v.reason || 'ok'));
+  const vWrong = await proto.verifyAssertion(a.token, { audience: 'http://localhost:8783', now: new Date().toISOString() });
+  ok(!vWrong.ok && vWrong.reason === 'wrong-audience', 'assertion is audience bound: ' + vWrong.reason);
+  const led = parse(await page.evaluate(tool('get_disclosure_ledger', {})));
+  ok(led.disclosures?.length === 1 && led.disclosures[0].audience === H, 'disclosure ledger has the entry');
+
+  // Denied consent
+  await page.evaluate(`window.__d = ${tool('create_readiness_assertion', { ...req, purpose: 'second-ask' })}; true`);
+  await sleep(600);
+  await page.evaluate(`(document.querySelector('[data-consent-deny]') || document.querySelector('#consent-modal button.n-btn--secondary')).click(); true`);
+  const d = parse(await page.evaluate(`window.__d`));
+  ok(d.status === 'denied', 'denied consent returns denied: ' + d.status);
+
+  // Receipt from the harness worker (diagnostic pass), then stage it.
+  const diag = content.ACTIVITIES['json-schema-diagnostic'];
+  const learnerKeyId = v.payload.learnerKeyId;
+  const res = await fetch(H + '/api/receipt', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ activityId: 'json-schema-diagnostic', submission: { optionId: diag.content.answerKey, hintsUsed: 0 }, learnerKeyId, conditions: { attempts: 1, hintsUsed: 0, durationSeconds: 90 } }) });
+  const issued = await res.json();
+  ok(res.status === 200 && issued.status === 'issued' && issued.token, 'harness worker issued a receipt: ' + res.status + ' ' + (issued.status || issued.error || ''));
+  const staged = parse(await page.evaluate(tool('stage_evidence_receipt', { token: issued.token })));
+  ok(staged.status === 'accepted' && staged.changes?.some(c => c.concept === 'nema:json-schema' && c.ability === 'apply'), 'receipt accepted, json-schema.apply moved: ' + JSON.stringify(staged.changes || staged).slice(0, 200));
+  const replay = parse(await page.evaluate(tool('stage_evidence_receipt', { token: issued.token })));
+  ok(replay.status === 'rejected' && replay.reason === 'duplicate', 'replay rejected: ' + replay.reason);
+  const parts = issued.token.split('.');
+  const tampered = parts[0] + '.' + parts[1].slice(0, -4) + 'AAAA' + '.' + parts[2];
+  const bad = parse(await page.evaluate(tool('stage_evidence_receipt', { token: tampered })));
+  ok(bad.status === 'rejected', 'tampered token rejected: ' + bad.reason);
+  const unknown = await proto.signToken({ ...(proto.decodeToken(issued.token).payload), receiptId: 'rcpt_unknown_1', keyId: 'nobody-2026' }, (await (await import(REPO + '/shared/crypto.js')).generateKeyPair()).privateJwk);
+  const pend = parse(await page.evaluate(tool('stage_evidence_receipt', { token: unknown })));
+  ok(pend.status === 'pending' && pend.reason === 'unknown-issuer', 'unknown issuer stays pending: ' + pend.status + ' ' + pend.reason);
+  const ev = parse(await page.evaluate(tool('get_evidence_ledger', { limit: 3 })));
+  ok(ev.receipts?.length === 3 && ev.receipts.some(r => r.signature === 'pending'), 'evidence ledger lists the pending receipt');
+
+  // Needs and an agent assessment
+  const needs = parse(await page.evaluate(tool('get_learning_needs', { budgetMinutes: 5 })));
+  ok(needs.status === 'ok' && needs.needs.length > 0 && needs.needs.every(n => n.rubric?.length > 0), `needs for 5 min: ${needs.needs.map(n => n.kind + ':' + n.concept.replace('nema:', '')).join(', ')}`);
+  const n0 = needs.needs[0];
+  const rec = parse(await page.evaluate(tool('record_agent_assessment', { needId: n0.needId, rubricResults: n0.rubric.map(c => ({ criterion: c, met: true })), learnerAnswerSummary: 'Learner answered every criterion in the chat.' })));
+  ok(rec.status === 'accepted' && rec.result === 'passed', 'agent assessment recorded: ' + rec.status + ' ' + rec.result);
+  const badNeed = parse(await page.evaluate(tool('record_agent_assessment', { needId: 'need_nope', rubricResults: [], learnerAnswerSummary: 'x' })));
+  ok(badNeed.status !== 'accepted', 'unknown needId rejected: ' + badNeed.status);
+  const goal = parse(await page.evaluate(tool('set_learning_goal', { title: 'Ship an agent I can trust', concepts: ['nema:agent-evals'] })));
+  ok(goal.status === 'ok' && goal.goalId, 'goal set');
+  await page.shot('/tmp/nema-e2e-vault.png');
+  ok(page.errors.length === 0, 'vault console errors: ' + JSON.stringify(page.errors));
+} finally { await page.close(); }

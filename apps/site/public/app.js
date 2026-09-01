@@ -182,7 +182,8 @@ if (openForm) {
     event.preventDefault();
     const started = performance.now();
     const app = String(openForm.elements.app.value || '').trim();
-    const url = originFor(app);
+    const KNOWN = ['site', 'vault', 'harness', 'security', 'coach'];
+    const url = KNOWN.includes(app) ? originFor(app) : '';
 
     if (!url) {
       const result = { status: 'rejected', reason: 'unknown-app', apps: ['site', 'vault', 'harness', 'security', 'coach'] };
