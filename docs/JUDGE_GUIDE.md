@@ -218,6 +218,24 @@ partnership, no back channel. The security site learned exactly three bands and
 nothing else, and every one of them traces back to work a human did somewhere
 else.
 
+## Terminal agents, the same tools over MCP
+
+The vault does not depend on the coach or on a browser agent. Open this repo in
+Claude Code and approve the project server it ships in `.mcp.json`, or run
+`codex mcp add nema -- node /path/to/nema/packages/nema-mcp/bin.mjs`. Then ask:
+
+1. "What does my vault say about agent evals?" The agent calls
+   `get_vault_summary` and `get_learner_state` (run `node packages/nema-mcp/bin.mjs seed` first for the demo learner).
+2. "Create a readiness assertion for https://nema-harness.migarci2.dev." If the
+   client supports elicitation you get the same consent prompt as the browser
+   modal. If not, the tool returns `denied` with the pre-approval command, and
+   only you can run it.
+3. Paste a receipt token from a provider page: "Stage this receipt: nema1...".
+   The bands move in `~/.nema/vault.json`, and `nema-mcp merge` folds a
+   browser export into the same ledger.
+
+Tests: `npm run test:mcp` drives the server with the official MCP client.
+
 ## Try to break it
 
 Everything here is meant to be attacked. The apps show you what happened.

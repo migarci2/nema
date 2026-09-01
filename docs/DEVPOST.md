@@ -127,6 +127,8 @@ Word count: 177.
 
 ---
 
+The same tool table also runs outside the browser: `packages/nema-mcp` boots the vault inside Node with four shims and serves the nine tools over MCP, so Claude Code and Codex reach the learner's vault with the same names and schemas that ChatGPT reaches through WebMCP on the page. Consent travels through MCP elicitation. Nothing was rewritten: WebMCP tools turned out to be a good enough contract to be the MCP contract too.
+
 ## About the project
 
 ### Inspiration

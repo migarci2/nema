@@ -43,6 +43,24 @@ nema is a WebMCP protocol for learning, plus five pages that implement it.
 Judges: start with [`docs/JUDGE_GUIDE.md`](docs/JUDGE_GUIDE.md). It is a seven
 step walkthrough with the exact tool names and a list of things to try to break.
 
+## Bring your own agent
+
+The vault is the infrastructure. The agent is a commodity, and the same nine
+tools reach it over two transports:
+
+| agent | transport | how |
+|---|---|---|
+| ChatGPT desktop, Chrome 149+ with an agent | WebMCP | open https://nema-vault.migarci2.dev, the tools are on the page |
+| The nema coach | WebMCP in an iframe | https://nema-coach.migarci2.dev |
+| Claude Code | MCP over stdio | `claude mcp add nema -- node /path/to/nema/packages/nema-mcp/bin.mjs` (this repo ships a project `.mcp.json`, so opening it in Claude Code is enough) |
+| Codex | MCP over stdio | `codex mcp add nema -- node /path/to/nema/packages/nema-mcp/bin.mjs` |
+
+[`packages/nema-mcp`](packages/nema-mcp/README.md) boots the browser vault
+inside Node with four shims and exposes `tools.js` verbatim. Consent goes
+through MCP elicitation, or through a pre-approval the learner sets from a
+shell. The vault file (`~/.nema/vault.json`) has the same schema as the
+browser one and merges by receipt id.
+
 ## Architecture
 
 Five origins. No shared database, no accounts, no server that sees both sides.
