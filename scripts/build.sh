@@ -1,33 +1,24 @@
 #!/usr/bin/env bash
 # nema build: dist/<app>/ = apps/<app>/public/. plus a copy of shared/.
-# There is no bundler. This script only copies files.
-# Usage: scripts/build.sh            build all five apps (clears dist/)
-#        scripts/build.sh vault      rebuild one app in place (safe while dev servers run)
+# There is no bundler. This script only copies files, in place, so a running
+# wrangler dev that serves dist/<app> never loses the directory it watches.
+# Usage: scripts/build.sh            build all five apps
+#        scripts/build.sh vault      rebuild one app
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 ALL=(site vault harness security coach)
-if [ "$#" -gt 0 ]; then
-  APPS=("$@")
-else
-  APPS=("${ALL[@]}")
-  find dist -mindepth 1 -maxdepth 1 -type d ! -name "*.tmp" 2>/dev/null | while read -r d; do case " ${ALL[*]} " in *" $(basename "$d") "*) ;; *) rm -rf "$d";; esac; done
-fi
+if [ "$#" -gt 0 ]; then APPS=("$@"); else APPS=("${ALL[@]}"); fi
 
 for app in "${APPS[@]}"; do
   case " ${ALL[*]} " in *" $app "*) ;; *) echo "unknown app: $app" >&2; exit 1;; esac
-  mkdir -p "dist/$app"
-  # Refresh in place: copy over, then remove files that no longer exist in the source.
-  rm -rf "dist/$app.tmp"
-  mkdir -p "dist/$app.tmp"
+  mkdir -p "dist/$app/shared"
   if [ -d "apps/$app/public" ]; then
-    cp -r "apps/$app/public/." "dist/$app.tmp/"
+    rsync -a --delete --exclude shared "apps/$app/public/" "dist/$app/"
   fi
-  cp -r shared "dist/$app.tmp/shared"
-  rm -rf "dist/$app"
-  mv "dist/$app.tmp" "dist/$app"
+  rsync -a --delete "shared/" "dist/$app/shared/"
   echo "built dist/$app"
 done
 
