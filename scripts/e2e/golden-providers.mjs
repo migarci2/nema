@@ -20,7 +20,7 @@ const parse = s => JSON.parse(s);
 const ok = (cond, msg) => { console.log((cond ? 'PASS ' : 'FAIL ') + msg); if (!cond) process.exitCode = 1; };
 const page = await launch(bin);
 try {
-  // Harness: full path, then personalised path (seed state), then after diagnostic
+  // Saucier School: full path, then personalised path (seed state), then after diagnostic
   await page.goto(H + '/');
   const offer = parse(await page.evaluate(tool('describe_learning_offer', {})));
   ok(offer.status === 'ok' && offer.manifest?.unit?.id === 'pan-sauces-foundations', 'saucier describe_learning_offer ' + offer.manifest?.unit?.title);
