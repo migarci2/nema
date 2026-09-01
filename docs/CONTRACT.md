@@ -743,3 +743,56 @@ MCP. Same nine tools, same names, same schemas, same return shapes.
   ("Bring your own agent").
 - Native `executeTool(tool, input)` REQUIRES `input` to be a JSON string. Passing an object throws `UnknownError: Failed to parse input arguments`. The polyfill parses strings as well, so callers always pass `JSON.stringify(args)`.
 - Native validates inputs against the schema before `execute` runs (for example a declarative `<select>` rejects values outside its options with `Invalid value "x" for parameter app`), so a model that invents a parameter name gets a browser level error, not a tool result. Tool descriptions should name the parameters.
+
+## 18. Two identities (owner feedback, 2026-09-02)
+
+What nema is (hub, vault, coach) keeps the nema brand. What nema is not, the
+two example course sites, must look like independent third party sites so a
+judge sees at a glance which surface is the learner's and which are the web.
+
+### Providers get their own identity
+
+Both providers keep the shared components (they are convenient) but re-theme
+them by overriding the tokens in their own `app.css` `:root` block, render
+their own header (no nema nav, no nema wordmark) and show one discreet
+"Works with nema" badge in the header end and the footer: the nema mark at
+16px plus the words, linking to the hub.
+
+| | Harness Engineering Lab | Agent Security |
+|---|---|---|
+| ground | warm paper `#F6F1E7`, panels `#FFFDF8` | near black `#0E0F12`, panels `#15171C` |
+| ink | `#1F1B16`, secondary `#6B6257` | `#E8E6E1`, secondary `#9A9890` |
+| accent | amber `#D8741B` (focus, primary buttons, links) | signal green `#4ADE80` for ok, coral `#F26D6D` for locked or danger |
+| line | `#E4DBCB` | `#262A33` |
+| display type | a system serif stack (Iowan Old Style, Palatino, Georgia, serif) for titles | JetBrains Mono for titles, uppercase off |
+| body type | Inter | Inter |
+| wordmark | text "Harness Lab" in the serif, weight 600, a small amber square before it | text "agent.security" in mono, a green terminal caret before it |
+| mood | a well made course site: light, generous margins, reading first | an ops tool: dark, precise, terse |
+
+Band colours stay semantically the same across sites (durable, usable,
+fragile, uncertain, unknown, due) but are re-mapped to each palette so they
+read on that ground: pass WCAG AA on the new backgrounds.
+
+### The hub is a manifesto first
+
+`apps/site/public/index.html` reads as a friendly pedagogy piece, general
+audience, no JSON, no object names, no tool names. Structure:
+
+1. Wordmark, tagline, the three line thesis.
+2. "What we believe": six short beliefs, one sentence of title and two or
+   three sentences each, warm and plain. Learning happens everywhere.
+   Evidence beats grades. Memory needs you to come back. Your learning state
+   is yours. The web teaches, one site at a time. An agent should coach, not
+   judge.
+3. "How it feels": three moments in the learner's words. You learn on one
+   site. Another site recognises it. Your agent reminds you before you forget.
+4. "What nema is": three plain paragraphs, vault, protocol, coach, with the
+   consent modal shown once as the picture of the whole idea.
+5. "Try it": the live cards.
+6. "For builders and judges": one paragraph and links to the protocol page,
+   the judge guide, the repo. This is where the technical intensity begins,
+   not before.
+
+Everything technical (objects, tokens, tool tables, conformance, threat
+model) lives in `protocol.html`, `judges.html`, `docs/` and the README, and
+stays intensive there.
