@@ -741,3 +741,5 @@ MCP. Same nine tools, same names, same schemas, same return shapes.
   the sync model, the same tool table as SPEC.md) and one paragraph plus the
   two install lines in the root README and in the site's "Live" section
   ("Bring your own agent").
+- Native `executeTool(tool, input)` REQUIRES `input` to be a JSON string. Passing an object throws `UnknownError: Failed to parse input arguments`. The polyfill parses strings as well, so callers always pass `JSON.stringify(args)`.
+- Native validates inputs against the schema before `execute` runs (for example a declarative `<select>` rejects values outside its options with `Invalid value "x" for parameter app`), so a model that invents a parameter name gets a browser level error, not a tool result. Tool descriptions should name the parameters.

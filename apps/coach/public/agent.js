@@ -186,7 +186,9 @@ export async function executeTool(tool, args) {
   let result;
   try {
     result = await Promise.race([
-      context.executeTool(tool, args),
+      /* Native WebMCP only accepts a JSON string here (contract section 16);
+       * the polyfill parses strings too, so always send a string. */
+      context.executeTool(tool, JSON.stringify(args && typeof args === 'object' ? args : {})),
       new Promise((resolve) => {
         setTimeout(
           () => resolve({ status: 'timeout', error: `${tool.name} did not answer in time` }),
