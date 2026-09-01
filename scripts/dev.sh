@@ -67,7 +67,7 @@ set -m
 
 start() {
   local app="$1" port="$2" inspector="$3"
-  "$WRANGLER" dev --config "apps/$app/wrangler.jsonc" --port "$port" --inspector-port "$inspector" --local &
+  "$WRANGLER" dev --config "apps/$app/wrangler.jsonc" --port "$port" --inspector-port "$inspector"  &
   PIDS+=("$!")
   echo "  $app: http://localhost:$port"
 }
