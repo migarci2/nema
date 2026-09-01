@@ -4,7 +4,10 @@
   "compatibility_date": "2026-08-01",
   "workers_dev": true,
   "main": "./worker.js",
-  "ai": { "binding": "AI" },
+  // `remote: true` only affects `wrangler dev`: Workers AI has no local
+  // simulator, so the binding has to reach the real account in dev too.
+  // Drop the `--local` flag when running dev or the binding stays unavailable.
+  "ai": { "binding": "AI", "remote": true },
   "assets": {
     "directory": "../../dist/coach",
     "binding": "ASSETS",

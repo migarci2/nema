@@ -1,22 +1,135 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>nema coach</title>
-    <style>
-      body {
-        margin: 0;
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
-        background: #0B1320;
-        color: #F2F6FF;
-        font-family: system-ui, sans-serif;
-      }
-    </style>
-  </head>
-  <body>
-    <p>nema coach: coming up</p>
-  </body>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nema coach</title>
+<meta name="description" content="The nema agent page: a broker that discovers WebMCP tools inside the site on the right, carries signed tokens by handle, and never answers for the learner.">
+<link rel="icon" href="/shared/brand/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/shared/brand/fonts/pixelify-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/shared/brand/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/shared/brand/fonts/jetbrains-mono-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/shared/brand/tokens.css">
+<link rel="stylesheet" href="/shared/brand/brand.css">
+<link rel="stylesheet" href="/app.css">
+<script src="/shared/webmcp-polyfill.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#coach">Skip to the agent</a>
+
+<div class="n-app co-app">
+  <header data-nema-header></header>
+
+  <main class="n-app__main" id="coach">
+
+    <div class="co-lede">
+      <div class="co-lede__text">
+        <h1 class="co-title">Agent side of the protocol</h1>
+        <p class="co-lede__line">The agent on the left holds no learning state of its own. It discovers WebMCP tools inside the site on the right, asks before it discloses anything, and carries signed tokens by handle.</p>
+      </div>
+      <div class="row row--tight co-lede__actions">
+        <button class="n-btn n-btn--secondary" type="button" data-action="open-script" aria-haspopup="dialog">Script</button>
+        <button class="n-btn n-btn--secondary" type="button" data-action="new-session">New session</button>
+      </div>
+    </div>
+
+    <div class="co-layout">
+
+      <!-- 01 agent ----------------------------------------------------- -->
+      <section class="n-panel n-panel--flush co-chat" aria-labelledby="p-chat">
+        <h2 class="n-panel__label" id="p-chat"><span class="n-panel__index">01</span> Agent
+          <span class="n-panel__hint" data-backend>checking the model backend</span>
+        </h2>
+
+        <div class="co-transcript" data-transcript role="log" aria-live="polite" aria-label="Conversation with the nema agent" tabindex="0"></div>
+
+        <div class="co-compose">
+          <div class="co-chips" data-quick-prompts role="group" aria-label="Quick prompts"></div>
+          <form class="stack stack--tight" data-chat-form>
+            <label class="sr-only" for="chat-input">Message the nema agent</label>
+            <textarea class="n-textarea co-input" id="chat-input" name="message" rows="2"
+                      placeholder="Ask the agent to do something. Enter sends, shift and enter starts a new line."
+                      autocomplete="off"></textarea>
+            <div class="row row--tight">
+              <span class="n-help co-run" data-run-status role="status" aria-live="polite">Ready.</span>
+              <button class="n-btn n-btn--secondary n-btn--sm push" type="button" data-action="stop" hidden>Stop</button>
+              <button class="n-btn n-btn--primary" type="submit" data-action="send">Send</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- right column ------------------------------------------------- -->
+      <div class="co-stage">
+
+        <!-- 02 site under test ----------------------------------------- -->
+        <section class="n-panel n-panel--flush co-site" aria-labelledby="p-site">
+          <h2 class="n-panel__label" id="p-site"><span class="n-panel__index">02</span> Site under test
+            <span class="n-panel__hint">tools are discovered in this frame</span>
+          </h2>
+
+          <div class="co-switch">
+            <div class="row row--tight" data-site-switch role="group" aria-label="Choose the site in the frame"></div>
+            <form class="co-custom" data-custom-form>
+              <label class="sr-only" for="custom-url">Custom site URL</label>
+              <input class="n-input mono co-custom__input" id="custom-url" name="url" type="url"
+                     placeholder="https://your-site.example/" autocomplete="off" spellcheck="false">
+              <button class="n-btn n-btn--secondary n-btn--sm" type="submit">Load</button>
+            </form>
+            <div class="co-discovery">
+              <span class="n-pill n-pill--unknown" data-tools-found role="status" aria-live="polite">No tools yet</span>
+              <span class="co-allow mono" data-allow>allow="tools"</span>
+              <a class="co-open mono" data-frame-link href="/" target="_blank" rel="noopener">Open in a tab</a>
+            </div>
+          </div>
+
+          <div class="co-frame" data-frame-slot></div>
+        </section>
+
+        <div class="co-side">
+
+          <!-- 03 token clipboard --------------------------------------- -->
+          <section class="n-panel co-clip" aria-labelledby="p-clip">
+            <h2 class="n-panel__label" id="p-clip"><span class="n-panel__index">03</span> Token clipboard
+              <span class="n-panel__hint">handles, not raw tokens</span>
+            </h2>
+            <div class="n-panel__body">
+              <div class="stack stack--tight" data-clipboard></div>
+            </div>
+          </section>
+
+          <!-- 04 tool activity ----------------------------------------- -->
+          <section class="n-panel co-activity" aria-labelledby="p-activity">
+            <h2 class="n-panel__label" id="p-activity"><span class="n-panel__index">04</span> Tool activity
+              <span class="n-panel__hint">last eight calls</span>
+            </h2>
+            <div class="n-panel__body">
+              <div data-activity-strip></div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer data-nema-footer></footer>
+</div>
+
+<!-- script side sheet ---------------------------------------------------- -->
+<div class="co-scrim" data-sheet-scrim hidden></div>
+<aside class="co-sheet" data-sheet hidden role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="co-sheet__head">
+    <div>
+      <p class="n-modal__eyebrow">Judge guide</p>
+      <h2 class="co-sheet__title" id="sheet-title">The golden path, seven steps</h2>
+    </div>
+    <button class="n-btn n-btn--secondary n-btn--sm" type="button" data-action="close-script">Close</button>
+  </div>
+  <p class="n-panel__note co-sheet__note">Pick a step. The frame switches to the site it happens on and the prompt lands in the composer, ready to send.</p>
+  <ol class="co-steps" data-script-steps></ol>
+</aside>
+
+<script type="module" src="/app.js"></script>
+</body>
 </html>

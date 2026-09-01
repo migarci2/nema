@@ -1,0 +1,609 @@
+/**
+ * nema harness lab: the activity stage.
+ *
+ * One renderer per activity type from content.js. Everything here is pure DOM
+ * construction plus event wiring: no storage, no grading, no network. The page
+ * owns the state and hands this module an attempt plus a set of handlers.
+ *
+ *   renderStage(activity, attempt, handlers) -> DocumentFragment
+ *
+ * handlers
+ *   submit(submission)   the learner pressed the submit button of this activity
+ *   hint()               the learner asked for the next hint
+ *   draft(patch)         persist the working draft, no re-render
+ *   issueReceipt()       the learner asked the page to issue the receipt
+ *   announce(text)       say something in the stage's live region
+ *
+ * The learner types the answers. There is no code path in this file that can
+ * be reached by a tool call.
+ */
+
+/* ------------------------------------------------------------- helpers -- */
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined && text !== null) node.textContent = String(text);
+  return node;
+}
+
+function html(tag, className, markup) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  node.innerHTML = markup;
+  return node;
+}
+
+function button(label, className, onClick, attrs = {}) {
+  const node = el('button', className, label);
+  node.type = 'button';
+  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+  node.addEventListener('click', onClick);
+  return node;
+}
+
+function wordsIn(text) {
+  return String(text || '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+}
+
+const TYPE_LABEL = {
+  lesson: 'lesson',
+  diagnostic: 'diagnostic',
+  'interactive-lab': 'interactive lab',
+  'free-recall': 'free recall'
+};
+
+/**
+ * Classify a scripted console line. The lab consoles are written text, not a
+ * real run, and the judge guide says so; the classes only colour them.
+ */
+function consoleLineClass(line) {
+  if (line.startsWith('$ ')) return 'cmd';
+  if (/\[FAIL\]|-> 500|Internal Server Error/.test(line)) return 'fail';
+  if (/\[PASS\]|passed/.test(line)) return 'ok';
+  return 'out';
+}
+
+function consoleBlock(title, lines) {
+  const box = el('div', 'n-console');
+  box.append(el('p', 'n-console__title', title));
+  for (const line of lines) {
+    const kind = consoleLineClass(line);
+    const text = kind === 'cmd' ? line.slice(2) : line;
+    box.append(el('p', `n-console__line n-console__line--${kind}`, text));
+  }
+  return box;
+}
+
+function head(activity) {
+  const wrap = el('div', 'stage__head');
+  const title = el('h3', 'stage__title', activity.title);
+  title.tabIndex = -1;
+  title.setAttribute('data-stage-title', '');
+  wrap.append(title);
+  wrap.append(
+    el(
+      'p',
+      'stage__meta mono',
+      `${TYPE_LABEL[activity.type] || activity.type} / ${activity.minutes} min / ` +
+        `${activity.evidenceProduced} evidence / grader ${activity.grader}`
+    )
+  );
+  return wrap;
+}
+
+/** The hints the learner has already opened, plus the button to open one more. */
+function hintsBlock(activity, attempt, handlers) {
+  const hints = (activity.content && activity.content.hints) || [];
+  if (hints.length === 0) return null;
+
+  const used = Math.min(attempt.hintsUsed || 0, hints.length);
+  const wrap = el('div', 'stack stack--tight stage__hints');
+  wrap.setAttribute('data-hints', '');
+
+  for (let i = 0; i < used; i += 1) {
+    const item = el('p', 'stage__hint');
+    item.append(el('span', 'stage__hint-index mono', `hint ${i + 1}`));
+    item.append(el('span', null, hints[i]));
+    wrap.append(item);
+  }
+
+  if (used < hints.length) {
+    wrap.append(
+      button(
+        used === 0 ? `Show a hint (${hints.length} available)` : `Show hint ${used + 1} of ${hints.length}`,
+        'n-btn n-btn--secondary n-btn--sm stage__hint-btn',
+        () => handlers.hint()
+      )
+    );
+  } else {
+    wrap.append(el('p', 'lab-note', 'Every hint is open. Hints never change the grade, they travel to your vault as conditions.hintsUsed.'));
+  }
+  return wrap;
+}
+
+/** Result banner plus the grader's sentences. */
+function feedbackBlock(attempt) {
+  const wrap = el('div', 'stage__feedback');
+  wrap.setAttribute('data-feedback', '');
+  wrap.setAttribute('role', 'status');
+  wrap.setAttribute('aria-live', 'polite');
+  wrap.tabIndex = -1;
+
+  if (!attempt || !attempt.result) return wrap;
+
+  const result = attempt.result;
+  wrap.dataset.result = result;
+  const bandClass =
+    result === 'passed' ? 'n-pill--usable' : result === 'partial' ? 'n-pill--uncertain' : 'n-pill--danger';
+
+  const headRow = el('div', 'row row--tight');
+  headRow.append(el('span', `n-pill ${bandClass}`, result));
+  headRow.append(
+    el(
+      'span',
+      'mono stage__feedback-meta',
+      `attempt ${attempt.attempts}, ${attempt.hintsUsed || 0} hint${(attempt.hintsUsed || 0) === 1 ? '' : 's'}, ${attempt.durationSeconds || 0} s`
+    )
+  );
+  wrap.append(headRow);
+
+  const list = el('ul', 'lab-list');
+  for (const line of attempt.feedback || []) list.append(el('li', null, line));
+  wrap.append(list);
+  return wrap;
+}
+
+/** The row of actions under an activity: submit, and the receipt affordance. */
+function actionsBlock(activity, attempt, handlers, submitLabel, onSubmit) {
+  const row = el('div', 'row stage__actions');
+  const passed = attempt.status === 'passed';
+  const label = passed && activity.type === 'lesson' ? 'Read again' : passed ? 'Try it again' : submitLabel;
+  row.append(button(label, `n-btn ${passed ? 'n-btn--secondary' : 'n-btn--primary'}`, onSubmit));
+
+  if (passed && !attempt.receiptToken) {
+    /* One request at a time. The page also holds an in-flight promise per
+     * activity, so a tool call and this button can never sign two receipts. */
+    const issue = button('Issue evidence receipt', 'n-btn n-btn--secondary', () => {
+      issue.disabled = true;
+      issue.textContent = 'Signing the receipt...';
+      Promise.resolve(handlers.issueReceipt()).finally(() => {
+        issue.disabled = false;
+        issue.textContent = 'Issue evidence receipt';
+      });
+    });
+    row.append(issue);
+  }
+  if (attempt.receiptToken) {
+    const note = el('span', 'stage__receipt-note mono');
+    note.append(
+      el(
+        'span',
+        'n-pill n-pill--durable',
+        attempt.receiptAttempt ? `receipt issued for attempt ${attempt.receiptAttempt}` : 'receipt issued'
+      )
+    );
+    note.append(
+      el(
+        'span',
+        null,
+        passed
+          ? ' see panel 04'
+          : ' see panel 04. This attempt did not pass, and the receipt still describes the attempt that did.'
+      )
+    );
+    row.append(note);
+  }
+  return row;
+}
+
+/* -------------------------------------------------------------- lesson -- */
+
+function renderLesson(activity, attempt, handlers) {
+  const frag = document.createDocumentFragment();
+  const content = activity.content;
+
+  frag.append(head(activity));
+  frag.append(el('p', 'stage__intro', content.intro));
+
+  const article = el('article', 'lesson');
+  for (const section of content.sections) {
+    const block = el('section', 'lesson__section');
+    block.append(el('h4', 'lesson__heading', section.heading));
+    block.append(html('div', 'prose', section.html));
+    article.append(block);
+  }
+  frag.append(article);
+
+  const key = el('div', 'lesson__key');
+  key.append(el('span', 'lab-cap', 'Key points'));
+  const list = el('ul', 'lab-list');
+  for (const point of content.keyPoints) list.append(el('li', null, point));
+  key.append(list);
+  frag.append(key);
+
+  frag.append(
+    el(
+      'p',
+      'lab-note',
+      'Marking this read produces an exposure receipt: the weakest evidence there is, weight 0.1 in your vault. Reading is not mastery, and the receipt says so.'
+    )
+  );
+
+  frag.append(
+    actionsBlock(activity, attempt, handlers, 'Mark as read', () => handlers.submit({ completed: true }))
+  );
+  frag.append(feedbackBlock(attempt));
+  return frag;
+}
+
+/* ---------------------------------------------------------- diagnostic -- */
+
+function renderDiagnostic(activity, attempt, handlers) {
+  const frag = document.createDocumentFragment();
+  const content = activity.content;
+  const draft = attempt.draft || {};
+  const answered = Boolean(attempt.result);
+  const passed = attempt.status === 'passed';
+
+  frag.append(head(activity));
+  frag.append(el('p', 'stage__intro', content.prompt));
+  frag.append(html('div', 'prose', content.context.html));
+
+  const fieldset = el('fieldset', 'opts');
+  const legend = el('legend', 'sr-only', content.prompt);
+  fieldset.append(legend);
+
+  for (const option of content.options) {
+    const card = el('label', 'opt');
+    card.setAttribute('data-option', option.id);
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = 'diagnostic-option';
+    input.value = option.id;
+    input.className = 'opt__input';
+    if (draft.optionId === option.id) input.checked = true;
+    input.addEventListener('change', () => {
+      handlers.draft({ optionId: option.id });
+      card.closest('.opts').querySelectorAll('.opt').forEach((other) => {
+        other.classList.toggle('opt--selected', other === card);
+      });
+    });
+
+    const body = el('div', 'opt__body');
+    body.append(el('span', 'opt__id mono', option.id.replace('schema-', 'schema ').toUpperCase()));
+    body.append(html('div', 'prose prose--tight', option.html));
+
+    const isKey = option.id === content.answerKey;
+    if (passed) {
+      body.append(el('span', `n-pill ${isKey ? 'n-pill--usable' : 'n-pill--danger'}`, isKey ? 'correct' : 'rejected'));
+      if (!isKey) body.append(el('p', 'opt__why', option.whyWrong));
+    } else if (answered && draft.optionId === option.id && !isKey) {
+      body.append(el('span', 'n-pill n-pill--danger', 'not this one'));
+      body.append(el('p', 'opt__why', option.whyWrong));
+    }
+
+    card.append(input, body);
+    if (draft.optionId === option.id) card.classList.add('opt--selected');
+    fieldset.append(card);
+  }
+  frag.append(fieldset);
+
+  const hints = hintsBlock(activity, attempt, handlers);
+  if (hints) frag.append(hints);
+
+  frag.append(
+    actionsBlock(activity, attempt, handlers, 'Submit answer', () => {
+      const checked = document.querySelector('input[name="diagnostic-option"]:checked');
+      handlers.submit({ optionId: checked ? checked.value : '' });
+    })
+  );
+
+  /* The explanation is already the grader's feedback on a pass, so it is not
+   * repeated here: gradeDiagnostic returns content.explanation verbatim. */
+  frag.append(feedbackBlock(attempt));
+  return frag;
+}
+
+/* ------------------------------------------------------ interactive lab -- */
+
+function renderLab(activity, attempt, handlers) {
+  const frag = document.createDocumentFragment();
+  const content = activity.content;
+  const passed = attempt.status === 'passed';
+  const draft = attempt.draft || {};
+  const selected = new Set(Array.isArray(draft.checks) ? draft.checks : []);
+  const order = Array.isArray(draft.stageOrder) && draft.stageOrder.length === content.stages.length
+    ? draft.stageOrder.slice()
+    : content.stages.map((s) => s.id).slice(-1).concat(content.stages.map((s) => s.id).slice(0, -1));
+
+  frag.append(head(activity));
+  frag.append(html('div', 'prose', content.scenario.html));
+
+  frag.append(consoleBlock('eval-design-lab, run 1, the harness as it stands', content.beforeRun));
+
+  const harness = el('div', 'stack stack--tight');
+  harness.append(el('span', 'lab-cap', 'harness.json'));
+  const pre = el('pre', 'code-panel');
+  pre.append(el('code', null, JSON.stringify(content.brokenHarness.json, null, 2)));
+  harness.append(pre);
+  frag.append(harness);
+
+  /* Checks -------------------------------------------------------------- */
+  const checksField = el('fieldset', 'checks');
+  checksField.append(el('legend', 'lab-cap', 'Checks to add'));
+  checksField.append(
+    el('p', 'lab-note', 'Three of these close the gap the incident opened. Two of them make the harness better at hiding a failure. The rest are free either way.')
+  );
+
+  for (const check of content.checks) {
+    const card = el('label', 'check');
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.value = check.id;
+    input.className = 'check__input';
+    input.checked = selected.has(check.id);
+    input.addEventListener('change', () => {
+      if (input.checked) selected.add(check.id);
+      else selected.delete(check.id);
+      card.classList.toggle('check--selected', input.checked);
+      handlers.draft({ checks: Array.from(selected) });
+    });
+
+    const body = el('div', 'check__body');
+    const titleRow = el('div', 'row row--tight');
+    titleRow.append(el('span', 'check__label', check.label));
+    if (passed) {
+      const kindPill =
+        check.kind === 'required'
+          ? 'n-pill--usable'
+          : check.kind === 'harmful'
+            ? 'n-pill--danger'
+            : 'n-pill--unknown';
+      const kindText = check.kind === 'required' ? 'necessary' : check.kind === 'harmful' ? 'harmful' : 'optional';
+      titleRow.append(el('span', `n-pill ${kindPill}`, kindText));
+    }
+    body.append(titleRow);
+    body.append(el('p', 'check__detail', check.detail));
+
+    card.append(input, body);
+    if (input.checked) card.classList.add('check--selected');
+    checksField.append(card);
+  }
+  frag.append(checksField);
+
+  /* Stage order --------------------------------------------------------- */
+  const orderWrap = el('div', 'stack stack--tight');
+  orderWrap.append(el('span', 'lab-cap', 'Stage order'));
+  orderWrap.append(
+    el('p', 'lab-note', 'Move the three stages into the order the harness should run them. Use the arrows or the keyboard.')
+  );
+
+  const list = el('ol', 'order');
+  const labelOf = (id) => (content.stages.find((s) => s.id === id) || { label: id }).label;
+
+  function paint() {
+    list.textContent = '';
+    order.forEach((id, index) => {
+      const row = el('li', 'order__row');
+      row.append(el('span', 'order__index mono', String(index + 1)));
+      const main = el('div', 'order__main');
+      main.append(el('span', 'order__label', labelOf(id)));
+      main.append(el('span', 'order__id mono', id));
+      row.append(main);
+
+      const controls = el('div', 'row row--tight order__controls');
+      const up = button('Up', 'n-btn n-btn--secondary n-btn--sm', () => move(index, -1), {
+        'aria-label': `Move ${labelOf(id)} up`
+      });
+      const down = button('Down', 'n-btn n-btn--secondary n-btn--sm', () => move(index, 1), {
+        'aria-label': `Move ${labelOf(id)} down`
+      });
+      up.disabled = index === 0;
+      down.disabled = index === order.length - 1;
+      up.dataset.orderBtn = `${id}:up`;
+      down.dataset.orderBtn = `${id}:down`;
+      controls.append(up, down);
+      row.append(controls);
+      list.append(row);
+    });
+  }
+
+  function move(index, delta) {
+    const target = index + delta;
+    if (target < 0 || target >= order.length) return;
+    const moved = order[index];
+    order.splice(index, 1);
+    order.splice(target, 0, moved);
+    handlers.draft({ stageOrder: order.slice() });
+    paint();
+    const wanted = list.querySelector(`[data-order-btn="${moved}:${delta < 0 ? 'up' : 'down'}"]`);
+    const fallback = list.querySelector(`[data-order-btn="${moved}:${delta < 0 ? 'down' : 'up'}"]`);
+    const next = wanted && !wanted.disabled ? wanted : fallback;
+    if (next) next.focus();
+    handlers.announce(`${labelOf(moved)} moved to position ${target + 1} of ${order.length}.`);
+  }
+
+  paint();
+  orderWrap.append(list);
+  frag.append(orderWrap);
+
+  const hints = hintsBlock(activity, attempt, handlers);
+  if (hints) frag.append(hints);
+
+  frag.append(
+    actionsBlock(activity, attempt, handlers, 'Run the harness', () => {
+      handlers.submit({ checks: Array.from(selected), stageOrder: order.slice() });
+    })
+  );
+
+  frag.append(feedbackBlock(attempt));
+
+  /* The console has to agree with the grade. Only a full pass earns the run
+   * where the agent repairs its own work; a partial gets the run it actually
+   * described, which decides before the feedback reaches the agent. */
+  if (attempt.result === 'passed') {
+    frag.append(consoleBlock('eval-design-lab, run 2, with your checks and your order', content.afterRun));
+  } else if (attempt.result === 'partial') {
+    frag.append(
+      consoleBlock(
+        'eval-design-lab, run 2, with your checks in the order you submitted',
+        partialRunLines(content, attempt)
+      )
+    );
+  } else {
+    frag.append(
+      el('p', 'lab-note', 'The second run appears here once the harness answers the question the ticket asked.')
+    );
+  }
+  return frag;
+}
+
+/**
+ * A partial grade on the lab means one thing only: the three checks are right
+ * and the stages are not in a workable order. The lines below are composed
+ * from the order the learner submitted, so the console says what the grader
+ * says instead of showing a run that succeeded.
+ */
+function partialRunLines(content, attempt) {
+  const stages = content.stages;
+  const labelOf = (id) => (stages.find((stage) => stage.id === id) || { label: id }).label;
+  const submitted =
+    attempt.submission && Array.isArray(attempt.submission.stageOrder)
+      ? attempt.submission.stageOrder
+      : stages.map((stage) => stage.id);
+  const gate = submitted.indexOf('acceptance-gate');
+  const loop = submitted.indexOf('self-correction-loop');
+  const taskEval = submitted.indexOf('task-eval-stage');
+
+  let verdict;
+  if (gate < loop) {
+    verdict = `[harness] acceptance gate: decided at position ${gate + 1}, before the self-correction loop ran [FAIL]`;
+  } else if (gate < taskEval) {
+    verdict = `[harness] acceptance gate: decided at position ${gate + 1}, before the task eval reported [FAIL]`;
+  } else {
+    verdict = `[harness] self-correction loop: ran at position ${loop + 1}, before the task eval produced anything to correct [FAIL]`;
+  }
+
+  return [
+    '$ harness run --task "make copies default to 1 and reject copies: 0"',
+    '[harness] checks wired in: task eval, scope check on the diff, migration state',
+    `[harness] stage order as submitted: ${submitted.map(labelOf).join(' then ')}`,
+    verdict,
+    '[harness] run 2 ends where run 1 ended: the agent never saw the failure it caused'
+  ];
+}
+
+/* --------------------------------------------------------- free recall -- */
+
+function renderFreeRecall(activity, attempt, handlers) {
+  const frag = document.createDocumentFragment();
+  const content = activity.content;
+  const draft = attempt.draft || {};
+  const graded = Boolean(attempt.result);
+
+  frag.append(head(activity));
+  frag.append(el('p', 'stage__intro', content.prompt));
+
+  const field = el('div', 'n-field');
+  const label = el('label', 'n-label', 'Your explanation');
+  label.setAttribute('for', 'recall-text');
+  const textarea = el('textarea', 'n-textarea recall__text');
+  textarea.id = 'recall-text';
+  textarea.rows = 8;
+  textarea.value = draft.text || '';
+  textarea.placeholder = 'Write it the way you would say it to a teammate at a whiteboard.';
+  const count = el('p', 'n-help recall__count');
+  count.setAttribute('role', 'status');
+  count.setAttribute('aria-live', 'polite');
+
+  function paintCount() {
+    const words = wordsIn(textarea.value);
+    count.textContent = `${words} word${words === 1 ? '' : 's'}, ${content.minWords} minimum`;
+    count.dataset.short = words < content.minWords ? 'true' : 'false';
+  }
+  paintCount();
+  textarea.addEventListener('input', () => {
+    paintCount();
+    handlers.draft({ text: textarea.value });
+  });
+
+  field.append(label, textarea, count);
+  frag.append(field);
+
+  /* Rubric checklist: criteria are revealed with the grade, never before. */
+  const rubric = el('div', 'stack stack--tight rubric');
+  rubric.append(el('span', 'lab-cap', `Rubric, ${content.rubric.length} criteria`));
+  if (!graded) {
+    rubric.append(
+      el('p', 'lab-note', 'The criteria are revealed with your grade. Writing to a checklist is not recall.')
+    );
+    for (let i = 0; i < content.rubric.length; i += 1) {
+      const row = el('div', 'rubric__row rubric__row--blank');
+      row.append(el('span', 'n-pill n-pill--unknown', 'ungraded'));
+      row.append(el('span', 'rubric__text mono', `criterion ${i + 1}`));
+      rubric.append(row);
+    }
+  } else {
+    /* Which criteria were met is read back from the grader's own sentences, so
+     * the checklist can never disagree with the grade. gradeFreeRecall emits
+     * one "Still missing: <criterion>" line per unmet criterion, and a single
+     * "Too short to grade" line when the answer is under minWords. */
+    const lines = attempt.feedback || [];
+    const tooShort = lines.some((line) => line.startsWith('Too short to grade'));
+    const missing = new Set(
+      lines.filter((line) => line.startsWith('Still missing: ')).map((line) => line.slice(15))
+    );
+    for (const criterion of content.rubric) {
+      const met = !tooShort && !missing.has(criterion.criterion);
+      const row = el('div', 'rubric__row');
+      row.append(el('span', `n-pill ${met ? 'n-pill--usable' : 'n-pill--unknown'}`, met ? 'met' : 'not met'));
+      row.append(el('span', 'rubric__text', criterion.criterion));
+      rubric.append(row);
+    }
+    rubric.append(
+      el('p', 'lab-note', 'Graded by keyword rubric on the server, grader provider-rubric, weight 0.8 in your vault.')
+    );
+  }
+  frag.append(rubric);
+
+  frag.append(
+    actionsBlock(activity, attempt, handlers, 'Submit for grading', () => {
+      handlers.submit({ text: textarea.value });
+    })
+  );
+  frag.append(feedbackBlock(attempt));
+  return frag;
+}
+
+/* ------------------------------------------------------------- exports -- */
+
+const RENDERERS = {
+  lesson: renderLesson,
+  diagnostic: renderDiagnostic,
+  'interactive-lab': renderLab,
+  'free-recall': renderFreeRecall
+};
+
+/**
+ * Render one activity into a fragment ready to be dropped into the stage.
+ *
+ * @param {object} activity an entry of ACTIVITIES
+ * @param {object} attempt the stored attempt for it
+ * @param {object} handlers submit, hint, draft, issueReceipt, announce
+ * @returns {DocumentFragment}
+ */
+export function renderStage(activity, attempt, handlers) {
+  const render = RENDERERS[activity.type];
+  if (!render) {
+    const frag = document.createDocumentFragment();
+    frag.append(el('p', 'n-empty', `No renderer for activity type ${activity.type}.`));
+    return frag;
+  }
+  return render(activity, attempt, handlers);
+}
+
+export { TYPE_LABEL, wordsIn };

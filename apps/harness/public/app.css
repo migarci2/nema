@@ -1,0 +1,476 @@
+/* nema harness lab: app specific layout and widgets.
+ *
+ * Everything shared lives in /shared/brand/tokens.css and brand.css. This file
+ * only adds what a provider page needs and nothing else has: the unit hero,
+ * the activity stage (option cards, check cards, stage ordering, rubric) and
+ * the receipt layout. Every value comes from a token.
+ */
+
+/* ------------------------------------------------------------ layout -- */
+
+.lab-grid { align-items: start; }
+
+.lab-cap {
+  font-family: var(--font-mono);
+  font-size: var(--fs-10);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-label);
+}
+
+.lab-note {
+  font-size: var(--fs-12);
+  line-height: var(--lh-snug);
+  color: var(--ink-2);
+  max-width: 78ch;
+}
+
+.lab-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  list-style: disc;
+  padding-left: 1.15em;
+  color: var(--ink-2);
+  font-size: var(--fs-13);
+}
+.lab-list li::marker { color: var(--ink-3); }
+
+.lab-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  text-align: center;
+}
+.lab-empty .lab-note { max-width: 60ch; }
+
+.lab-next {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  margin-top: var(--sp-2);
+  background: var(--navy);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  width: 100%;
+  max-width: 52ch;
+}
+.lab-next__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-20);
+  color: var(--ink);
+}
+.lab-next .n-btn { margin-top: var(--sp-2); }
+
+.lab-receipt-picker { margin-bottom: var(--sp-3); }
+
+/* -------------------------------------------------------------- unit -- */
+
+.unit__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-5);
+  flex-wrap: wrap;
+}
+.unit__intro { flex: 1 1 40ch; }
+
+.unit__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-44);
+  line-height: var(--lh-tight);
+}
+
+.unit__lead {
+  max-width: 62ch;
+  font-size: var(--fs-16);
+  line-height: var(--lh-snug);
+}
+
+.unit__meta {
+  font-size: var(--fs-11);
+  color: var(--ink-label);
+}
+/* The unit id and the issuer id are single tokens: they get a line each and
+ * they never break in the middle of one. */
+.unit__meta-line {
+  display: block;
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
+
+.unit__stats {
+  flex: 0 0 auto;
+  gap: var(--sp-5);
+  grid-template-columns: repeat(4, minmax(84px, auto));
+}
+
+.unit__banner {
+  display: block;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--navy-3);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--cyan);
+  border-radius: var(--r-2);
+  font-size: var(--fs-16);
+  color: var(--ink);
+}
+.unit__banner[hidden] { display: none; }
+.unit__banner[data-kind='info'] { border-left-color: var(--sky); }
+.unit__banner[data-kind='error'] { border-left-color: var(--danger); color: var(--danger); }
+
+.unit__cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--sp-5);
+}
+@media (max-width: 720px) {
+  .unit__cols { grid-template-columns: minmax(0, 1fr); }
+  .unit__title { font-size: var(--fs-32); }
+  .unit__stats {
+    width: 100%;
+    gap: var(--sp-4);
+    grid-template-columns: repeat(2, minmax(84px, 1fr));
+  }
+}
+
+.lab-reqs { gap: var(--sp-2); }
+.lab-req {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  justify-content: space-between;
+  padding: var(--sp-2) 0;
+  border-top: 1px solid var(--line);
+}
+.lab-req:first-child { border-top: 0; }
+.lab-req__id { font-size: var(--fs-12); color: var(--ink); overflow-wrap: anywhere; }
+
+/* -------------------------------------------------------------- path -- */
+
+/* The path rows are buttons so a learner can open any activity, including a
+ * skipped one. They must look exactly like the .n-path__row in brand.css. */
+button.n-path__row {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding-left: var(--sp-2);
+  padding-right: var(--sp-2);
+  transition: background var(--dur-1) var(--ease-out);
+}
+button.n-path__row:first-child { border-top: 0; }
+button.n-path__row:hover { background: var(--navy-3); }
+button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
+.lab-path__pill { align-self: flex-start; margin-top: 2px; }
+
+/* ------------------------------------------------------------- stage -- */
+
+.stage__head { display: flex; flex-direction: column; gap: var(--sp-1); }
+.stage__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-24);
+  line-height: var(--lh-tight);
+}
+.stage__title:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+.stage__meta { font-size: var(--fs-11); color: var(--ink-label); }
+.stage__intro { font-size: var(--fs-16); line-height: var(--lh-snug); color: var(--ink); }
+
+.stage__agent {
+  font-size: var(--fs-11);
+  color: var(--cyan);
+  border-left: 2px solid var(--cyan);
+  padding-left: var(--sp-2);
+}
+
+.stage__actions { gap: var(--sp-3); }
+.stage__receipt-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-11);
+  color: var(--ink-label);
+}
+
+.stage__hints { gap: var(--sp-2); }
+.stage__hint {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: baseline;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--yellow-14);
+  border-left: 2px solid var(--yellow);
+  border-radius: var(--r-1);
+  font-size: var(--fs-13);
+  color: var(--ink);
+}
+.stage__hint-index {
+  flex: none;
+  font-size: var(--fs-10);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--yellow);
+}
+.stage__hint-btn { align-self: flex-start; }
+
+.stage__feedback { display: flex; flex-direction: column; gap: var(--sp-2); }
+.stage__feedback:empty { display: none; }
+.stage__feedback[data-result] {
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--ink-3);
+  border-radius: var(--r-2);
+  background: var(--navy-3);
+}
+.stage__feedback[data-result='passed'] { border-left-color: var(--teal); }
+.stage__feedback[data-result='partial'] { border-left-color: var(--sky); }
+.stage__feedback[data-result='failed'] { border-left-color: var(--danger); }
+.stage__feedback-meta { font-size: var(--fs-11); color: var(--ink-label); }
+.stage__explanation {
+  font-size: var(--fs-13);
+  line-height: var(--lh-body);
+  color: var(--ink);
+  border-top: 1px solid var(--line);
+  padding-top: var(--sp-2);
+}
+
+/* ------------------------------------------------------------ lesson -- */
+
+.lesson { display: flex; flex-direction: column; gap: var(--sp-5); }
+.lesson__section { display: flex; flex-direction: column; gap: var(--sp-2); }
+.lesson__heading {
+  font-size: var(--fs-16);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+}
+.lesson__key {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  background: var(--navy);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+}
+
+/* -------------------------------------------------------------- prose -- */
+
+.prose { font-size: var(--fs-14); line-height: var(--lh-body); color: var(--ink-2); max-width: 78ch; }
+.prose p + p,
+.prose p + ul,
+.prose ul + p { margin-top: var(--sp-3); }
+.prose b { color: var(--ink); font-weight: 600; }
+.prose i { color: var(--ink); }
+.prose ul {
+  list-style: disc;
+  padding-left: 1.15em;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.prose li::marker { color: var(--ink-3); }
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  color: var(--ink);
+}
+.prose :not(pre) > code {
+  background: var(--navy-3);
+  padding: 1px 4px;
+  border-radius: var(--r-1);
+}
+.prose pre,
+.code-panel {
+  margin: 0;
+  background: #070C15;
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  padding: var(--sp-3);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+.code-panel code { color: var(--ink-2); }
+.prose--tight { max-width: none; }
+
+/* JetBrains Mono ligatures turn "--task" into a long dash and "->" into an
+ * arrow. Console text is quoted shell output, so it has to read exactly as it
+ * was typed, and nema copy never uses a long dash. Ligatures off everywhere
+ * code is shown. */
+.n-console,
+.code-panel,
+.prose pre,
+.prose code {
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'calt' 0;
+}
+
+/* Console output is quoted text, not a terminal: it wraps at the panel edge
+ * rather than hiding the end of a line behind an inner scrollbar. */
+.n-console { overflow-x: visible; }
+.n-console__line {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+/* ------------------------------------------------------- option cards -- */
+
+.opts,
+.checks {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+/* One column, always. The four schemas are 76 character lines and the
+ * constraint that decides the answer sits at the end of one of them, so a two
+ * column grid would put the answer off screen. */
+.opts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-3);
+}
+.opt .prose pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.checks { display: flex; flex-direction: column; gap: var(--sp-2); }
+.checks legend { padding: 0; margin-bottom: var(--sp-2); }
+
+.opt,
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--navy);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  cursor: pointer;
+  transition: border-color var(--dur-1) var(--ease-out), background var(--dur-1) var(--ease-out);
+}
+.opt:hover,
+.check:hover { border-color: var(--cyan-24); background: var(--navy-3); }
+.opt--selected,
+.check--selected { border-color: var(--cyan); background: var(--navy-3); }
+
+.opt__input,
+.check__input {
+  accent-color: var(--cyan);
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin-top: 2px;
+}
+.opt__body,
+.check__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.opt__id {
+  font-size: var(--fs-10);
+  letter-spacing: var(--ls-label);
+  color: var(--ink-label);
+}
+.opt__why,
+.check__detail {
+  font-size: var(--fs-12);
+  line-height: var(--lh-snug);
+  color: var(--ink-2);
+}
+.opt__why { color: var(--sky); }
+.check__label { font-size: var(--fs-14); color: var(--ink); font-weight: 500; }
+
+/* ------------------------------------------------------ stage ordering -- */
+
+.order { display: flex; flex-direction: column; gap: var(--sp-2); }
+.order__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--navy);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+}
+.order__index {
+  flex: none;
+  width: 2ch;
+  font-size: var(--fs-16);
+  color: var(--cyan);
+}
+.order__main { display: flex; flex-direction: column; gap: 2px; flex: 1 1 auto; min-width: 0; }
+.order__label { font-size: var(--fs-14); color: var(--ink); }
+.order__id { font-size: var(--fs-11); color: var(--ink-label); }
+.order__controls { flex: none; }
+
+/* ------------------------------------------------------- free recall -- */
+
+.recall__text { min-height: 180px; font-size: var(--fs-14); }
+.recall__count[data-short='true'] { color: var(--yellow); }
+.recall__count { font-family: var(--font-mono); }
+
+.rubric__row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+  border-top: 1px solid var(--line);
+}
+.rubric__row:first-of-type { border-top: 0; }
+.rubric__text { font-size: var(--fs-13); color: var(--ink-2); }
+.rubric__row--blank .rubric__text { color: var(--ink-label); }
+
+/* ----------------------------------------------------------- receipt -- */
+
+.receipt {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--sp-5);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .receipt { grid-template-columns: minmax(0, 1fr); }
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: 12ch minmax(0, 1fr);
+  gap: var(--sp-1) var(--sp-3);
+  margin: 0;
+  font-size: var(--fs-11);
+}
+.kv__key { color: var(--ink-label); text-transform: uppercase; letter-spacing: var(--ls-label); }
+.kv__value { margin: 0; color: var(--ink-2); overflow-wrap: anywhere; }
+
+.lab-reset { margin-top: var(--sp-2); }
+
+/* -------------------------------------------------------------- flash -- */
+
+/* A tool call has to be visible. The panel it touched draws a cyan ring for
+ * one beat. Under prefers-reduced-motion the token collapses the animation to
+ * 1 ms, which is exactly what a reduced motion user asked for: the content
+ * still changed, and the activity strip still logged the call. */
+@keyframes lab-flash {
+  0% { box-shadow: 0 0 0 1px var(--cyan); }
+  70% { box-shadow: 0 0 0 1px var(--cyan-24); }
+  100% { box-shadow: none; }
+}
+.n-panel.is-flashing { animation: lab-flash 1.1s var(--ease-out); }

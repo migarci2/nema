@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nema protocol 0.1</title>
+<meta name="description" content="The six objects of nema protocol 0.1, the compact token format, the verification rules and the ten point conformance checklist.">
+<meta name="theme-color" content="#0B1320">
+<meta name="color-scheme" content="dark">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="nema">
+<meta property="og:url" content="https://nema.migarci2.dev/protocol.html">
+<meta property="og:title" content="nema protocol 0.1">
+<meta property="og:description" content="Six objects, one compact token format, five verification rules and ten conformance checks. Small on purpose.">
+<link rel="icon" href="/shared/brand/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/shared/brand/fonts/pixelify-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/shared/brand/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/shared/brand/tokens.css">
+<link rel="stylesheet" href="/shared/brand/brand.css">
+<link rel="stylesheet" href="/app.css">
+<script src="/shared/webmcp-polyfill.js"></script>
+</head>
+<body data-page-title="Protocol">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="n-app">
+  <header data-nema-header></header>
+
+  <nav class="site-nav" aria-label="nema hub pages">
+    <a class="site-nav__link" href="/"><span class="site-nav__index">01</span> Hub</a>
+    <a class="site-nav__link" href="/judges.html"><span class="site-nav__index">02</span> Judge guide</a>
+    <a class="site-nav__link" href="/protocol.html" aria-current="page"><span class="site-nav__index">03</span> Protocol</a>
+    <a class="site-nav__link" href="/philosophy.html"><span class="site-nav__index">04</span> Philosophy</a>
+    <a class="site-nav__link" href="/brand.html"><span class="site-nav__index">05</span> Brand board</a>
+  </nav>
+
+  <main class="n-app__main site-main" id="main">
+
+    <article class="doc doc--wide">
+      <p class="doc__kicker">docs / spec</p>
+      <h1 class="doc__title">nema protocol 0.1</h1>
+      <p>
+        Status: draft, implemented by the five reference apps in this repository. Protocol identifier
+        <span class="mono">nema/0.1</span>. Concept namespace <span class="mono">nema:</span>. Three roles,
+        one browser, six objects, two of them signed.
+      </p>
+
+      <div class="s-table-wrap">
+        <table class="s-table">
+          <thead>
+            <tr><th scope="col">Role</th><th scope="col">Holds</th><th scope="col">Publishes as WebMCP tools</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Vault</td><td>the learner's evidence ledger and keys</td><td>state summaries, disclosure, receipt intake, learning needs</td></tr>
+            <tr><td>Provider</td><td>courses, activities, graders, an issuer key</td><td>a manifest, path personalization, activity control, receipt issuance</td></tr>
+            <tr><td>Agent</td><td>nothing durable</td><td>no tools; it calls the tools of the pages it can see</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="doc__toc">
+        <a class="site-nav__link" href="#objects">The six objects</a>
+        <a class="site-nav__link" href="#token">Token format</a>
+        <a class="site-nav__link" href="#verify">Verification rules</a>
+        <a class="site-nav__link" href="#conformance">Conformance</a>
+        <a class="site-nav__link" href="#forbidden">Forbidden tools</a>
+      </p>
+
+      <h2 id="objects">The six objects</h2>
+
+      <h3><span class="mono">Concept</span>, registry entry, unsigned</h3>
+      <p>
+        The shared vocabulary, from <span class="mono">shared/concepts.json</span>. Providers map their own
+        ids onto it with <span class="mono">aliases</span>.
+      </p>
+      <pre class="code" data-json>{
+  "id": "nema:agent-evals",
+  "title": "Agent evals",
+  "summary": "Task level evaluation of an agent's end to end behaviour, as opposed to unit tests of its functions.",
+  "prereqs": ["nema:software-testing", "nema:agent-loop"],
+  "confusableWith": ["nema:unit-testing"],
+  "misconceptions": [
+    { "id": "unit_tests_are_equivalent_to_agent_evals", "text": "If the unit tests pass, the agent works." }
+  ],
+  "rubric": {
+    "explain": ["names the unit of evaluation", "distinguishes step level from task level"],
+    "apply": ["writes an acceptance check for a task", "covers one failure mode"],
+    "discriminate": ["gives one case where unit tests pass and the agent fails"]
+  },
+  "minutes": { "retrieve": 3, "explain": 4, "apply": 6, "discriminate": 4 },
+  "aliases": { "harness": "agent-evaluation", "security": "agent-evals" }
+}</pre>
+
+      <h3><span class="mono">LearningManifest</span>, unsigned, returned by a provider</h3>
+      <p>
+        What a unit teaches, what it assumes, and what evidence each activity can produce. This is the object
+        that lets an agent plan before the learner commits. Activity <span class="mono">type</span> is one of
+        <span class="mono">lesson</span>, <span class="mono">diagnostic</span>,
+        <span class="mono">interactive-lab</span>, <span class="mono">free-recall</span>.
+      </p>
+      <pre class="code" data-json>{
+  "protocol": "nema/0.1",
+  "provider": {
+    "origin": "https://nema-harness.migarci2.dev",
+    "name": "Harness Engineering Lab",
+    "keyId": "harness-2026-09"
+  },
+  "unit": {
+    "id": "agent-evals-foundations",
+    "version": "1.0.0",
+    "title": "Designing Agent Evals",
+    "estimatedMinutes": 68,
+    "language": "en",
+    "price": "free"
+  },
+  "outcomes": [ { "concept": "nema:agent-evals", "ability": "apply" } ],
+  "requirements": [ { "concept": "nema:software-testing", "ability": "apply" } ],
+  "activities": [
+    {
+      "id": "eval-design-lab",
+      "type": "interactive-lab",
+      "title": "Fix the broken harness",
+      "minutes": 18,
+      "evidenceProduced": "application",
+      "grader": "deterministic",
+      "outcomes": [ { "concept": "nema:agent-evals", "ability": "apply" } ],
+      "skipIf": []
+    }
+  ]
+}</pre>
+      <p>
+        <span class="mono">skipIf</span> is a list of
+        <span class="mono">{ concept, ability, status }</span>. The activity is skipped when every entry is
+        satisfied by the assertion: <span class="mono">verified</span> satisfies
+        <span class="mono">verified</span>, and <span class="mono">verified</span> or
+        <span class="mono">uncertain</span> satisfies <span class="mono">uncertain</span>.
+        <span class="mono">onlyIf</span> has the same shape and includes an activity only when every entry
+        matches the assertion status exactly. It exists for diagnostics that are only worth running when a
+        requirement came back <span class="mono">uncertain</span>.
+      </p>
+
+      <h3><span class="mono">ReadinessRequest</span>, unsigned, provider to vault, carried by the agent</h3>
+      <pre class="code" data-json>{
+  "protocol": "nema/0.1",
+  "audience": "https://nema-harness.migarci2.dev",
+  "purpose": "personalize-agent-evals-path",
+  "requirements": [ { "concept": "nema:software-testing", "ability": "apply" } ]
+}</pre>
+      <p>
+        <span class="mono">requestHash = sha256(JSON.stringify(request))</span>, formatted as
+        <span class="mono">"sha256:" + hex</span>. The vault copies it into the assertion so the disclosure
+        can be tied back to the exact question that was asked.
+      </p>
+
+      <h3><span class="mono">ReadinessAssertion</span>, signed by the vault</h3>
+      <pre class="code" data-json>{
+  "type": "readiness-assertion",
+  "protocol": "nema/0.1",
+  "audience": "https://nema-harness.migarci2.dev",
+  "purpose": "personalize-agent-evals-path",
+  "requestHash": "sha256:6b1f...",
+  "learnerKeyId": "lk_Qm9wS2pMbk4xR3Zq",
+  "assertions": [
+    { "concept": "nema:software-testing", "ability": "apply", "status": "verified", "confidence": "high" },
+    { "concept": "nema:json-schema", "ability": "apply", "status": "uncertain", "confidence": "low" }
+  ],
+  "issuedAt": "2026-09-02T10:00:00Z",
+  "expiresAt": "2026-09-02T10:30:00Z",
+  "vaultKey": { "kty": "EC", "crv": "P-256", "x": "...", "y": "..." }
+}</pre>
+      <ul class="check">
+        <li>The assertion is self certifying. The verifier uses the embedded <span class="mono">vaultKey</span>. There is no directory of learners to look anything up in.</li>
+        <li><span class="mono">learnerKeyId = "lk_" + b64url(sha256bytes(vaultKey.x + "|" + audience)).slice(0, 16)</span>. The same learner is a different id at every provider, and no provider can compute another provider's id.</li>
+        <li>The assertion carries only the concepts the request asked for. No history, no dates of study, no attempt counts, no other subjects, no misconceptions, no review schedule, no provider history.</li>
+        <li>Lifetime is 30 minutes. There is no refresh: the agent asks again, and the learner approves again.</li>
+      </ul>
+
+      <h3><span class="mono">EvidenceReceipt</span>, signed by a provider</h3>
+      <pre class="code" data-json>{
+  "type": "evidence-receipt",
+  "protocol": "nema/0.1",
+  "receiptId": "rcpt_8Kd2mQx1PbTa",
+  "issuer": "https://nema-harness.migarci2.dev",
+  "keyId": "harness-2026-09",
+  "subject": "lk_Qm9wS2pMbk4xR3Zq",
+  "activity": {
+    "id": "eval-design-lab",
+    "version": "1.0.0",
+    "title": "Fix the broken harness",
+    "contentHash": "sha256:9ac3..."
+  },
+  "claims": [
+    {
+      "concept": "nema:agent-evals",
+      "ability": "apply",
+      "evidenceType": "application",
+      "result": "passed",
+      "difficulty": "intermediate"
+    }
+  ],
+  "conditions": {
+    "attempts": 2,
+    "hintsUsed": 1,
+    "durationSeconds": 641,
+    "grader": "deterministic",
+    "graderVersion": "1"
+  },
+  "issuedAt": "2026-09-02T10:41:12Z"
+}</pre>
+      <ul class="check">
+        <li><span class="mono">subject</span> is the <span class="mono">learnerKeyId</span> the provider learned from the assertion, so a receipt is not a global identifier either.</li>
+        <li><span class="mono">contentHash</span> is sha256 over the provider's activity definitions. If the provider edits an activity, old receipts stay verifiable and visibly refer to a different version of the content.</li>
+        <li>A provider may issue a receipt for a <span class="mono">failed</span> result, which is honest evidence. The two demo providers only issue on <span class="mono">passed</span> or <span class="mono">partial</span>.</li>
+        <li><span class="mono">conditions</span> are inputs to the vault's judgement, not to the score. The vault reads <span class="mono">grader</span> and ignores everything a provider might want to weight for you.</li>
+      </ul>
+
+      <h3><span class="mono">LearningNeed</span>, unsigned, produced by the vault</h3>
+      <p>
+        The vault's answer to "what should I do next", with the rubric a coach needs to run the exercise
+        without inventing the standard. Kinds: <span class="mono">acquire</span>,
+        <span class="mono">retrieve</span>, <span class="mono">apply</span>,
+        <span class="mono">transfer</span>, <span class="mono">discriminate</span>,
+        <span class="mono">repair_misconception</span>, <span class="mono">reassess</span>.
+      </p>
+      <pre class="code" data-json>{
+  "needId": "need_7fQ2xzLb",
+  "concept": "nema:agent-evals",
+  "ability": "discriminate",
+  "kind": "discriminate",
+  "reason": ["application_is_strong", "no_discrimination_evidence", "active_goal_depends_on_this_concept"],
+  "urgency": 0.87,
+  "minutes": 4,
+  "confusableWith": "nema:unit-testing",
+  "exerciseHint": "compare-and-contrast with one concrete failure case",
+  "rubric": [
+    "distinguishes deterministic function checks from task level agent evaluation",
+    "mentions end to end behaviour",
+    "gives one example where unit tests pass but the agent fails"
+  ],
+  "constraints": { "maxHints": 1, "doNotRevealAnswerBeforeSubmission": true }
+}</pre>
+
+      <h2 id="token">Token format</h2>
+      <p>
+        Every signed object travels as one compact string, short enough for an agent to carry in its context
+        without mangling it.
+      </p>
+      <pre class="code">nema1.&lt;b64url(payloadJson)&gt;.&lt;b64url(signature)&gt;</pre>
+      <ul class="check">
+        <li><span class="mono">payloadJson</span> is the exact UTF-8 JSON produced by the builder, keys in the order this spec lists them.</li>
+        <li>The signature is ECDSA on P-256 with SHA-256, raw <span class="mono">r || s</span>, over the UTF-8 bytes of that exact payload string.</li>
+        <li>Verification never re-serializes. It verifies the decoded payload string as transmitted, then parses it. Two implementations that disagree about key order still interoperate.</li>
+        <li><span class="mono">b64url</span> is base64url without padding.</li>
+      </ul>
+      <pre class="code">export const PROTOCOL = 'nema/0.1';
+encodeToken(payloadObj, signatureB64url) -&gt; string
+decodeToken(token) -&gt; { payload, payloadString, signature }   // throws on malformed
+await signToken(payloadObj, privateJwk) -&gt; string
+await verifyToken(token, publicJwk) -&gt; { ok, payload, reason? }</pre>
+      <p>
+        Measured against the reference builders, a token is about 950 to 1150 characters: a three requirement
+        ReadinessAssertion is around 1100, an EvidenceReceipt with one claim around 980 and with two claims
+        around 1125. The embedded <span class="mono">vaultKey</span> and the
+        <span class="mono">contentHash</span> dominate the payload, so size grows slowly with the number of
+        claims. That is small enough to travel in an agent's context and large enough that a model should not
+        be asked to retype it, which is why the coach carries tokens by handle
+        (<span class="mono">@t1</span>, <span class="mono">@t2</span>) and why both the vault and the
+        providers render every token in a textarea with a Copy button, so a human can complete the handoff if
+        the agent damages the string.
+      </p>
+
+      <h2 id="verify">Verification rules</h2>
+
+      <h3>A provider verifying a ReadinessAssertion</h3>
+      <p>
+        <span class="mono">verifyAssertion(token, { audience, now })</span> returns
+        <span class="mono">{ ok, payload, reason }</span>. Every step in order, first failure wins.
+      </p>
+      <ul class="check">
+        <li><span class="mono">decodeToken</span> succeeds, else <span class="mono">malformed</span>.</li>
+        <li><span class="mono">payload.type === 'readiness-assertion'</span> and <span class="mono">payload.protocol === 'nema/0.1'</span>, else <span class="mono">malformed</span>.</li>
+        <li>Signature verifies against <span class="mono">payload.vaultKey</span>, else <span class="mono">bad-signature</span>.</li>
+        <li><span class="mono">payload.audience</span> equals the verifier's own origin, else <span class="mono">wrong-audience</span>.</li>
+        <li><span class="mono">payload.expiresAt &gt; now</span>, else <span class="mono">expired</span>.</li>
+      </ul>
+      <p>
+        Nothing else is trusted, and a provider must not treat a missing concept as a failure. What a
+        provider may keep: the latest assertion payload, as its own session state, so the page can redraw the
+        personalized path on reload. What a provider must not do: forward the token to anyone, use the
+        payload after <span class="mono">expiresAt</span>, or present it to another audience as a credential.
+        It is a statement addressed to one origin at one moment, not a bearer token for the learner.
+      </p>
+
+      <h3>A vault verifying an EvidenceReceipt</h3>
+      <p>
+        <span class="mono">verifyReceipt(token, issuerMap, { seenReceiptIds })</span>, where
+        <span class="mono">issuerMap</span> maps <span class="mono">keyId</span> to
+        <span class="mono">{ origin, jwk, name, id }</span>.
+      </p>
+      <ul class="check">
+        <li><span class="mono">decodeToken</span> succeeds, else <span class="mono">malformed</span>.</li>
+        <li><span class="mono">payload.type === 'evidence-receipt'</span>, else <span class="mono">malformed</span>.</li>
+        <li><span class="mono">issuers[payload.keyId]</span> exists and its origin equals <span class="mono">payload.issuer</span>, else <span class="mono">unknown-issuer</span>. The receipt is stored with status <span class="mono">pending</span>, changes no state, and stays visible in the ledger.</li>
+        <li>Signature verifies against the issuer JWK, else <span class="mono">bad-signature</span>. Rejected.</li>
+        <li><span class="mono">payload.receiptId</span> has not been seen before, else <span class="mono">duplicate</span>. Rejected.</li>
+      </ul>
+      <p>Only receipts that pass all five become <span class="mono">verified</span> and feed the derivation.</p>
+
+      <h2 id="conformance">Conformance</h2>
+      <p>
+        Ten checks. The reference implementation runs 1 to 6 as unit tests under
+        <span class="mono">npm test</span> and 7 to 10 by hand in the browser during the demo.
+      </p>
+      <ol class="numbered">
+        <li><strong>Token roundtrip.</strong> <span class="mono">signToken</span> then <span class="mono">verifyToken</span> returns <span class="mono">ok: true</span>. Flipping one byte of the payload returns <span class="mono">ok: false</span>.</li>
+        <li><strong>Audience binding.</strong> An assertion minted for provider A is rejected by provider B with reason <span class="mono">wrong-audience</span>.</li>
+        <li><strong>Expiry.</strong> An assertion whose <span class="mono">expiresAt</span> is in the past is rejected with reason <span class="mono">expired</span>, even with a valid signature.</li>
+        <li><strong>Unknown issuer.</strong> A receipt signed by a key that is not in <span class="mono">issuers.json</span> returns <span class="mono">{ status: 'pending', reason: 'unknown-issuer' }</span>, is visible in the ledger, and changes no band.</li>
+        <li><strong>Replay.</strong> Staging the same <span class="mono">receiptId</span> twice returns <span class="mono">{ status: 'rejected', reason: 'duplicate' }</span> and changes no band.</li>
+        <li><strong>Minimal disclosure.</strong> For any request, the assertion payload contains only the fixed key set above, and <span class="mono">assertions</span> contains only concepts present in the request.</li>
+        <li><strong>Derivation.</strong> The seeded ledger produces the documented bands. Adding a passing <span class="mono">json-schema.apply</span> receipt moves that band from <span class="mono">uncertain</span> to <span class="mono">usable</span>, and the vault shows the change.</li>
+        <li><strong>Human gate.</strong> <span class="mono">create_readiness_assertion</span> returns no token until a human clicks Approve. Denying returns <span class="mono">{ status: 'denied' }</span> and writes nothing.</li>
+        <li><strong>No answer path.</strong> <span class="mono">document.modelContext.getTools()</span> on a provider page contains no tool that accepts an answer, and <span class="mono">issue_evidence_receipt</span> returns <span class="mono">{ status: 'not-passed' }</span> until the grader has passed the activity.</li>
+        <li><strong>Visible effect.</strong> Every tool call changes something on screen and appears in the page's tool activity strip with its name and duration.</li>
+      </ol>
+
+      <h2 id="forbidden">Forbidden tools</h2>
+      <p>These names must not exist on any nema surface. Their absence is the security model.</p>
+      <div class="s-table-wrap">
+        <table class="s-table">
+          <thead>
+            <tr><th scope="col">Name</th><th scope="col">Why it does not exist</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="refuse__name">set_<wbr>mastery</span></td><td>state is derived from signed evidence, never written</td></tr>
+            <tr><td><span class="refuse__name">get_<wbr>full_<wbr>history</span></td><td>history stays in the vault; disclosure is per request and per audience</td></tr>
+            <tr><td><span class="refuse__name">submit_<wbr>answer_<wbr>for_<wbr>learner</span></td><td>only the human answers; the agent has no path to the grader</td></tr>
+            <tr><td><span class="refuse__name">disable_<wbr>review</span></td><td>the schedule is a property of the evidence, not a setting</td></tr>
+            <tr><td><span class="refuse__name">export_<wbr>vault</span></td><td>export is a button the human clicks, not a capability an agent can call</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        A conformant vault fails conformance if any tool it registers can write a band directly, return raw
+        receipts to an unbounded audience, or produce an assertion without a human decision.
+      </p>
+
+      <div class="callout">
+        <p class="callout__title">The full spec</p>
+        <p>
+          This page is the readable half. The normative document is
+          <span class="mono">docs/SPEC.md</span> in the repository, which also carries the vocabulary, the
+          inference rules with their exact thresholds, the two tool catalogs, and section 11, "Implementing a
+          provider in 30 minutes".
+        </p>
+        <p class="row">
+          <a class="n-btn n-btn--primary" href="https://github.com/migarci2/nema" rel="noopener">Repository on GitHub, MIT</a>
+          <a class="n-btn n-btn--secondary" href="https://github.com/migarci2/nema/blob/main/docs/SPEC.md" rel="noopener">Read SPEC.md</a>
+        </p>
+      </div>
+    </article>
+
+    <!-- tools dock ------------------------------------------------- -->
+    <section class="section" aria-labelledby="dock-title">
+      <div class="section__head">
+        <span class="section__index">06</span>
+        <h2 class="section__title" id="dock-title">Tools on this page</h2>
+        <span class="section__hint">explain_nema and open_app</span>
+      </div>
+
+      <div class="n-panel">
+        <h3 class="n-panel__label">Ask this page, or jump to an app</h3>
+        <div class="n-panel__body dock__grid">
+          <div class="stack">
+            <p class="n-help">
+              Pick a topic, or ask an agent to call <span class="mono">explain_nema</span>. Both go through
+              <span class="mono">document.modelContext.executeTool</span>.
+            </p>
+            <div class="topics">
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="overview" aria-pressed="false">overview</button>
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="protocol" aria-pressed="false">protocol</button>
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="privacy" aria-pressed="false">privacy</button>
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="vault" aria-pressed="false">vault</button>
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="providers" aria-pressed="false">providers</button>
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="judges" aria-pressed="false">judges</button>
+            </div>
+            <div class="explain-out" data-explain-out data-state="empty" role="status" aria-live="polite">
+              <span class="explain-out__head" data-explain-head>explain_nema, no topic yet</span>
+              <p class="explain-out__text" data-explain-text>
+                The answer prints here, and the call appears in the tool activity strip with its duration.
+              </p>
+            </div>
+          </div>
+
+          <div class="stack">
+            <form class="open-app" id="open-app" toolname="open_app"
+                  tooldescription="Open one of the nema apps in this tab. Navigates this page to the app the learner picked and returns the app key and the URL."
+                  toolautosubmit>
+              <div class="n-field">
+                <label class="n-label" for="open-app-select">Open an app</label>
+                <select class="n-select" id="open-app-select" name="app" required
+                        toolparamdescription="Which nema app to open: coach, vault, harness, security or site.">
+                  <option value="coach">Coach, the nema agent</option>
+                  <option value="vault">Vault</option>
+                  <option value="harness">Harness Lab</option>
+                  <option value="security">Agent Security</option>
+                  <option value="site">Hub</option>
+                </select>
+              </div>
+              <button class="n-btn n-btn--primary" type="submit">Open</button>
+            </form>
+            <p class="n-help" data-open-status role="status" aria-live="polite">
+              The declarative half of this page's WebMCP surface. A person uses it as a form, an agent calls
+              it as open_app.
+            </p>
+            <span class="activity-strip__head">tool activity, last 8 calls</span>
+            <div data-activity></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer data-nema-footer></footer>
+</div>
+
+<script type="module" src="/app.js"></script>
+</body>
+</html>

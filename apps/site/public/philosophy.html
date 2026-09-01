@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nema philosophy</title>
+<meta name="description" content="Why learning state belongs to the learner: evidence instead of mastery, an agent that brokers instead of deciding, and a protocol that carries the shape of the learning and never the material.">
+<meta name="theme-color" content="#0B1320">
+<meta name="color-scheme" content="dark">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="nema">
+<meta property="og:url" content="https://nema.migarci2.dev/philosophy.html">
+<meta property="og:title" content="nema philosophy">
+<meta property="og:description" content="The web is full of teaching. Almost none of it remembers you, and the parts that do keep the memory for themselves.">
+<link rel="icon" href="/shared/brand/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/shared/brand/fonts/pixelify-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/shared/brand/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/shared/brand/tokens.css">
+<link rel="stylesheet" href="/shared/brand/brand.css">
+<link rel="stylesheet" href="/app.css">
+<script src="/shared/webmcp-polyfill.js"></script>
+</head>
+<body data-page-title="Philosophy">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="n-app">
+  <header data-nema-header></header>
+
+  <nav class="site-nav" aria-label="nema hub pages">
+    <a class="site-nav__link" href="/"><span class="site-nav__index">01</span> Hub</a>
+    <a class="site-nav__link" href="/judges.html"><span class="site-nav__index">02</span> Judge guide</a>
+    <a class="site-nav__link" href="/protocol.html"><span class="site-nav__index">03</span> Protocol</a>
+    <a class="site-nav__link" href="/philosophy.html" aria-current="page"><span class="site-nav__index">04</span> Philosophy</a>
+    <a class="site-nav__link" href="/brand.html"><span class="site-nav__index">05</span> Brand board</a>
+  </nav>
+
+  <main class="n-app__main site-main" id="main">
+
+    <article class="doc">
+      <p class="doc__kicker">docs / philosophy</p>
+      <h1 class="doc__title">Philosophy</h1>
+
+      <blockquote class="quote">
+        <p>The web teaches. Your vault remembers. Your agent connects the two.</p>
+      </blockquote>
+
+      <p>
+        nema starts from one observation. The web is full of teaching. Almost none of it remembers you, and
+        the parts that do remember you keep the memory for themselves.
+      </p>
+
+      <h2>Learning state belongs to the learner</h2>
+      <p>
+        Every course platform builds a model of you. Which lessons you opened, which questions you answered,
+        which ones you failed twice. That model is the most valuable thing produced by your study, and it is
+        the one thing you cannot take with you. Cancel the subscription and it is gone. Open a second site
+        and you start at zero, watching a video about a topic you already applied at work last month.
+      </p>
+      <p>
+        The fix is not a bigger platform. It is moving the state. In nema the learner holds a vault. The
+        vault is a page on an origin the learner controls, storing signed evidence and deriving state from
+        it. Sites ask the vault questions. The vault answers with the smallest true answer, after the learner
+        approves it. Nothing else leaves.
+      </p>
+      <p>That is the whole shape of the idea.</p>
+
+      <blockquote class="quote">
+        <p>
+          Any website can teach you. Any agent can coach you. Your learning state stays local, portable and
+          yours.
+        </p>
+      </blockquote>
+
+      <h2>Evidence, not mastery</h2>
+      <p>
+        A number called "mastery: 78%" is a claim with no author. You cannot check it, you cannot dispute it,
+        and you cannot rebuild it if the vendor changes the formula.
+      </p>
+      <p>
+        nema stores evidence instead. An <span class="mono">EvidenceReceipt</span> says: this provider, at
+        this time, ran this activity with this grader, and the learner produced this result. It is signed by
+        the provider that observed it. The vault keeps receipts and recomputes state from them on every read.
+        Delete the derivation code and you lose nothing, because the ledger is the truth and the state is a
+        function of it.
+      </p>
+      <p>
+        This has consequences the demo makes visible. Evidence is weighted by how it was produced: a
+        deterministic grader counts 1.0, a provider rubric 0.8, an agent assessment 0.6, a self report 0.3,
+        mere exposure 0.1. Evidence decays, because a passing answer from a year ago is not a claim about
+        today. And an assertion the vault signs is not a score. It is a band,
+        <span class="mono">verified</span>, <span class="mono">uncertain</span> or
+        <span class="mono">missing</span>, bound to one audience and one purpose, valid for thirty minutes.
+      </p>
+
+      <h2>The agent is a broker, not an authority</h2>
+      <p>
+        An agent that can write mastery into your record is an agent that can lie about you, cheaply, at
+        scale. So nema gives it no way to do that.
+      </p>
+      <p>
+        The vault has no <span class="mono">set_mastery</span> tool. Providers have no tool that submits an
+        answer. The only way state moves is a signed receipt from a provider that graded work the human did,
+        or an explicit <span class="mono">record_agent_assessment</span> that is stamped
+        <span class="mono">agent-assessed</span>, weighted 0.6, and shown in the ledger with its own badge.
+        The agent reads manifests, explains what a site is asking for, carries tokens between origins, and
+        coaches from the vault's <span class="mono">LearningNeed</span> list. The human answers every
+        question and approves every disclosure.
+      </p>
+      <p>
+        This is not a policy written in a prompt. It is the absence of a tool. Prompts can be argued with.
+        Missing functions cannot.
+      </p>
+
+      <h2>Content stays where it is</h2>
+      <p>
+        nema does not want your course catalogue. Providers keep their content, their pedagogy, their pricing
+        and their brand. What they publish is a <span class="mono">LearningManifest</span>: what this unit
+        teaches, what it assumes, what evidence each activity can produce. The protocol carries the shape of
+        the learning, never the learning material.
+      </p>
+      <p>
+        The payoff shows up the first time two unrelated sites meet. In the demo a security lab is opened by
+        a receipt issued by an engineering lab that has never heard of it. No partnership, no shared account,
+        no back channel API. One signed object, one audience, one learner who said yes.
+      </p>
+
+      <h2>What nema refuses to do</h2>
+      <ul class="doc__list">
+        <li>It will not store a global learner id. Each provider sees a different <span class="mono">learnerKeyId</span>, derived from the vault key and that provider's origin.</li>
+        <li>It will not send history. An assertion carries the concepts that were asked for and nothing else. No dates, no attempt counts, no other subjects.</li>
+        <li>It will not let a site pull. Sites can only ask, and only the human can answer.</li>
+        <li>It will not rank learners, score them or sell the ledger.</li>
+        <li>It will not accept unsigned evidence from a provider. An unknown issuer lands in the ledger as <span class="mono">pending</span> and changes no state, so the learner can see the attempt. There is exactly one unsigned path, the agent assessment, and it is labelled in the ledger and weighted 0.6.</li>
+      </ul>
+
+      <h2>Why this belongs on the open web</h2>
+      <p>
+        WebMCP puts humans and agents on the same page, literally. A site declares its capabilities as tools,
+        and the agent in the browser can call them while the person watches the page change. That is the
+        right substrate for this idea, because learning needs both parties. The agent is good at reading five
+        manifests and planning a path. Only the human can actually learn something, and only the human should
+        decide what a site is allowed to know about them.
+      </p>
+      <p>
+        So nema is built as pages, not as a service. Five origins, no shared database, no accounts, no keys
+        to exchange. Every capability is a tool the browser can see, every disclosure is a modal the human
+        clicks, and every claim is a token anyone can verify with a public key.
+      </p>
+    </article>
+
+    <!-- tools dock ------------------------------------------------- -->
+    <section class="section" aria-labelledby="dock-title">
+      <div class="section__head">
+        <span class="section__index">05</span>
+        <h2 class="section__title" id="dock-title">Tools on this page</h2>
+        <span class="section__hint">explain_nema and open_app</span>
+      </div>
+
+      <div class="n-panel">
+        <h3 class="n-panel__label">Ask this page, or jump to an app</h3>
+        <div class="n-panel__body dock__grid">
+          <div class="stack">
+            <p class="n-help">
+              Pick a topic, or ask an agent to call <span class="mono">explain_nema</span>. Both go through
+              <span class="mono">document.modelContext.executeTool</span>.
+            </p>
+            <div class="topics">
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="overview" aria-pressed="false">overview</button>
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="protocol" aria-pressed="false">protocol</button>
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="privacy" aria-pressed="false">privacy</button>
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="vault" aria-pressed="false">vault</button>
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="providers" aria-pressed="false">providers</button>
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="judges" aria-pressed="false">judges</button>
+            </div>
+            <div class="explain-out" data-explain-out data-state="empty" role="status" aria-live="polite">
+              <span class="explain-out__head" data-explain-head>explain_nema, no topic yet</span>
+              <p class="explain-out__text" data-explain-text>
+                The answer prints here, and the call appears in the tool activity strip with its duration.
+              </p>
+            </div>
+          </div>
+
+          <div class="stack">
+            <form class="open-app" id="open-app" toolname="open_app"
+                  tooldescription="Open one of the nema apps in this tab. Navigates this page to the app the learner picked and returns the app key and the URL."
+                  toolautosubmit>
+              <div class="n-field">
+                <label class="n-label" for="open-app-select">Open an app</label>
+                <select class="n-select" id="open-app-select" name="app" required
+                        toolparamdescription="Which nema app to open: coach, vault, harness, security or site.">
+                  <option value="coach">Coach, the nema agent</option>
+                  <option value="vault">Vault</option>
+                  <option value="harness">Harness Lab</option>
+                  <option value="security">Agent Security</option>
+                  <option value="site">Hub</option>
+                </select>
+              </div>
+              <button class="n-btn n-btn--primary" type="submit">Open</button>
+            </form>
+            <p class="n-help" data-open-status role="status" aria-live="polite">
+              The declarative half of this page's WebMCP surface. A person uses it as a form, an agent calls
+              it as open_app.
+            </p>
+            <span class="activity-strip__head">tool activity, last 8 calls</span>
+            <div data-activity></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer data-nema-footer></footer>
+</div>
+
+<script type="module" src="/app.js"></script>
+</body>
+</html>

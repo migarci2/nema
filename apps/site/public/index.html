@@ -1,22 +1,581 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>nema site</title>
-    <style>
-      body {
-        margin: 0;
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
-        background: #0B1320;
-        color: #F2F6FF;
-        font-family: system-ui, sans-serif;
-      }
-    </style>
-  </head>
-  <body>
-    <p>nema site: coming up</p>
-  </body>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nema, your learning state, everywhere.</title>
+<meta name="description" content="nema is a WebMCP protocol for learning. Your vault holds signed evidence, websites ask for the smallest true answer, and you approve every disclosure.">
+<meta name="theme-color" content="#0B1320">
+<meta name="color-scheme" content="dark">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="nema">
+<meta property="og:url" content="https://nema.migarci2.dev/">
+<meta property="og:title" content="nema, your learning state, everywhere.">
+<meta property="og:description" content="The web teaches. Your vault remembers. Your agent connects the two. A WebMCP protocol for learner-owned learning state, live on five origins.">
+<link rel="icon" href="/shared/brand/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/shared/brand/fonts/pixelify-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/shared/brand/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/shared/brand/tokens.css">
+<link rel="stylesheet" href="/shared/brand/brand.css">
+<link rel="stylesheet" href="/app.css">
+<script src="/shared/webmcp-polyfill.js"></script>
+</head>
+<body data-footer-note="Built for The WebMCP Challenge.">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="n-app">
+  <header data-nema-header></header>
+
+  <nav class="site-nav" aria-label="nema hub pages">
+    <a class="site-nav__link" href="/" aria-current="page"><span class="site-nav__index">01</span> Hub</a>
+    <a class="site-nav__link" href="/judges.html"><span class="site-nav__index">02</span> Judge guide</a>
+    <a class="site-nav__link" href="/protocol.html"><span class="site-nav__index">03</span> Protocol</a>
+    <a class="site-nav__link" href="/philosophy.html"><span class="site-nav__index">04</span> Philosophy</a>
+    <a class="site-nav__link" href="/brand.html"><span class="site-nav__index">05</span> Brand board</a>
+  </nav>
+
+  <main class="n-app__main site-main" id="main">
+
+    <!-- hero ------------------------------------------------------- -->
+    <section class="hero" aria-labelledby="hero-title">
+      <h1 class="hero__wordmark" id="hero-title">
+        <span class="sr-only">nema</span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 24" aria-hidden="true" focusable="false" shape-rendering="crispEdges">
+          <g fill="currentColor">
+            <rect x="0" y="0" width="16" height="4"/><rect x="0" y="4" width="4" height="20"/><rect x="12" y="4" width="4" height="20"/>
+            <rect x="20" y="0" width="16" height="4"/><rect x="20" y="4" width="4" height="20"/><rect x="32" y="4" width="4" height="4"/><rect x="20" y="8" width="16" height="4"/><rect x="20" y="20" width="16" height="4"/>
+            <rect x="40" y="0" width="28" height="4"/><rect x="40" y="4" width="4" height="20"/><rect x="52" y="4" width="4" height="20"/><rect x="64" y="4" width="4" height="20"/>
+            <rect x="72" y="0" width="16" height="4"/><rect x="84" y="4" width="4" height="20"/><rect x="72" y="8" width="16" height="4"/><rect x="72" y="12" width="4" height="8"/><rect x="72" y="20" width="16" height="4"/>
+          </g>
+        </svg>
+      </h1>
+      <p class="hero__tagline">your learning state, everywhere.</p>
+      <p class="hero__thesis">
+        <span>The web teaches.</span>
+        <span>Your vault remembers.</span>
+        <span>Your agent connects the two.</span>
+      </p>
+      <p class="hero__lede">
+        nema is a WebMCP protocol for learning, plus five pages that implement it. A vault you own holds
+        signed evidence of what you have learned and derives your state from it, per concept and per
+        ability. Websites never read the vault: they ask one question, and the vault answers with the
+        smallest true answer, after you approve it. Nothing else leaves.
+      </p>
+      <p class="hero__actions">
+        <a class="n-btn n-btn--primary" href="https://nema-coach.migarci2.dev/" data-app-link="coach">Open the coach</a>
+        <a class="n-btn n-btn--secondary" href="https://nema-vault.migarci2.dev/" data-app-link="vault">Open your vault</a>
+        <a class="n-btn n-btn--secondary" href="/judges.html">Judge guide, 3 minutes</a>
+      </p>
+      <p class="hero__facts">
+        <span><b>5</b> origins</span>
+        <span><b>22</b> WebMCP tools</span>
+        <span><b>0</b> shared accounts</span>
+        <span><b>0</b> third party requests</span>
+      </p>
+    </section>
+
+    <!-- how it works ------------------------------------------------ -->
+    <section class="section" aria-labelledby="how-title">
+      <div class="section__head">
+        <span class="section__index">01</span>
+        <h2 class="section__title" id="how-title">How it works</h2>
+        <span class="section__hint">four objects, three roles, one browser</span>
+      </div>
+
+      <ol class="steps">
+        <li class="step">
+          <span class="step__index">1</span>
+          <span class="step__object">LearningManifest</span>
+          <p class="step__text">
+            A provider publishes what a unit teaches, what it assumes, and what evidence each activity can
+            produce. Your agent reads it before you commit a single minute.
+          </p>
+        </li>
+        <li class="step">
+          <span class="step__index">2</span>
+          <span class="step__object">ReadinessAssertion</span>
+          <p class="step__text">
+            The agent asks your vault. The vault stops and shows you a modal, and only after you approve
+            does it sign a token bound to that one audience, valid for 30 minutes, carrying bands and
+            nothing else.
+          </p>
+        </li>
+        <li class="step">
+          <span class="step__index">3</span>
+          <span class="step__object">EvidenceReceipt</span>
+          <p class="step__text">
+            You do the work in the provider's page. The grader runs on its server, the provider signs a
+            receipt, your agent carries it back, and the vault recomputes your bands from the ledger.
+          </p>
+        </li>
+        <li class="step">
+          <span class="step__index">4</span>
+          <span class="step__object">LearningNeed</span>
+          <p class="step__text">
+            The vault turns the ledger into what to do next, with the rubric attached, so a coach can run
+            the exercise without inventing the standard.
+          </p>
+        </li>
+      </ol>
+
+      <div class="n-panel">
+        <h3 class="n-panel__label">Protocol flow<span class="n-panel__hint">human steps in cyan, squares mark what the agent carries</span></h3>
+        <div class="n-panel__body">
+          <div class="diagram">
+            <svg viewBox="0 0 720 424" role="img" aria-labelledby="dg-title dg-desc">
+              <title id="dg-title">The nema protocol flow between the learner, the vault, the agent and the provider</title>
+              <desc id="dg-desc">The provider sends a LearningManifest to the agent, the agent sends a ReadinessRequest to the vault, the vault asks the learner to approve a disclosure, the learner approves, the vault sends a signed ReadinessAssertion to the provider through the agent, the learner answers the activity in the provider page, the provider sends a signed EvidenceReceipt back to the vault through the agent, and the vault sends a LearningNeed to the agent which coaches the learner.</desc>
+              <defs>
+                <marker id="dg-arrow" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+                  <path class="dg-head" d="M0 0 L8 4 L0 8 Z"/>
+                </marker>
+                <marker id="dg-arrow-human" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" orient="auto">
+                  <path class="dg-head dg-head--human" d="M0 0 L8 4 L0 8 Z"/>
+                </marker>
+              </defs>
+
+              <g>
+                <rect class="dg-box" x="24" y="14" width="128" height="28"/>
+                <text class="dg-name" x="88" y="33" text-anchor="middle">LEARNER</text>
+                <rect class="dg-box" x="204" y="14" width="128" height="28"/>
+                <text class="dg-name" x="268" y="33" text-anchor="middle">VAULT</text>
+                <rect class="dg-box" x="388" y="14" width="128" height="28"/>
+                <text class="dg-name" x="452" y="33" text-anchor="middle">AGENT</text>
+                <rect class="dg-box" x="572" y="14" width="128" height="28"/>
+                <text class="dg-name" x="636" y="33" text-anchor="middle">PROVIDER</text>
+              </g>
+
+              <g class="dg-life">
+                <line x1="88" y1="46" x2="88" y2="412"/>
+                <line x1="268" y1="46" x2="268" y2="412"/>
+                <line x1="452" y1="46" x2="452" y2="412"/>
+                <line x1="636" y1="46" x2="636" y2="412"/>
+              </g>
+
+              <text class="dg-label" x="544" y="84" text-anchor="middle">LearningManifest</text>
+              <line class="dg-msg" x1="636" y1="92" x2="452" y2="92" marker-end="url(#dg-arrow)"/>
+
+              <text class="dg-label" x="360" y="122" text-anchor="middle">ReadinessRequest</text>
+              <line class="dg-msg" x1="452" y1="130" x2="268" y2="130" marker-end="url(#dg-arrow)"/>
+
+              <text class="dg-label dg-label--human" x="178" y="160" text-anchor="middle">consent modal, in the page</text>
+              <line class="dg-msg dg-msg--human" x1="268" y1="168" x2="88" y2="168" marker-end="url(#dg-arrow-human)"/>
+
+              <text class="dg-label dg-label--human" x="178" y="198" text-anchor="middle">Approve</text>
+              <line class="dg-msg dg-msg--human" x1="88" y1="206" x2="268" y2="206" marker-end="url(#dg-arrow-human)"/>
+
+              <text class="dg-label" x="452" y="236" text-anchor="middle">ReadinessAssertion, signed, 30 min</text>
+              <line class="dg-msg" x1="268" y1="244" x2="636" y2="244" marker-end="url(#dg-arrow)"/>
+              <rect class="dg-node" x="446" y="238" width="12" height="12"/>
+
+              <text class="dg-label dg-label--human" x="362" y="274" text-anchor="middle">answers the activity, in the page</text>
+              <line class="dg-msg dg-msg--human" x1="88" y1="282" x2="636" y2="282" marker-end="url(#dg-arrow-human)"/>
+
+              <text class="dg-label" x="452" y="312" text-anchor="middle">EvidenceReceipt, signed</text>
+              <line class="dg-msg" x1="636" y1="320" x2="268" y2="320" marker-end="url(#dg-arrow)"/>
+              <rect class="dg-node" x="446" y="314" width="12" height="12"/>
+
+              <text class="dg-label" x="360" y="350" text-anchor="middle">LearningNeed, rubric attached</text>
+              <line class="dg-msg" x1="268" y1="358" x2="452" y2="358" marker-end="url(#dg-arrow)"/>
+
+              <text class="dg-label" x="270" y="388" text-anchor="middle">coaches, in chat</text>
+              <line class="dg-msg" x1="452" y1="396" x2="88" y2="396" marker-end="url(#dg-arrow)"/>
+            </svg>
+          </div>
+          <p class="diagram__hint">Scroll the diagram sideways to reach the agent and provider columns.</p>
+          <p class="n-panel__note">
+            The two squares on the agent lifeline are the objects the agent carries between origins. It
+            moves strings and explains them. It holds no authority: it cannot read the vault, it cannot
+            write a band, and it cannot answer an activity.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- live -------------------------------------------------------- -->
+    <section class="section" aria-labelledby="live-title">
+      <div class="section__head">
+        <span class="section__index">02</span>
+        <h2 class="section__title" id="live-title">Live</h2>
+        <span class="section__hint">five origins, no shared database</span>
+      </div>
+
+      <div class="apps">
+        <a class="app-card" href="https://nema-coach.migarci2.dev/" data-app-link="coach">
+          <span class="app-card__top">
+            <span class="app-card__name">Coach</span>
+            <span class="app-card__tag">start here</span>
+          </span>
+          <span class="app-card__text">
+            The nema agent. Chat on the left, the site under test on the right, and a token clipboard that
+            carries signed strings by handle.
+          </span>
+          <span class="app-card__foot">
+            <span class="app-card__url">nema-coach.migarci2.dev</span>
+            <span class="app-card__tools">no tools</span>
+          </span>
+        </a>
+
+        <a class="app-card" href="https://nema-vault.migarci2.dev/" data-app-link="vault">
+          <span class="app-card__top">
+            <span class="app-card__name">Vault</span>
+          </span>
+          <span class="app-card__text">
+            Your evidence ledger, your derived bands, your learning needs, and the consent modal that gates
+            every disclosure.
+          </span>
+          <span class="app-card__foot">
+            <span class="app-card__url">nema-vault.migarci2.dev</span>
+            <span class="app-card__tools">10 tools</span>
+          </span>
+        </a>
+
+        <a class="app-card" href="https://nema-harness.migarci2.dev/" data-app-link="harness">
+          <span class="app-card__top">
+            <span class="app-card__name">Harness Lab</span>
+          </span>
+          <span class="app-card__text">
+            Provider one. Designing Agent Evals, 68 minutes of it, until it meets your vault and rebuilds
+            the path.
+          </span>
+          <span class="app-card__foot">
+            <span class="app-card__url">nema-harness.migarci2.dev</span>
+            <span class="app-card__tools">5 tools</span>
+          </span>
+        </a>
+
+        <a class="app-card" href="https://nema-security.migarci2.dev/" data-app-link="security">
+          <span class="app-card__top">
+            <span class="app-card__name">Agent Security</span>
+          </span>
+          <span class="app-card__text">
+            Provider two. Feedback Loop Attack Surface, with two labs locked behind prerequisites it never
+            taught you.
+          </span>
+          <span class="app-card__foot">
+            <span class="app-card__url">nema-security.migarci2.dev</span>
+            <span class="app-card__tools">5 tools</span>
+          </span>
+        </a>
+
+        <div class="app-card">
+          <span class="app-card__top">
+            <span class="app-card__name">Hub</span>
+            <span class="app-card__tag">you are here</span>
+          </span>
+          <span class="app-card__text">
+            This page, plus the judge guide, the protocol reference, the philosophy and the brand board.
+          </span>
+          <span class="app-card__foot">
+            <span class="app-card__url">nema.migarci2.dev</span>
+            <span class="app-card__tools">2 tools</span>
+          </span>
+        </div>
+      </div>
+
+      <form class="n-panel" id="open-app" toolname="open_app"
+            tooldescription="Open one of the nema apps in this tab. Navigates this page to the app the learner picked and returns the app key and the URL."
+            toolautosubmit>
+        <h3 class="n-panel__label">Open an app<span class="n-panel__hint">declarative tool, form toolname=&quot;open_app&quot;</span></h3>
+        <div class="n-panel__body">
+          <div class="open-app">
+            <div class="n-field">
+              <label class="n-label" for="open-app-select">App</label>
+              <select class="n-select" id="open-app-select" name="app" required
+                      toolparamdescription="Which nema app to open: coach, vault, harness, security or site.">
+                <option value="coach">Coach, the nema agent</option>
+                <option value="vault">Vault</option>
+                <option value="harness">Harness Lab</option>
+                <option value="security">Agent Security</option>
+                <option value="site">Hub, this page</option>
+              </select>
+            </div>
+            <button class="n-btn n-btn--primary" type="submit">Open</button>
+          </div>
+          <p class="n-help" data-open-status role="status" aria-live="polite">
+            This form is the second WebMCP registration style. An agent can call it as open_app, and a
+            person can use it as a form. Either way this tab navigates.
+          </p>
+        </div>
+      </form>
+    </section>
+
+    <!-- story ------------------------------------------------------- -->
+    <section class="section" aria-labelledby="story-title">
+      <div class="section__head">
+        <span class="section__index">03</span>
+        <h2 class="section__title" id="story-title">Two sites, one learner</h2>
+        <span class="section__hint">the demo, in three numbers</span>
+      </div>
+
+      <div class="n-panel">
+        <h3 class="n-panel__label">Designing Agent Evals, at the Harness Lab</h3>
+        <div class="n-panel__body">
+          <ol class="story">
+            <li class="story__step">
+              <span class="story__num">68</span>
+              <span class="story__unit">minutes offered</span>
+              <span class="story__text">
+                The full unit. Seven activities, and three prerequisites the site wants to know about
+                before it plans anything.
+              </span>
+            </li>
+            <li class="story__link" aria-hidden="true">-&gt;</li>
+            <li class="story__step">
+              <span class="story__num">27</span>
+              <span class="story__unit">after one approval</span>
+              <span class="story__text">
+                Three lessons struck through, each with its reason beside it, 41 minutes removed. Nothing
+                is added. A four minute diagnostic survives the cut, because one prerequisite came back
+                uncertain.
+              </span>
+            </li>
+            <li class="story__link" aria-hidden="true">-&gt;</li>
+            <li class="story__step story__step--now">
+              <span class="story__num">21</span>
+              <span class="story__unit">after the diagnostic</span>
+              <span class="story__text">
+                You pass it, the site signs a receipt, the vault verifies it and moves
+                <span class="mono">nema:json-schema.apply</span> from uncertain to usable. The diagnostic
+                drops out of the path.
+              </span>
+            </li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="n-panel">
+        <h3 class="n-panel__label">Then a second site asks the same vault<span class="n-panel__hint">no partnership, no shared account, no back channel</span></h3>
+        <div class="n-panel__body unlock">
+          <p class="lede">
+            Agent Security has never spoken to the Harness Lab. It verifies one signature from your vault,
+            checks the token was minted for its own origin, and reads three bands.
+          </p>
+          <div class="n-ledger">
+            <div class="n-ledger__row">
+              <span class="n-ledger__main"><span class="n-ledger__title mono">nema:tool-calling.explain</span></span>
+              <span class="n-ledger__end"><span class="n-pill n-pill--durable">verified</span></span>
+            </div>
+            <div class="n-ledger__row">
+              <span class="n-ledger__main"><span class="n-ledger__title mono">nema:threat-modeling.apply</span></span>
+              <span class="n-ledger__end"><span class="n-pill n-pill--usable">verified</span></span>
+            </div>
+            <div class="n-ledger__row">
+              <span class="n-ledger__main"><span class="n-ledger__title mono">nema:feedback-loops.explain</span></span>
+              <span class="n-ledger__end"><span class="n-pill n-pill--unknown">missing</span></span>
+            </div>
+          </div>
+          <p class="lede">
+            Both intro lessons go skippable on the strength of the first two. Both labs stay locked, and
+            the page names the exact reason. The agent then coaches that one gap from the vault's own
+            rubric and records the result as agent assessed, weight 0.6, which is enough to clear the lock
+            and nothing more. The advanced lab flips to available with the label "Prerequisite recognised
+            from another provider".
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- privacy ----------------------------------------------------- -->
+    <section class="section" aria-labelledby="privacy-title">
+      <div class="section__head">
+        <span class="section__index">04</span>
+        <h2 class="section__title" id="privacy-title">Privacy you can see</h2>
+        <span class="section__hint">the token does not exist until you click</span>
+      </div>
+
+      <div class="n-panel">
+        <h3 class="n-panel__label">Disclosure, as the vault renders it</h3>
+        <div class="n-panel__body dock__grid">
+          <figure class="still">
+            <div class="n-modal__dialog">
+              <div class="n-modal__head">
+                <p class="n-modal__eyebrow">Disclosure request</p>
+                <h4 class="n-modal__title">Harness Engineering Lab</h4>
+                <p class="muted" style="font-size: var(--fs-13);">Purpose: personalize-agent-evals-path. Expires in 30 minutes.</p>
+              </div>
+              <div class="n-modal__body">
+                <div class="stack stack--tight">
+                  <span class="n-label">Shared</span>
+                  <div class="n-ledger">
+                    <div class="n-ledger__row">
+                      <span class="n-ledger__main"><span class="n-ledger__title mono">nema:software-testing.apply</span></span>
+                      <span class="n-ledger__end"><span class="n-pill n-pill--durable">verified</span></span>
+                    </div>
+                    <div class="n-ledger__row">
+                      <span class="n-ledger__main"><span class="n-ledger__title mono">nema:agent-loop.explain</span></span>
+                      <span class="n-ledger__end"><span class="n-pill n-pill--usable">verified</span></span>
+                    </div>
+                    <div class="n-ledger__row">
+                      <span class="n-ledger__main"><span class="n-ledger__title mono">nema:json-schema.apply</span></span>
+                      <span class="n-ledger__end"><span class="n-pill n-pill--uncertain">uncertain</span></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="stack stack--tight">
+                  <span class="n-label">Not shared</span>
+                  <ul class="withheld">
+                    <li>Attempt history</li>
+                    <li>Exact scores</li>
+                    <li>Other subjects</li>
+                    <li>Misconceptions</li>
+                    <li>Review schedule</li>
+                    <li>Provider history</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="n-modal__foot">
+                <button class="n-btn n-btn--secondary" type="button" disabled>Deny</button>
+                <button class="n-btn n-btn--primary" type="button" disabled>Approve</button>
+              </div>
+            </div>
+            <figcaption>A still of the vault's consent modal. Nothing is disclosed on this page.</figcaption>
+          </figure>
+
+          <div class="stack">
+            <p class="lede">
+              A ReadinessAssertion carries only the concepts that were requested, as status bands, plus an
+              audience, a purpose, a request hash and an expiry. That key set is fixed by the spec and
+              asserted by a unit test.
+            </p>
+            <ul class="check">
+              <li><b>Minimal.</b> Three lines were asked for, three lines are shared. Nothing else is in the payload.</li>
+              <li><b>Audience bound.</b> Valid at one origin. Presented anywhere else it fails with <span class="mono">wrong-audience</span>.</li>
+              <li><b>Short lived.</b> 30 minutes, no refresh. The agent asks again and you approve again.</li>
+              <li><b>Unlinkable by default.</b> <span class="mono">learnerKeyId</span> is derived from your vault key and the audience, so two providers see different ids for the same person.</li>
+              <li><b>Refusable.</b> Deny returns <span class="mono">{ status: 'denied' }</span>, writes nothing, and the disclosure ledger records nothing, because nothing was disclosed.</li>
+            </ul>
+            <p class="row">
+              <a class="n-btn n-btn--secondary" href="https://nema-vault.migarci2.dev/" data-app-link="vault">See the live modal in the vault</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- refusals ---------------------------------------------------- -->
+    <section class="section" aria-labelledby="refuse-title">
+      <div class="section__head">
+        <span class="section__index">05</span>
+        <h2 class="section__title" id="refuse-title">What nema refuses to do</h2>
+        <span class="section__hint">the absence is the security model</span>
+      </div>
+
+      <div class="n-panel">
+        <h3 class="n-panel__label">Tools that do not exist on any nema surface</h3>
+        <div class="n-panel__body">
+          <div class="s-table-wrap">
+            <table class="s-table">
+              <thead>
+                <tr><th scope="col">Name</th><th scope="col">Why it does not exist</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="refuse__name">set_<wbr>mastery</span></td><td>state is derived from signed evidence, never written</td></tr>
+                <tr><td><span class="refuse__name">get_<wbr>full_<wbr>history</span></td><td>disclosure is per request and per audience, never bulk</td></tr>
+                <tr><td><span class="refuse__name">submit_<wbr>answer_<wbr>for_<wbr>learner</span></td><td>only the human answers, and grading runs server side</td></tr>
+                <tr><td><span class="refuse__name">disable_<wbr>review</span></td><td>the schedule is a property of the evidence, not a setting</td></tr>
+                <tr><td><span class="refuse__name">export_<wbr>vault</span></td><td>export is a button a human clicks, not an agent capability</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="n-panel__note">
+            This is not a policy written in a prompt. Prompts can be argued with, missing functions cannot.
+            Verify it yourself on any nema page: call
+            <span class="mono">await document.modelContext.getTools()</span> and read the list.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- why webmcp -------------------------------------------------- -->
+    <section class="section" aria-labelledby="why-title">
+      <div class="section__head">
+        <span class="section__index">06</span>
+        <h2 class="section__title" id="why-title">Why WebMCP</h2>
+        <span class="section__hint">the substrate, not a detail</span>
+      </div>
+
+      <blockquote class="quote">
+        <p>WebMCP changes the shape of the problem.</p>
+        <p>
+          A site declares what it can do as tools on the page it already serves, and any agent in the
+          browser can call them while the person watches.
+        </p>
+        <p>No accounts, no shared database, no server that sees both sides.</p>
+      </blockquote>
+      <p class="lede">
+        Five origins in this demo, and any sixth one can join by registering five tools and publishing a
+        public key. WebMCP is the substrate where a protocol like this is just pages, and where the human
+        stays in the loop by construction, because the approval is a modal on the page the data belongs to.
+      </p>
+    </section>
+
+    <!-- for judges -------------------------------------------------- -->
+    <section class="section" aria-labelledby="judges-title">
+      <div class="section__head">
+        <span class="section__index">07</span>
+        <h2 class="section__title" id="judges-title">For judges</h2>
+        <span class="section__hint">three minutes, sixty seconds if you are behind</span>
+      </div>
+
+      <div class="n-panel">
+        <h3 class="n-panel__label">Browser setup<span class="n-panel__hint">nothing needs an account or an API key</span></h3>
+        <div class="n-panel__body">
+          <ul class="doc__list">
+            <li><b>ChatGPT desktop.</b> The in-app browser has WebMCP on by default. Open the vault in it and the tools are discovered with no setup.</li>
+            <li><b>Chrome 149 or later.</b> Go to <span class="mono">chrome://flags/#enable-webmcp-testing</span>, set it to Enabled, restart, then open the coach.</li>
+            <li><b>Any other browser.</b> Every page loads the Chrome Labs WebMCP polyfill, so tools register and the UI behaves identically. The header pill says how many tools are live.</li>
+          </ul>
+          <p class="row">
+            <a class="n-btn n-btn--primary" href="/judges.html">Read the judge guide</a>
+            <a class="n-btn n-btn--secondary" href="/protocol.html">Read the protocol</a>
+            <a class="n-btn n-btn--secondary" href="https://github.com/migarci2/nema" rel="noopener">Repository, MIT</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="n-panel">
+        <h3 class="n-panel__label">Ask this page<span class="n-panel__hint">explain_nema, imperative tool</span></h3>
+        <div class="n-panel__body dock__grid">
+          <div class="stack">
+            <p class="n-help">
+              Pick a topic, or ask an agent to call <span class="mono">explain_nema</span>. Both go through
+              <span class="mono">document.modelContext.executeTool</span>, so the panel below and the
+              activity strip show the same call either way.
+            </p>
+            <div class="topics">
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="overview" aria-pressed="false">overview</button>
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="protocol" aria-pressed="false">protocol</button>
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="privacy" aria-pressed="false">privacy</button>
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="vault" aria-pressed="false">vault</button>
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="providers" aria-pressed="false">providers</button>
+              <button class="n-btn n-btn--sm n-btn--mono" type="button" data-topic="judges" aria-pressed="false">judges</button>
+            </div>
+            <div class="explain-out" data-explain-out data-state="empty" role="status" aria-live="polite">
+              <span class="explain-out__head" data-explain-head>explain_nema, no topic yet</span>
+              <p class="explain-out__text" data-explain-text>
+                The answer prints here, and the call appears in the tool activity strip with its duration.
+              </p>
+            </div>
+          </div>
+
+          <div class="stack">
+            <span class="activity-strip__head">tool activity, last 8 calls</span>
+            <div data-activity></div>
+            <p class="n-help">
+              Every nema page carries one of these. A tool call that does not change the screen is a tool
+              call a judge cannot audit.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer data-nema-footer></footer>
+</div>
+
+<script type="module" src="/app.js"></script>
+</body>
 </html>

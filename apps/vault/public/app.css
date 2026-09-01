@@ -1,0 +1,308 @@
+/* nema vault: layout and the few widgets only this app has.
+ *
+ * Everything visual comes from /shared/brand/tokens.css and brand.css. This
+ * file adds page layout, the dense state table, the small chips the ledgers
+ * use, and the consent modal details. No new colours, no new type scale.
+ */
+
+/* ------------------------------------------------------------- lede -- */
+
+.v-lede {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.v-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-32);
+  line-height: var(--lh-tight);
+}
+.v-lede__text {
+  color: var(--ink-2);
+  font-size: var(--fs-14);
+  line-height: var(--lh-body);
+  max-width: 76ch;
+}
+
+/* ------------------------------------------------ panel read out ---- */
+
+/* Set by a tool call: which panel the agent just touched. */
+.v-read {
+  order: 4;
+  font-size: var(--fs-10);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.v-flash { border-color: var(--cyan); }
+@keyframes v-flash-ring {
+  from { box-shadow: 0 0 0 1px var(--cyan); }
+  to { box-shadow: 0 0 0 1px transparent; }
+}
+.v-flash { animation: v-flash-ring 1400ms var(--ease-out); }
+
+/* ---------------------------------------------------------- summary -- */
+
+.v-registry {
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+  letter-spacing: 0.02em;
+}
+.v-stat--due .n-stat__value { color: var(--yellow); }
+.v-actions { gap: var(--sp-2); }
+
+/* brand.css sets display on components such as .n-btn, which beats the user
+ * agent rule for [hidden]. One line puts that back. */
+[hidden] { display: none !important; }
+
+/* ------------------------------------------------------------ graph -- */
+
+.v-graph__due {
+  fill: var(--yellow);
+  shape-rendering: crispEdges;
+}
+
+/* Edges pass behind the words and behind the squares, never through them. */
+.v-graph .n-graph__label {
+  paint-order: stroke;
+  stroke: var(--navy);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.v-graph .n-graph__node--unknown { fill: var(--navy); }
+.v-graph .n-graph__group:focus-visible { outline: none; }
+.v-graph .n-graph__group:focus-visible .n-graph__node {
+  stroke: var(--cyan);
+  stroke-width: 3;
+}
+
+.v-graph__detail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 34px;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--navy);
+  border: 1px solid var(--line);
+  border-radius: var(--r-1);
+  font-size: var(--fs-11);
+}
+.v-graph__name { font-size: var(--fs-13); color: var(--ink); }
+
+.v-legend { gap: var(--sp-2); }
+.v-legend__due {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-11);
+  color: var(--ink-2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.v-legend__due::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--yellow);
+}
+
+/* Under 900 px the drawing keeps its size and the panel scrolls sideways:
+ * a graph you cannot read is not a graph. */
+@media (max-width: 900px) {
+  .v-graph { overflow-x: auto; }
+  .v-graph svg { width: 900px; min-width: 900px; }
+  .v-graph .n-graph__label { font-size: 11px; }
+}
+
+/* ------------------------------------------------------ state table -- */
+
+.v-table__wrap { overflow-x: auto; }
+
+.v-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-13);
+}
+.v-table th,
+.v-table td {
+  text-align: left;
+  padding: var(--sp-1) var(--sp-2);
+  border-top: 1px solid var(--line);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.v-table thead th {
+  border-top: 0;
+  padding-bottom: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-10);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-label);
+}
+.v-table thead th abbr { text-decoration: none; }
+.v-table tbody th { font-weight: 400; padding-right: var(--sp-4); }
+.v-table tbody tr:hover { background: var(--navy-3); }
+.v-table__title { display: block; color: var(--ink); }
+.v-table__id {
+  display: block;
+  font-size: var(--fs-10);
+  color: var(--ink-label);
+}
+.v-table__review { text-align: right; }
+
+.v-none {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  box-shadow: inset 0 0 0 1px var(--ink-3);
+}
+
+.v-table__missing {
+  font-size: var(--fs-11);
+  color: var(--ink-label);
+  line-height: var(--lh-body);
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------------------------ needs -- */
+
+.v-budget { gap: var(--sp-2); }
+.v-budget .n-label { text-transform: uppercase; }
+.v-need__kind {
+  font-size: var(--fs-10);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-label);
+  margin-right: var(--sp-1);
+}
+
+/* An origin with a port needs a little more room than the shared 12ch id. */
+[data-disclosure-ledger] .n-ledger__id { width: 15ch; }
+
+/* ----------------------------------------------------------- claims -- */
+
+.v-claims {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin-top: 2px;
+}
+.v-claim {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-10);
+  letter-spacing: 0.03em;
+  color: var(--ink-2);
+  background: var(--ink-08);
+  border: 1px solid var(--line);
+  border-radius: var(--r-1);
+  padding: 1px var(--sp-2);
+}
+.v-claim--verified { color: var(--cyan); border-color: var(--cyan-24); background: var(--cyan-12); }
+.v-claim--passed { color: var(--teal); border-color: rgba(21, 196, 180, 0.35); background: var(--teal-14); }
+.v-claim--uncertain { color: var(--sky); border-color: rgba(162, 204, 255, 0.35); background: var(--sky-14); }
+.v-claim--partial { color: var(--yellow); border-color: rgba(255, 202, 46, 0.35); background: var(--yellow-14); }
+.v-claim--failed { color: var(--danger); border-color: rgba(255, 92, 122, 0.35); background: var(--danger-14); }
+.v-claim--missing { color: var(--ink-2); }
+
+.v-effect {
+  font-size: var(--fs-11);
+  color: var(--ink-2);
+  line-height: var(--lh-snug);
+  overflow-wrap: anywhere;
+}
+
+.v-demo {
+  --pill: var(--ink-3);
+  --pill-ink: var(--ink-2);
+  --pill-bg: transparent;
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
+/* ----------------------------------------------------------- consent -- */
+
+.v-consent__origin { font-size: var(--fs-11); color: var(--ink-2); overflow-wrap: anywhere; }
+.v-consent__key { font-size: var(--fs-11); color: var(--ink-label); overflow-wrap: anywhere; }
+.v-consent__purpose { font-size: var(--fs-13); color: var(--ink-2); }
+
+.v-consent__block { display: flex; flex-direction: column; gap: var(--sp-2); }
+.v-consent__cap {
+  font-family: var(--font-mono);
+  font-size: var(--fs-10);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-label);
+}
+.v-consent__withheld {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-1) var(--sp-3);
+}
+.v-consent__withheld li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+}
+.v-consent__withheld li::before {
+  content: '';
+  width: 6px;
+  height: 1px;
+  flex: none;
+  background: var(--ink-3);
+}
+.v-consent__expiry { font-size: var(--fs-12); color: var(--ink-2); }
+.v-consent__timer {
+  font-size: var(--fs-11);
+  letter-spacing: 0.06em;
+  color: var(--ink-label);
+}
+
+@media (max-width: 520px) {
+  .v-consent__withheld { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ------------------------------------------------------------- inbox -- */
+
+.v-inbox__note {
+  padding: var(--sp-3);
+  background: var(--navy);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--yellow);
+  border-radius: var(--r-1);
+  font-size: var(--fs-13);
+  color: var(--ink-2);
+}
+
+.v-result:empty { display: none; }
+.v-result__box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  background: var(--navy);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--line);
+  border-radius: var(--r-1);
+  font-size: var(--fs-13);
+  color: var(--ink-2);
+}
+.v-result__box b { color: var(--ink); font-weight: 600; }
+.v-result__box--ok { border-left-color: var(--teal); }
+.v-result__box--warn { border-left-color: var(--yellow); }
+.v-result__box--bad { border-left-color: var(--danger); }
+.v-result__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+}

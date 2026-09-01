@@ -1,22 +1,91 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>nema security</title>
-    <style>
-      body {
-        margin: 0;
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
-        background: #0B1320;
-        color: #F2F6FF;
-        font-family: system-ui, sans-serif;
-      }
-    </style>
-  </head>
-  <body>
-    <p>nema security: coming up</p>
-  </body>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nema: Agent Security</title>
+<meta name="description" content="Feedback Loop Attack Surface: a short unit on where an agent's tool results become an attack surface, with deterministic labs and signed evidence receipts.">
+<link rel="icon" href="/shared/brand/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/shared/brand/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/shared/brand/fonts/jetbrains-mono-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/shared/brand/tokens.css">
+<link rel="stylesheet" href="/shared/brand/brand.css">
+<link rel="stylesheet" href="/app.css">
+<script src="/shared/webmcp-polyfill.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#unit">Skip to the unit</a>
+
+<div class="n-app">
+  <header data-nema-header></header>
+
+  <main class="n-app__main" id="unit">
+
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero__lead">
+        <p class="hero__eyebrow mono">Provider unit, feedback-loop-attack-surface</p>
+        <h1 class="hero__title" id="hero-title">Feedback Loop Attack Surface</h1>
+        <p class="hero__blurb">
+          A tool result is a message in the same context as your instructions. This unit
+          works through one contaminated agent trace, then puts you on call for four
+          injection incidents. The labs are graded deterministically on this origin and the
+          result leaves as a signed evidence receipt you own.
+        </p>
+        <div class="hero__stats n-stats" data-hero-stats></div>
+      </div>
+      <div class="hero__req">
+        <p class="hero__req-label mono">Requirements this unit assumes</p>
+        <ul class="hero__req-list" data-hero-requirements></ul>
+        <p class="hero__origin mono dim" data-hero-origin></p>
+        <p class="hero__note mono" data-hero-note hidden></p>
+      </div>
+    </section>
+
+    <div class="n-grid">
+      <section class="n-panel c-5" aria-labelledby="prereq-title">
+        <h2 class="n-panel__label" id="prereq-title">
+          <span class="n-panel__index">01</span> Prerequisites
+          <span class="n-panel__hint" data-prereq-hint>no assertion presented</span>
+        </h2>
+        <div class="n-panel__body" data-prereq-body></div>
+      </section>
+
+      <section class="n-panel c-7" aria-labelledby="path-title">
+        <h2 class="n-panel__label" id="path-title">
+          <span class="n-panel__index">02</span> Activities
+          <span class="n-panel__hint" data-path-hint></span>
+        </h2>
+        <div class="n-panel__body" data-path-body></div>
+      </section>
+    </div>
+
+    <section class="n-panel" aria-labelledby="stage-title" data-stage-panel>
+      <h2 class="n-panel__label" id="stage-title">
+        <span class="n-panel__index">03</span> Activity stage
+        <span class="n-panel__hint" data-stage-hint>nothing open</span>
+      </h2>
+      <p class="sr-only" data-live-region role="status" aria-live="polite"></p>
+      <div class="n-panel__body" data-stage-body></div>
+    </section>
+
+    <section class="n-panel" aria-labelledby="receipt-title" data-receipt-panel>
+      <h2 class="n-panel__label" id="receipt-title">
+        <span class="n-panel__index">04</span> Evidence receipt
+        <span class="n-panel__hint" data-receipt-hint>none issued yet</span>
+      </h2>
+      <div class="n-panel__body" data-receipt-body></div>
+    </section>
+
+    <section aria-labelledby="tools-title">
+      <span class="activity-strip__head" id="tools-title">tool activity, last 8 calls</span>
+      <div data-activity-strip></div>
+    </section>
+
+  </main>
+
+  <footer data-nema-footer></footer>
+</div>
+
+<script type="module" src="/app.js"></script>
+</body>
 </html>
