@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 24" width="88" height="24" role="img" aria-label="nema" shape-rendering="crispEdges">
+  <title>nema</title>
+  <!-- Pixel wordmark. Every rectangle is a whole number of 4 px modules, so
+       the letterforms stay pixel exact at any scale. 22 modules by 6.
+       This standalone file paints the ink colour directly, because an img
+       element or a CSS background gives currentColor nothing to inherit. The
+       inline copy in brand.js uses currentColor so a host element can tint it. -->
+  <g fill="#F2F6FF">
+    <!-- n -->
+    <rect x="0"  y="0"  width="16" height="4"/>
+    <rect x="0"  y="4"  width="4"  height="20"/>
+    <rect x="12" y="4"  width="4"  height="20"/>
+    <!-- e -->
+    <rect x="20" y="0"  width="16" height="4"/>
+    <rect x="20" y="4"  width="4"  height="20"/>
+    <rect x="32" y="4"  width="4"  height="4"/>
+    <rect x="20" y="8"  width="16" height="4"/>
+    <rect x="20" y="20" width="16" height="4"/>
+    <!-- m -->
+    <rect x="40" y="0"  width="28" height="4"/>
+    <rect x="40" y="4"  width="4"  height="20"/>
+    <rect x="52" y="4"  width="4"  height="20"/>
+    <rect x="64" y="4"  width="4"  height="20"/>
+    <!-- a -->
+    <rect x="72" y="0"  width="16" height="4"/>
+    <rect x="84" y="4"  width="4"  height="20"/>
+    <rect x="72" y="8"  width="16" height="4"/>
+    <rect x="72" y="12" width="4"  height="8"/>
+    <rect x="72" y="20" width="16" height="4"/>
+  </g>
+</svg>

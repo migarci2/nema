@@ -1,0 +1,16 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "nema-coach",
+  "compatibility_date": "2026-08-01",
+  "workers_dev": true,
+  "main": "./worker.js",
+  "ai": { "binding": "AI" },
+  "assets": {
+    "directory": "../../dist/coach",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "routes": [
+    { "pattern": "nema-coach.migarci2.dev", "custom_domain": true }
+  ]
+}

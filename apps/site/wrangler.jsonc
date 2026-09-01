@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "nema",
+  "compatibility_date": "2026-08-01",
+  "workers_dev": true,
+  // Static app: no Worker script, so no ASSETS binding either. Wrangler only
+  // allows an assets binding when "main" is present.
+  "assets": {
+    "directory": "../../dist/site"
+  },
+  "routes": [
+    { "pattern": "nema.migarci2.dev", "custom_domain": true }
+  ]
+}

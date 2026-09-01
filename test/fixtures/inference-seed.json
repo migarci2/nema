@@ -1,0 +1,391 @@
+{
+  "note": "Seed shaped ledger, own copy. Mirrors the daysAgo dating of the demo seed so the golden path is tested without importing a file another module owns.",
+  "baseDate": "2026-09-01T09:00:00Z",
+  "now": "2026-09-01T12:00:00Z",
+  "goals": [
+    {
+      "goalId": "goal_trusted_agent",
+      "title": "Ship an agent I can trust in production",
+      "concepts": [
+        "nema:agent-evals",
+        "nema:feedback-loops",
+        "nema:prompt-injection"
+      ],
+      "createdAt": "2026-08-20T09:00:00Z"
+    }
+  ],
+  "misconceptions": [
+    {
+      "concept": "nema:agent-evals",
+      "id": "unit_tests_are_equivalent_to_agent_evals",
+      "text": "If the unit tests pass, the agent works.",
+      "recordedAt": "2026-08-28T09:00:00Z"
+    }
+  ],
+  "receipts": [
+    {
+      "receiptId": "rcpt_seed_01_testing_fundamentals_lab",
+      "status": "verified",
+      "daysAgo": 30,
+      "payload": {
+        "type": "evidence-receipt",
+        "protocol": "nema/0.1",
+        "receiptId": "rcpt_seed_01_testing_fundamentals_lab",
+        "issuer": "urn:nema:seed",
+        "keyId": "seed",
+        "subject": "lk_seed_learner",
+        "activity": {
+          "id": "testing-fundamentals-lab",
+          "version": "1.0.0",
+          "title": "Testing fundamentals lab",
+          "contentHash": "sha256:seed-testing-fundamentals-lab"
+        },
+        "claims": [
+          {
+            "concept": "nema:software-testing",
+            "ability": "apply",
+            "evidenceType": "application",
+            "result": "passed",
+            "difficulty": "intermediate"
+          }
+        ],
+        "conditions": {
+          "attempts": 2,
+          "hintsUsed": 1,
+          "durationSeconds": 742,
+          "grader": "deterministic",
+          "graderVersion": "1"
+        }
+      }
+    },
+    {
+      "receiptId": "rcpt_seed_02_regression_suite_lab",
+      "status": "verified",
+      "daysAgo": 12,
+      "payload": {
+        "type": "evidence-receipt",
+        "protocol": "nema/0.1",
+        "receiptId": "rcpt_seed_02_regression_suite_lab",
+        "issuer": "urn:nema:seed",
+        "keyId": "seed",
+        "subject": "lk_seed_learner",
+        "activity": {
+          "id": "regression-suite-lab",
+          "version": "1.0.0",
+          "title": "Build a regression suite that fails loudly",
+          "contentHash": "sha256:seed-regression-suite-lab"
+        },
+        "claims": [
+          {
+            "concept": "nema:software-testing",
+            "ability": "apply",
+            "evidenceType": "application",
+            "result": "passed",
+            "difficulty": "intermediate"
+          },
+          {
+            "concept": "nema:unit-testing",
+            "ability": "apply",
+            "evidenceType": "application",
+            "result": "passed",
+            "difficulty": "introductory"
+          }
+        ],
+        "conditions": {
+          "attempts": 1,
+          "hintsUsed": 0,
+          "durationSeconds": 613,
+          "grader": "deterministic",
+          "graderVersion": "1"
+        }
+      }
+    },
+    {
+      "receiptId": "rcpt_seed_03_tool_calling_explainer",
+      "status": "verified",
+      "daysAgo": 25,
+      "payload": {
+        "type": "evidence-receipt",
+        "protocol": "nema/0.1",
+        "receiptId": "rcpt_seed_03_tool_calling_explainer",
+        "issuer": "urn:nema:seed",
+        "keyId": "seed",
+        "subject": "lk_seed_learner",
+        "activity": {
+          "id": "tool-calling-explainer",
+          "version": "1.0.0",
+          "title": "Explain a tool call end to end",
+          "contentHash": "sha256:seed-tool-calling-explainer"
+        },
+        "claims": [
+          {
+            "concept": "nema:tool-calling",
+            "ability": "explain",
+            "evidenceType": "explanation",
+            "result": "passed",
+            "difficulty": "introductory"
+          }
+        ],
+        "conditions": {
+          "attempts": 1,
+          "hintsUsed": 0,
+          "durationSeconds": 388,
+          "grader": "provider-rubric",
+          "graderVersion": "1"
+        }
+      }
+    },
+    {
+      "receiptId": "rcpt_seed_04_agent_loop_explainer",
+      "status": "verified",
+      "daysAgo": 20,
+      "payload": {
+        "type": "evidence-receipt",
+        "protocol": "nema/0.1",
+        "receiptId": "rcpt_seed_04_agent_loop_explainer",
+        "issuer": "urn:nema:seed",
+        "keyId": "seed",
+        "subject": "lk_seed_learner",
+        "activity": {
+          "id": "agent-loop-explainer",
+          "version": "1.0.0",
+          "title": "Describe the agent loop in your own words",
+          "contentHash": "sha256:seed-agent-loop-explainer"
+        },
+        "claims": [
+          {
+            "concept": "nema:agent-loop",
+            "ability": "explain",
+            "evidenceType": "explanation",
+            "result": "passed",
+            "difficulty": "introductory"
+          }
+        ],
+        "conditions": {
+          "attempts": 1,
+          "hintsUsed": 0,
+          "durationSeconds": 421,
+          "grader": "provider-rubric",
+          "graderVersion": "1"
+        }
+      }
+    },
+    {
+      "receiptId": "rcpt_seed_05_threat_model_a_tool_server",
+      "status": "verified",
+      "daysAgo": 15,
+      "payload": {
+        "type": "evidence-receipt",
+        "protocol": "nema/0.1",
+        "receiptId": "rcpt_seed_05_threat_model_a_tool_server",
+        "issuer": "urn:nema:seed",
+        "keyId": "seed",
+        "subject": "lk_seed_learner",
+        "activity": {
+          "id": "threat-model-a-tool-server",
+          "version": "1.0.0",
+          "title": "Threat model a tool server",
+          "contentHash": "sha256:seed-threat-model-a-tool-server"
+        },
+        "claims": [
+          {
+            "concept": "nema:threat-modeling",
+            "ability": "apply",
+            "evidenceType": "application",
+            "result": "passed",
+            "difficulty": "intermediate"
+          }
+        ],
+        "conditions": {
+          "attempts": 2,
+          "hintsUsed": 0,
+          "durationSeconds": 905,
+          "grader": "deterministic",
+          "graderVersion": "1"
+        }
+      }
+    },
+    {
+      "receiptId": "rcpt_seed_06_tool_interface_lab",
+      "status": "verified",
+      "daysAgo": 9,
+      "payload": {
+        "type": "evidence-receipt",
+        "protocol": "nema/0.1",
+        "receiptId": "rcpt_seed_06_tool_interface_lab",
+        "issuer": "urn:nema:seed",
+        "keyId": "seed",
+        "subject": "lk_seed_learner",
+        "activity": {
+          "id": "tool-interface-lab",
+          "version": "1.0.0",
+          "title": "Design a tool interface an agent cannot misuse",
+          "contentHash": "sha256:seed-tool-interface-lab"
+        },
+        "claims": [
+          {
+            "concept": "nema:tool-calling",
+            "ability": "apply",
+            "evidenceType": "application",
+            "result": "passed",
+            "difficulty": "intermediate"
+          }
+        ],
+        "conditions": {
+          "attempts": 1,
+          "hintsUsed": 1,
+          "durationSeconds": 668,
+          "grader": "deterministic",
+          "graderVersion": "1"
+        }
+      }
+    },
+    {
+      "receiptId": "rcpt_seed_07_agent_loop_trace_lab",
+      "status": "verified",
+      "daysAgo": 6,
+      "payload": {
+        "type": "evidence-receipt",
+        "protocol": "nema/0.1",
+        "receiptId": "rcpt_seed_07_agent_loop_trace_lab",
+        "issuer": "urn:nema:seed",
+        "keyId": "seed",
+        "subject": "lk_seed_learner",
+        "activity": {
+          "id": "agent-loop-trace-lab",
+          "version": "1.0.0",
+          "title": "Read a broken agent trace",
+          "contentHash": "sha256:seed-agent-loop-trace-lab"
+        },
+        "claims": [
+          {
+            "concept": "nema:agent-loop",
+            "ability": "apply",
+            "evidenceType": "application",
+            "result": "passed",
+            "difficulty": "intermediate"
+          }
+        ],
+        "conditions": {
+          "attempts": 1,
+          "hintsUsed": 0,
+          "durationSeconds": 534,
+          "grader": "deterministic",
+          "graderVersion": "1"
+        }
+      }
+    },
+    {
+      "receiptId": "rcpt_seed_08_least_privilege_review",
+      "status": "verified",
+      "daysAgo": 5,
+      "payload": {
+        "type": "evidence-receipt",
+        "protocol": "nema/0.1",
+        "receiptId": "rcpt_seed_08_least_privilege_review",
+        "issuer": "urn:nema:seed",
+        "keyId": "seed",
+        "subject": "lk_seed_learner",
+        "activity": {
+          "id": "least-privilege-review",
+          "version": "1.0.0",
+          "title": "Review an agent's permissions",
+          "contentHash": "sha256:seed-least-privilege-review"
+        },
+        "claims": [
+          {
+            "concept": "nema:threat-modeling",
+            "ability": "apply",
+            "evidenceType": "application",
+            "result": "passed",
+            "difficulty": "intermediate"
+          },
+          {
+            "concept": "nema:least-privilege",
+            "ability": "explain",
+            "evidenceType": "explanation",
+            "result": "passed",
+            "difficulty": "introductory"
+          }
+        ],
+        "conditions": {
+          "attempts": 1,
+          "hintsUsed": 0,
+          "durationSeconds": 497,
+          "grader": "deterministic",
+          "graderVersion": "1"
+        }
+      }
+    },
+    {
+      "receiptId": "rcpt_seed_09_json_schema_self_check",
+      "status": "verified",
+      "daysAgo": 40,
+      "payload": {
+        "type": "evidence-receipt",
+        "protocol": "nema/0.1",
+        "receiptId": "rcpt_seed_09_json_schema_self_check",
+        "issuer": "urn:nema:seed",
+        "keyId": "seed",
+        "subject": "lk_seed_learner",
+        "activity": {
+          "id": "json-schema-self-check",
+          "version": "1.0.0",
+          "title": "Self check: JSON Schema",
+          "contentHash": "sha256:seed-json-schema-self-check"
+        },
+        "claims": [
+          {
+            "concept": "nema:json-schema",
+            "ability": "apply",
+            "evidenceType": "application",
+            "result": "partial",
+            "difficulty": "introductory"
+          }
+        ],
+        "conditions": {
+          "attempts": 1,
+          "hintsUsed": 0,
+          "durationSeconds": 120,
+          "grader": "self-report",
+          "graderVersion": "1"
+        }
+      }
+    }
+  ],
+  "harnessReceipt": {
+    "receiptId": "rcpt_harness_eval_lab",
+    "status": "verified",
+    "daysAgo": 0,
+    "payload": {
+      "type": "evidence-receipt",
+      "protocol": "nema/0.1",
+      "receiptId": "rcpt_harness_eval_lab",
+      "issuer": "https://nema-harness.example",
+      "keyId": "harness-2026-09",
+      "subject": "lk_seed_learner",
+      "activity": {
+        "id": "eval-design-lab",
+        "version": "1.0.0",
+        "title": "Fix the broken harness",
+        "contentHash": "sha256:seed-eval-design-lab"
+      },
+      "claims": [
+        {
+          "concept": "nema:agent-evals",
+          "ability": "apply",
+          "evidenceType": "application",
+          "result": "passed",
+          "difficulty": "intermediate"
+        }
+      ],
+      "conditions": {
+        "attempts": 2,
+        "hintsUsed": 1,
+        "durationSeconds": 641,
+        "grader": "deterministic",
+        "graderVersion": "1"
+      }
+    }
+  }
+}

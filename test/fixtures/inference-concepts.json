@@ -1,0 +1,332 @@
+[
+  {
+    "id": "nema:agent-evals",
+    "title": "Agent evals",
+    "summary": "Task level evaluation of an agent's end to end behaviour, as opposed to unit tests of its functions.",
+    "prereqs": [
+      "nema:software-testing",
+      "nema:agent-loop"
+    ],
+    "confusableWith": [
+      "nema:unit-testing"
+    ],
+    "misconceptions": [
+      {
+        "id": "unit_tests_are_equivalent_to_agent_evals",
+        "text": "If the unit tests pass, the agent works."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "describes evaluation at the level of a whole task, not a single function",
+        "names at least one signal that only appears end to end"
+      ],
+      "apply": [
+        "writes an eval that fails when the agent takes a wrong path",
+        "states an acceptance condition before running the agent"
+      ],
+      "discriminate": [
+        "distinguishes deterministic function checks from task level agent evaluation",
+        "mentions end to end behaviour",
+        "gives one example where unit tests pass but the agent fails"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    }
+  },
+  {
+    "id": "nema:unit-testing",
+    "title": "Unit testing",
+    "summary": "Checking a single function against expected outputs in isolation.",
+    "prereqs": [
+      "nema:software-testing"
+    ],
+    "confusableWith": [
+      "nema:agent-evals"
+    ],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "isolates one unit",
+        "states the expected output before running"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 5,
+      "discriminate": 4
+    }
+  },
+  {
+    "id": "nema:software-testing",
+    "title": "Software testing",
+    "summary": "Deciding what to check, at which level, and what a failing check tells you.",
+    "prereqs": [],
+    "confusableWith": [],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "separates the thing under test from the check"
+      ],
+      "apply": [
+        "chooses a level of testing that matches the risk"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    }
+  },
+  {
+    "id": "nema:agent-loop",
+    "title": "Agent loop",
+    "summary": "The perceive, decide, act, observe cycle that an agent runs until a stop condition.",
+    "prereqs": [],
+    "confusableWith": [],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "names the four stages",
+        "states one stop condition"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 5,
+      "apply": 6,
+      "discriminate": 4
+    }
+  },
+  {
+    "id": "nema:json-schema",
+    "title": "JSON Schema",
+    "summary": "Declaring the shape of an object so bad payloads are rejected before they reach the code.",
+    "prereqs": [],
+    "confusableWith": [],
+    "misconceptions": [],
+    "rubric": {
+      "apply": [
+        "rejects the payload that violates the constraint",
+        "keeps additionalProperties closed"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 5,
+      "discriminate": 4
+    }
+  },
+  {
+    "id": "nema:feedback-loops",
+    "title": "Feedback loops",
+    "summary": "Routing the result of an action back into the next decision, and what that does to failure modes.",
+    "prereqs": [
+      "nema:agent-loop"
+    ],
+    "confusableWith": [
+      "nema:feedforward"
+    ],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "describes the return path",
+        "names one way the loop amplifies an error"
+      ],
+      "apply": [
+        "closes the loop with a check the agent cannot skip"
+      ],
+      "discriminate": [
+        "separates a loop that corrects from a loop that amplifies"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    }
+  },
+  {
+    "id": "nema:observability",
+    "title": "Observability",
+    "summary": "Being able to answer a new question about a running system without shipping new code.",
+    "prereqs": [],
+    "confusableWith": [],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "separates logs, traces and metrics by the question each answers"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    }
+  },
+  {
+    "id": "nema:tool-calling",
+    "title": "Tool calling",
+    "summary": "Letting a model select a named function and produce arguments that satisfy its schema.",
+    "prereqs": [
+      "nema:json-schema"
+    ],
+    "confusableWith": [],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "names the schema as the contract",
+        "states who executes the call"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    }
+  },
+  {
+    "id": "nema:cost-latency",
+    "title": "Cost and latency",
+    "summary": "Budgeting tokens, calls and wall clock time as first class design constraints.",
+    "prereqs": [],
+    "confusableWith": [],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "names one cost driver and one latency driver",
+        "states a budget per turn"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    }
+  },
+  {
+    "id": "nema:memory-design",
+    "title": "Memory design",
+    "summary": "Choosing what an agent carries forward, for how long, and what it is allowed to forget.",
+    "prereqs": [],
+    "confusableWith": [],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "separates working context from durable memory"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    }
+  },
+  {
+    "id": "nema:threat-modeling",
+    "title": "Threat modeling",
+    "summary": "Naming who can attack a system, through which surface, and what they gain by it.",
+    "prereqs": [],
+    "confusableWith": [
+      "nema:attack-surface"
+    ],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "names an attacker with a motive",
+        "names the surface the attacker reaches"
+      ],
+      "apply": [
+        "lists one concrete attack path end to end",
+        "states the mitigation that closes it"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    }
+  },
+  {
+    "id": "nema:least-privilege",
+    "title": "Least privilege",
+    "summary": "Granting the smallest permission that still lets the work happen, and nothing beyond it.",
+    "prereqs": [
+      "nema:threat-modeling"
+    ],
+    "confusableWith": [],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "states the permission and the task it exists for",
+        "names what is denied by default"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    }
+  },
+  {
+    "id": "nema:prompt-injection",
+    "title": "Prompt injection",
+    "summary": "Untrusted content reaching a model as if it were instruction from the operator.",
+    "prereqs": [
+      "nema:threat-modeling"
+    ],
+    "confusableWith": [],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "separates instruction from data",
+        "names one channel the injected text arrives on"
+      ],
+      "apply": [
+        "blocks the injected instruction without blocking the task"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    }
+  },
+  {
+    "id": "nema:attack-surface",
+    "title": "Attack surface",
+    "summary": "Every input, tool and boundary an attacker can reach, counted rather than assumed.",
+    "prereqs": [],
+    "confusableWith": [
+      "nema:threat-modeling"
+    ],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "enumerates the reachable inputs",
+        "states one way the surface grows"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    }
+  }
+]

@@ -1,0 +1,1128 @@
+/* nema component layer.
+ *
+ * Loaded by every nema app after tokens.css. Class names are BEM-ish:
+ * block `n-panel`, element `n-panel__label`, modifier `n-panel--flush`.
+ * A few feed components keep bare names (`activity-strip`, `activity-row`)
+ * because the contract names them that way.
+ *
+ * Contents
+ *   1  reset and page frame       .n-app
+ *   2  header and footer          .n-header .n-tools .n-footer
+ *   3  panels                     .n-panel .n-panel__label
+ *   4  buttons                    .n-btn
+ *   5  pills and bands            .n-pill
+ *   6  stats and ledgers          .n-stat .n-ledger
+ *   7  ring                       .n-ring
+ *   8  modal                      .n-modal
+ *   9  form controls              .n-input .n-select .n-textarea .n-field
+ *  10  token box                  .n-token
+ *  11  tool activity strip        .activity-strip .activity-row
+ *  12  learning graph             .n-graph
+ *  13  learning path              .n-path
+ *  14  console                    .n-console
+ *  15  toast and keycap           .n-toast .n-kbd
+ *  16  grid and utilities         .n-grid .mono .muted .stack .row
+ *
+ * Motion is 120 to 180 ms ease-out and collapses to 1 ms under
+ * prefers-reduced-motion (the durations are tokens, see tokens.css).
+ * Every interactive element has a visible focus ring. Numbers are tabular.
+ * The layout holds down to 380 px.
+ */
+
+/* ------------------------------------------------- 1. reset and frame -- */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--navy);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  line-height: var(--lh-body);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, p, figure, ul, ol { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+
+/* Prose links are --blue-ink (7.07:1 on navy) with a --blue underline. Cyan is
+ * rationed to one accent per view: the current nav item, focus, verified.
+ * The underline rules are wrapped in :where() so they carry zero specificity
+ * and can never beat a component class. Any link that owns a class
+ * (.n-btn, .n-header__link, .skip-link) draws its own border. */
+a {
+  color: var(--blue-ink);
+  text-decoration: none;
+  transition: border-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+}
+:where(a:not([class])) { border-bottom: 1px solid var(--blue-40); }
+:where(a:not([class])):hover { color: var(--ink); border-bottom-color: var(--blue); }
+
+img, svg { display: block; }
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+  box-shadow: var(--focus-hairline);
+}
+
+::selection { background: var(--cyan-24); color: var(--ink); }
+
+.n-app {
+  max-width: var(--app-max);
+  margin: 0 auto;
+  padding: var(--app-pad);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  min-height: 100vh;
+}
+
+.n-app__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  flex: 1 1 auto;
+}
+
+/* Section heading used above a group of panels. */
+.n-section-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-24);
+  line-height: var(--lh-tight);
+  letter-spacing: 0.01em;
+}
+
+/* --------------------------------------------- 2. header and footer -- */
+
+.n-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.n-header__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  border-bottom: 0;
+  color: inherit;
+}
+.n-header__brand:hover { border-bottom: 0; }
+
+/* Both assets are drawn on a 4 unit module, so they only stay crisp at
+ * integer module sizes. The mark is 64 units wide: 32 px is a 2 px module
+ * (3 px vertex nodes, 2 px strokes on the pixel n). The wordmark is 88 units
+ * wide: 66 px is a 3 px module and an 18 px cap height, which sits under the
+ * mark's 32 px without either looking scaled. Do not use in between sizes. */
+.n-header__mark { width: 32px; height: 32px; flex: none; }
+.n-header__mark svg { width: 100%; height: 100%; }
+
+.n-header__wordmark { width: 66px; flex: none; color: var(--ink); }
+.n-header__wordmark svg { width: 100%; height: auto; }
+
+/* Contract section 2: mark and wordmark on the left, app name in mono on the
+ * right, then the tools pill. The nav sits with them in the right group. */
+.n-header__end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-3);
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.n-header__app {
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-2);
+  padding-left: var(--sp-3);
+  border-left: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.n-header__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex-wrap: wrap;
+}
+
+.n-header__link {
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid transparent;
+  border-radius: var(--r-1);
+  transition: color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out), background-color var(--dur-1) var(--ease-out);
+}
+.n-header__link:hover { color: var(--ink); background: var(--navy-2); border-color: var(--line); }
+.n-header__link[aria-current='page'] { color: var(--cyan); border-color: var(--cyan-24); }
+
+/* Tools indicator. Grey while no tool is registered, cyan once they are. */
+.n-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-label);
+  background: var(--navy-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-round);
+  padding: var(--sp-1) var(--sp-3);
+  white-space: nowrap;
+  transition: color var(--dur-2) var(--ease-out), border-color var(--dur-2) var(--ease-out);
+}
+.n-tools__dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  background: var(--ink-3);
+  transition: background-color var(--dur-2) var(--ease-out);
+}
+.n-tools[data-live='true'] { color: var(--cyan); border-color: var(--cyan-24); }
+.n-tools[data-live='true'] .n-tools__dot { background: var(--cyan); }
+.n-tools__count { color: var(--ink); }
+
+.n-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-4);
+  flex-wrap: wrap;
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  letter-spacing: 0.04em;
+  color: var(--ink-label);
+}
+.n-footer__mark { width: 16px; height: 16px; flex: none; opacity: 0.8; }
+.n-footer__mark svg { width: 100%; height: 100%; }
+.n-footer__links { display: flex; gap: var(--sp-4); margin-left: auto; flex-wrap: wrap; }
+.n-footer a { color: var(--ink-2); border-bottom-color: var(--line); }
+.n-footer a:hover { color: var(--cyan); border-bottom-color: var(--cyan); }
+
+/* ------------------------------------------------------- 3. panels -- */
+
+.n-panel {
+  position: relative;
+  background: var(--navy-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  padding: var(--panel-pad);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+/* Corner ticks: 6 px cyan brackets on all four corners, drawn with two
+ * pseudo elements so no extra markup is needed. */
+.n-panel::before,
+.n-panel::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+}
+.n-panel::before {
+  background:
+    linear-gradient(var(--cyan-60), var(--cyan-60)) top left / 6px 1px no-repeat,
+    linear-gradient(var(--cyan-60), var(--cyan-60)) top left / 1px 6px no-repeat,
+    linear-gradient(var(--cyan-60), var(--cyan-60)) top right / 6px 1px no-repeat,
+    linear-gradient(var(--cyan-60), var(--cyan-60)) top right / 1px 6px no-repeat;
+}
+.n-panel::after {
+  background:
+    linear-gradient(var(--cyan-60), var(--cyan-60)) bottom left / 6px 1px no-repeat,
+    linear-gradient(var(--cyan-60), var(--cyan-60)) bottom left / 1px 6px no-repeat,
+    linear-gradient(var(--cyan-60), var(--cyan-60)) bottom right / 6px 1px no-repeat,
+    linear-gradient(var(--cyan-60), var(--cyan-60)) bottom right / 1px 6px no-repeat;
+}
+
+.n-panel--flush { padding: 0; gap: var(--sp-3); }
+.n-panel--flush > .n-panel__label { padding: var(--panel-pad) var(--panel-pad) 0; }
+.n-panel--flush > .n-panel__body { padding: 0 var(--panel-pad) var(--panel-pad); }
+.n-panel--quiet { background: transparent; }
+.n-panel--quiet::before,
+.n-panel--quiet::after { display: none; }
+
+.n-panel__label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.n-panel__label::after {
+  content: '';
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--line);
+  transform: translateY(-3px);
+}
+.n-panel__index {
+  color: var(--ink-label);
+  font-variant-numeric: tabular-nums;
+}
+.n-panel__hint {
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  letter-spacing: 0.04em;
+  color: var(--ink-label);
+  text-transform: none;
+  order: 3;
+}
+
+.n-panel__body { display: flex; flex-direction: column; gap: var(--sp-4); }
+
+.n-panel__note {
+  color: var(--ink-2);
+  font-size: var(--fs-13);
+  line-height: var(--lh-body);
+  max-width: 68ch;
+}
+
+/* ------------------------------------------------------ 4. buttons -- */
+
+.n-btn {
+  --btn-bg: transparent;
+  --btn-fg: var(--ink);
+  --btn-bd: var(--line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-height: 36px;
+  padding: 0 var(--sp-4);
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--btn-fg);
+  background: var(--btn-bg);
+  border: 1px solid var(--btn-bd);
+  border-radius: var(--r-1);
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), transform var(--dur-1) var(--ease-out);
+}
+.n-btn:hover { --btn-bg: var(--navy-3); --btn-bd: var(--cyan-24); }
+.n-btn:active { transform: translateY(1px); }
+.n-btn:disabled,
+.n-btn[aria-disabled='true'] { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+.n-btn--primary {
+  --btn-bg: var(--cyan);
+  --btn-fg: var(--navy);
+  --btn-bd: var(--cyan);
+  font-weight: 600;
+}
+.n-btn--primary:hover { --btn-bg: #5CF0FF; --btn-bd: #5CF0FF; }
+
+.n-btn--secondary { --btn-bg: transparent; --btn-fg: var(--ink); --btn-bd: var(--line); }
+
+.n-btn--danger { --btn-fg: var(--danger); --btn-bd: rgba(255, 92, 122, 0.45); }
+.n-btn--danger:hover { --btn-bg: var(--danger-14); --btn-bd: var(--danger); }
+
+.n-btn--sm { min-height: 26px; padding: 0 var(--sp-2); font-size: var(--fs-11); }
+.n-btn--block { width: 100%; }
+
+.n-btn--mono { font-family: var(--font-mono); letter-spacing: 0.04em; }
+
+/* ---------------------------------------------- 5. pills and bands -- */
+
+.n-pill {
+  --pill: var(--ink-3);
+  --pill-ink: var(--ink-2);
+  --pill-bg: var(--ink-08);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 2px var(--sp-2);
+  min-height: 20px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--pill-ink);
+  background: var(--pill-bg);
+  border: 1px solid color-mix(in srgb, var(--pill) 40%, transparent);
+  border-radius: var(--r-1);
+}
+.n-pill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex: none;
+  background: var(--pill);
+}
+.n-pill--nodot::before { display: none; }
+
+.n-pill--durable   { --pill: var(--band-durable);   --pill-ink: var(--band-durable-ink);   --pill-bg: var(--band-durable-bg); }
+.n-pill--usable    { --pill: var(--band-usable);    --pill-ink: var(--band-usable-ink);    --pill-bg: var(--band-usable-bg); }
+.n-pill--fragile   { --pill: var(--band-fragile);   --pill-ink: var(--band-fragile-ink);   --pill-bg: var(--band-fragile-bg); }
+.n-pill--uncertain { --pill: var(--band-uncertain); --pill-ink: var(--band-uncertain-ink); --pill-bg: var(--band-uncertain-bg); }
+.n-pill--unknown   { --pill: var(--band-unknown);   --pill-ink: var(--band-unknown-ink);   --pill-bg: var(--band-unknown-bg); }
+.n-pill--due       { --pill: var(--band-due);       --pill-ink: var(--band-due-ink);       --pill-bg: var(--band-due-bg); }
+.n-pill--pending   { --pill: var(--band-due);       --pill-ink: var(--band-due-ink);       --pill-bg: var(--band-due-bg); }
+.n-pill--danger    { --pill: var(--band-danger);    --pill-ink: var(--band-danger-ink);    --pill-bg: var(--band-danger-bg); }
+
+/* Agent assessed evidence is lower trust. The dashed border says so. */
+.n-pill--agent {
+  --pill: var(--band-uncertain);
+  --pill-ink: var(--band-uncertain-ink);
+  --pill-bg: transparent;
+  border-style: dashed;
+}
+.n-pill--agent::before { background: transparent; box-shadow: inset 0 0 0 1px var(--sky); }
+
+/* --------------------------------------------- 6. stats and ledgers -- */
+
+.n-stat { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.n-stat__value {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-32);
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.n-stat--accent .n-stat__value { color: var(--cyan); }
+.n-stat--lg .n-stat__value { font-size: var(--fs-44); }
+.n-stat__label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-10);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-label);
+}
+
+.n-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: var(--sp-4);
+}
+
+.n-ledger { display: flex; flex-direction: column; }
+.n-ledger__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  border-top: 1px solid var(--line);
+  min-width: 0;
+}
+.n-ledger__row:first-child { border-top: 0; }
+.n-ledger__row--flag { box-shadow: inset 2px 0 0 var(--yellow); padding-left: var(--sp-3); }
+.n-ledger__id {
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  color: var(--ink-label);
+  flex: none;
+  width: 12ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.n-ledger__main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.n-ledger__title { font-size: var(--fs-13); color: var(--ink); overflow-wrap: anywhere; }
+.n-ledger__meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  color: var(--ink-label);
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+.n-ledger__end { flex: none; display: flex; align-items: center; gap: var(--sp-2); }
+
+.n-empty {
+  padding: var(--sp-5) 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-label);
+}
+
+/* --------------------------------------------------------- 7. ring -- */
+
+.n-ring {
+  --value: 0;
+  --ring-size: 128px;
+  position: relative;
+  width: var(--ring-size);
+  height: var(--ring-size);
+  flex: none;
+  display: grid;
+  place-items: center;
+}
+.n-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from -90deg, var(--cyan) 0deg, var(--teal) calc(var(--value) * 3.6deg), var(--line) 0deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 76%, #000 77%);
+  mask: radial-gradient(closest-side, transparent 76%, #000 77%);
+  transition: background var(--dur-3) var(--ease-out);
+}
+.n-ring__value {
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+  line-height: 1;
+  color: var(--ink);
+  z-index: var(--z-raised);
+}
+.n-ring__label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-10);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-label);
+  z-index: var(--z-raised);
+  margin-top: 2px;
+}
+.n-ring--sm { --ring-size: 72px; }
+.n-ring--sm .n-ring__value { font-size: var(--fs-16); }
+
+/* -------------------------------------------------------- 8. modal -- */
+
+.n-modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--sp-4);
+  background: var(--shade-72);
+  animation: n-fade var(--dur-2) var(--ease-out);
+}
+.n-modal[hidden] { display: none; }
+
+.n-modal__dialog {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: calc(100vh - var(--sp-6));
+  overflow: auto;
+  background: var(--navy-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  box-shadow: var(--shadow-3);
+  display: flex;
+  flex-direction: column;
+  animation: n-rise var(--dur-3) var(--ease-out);
+}
+.n-modal__head {
+  padding: var(--sp-5) var(--sp-5) var(--sp-3);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.n-modal__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+  font-weight: 400;
+  line-height: var(--lh-tight);
+}
+.n-modal__eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+.n-modal__body { padding: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-4); }
+.n-modal__foot {
+  padding: var(--sp-4) var(--sp-5);
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  position: sticky;
+  bottom: 0;
+  background: var(--navy-2);
+}
+.n-modal__foot .n-btn--primary { margin-left: auto; }
+
+@keyframes n-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes n-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ------------------------------------------------ 9. form controls -- */
+
+.n-field { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.n-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-10);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-label);
+}
+.n-help { font-size: var(--fs-12); color: var(--ink-2); }
+
+.n-input,
+.n-select,
+.n-textarea {
+  width: 100%;
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  color: var(--ink);
+  background: var(--navy);
+  border: 1px solid var(--line);
+  border-radius: var(--r-1);
+  padding: var(--sp-2) var(--sp-3);
+  min-height: 36px;
+  transition: border-color var(--dur-1) var(--ease-out), background-color var(--dur-1) var(--ease-out);
+}
+.n-input::placeholder,
+.n-textarea::placeholder { color: var(--ink-label); }
+.n-input:hover,
+.n-select:hover,
+.n-textarea:hover { border-color: var(--cyan-24); }
+
+.n-input--num { font-family: var(--font-mono); width: 8ch; min-width: 8ch; }
+
+.n-textarea {
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  line-height: 1.6;
+  min-height: 108px;
+  resize: vertical;
+  overflow-wrap: anywhere;
+}
+
+.n-select {
+  appearance: none;
+  padding-right: var(--sp-6);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink-2) 50%),
+    linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
+  background-position: right 18px center, right 13px center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+.n-select option { background: var(--navy-2); color: var(--ink); }
+
+.n-check {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-13);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.n-check input { accent-color: var(--cyan); width: 16px; height: 16px; flex: none; }
+
+/* --------------------------------------------------- 10. token box -- */
+
+.n-token {
+  position: relative;
+  background: var(--navy);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.n-token__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-10);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-label);
+}
+.n-token__head .n-btn { margin-left: auto; }
+.n-token__text {
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  line-height: 1.7;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  max-height: 120px;
+  overflow: auto;
+  margin: 0;
+  white-space: pre-wrap;
+}
+.n-token__text b { color: var(--cyan); font-weight: 500; }
+
+/* --------------------------------------- 11. tool activity strip -- */
+
+/* This is the markup `mountActivityStrip(container)` in shared/webmcp.js
+ * actually renders. It adds .activity-strip to the container it is given and
+ * refills it on every tool call with rows of exactly this shape:
+ *
+ *   <div class="activity-row" data-status="accepted">
+ *     <span class="activity-name">stage_evidence_receipt</span>
+ *     <span class="activity-ms">31 ms</span>
+ *     <span class="activity-status">accepted</span>
+ *   </div>
+ *
+ * plus a single `.activity-row.activity-row-empty` before the first call.
+ * The container is cleared on every render, so a caption belongs on a sibling
+ * `.activity-strip__head` above the strip, never inside it. The dot is drawn
+ * with ::before, so no row needs an extra element. */
+
+.activity-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  background: var(--navy-2);
+  max-height: 200px;
+  overflow: auto;
+}
+.activity-strip__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-10);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-label);
+}
+
+.activity-row {
+  --dot: var(--cyan);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  color: var(--ink-2);
+  animation: n-slide-in var(--dur-3) var(--ease-out);
+}
+.activity-row:first-child { border-top: 0; }
+.activity-row::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex: none;
+  background: var(--dot);
+}
+
+/* The tool name takes the free space, the duration and the status stay put. */
+.activity-name,
+.activity-row__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.activity-ms,
+.activity-row__ms {
+  flex: none;
+  color: var(--ink-label);
+  font-variant-numeric: tabular-nums;
+}
+.activity-status,
+.activity-row__status {
+  flex: 0 1 auto;
+  min-width: 0;
+  color: var(--ink-label);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Status bands. The dot carries the colour, the status word repeats it, so the
+ * row still reads without colour vision. */
+.activity-row[data-status='ok'],
+.activity-row[data-status='accepted'],
+.activity-row[data-status='approved'],
+.activity-row[data-status='verified'] { --dot: var(--teal); }
+.activity-row[data-status='ok'] .activity-status,
+.activity-row[data-status='accepted'] .activity-status,
+.activity-row[data-status='approved'] .activity-status,
+.activity-row[data-status='verified'] .activity-status { color: var(--teal); }
+
+.activity-row[data-status='pending'],
+.activity-row[data-status='waiting'],
+.activity-row[data-status='staged'],
+.activity-row--pending { --dot: var(--yellow); }
+.activity-row[data-status='pending'] .activity-status,
+.activity-row[data-status='waiting'] .activity-status,
+.activity-row[data-status='staged'] .activity-status,
+.activity-row--pending .activity-row__status { color: var(--yellow); }
+
+.activity-row[data-status='error'],
+.activity-row[data-status='denied'],
+.activity-row[data-status='failed'],
+.activity-row[data-status='invalid'],
+.activity-row--error {
+  --dot: var(--danger);
+  box-shadow: inset 2px 0 0 var(--danger);
+}
+.activity-row[data-status='error'] .activity-status,
+.activity-row[data-status='denied'] .activity-status,
+.activity-row[data-status='failed'] .activity-status,
+.activity-row[data-status='invalid'] .activity-status,
+.activity-row--error .activity-row__status { color: var(--danger); }
+
+/* Before the first tool call. One quiet row, no dot, no entry animation. */
+.activity-row-empty,
+.activity-row--empty {
+  color: var(--ink-label);
+  animation: none;
+  box-shadow: none;
+}
+.activity-row-empty::before,
+.activity-row--empty::before { display: none; }
+
+@keyframes n-slide-in { from { opacity: 0; transform: translateX(-4px); } to { opacity: 1; transform: none; } }
+
+/* ----------------------------------------------- 12. learning graph -- */
+
+.n-graph {
+  width: 100%;
+  overflow-x: auto;
+  background: var(--navy);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  padding: var(--sp-4);
+}
+.n-graph svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+  /* The drawing scales with its viewBox down to a 380 px phone. 320 px is the
+   * floor: under that the container scrolls rather than shrink further. */
+  min-width: 320px;
+}
+
+.n-graph__edge {
+  stroke: var(--ink-3);
+  stroke-opacity: 0.55;
+  stroke-width: 1;
+  fill: none;
+  transition: stroke var(--dur-2) var(--ease-out), stroke-opacity var(--dur-2) var(--ease-out);
+}
+.n-graph__edge--active { stroke: var(--cyan); stroke-opacity: 0.6; }
+
+.n-graph__node {
+  fill: var(--navy-2);
+  stroke: var(--ink-3);
+  stroke-width: 1.5;
+  shape-rendering: crispEdges;
+  transition: fill var(--dur-2) var(--ease-out), stroke var(--dur-2) var(--ease-out);
+}
+.n-graph__node--durable   { stroke: var(--cyan);  fill: var(--cyan-12); }
+.n-graph__node--usable    { stroke: var(--teal);  fill: var(--teal-14); }
+.n-graph__node--fragile   { stroke: var(--blue);  fill: var(--blue-14); }
+.n-graph__node--uncertain { stroke: var(--sky);   fill: var(--sky-14); }
+.n-graph__node--unknown   { stroke: var(--ink-3); fill: transparent; }
+.n-graph__node--due       { stroke: var(--yellow); fill: var(--yellow-14); }
+
+.n-graph__label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  fill: var(--ink-2);
+  text-anchor: middle;
+}
+.n-graph__label--dim { fill: var(--ink-label); }
+
+/* On a phone the drawing scales with its viewBox instead of scrolling
+ * sideways, so the outer labels are never cut off. They are set larger in
+ * viewBox units to hold their rendered size as the drawing shrinks. */
+@media (max-width: 640px) {
+  .n-graph { padding: var(--sp-3); }
+  .n-graph svg { min-width: 0; }
+  .n-graph__label { font-size: 16px; }
+}
+
+.n-graph__hub {
+  fill: var(--ink);
+  shape-rendering: crispEdges;
+}
+
+.n-graph__hit { fill: transparent; cursor: pointer; }
+.n-graph__hit:hover + .n-graph__node,
+.n-graph__group:hover .n-graph__node { stroke-width: 2.5; }
+
+/* ------------------------------------------------ 13. learning path -- */
+
+.n-path { display: flex; flex-direction: column; }
+.n-path__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  border-top: 1px solid var(--line);
+  min-width: 0;
+}
+.n-path__row:first-child { border-top: 0; }
+.n-path__index {
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  color: var(--ink-label);
+  flex: none;
+  width: 2ch;
+}
+.n-path__main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.n-path__title { font-size: var(--fs-13); color: var(--ink); }
+.n-path__reason {
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  color: var(--ink-label);
+}
+.n-path__minutes {
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+  flex: none;
+  min-width: 6ch;
+  text-align: right;
+}
+.n-path__row--skipped { opacity: 0.55; }
+.n-path__row--skipped .n-path__title { text-decoration: line-through; text-decoration-color: var(--ink-3); }
+.n-path__row--skipped .n-path__minutes { text-decoration: line-through; }
+.n-path__row--current { box-shadow: inset 2px 0 0 var(--cyan); padding-left: var(--sp-3); }
+.n-path__total {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-label);
+}
+.n-path__total b { font-family: var(--font-display); font-size: var(--fs-20); font-weight: 400; color: var(--cyan); }
+
+/* ------------------------------------------------------ 14. console -- */
+
+.n-console {
+  background: #070C15;
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  padding: var(--sp-3) var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  line-height: 1.8;
+  color: var(--ink-2);
+  overflow-x: auto;
+}
+.n-console__title {
+  font-size: var(--fs-10);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-label);
+  padding-bottom: var(--sp-2);
+  margin-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--line);
+}
+.n-console__line { display: flex; gap: var(--sp-2); white-space: pre; }
+.n-console__line::before { content: '  '; flex: none; color: var(--ink-3); width: 2ch; }
+.n-console__line--cmd::before { content: '$ '; color: var(--cyan); }
+.n-console__line--out::before { content: '> '; color: var(--ink-3); }
+.n-console__line--ok::before { content: 'ok'; color: var(--teal); }
+.n-console__line--fail::before { content: '!!'; color: var(--danger); }
+.n-console__line--ok { color: var(--ink); }
+.n-console__line--fail { color: var(--danger); }
+.n-console__line--muted { color: var(--ink-label); }
+
+/* --------------------------------------------- 15. toast and keycap -- */
+
+.n-toasts {
+  position: fixed;
+  right: var(--sp-4);
+  bottom: var(--sp-4);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  pointer-events: none;
+  max-width: min(360px, calc(100vw - var(--sp-6)));
+}
+.n-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--navy-3);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--cyan);
+  border-radius: var(--r-1);
+  box-shadow: var(--shadow-2);
+  font-size: var(--fs-13);
+  color: var(--ink);
+  animation: n-rise var(--dur-3) var(--ease-out);
+}
+.n-toast--ok { border-left-color: var(--teal); }
+.n-toast--warn { border-left-color: var(--yellow); }
+.n-toast--error { border-left-color: var(--danger); }
+.n-toast--leaving { opacity: 0; transition: opacity var(--dur-3) var(--ease-out); }
+
+.n-kbd {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  line-height: 1.6;
+  padding: 0 6px;
+  color: var(--ink-2);
+  background: var(--navy-3);
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: var(--r-1);
+}
+
+/* ------------------------------------------ 16. grid and utilities -- */
+
+.n-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--sp-4);
+}
+.n-grid--tight { gap: var(--sp-2); }
+.c-1  { grid-column: span 1; }
+.c-2  { grid-column: span 2; }
+.c-3  { grid-column: span 3; }
+.c-4  { grid-column: span 4; }
+.c-5  { grid-column: span 5; }
+.c-6  { grid-column: span 6; }
+.c-7  { grid-column: span 7; }
+.c-8  { grid-column: span 8; }
+.c-9  { grid-column: span 9; }
+.c-10 { grid-column: span 10; }
+.c-11 { grid-column: span 11; }
+.c-12 { grid-column: span 12; }
+
+/* Under 900 px every span collapses to the full 12, so an asymmetric pair
+ * (c-7 + c-5, c-8 + c-4) can never leave a half width panel alone on a row.
+ * c-6 is the one deliberate pair and keeps its half. For rows of three or four
+ * small tiles use .n-stats or an auto-fit grid, not the 12 column grid. */
+@media (max-width: 900px) {
+  .c-1, .c-2, .c-3, .c-4, .c-5,
+  .c-7, .c-8, .c-9, .c-10, .c-11 { grid-column: span 12; }
+}
+@media (max-width: 600px) {
+  .n-grid > [class^='c-'], .n-grid > [class*=' c-'] { grid-column: span 12; }
+}
+
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.display { font-family: var(--font-display); font-weight: 400; }
+.muted { color: var(--ink-2); }
+.dim { color: var(--ink-label); }
+.accent { color: var(--cyan); }
+.num { font-variant-numeric: tabular-nums; }
+.upper { text-transform: uppercase; letter-spacing: var(--ls-label); }
+
+.stack { display: flex; flex-direction: column; gap: var(--sp-3); }
+.stack--tight { gap: var(--sp-2); }
+.stack--loose { gap: var(--sp-5); }
+.row { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
+.row--tight { gap: var(--sp-2); }
+.row--top { align-items: flex-start; }
+.grow { flex: 1 1 auto; min-width: 0; }
+.push { margin-left: auto; }
+.rule { height: 1px; background: var(--line); border: 0; margin: 0; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--sp-4);
+  top: var(--sp-2);
+  transform: translateY(-200%);
+  z-index: var(--z-toast);
+  background: var(--cyan);
+  color: var(--navy);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-1);
+  border-bottom: 0;
+  font-weight: 600;
+}
+.skip-link:focus-visible { transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+  .n-btn:active { transform: none; }
+}
+
+@media (max-width: 640px) {
+  /* Let a panel hint drop under its label instead of squeezing it. */
+  .n-panel__label { flex-wrap: wrap; }
+  .n-panel__hint { flex-basis: 100%; }
+}
+
+@media (max-width: 520px) {
+  /* A ledger row gives its whole width to the text and puts the trailing
+   * pills on a second line, so nothing breaks mid-word. */
+  .n-ledger__row { flex-wrap: wrap; }
+  .n-ledger__end { width: 100%; }
+  .n-path__row { flex-wrap: wrap; }
+  .n-path__minutes { text-align: left; }
+}
+
+@media (max-width: 420px) {
+  .n-header { gap: var(--sp-3); }
+  .n-header__nav { margin-left: 0; width: 100%; }
+  .n-stat__value { font-size: var(--fs-24); }
+  .n-ledger__id { width: 10ch; }
+  .n-modal { padding: var(--sp-2); }
+  .n-modal__head, .n-modal__body { padding: var(--sp-4); }
+  .n-modal__foot { padding: var(--sp-3) var(--sp-4); }
+}

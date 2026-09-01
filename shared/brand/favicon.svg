@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="nema">
+  <title>nema</title>
+  <!-- The mark reduced for 16 to 32 px. A 1 px outline disappears at this size,
+       so the hexagon is filled and the pixel n is knocked out of it. The yellow
+       bottom node is the one vertex marker that survives. -->
+  <defs>
+    <linearGradient id="nema-favicon-face" x1="16" y1="2" x2="29" y2="17" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00E5FF"/>
+      <stop offset="0.5" stop-color="#15C4B4"/>
+      <stop offset="1" stop-color="#3A78FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="6" fill="#0B1320"/>
+  <path d="M16 3 L27 9 L27 23 L16 29 L5 23 L5 9 Z" fill="url(#nema-favicon-face)"/>
+  <g fill="#0B1320" shape-rendering="crispEdges">
+    <rect x="10" y="10" width="12" height="3"/>
+    <rect x="10" y="13" width="3" height="9"/>
+    <rect x="19" y="13" width="3" height="9"/>
+  </g>
+  <rect x="14" y="26" width="4" height="4" fill="#FFCA2E" shape-rendering="crispEdges"/>
+</svg>

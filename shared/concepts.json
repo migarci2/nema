@@ -1,0 +1,1511 @@
+[
+  {
+    "id": "nema:software-testing",
+    "title": "Software testing",
+    "summary": "The practice of checking that code behaves as specified through repeatable automated checks written at the cheapest level that can catch the defect.",
+    "prereqs": [],
+    "confusableWith": [
+      "nema:unit-testing",
+      "nema:agent-evals"
+    ],
+    "misconceptions": [
+      {
+        "id": "coverage_means_correctness",
+        "text": "High line coverage means the code is correct."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states what a test asserts and what it cannot assert",
+        "names at least three test levels and says what each one isolates",
+        "explains why a suite is a design constraint and not only a safety net"
+      ],
+      "apply": [
+        "writes a failing test before the fix and shows it turn green",
+        "chooses the cheapest level that can catch the defect",
+        "keeps each test independent of execution order and shared state"
+      ],
+      "discriminate": [
+        "separates a unit test from an integration test by what it isolates",
+        "separates coverage from correctness with one concrete example",
+        "separates a flaky test from a genuinely failing test by the evidence"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 7,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "testing-fundamentals",
+      "security": "software-testing"
+    }
+  },
+  {
+    "id": "nema:json-schema",
+    "title": "JSON Schema",
+    "summary": "A declarative vocabulary for constraining the shape of JSON documents so an invalid payload is rejected before it reaches application code.",
+    "prereqs": [],
+    "confusableWith": [
+      "nema:output-validation"
+    ],
+    "misconceptions": [
+      {
+        "id": "types_are_validation",
+        "text": "If the property types match, the payload is valid."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "distinguishes type, required and additionalProperties by what each one rejects",
+        "names one invariant a schema cannot express, such as a cross field rule",
+        "describes what a validator returns on failure and how a caller uses it"
+      ],
+      "apply": [
+        "writes a schema that rejects a named bad payload and accepts the good one",
+        "sets additionalProperties to false where the interface is closed",
+        "uses enum or const instead of a free string where the value set is fixed"
+      ],
+      "discriminate": [
+        "separates schema validation from business rule validation",
+        "separates a schema that constrains from one that only documents",
+        "separates a parse failure from a validation failure"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "schema-basics",
+      "security": "payload-schemas"
+    }
+  },
+  {
+    "id": "nema:tool-calling",
+    "title": "Tool calling",
+    "summary": "The mechanism by which a model requests a named function with structured arguments and then has to interpret the structured result it gets back.",
+    "prereqs": [],
+    "confusableWith": [
+      "nema:tool-interface-design"
+    ],
+    "misconceptions": [
+      {
+        "id": "model_executes_the_tool",
+        "text": "The model runs the tool itself, so the application cannot refuse the call."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "describes the round trip from tool declaration to arguments to result",
+        "states that the application, not the model, decides whether to execute",
+        "explains what happens when arguments do not match the declared schema"
+      ],
+      "apply": [
+        "declares a tool with a schema the model can fill without extra prose",
+        "handles a malformed or missing argument without throwing to the caller",
+        "returns a result the model can act on, with a status field and no free text blob"
+      ],
+      "discriminate": [
+        "separates the call protocol from the design of the tool interface",
+        "separates a tool result from a model assertion about the world",
+        "separates a refused call from a failed call in the trace"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 3
+    },
+    "aliases": {
+      "harness": "tool-invocation",
+      "security": "tool-calling"
+    }
+  },
+  {
+    "id": "nema:unit-testing",
+    "title": "Unit testing",
+    "summary": "Isolated checks of one function or module with its collaborators replaced, fast enough to run on every save.",
+    "prereqs": [
+      "nema:software-testing"
+    ],
+    "confusableWith": [
+      "nema:agent-evals",
+      "nema:regression-testing",
+      "nema:software-testing"
+    ],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "states what is replaced at the unit boundary and why",
+        "explains why a unit test must not depend on network or clock",
+        "says what a unit test proves about the whole system, which is little"
+      ],
+      "apply": [
+        "replaces one collaborator with a double and asserts on the observable result",
+        "names the test after the behaviour rather than after the function",
+        "covers the boundary case that motivated the code, not only the happy path"
+      ],
+      "discriminate": [
+        "separates a unit test from a task level agent eval by what fails when it fails",
+        "separates a stub from a mock by what each one asserts",
+        "separates a slow unit test from an integration test that is mislabelled"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "unit-tests",
+      "security": "unit-testing"
+    }
+  },
+  {
+    "id": "nema:agent-loop",
+    "title": "Agent loop",
+    "summary": "The cycle of observe, decide, act and record that turns a single model call into a process able to make progress across many steps.",
+    "prereqs": [
+      "nema:tool-calling"
+    ],
+    "confusableWith": [
+      "nema:state-management",
+      "nema:feedback-loops"
+    ],
+    "misconceptions": [
+      {
+        "id": "loop_is_just_retry",
+        "text": "An agent loop is a retry loop around one prompt."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names the four phases and what carries information between them",
+        "states what makes the loop terminate, including the failure exits",
+        "explains why the record phase is what makes the next decision better"
+      ],
+      "apply": [
+        "writes a loop with an explicit step budget and a stop condition",
+        "passes the tool result back as evidence rather than as a new instruction",
+        "records each step so the run can be read afterwards"
+      ],
+      "discriminate": [
+        "separates the loop from the state it reads and writes",
+        "separates a planning step from an acting step in a trace",
+        "separates a loop that makes progress from one that repeats itself"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 7,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "agent-control-loop",
+      "security": "agent-loop"
+    }
+  },
+  {
+    "id": "nema:tool-interface-design",
+    "title": "Tool interface design",
+    "summary": "Choosing the name, schema, description and return shape of a tool so a model can call it correctly without reading the implementation.",
+    "prereqs": [
+      "nema:json-schema",
+      "nema:tool-calling"
+    ],
+    "confusableWith": [
+      "nema:tool-calling"
+    ],
+    "misconceptions": [
+      {
+        "id": "more_tools_is_more_capability",
+        "text": "Adding more tools always makes the agent more capable."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "explains why the description is part of the interface and not documentation",
+        "states why a closed schema reduces the number of invalid calls",
+        "describes how the return shape changes what the model does next"
+      ],
+      "apply": [
+        "rewrites an ambiguous tool name and description into an unambiguous pair",
+        "collapses two overlapping tools into one with an explicit mode argument",
+        "returns a structured error the model can recover from instead of a thrown exception"
+      ],
+      "discriminate": [
+        "separates interface design from the transport that carries the call",
+        "separates a missing capability from a badly described one",
+        "separates a tool the model misuses from a tool the model should not have"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 8,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "tool-design",
+      "security": "tool-surface-design"
+    }
+  },
+  {
+    "id": "nema:acceptance-criteria",
+    "title": "Acceptance criteria",
+    "summary": "Concrete checkable statements of what a finished task must satisfy, written before the work starts.",
+    "prereqs": [
+      "nema:software-testing"
+    ],
+    "confusableWith": [
+      "nema:rubric-grading",
+      "nema:feedforward"
+    ],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "states why a criterion must be checkable by someone who did not do the work",
+        "explains what a criterion excludes as well as what it requires",
+        "says who writes them and at what point in the task"
+      ],
+      "apply": [
+        "turns a vague request into three criteria with an observable verdict each",
+        "writes one criterion that would fail a plausible wrong solution",
+        "keeps implementation choices out of the criteria"
+      ],
+      "discriminate": [
+        "separates an acceptance criterion from a rubric line used for scoring",
+        "separates a criterion from a preference stated as a requirement",
+        "separates done from good enough for this task"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "acceptance-criteria",
+      "security": "success-criteria"
+    }
+  },
+  {
+    "id": "nema:context-design",
+    "title": "Context design",
+    "summary": "Deciding what information enters the model window at each step, in what order, and what is deliberately left out.",
+    "prereqs": [
+      "nema:agent-loop"
+    ],
+    "confusableWith": [
+      "nema:memory-design",
+      "nema:retrieval-augmentation",
+      "nema:cost-latency"
+    ],
+    "misconceptions": [
+      {
+        "id": "more_context_always_helps",
+        "text": "More context always improves the agent."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "explains how irrelevant context changes the model's ranking of next actions",
+        "names the cost of context in tokens, latency and attention dilution",
+        "states one rule for what to drop when the window is full"
+      ],
+      "apply": [
+        "cuts a bloated prompt and shows the task still passes its checks",
+        "orders the context so the task statement is not buried by evidence",
+        "marks which blocks are untrusted data rather than instructions"
+      ],
+      "discriminate": [
+        "separates context design from long term memory design",
+        "separates retrieval quality from placement in the window",
+        "separates a prompt that lacks information from one that has too much"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 7,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "context-engineering",
+      "security": "context-design"
+    }
+  },
+  {
+    "id": "nema:feedback-loops",
+    "title": "Feedback loops",
+    "summary": "Structures that return the result of an action to the agent so the next decision is corrected by evidence instead of by guessing.",
+    "prereqs": [
+      "nema:agent-loop"
+    ],
+    "confusableWith": [
+      "nema:feedforward",
+      "nema:recovery",
+      "nema:agent-loop"
+    ],
+    "misconceptions": [
+      {
+        "id": "any_output_is_feedback",
+        "text": "Showing the agent its own output counts as a feedback loop."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names the signal, the channel and the decision the signal changes",
+        "explains why a loop with no verdict in it is not a feedback loop",
+        "states what makes a loop converge rather than oscillate"
+      ],
+      "apply": [
+        "adds a check whose verdict reaches the agent before its next action",
+        "shortens a loop so the correction happens in the same run",
+        "shows one run where the loop changed the agent's second attempt"
+      ],
+      "discriminate": [
+        "separates feedback from feedforward by when the information arrives",
+        "separates a verdict returned to the agent from a log written for a human",
+        "separates recovery from feedback by what each one restores"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 7,
+      "discriminate": 5
+    },
+    "aliases": {
+      "harness": "feedback-loops",
+      "security": "agent-feedback-channel"
+    }
+  },
+  {
+    "id": "nema:feedforward",
+    "title": "Feedforward",
+    "summary": "Information given to the agent before it acts, such as the target, the constraints and the shape of a good answer, so fewer corrections are needed later.",
+    "prereqs": [
+      "nema:agent-loop",
+      "nema:acceptance-criteria"
+    ],
+    "confusableWith": [
+      "nema:feedback-loops",
+      "nema:acceptance-criteria"
+    ],
+    "misconceptions": [
+      {
+        "id": "feedforward_is_a_longer_prompt",
+        "text": "Feedforward is just writing a longer prompt."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states that feedforward arrives before the action and feedback after it",
+        "names three things worth stating in advance, such as the target and the format",
+        "explains why a worked example is feedforward and a score is not"
+      ],
+      "apply": [
+        "rewrites a task brief so the success condition is stated before the first action",
+        "supplies the answer shape and one counterexample up front",
+        "shows the attempt count dropping after the brief is improved"
+      ],
+      "discriminate": [
+        "separates feedforward from feedback by the moment it is delivered",
+        "separates a constraint given in advance from a correction given afterwards",
+        "separates acceptance criteria from the feedforward that carries them"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "feedforward-briefing",
+      "security": "pre-task-briefing"
+    }
+  },
+  {
+    "id": "nema:state-management",
+    "title": "State management",
+    "summary": "Keeping the facts a run depends on in an explicit store that survives a step boundary, a retry or a restart.",
+    "prereqs": [
+      "nema:agent-loop"
+    ],
+    "confusableWith": [
+      "nema:memory-design",
+      "nema:agent-loop"
+    ],
+    "misconceptions": [
+      {
+        "id": "the_transcript_is_the_state",
+        "text": "The conversation transcript is a good enough place to keep state."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names what belongs in explicit state rather than in the transcript",
+        "explains what a step boundary is and what must survive it",
+        "states how state is reconciled after a partial failure"
+      ],
+      "apply": [
+        "moves a fact out of the transcript into a keyed store and reads it back",
+        "makes one step idempotent so a retry does not duplicate its effect",
+        "writes state before the side effect, not after it"
+      ],
+      "discriminate": [
+        "separates run state from long lived memory",
+        "separates state the agent may write from state only the system may write",
+        "separates a lost fact from a fact the agent chose to ignore"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 8,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "run-state",
+      "security": "state-management"
+    }
+  },
+  {
+    "id": "nema:threat-modeling",
+    "title": "Threat modeling",
+    "summary": "Enumerating who can influence a system, what they want and which trust boundaries their input crosses, before choosing any mitigation.",
+    "prereqs": [
+      "nema:agent-loop"
+    ],
+    "confusableWith": [
+      "nema:attack-surface",
+      "nema:red-teaming"
+    ],
+    "misconceptions": [
+      {
+        "id": "threat_modeling_is_a_checklist",
+        "text": "Threat modeling is running through a checklist of known vulnerabilities."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names actor, asset, trust boundary and abuse case as separate things",
+        "explains why the model comes before the mitigation list",
+        "states how a threat model is invalidated by a design change"
+      ],
+      "apply": [
+        "draws the trust boundaries of an agent that reads the web and writes to a repository",
+        "lists three abuse cases with the actor and the asset named in each",
+        "ranks them by impact and by how cheap the mitigation is"
+      ],
+      "discriminate": [
+        "separates a threat from a vulnerability and from a mitigation",
+        "separates the attack surface from the threat model that reasons about it",
+        "separates an untrusted input from an input that is merely unvalidated"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 8,
+      "discriminate": 5
+    },
+    "aliases": {
+      "harness": "threat-modeling",
+      "security": "threat-modelling"
+    }
+  },
+  {
+    "id": "nema:deterministic-verification",
+    "title": "Deterministic verification",
+    "summary": "Checking a result with code that returns the same verdict every time, so the check itself never has to be trusted twice.",
+    "prereqs": [
+      "nema:unit-testing",
+      "nema:acceptance-criteria"
+    ],
+    "confusableWith": [
+      "nema:rubric-grading"
+    ],
+    "misconceptions": [
+      {
+        "id": "a_model_can_grade_anything",
+        "text": "A model judge is a fine substitute for a deterministic check."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states what makes a check deterministic, including the absence of a model in it",
+        "explains why a deterministic verdict can gate an action and a scored one cannot",
+        "names one property that cannot be checked deterministically"
+      ],
+      "apply": [
+        "replaces a judged criterion with an executable check that returns pass or fail",
+        "pins the inputs so the same run gives the same verdict twice",
+        "keeps the check independent of the code path that produced the result"
+      ],
+      "discriminate": [
+        "separates a deterministic check from a rubric score",
+        "separates a check that is flaky from one that is genuinely failing",
+        "separates verification of the output from verification of the process"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 7,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "deterministic-checks",
+      "security": "deterministic-verification"
+    }
+  },
+  {
+    "id": "nema:regression-testing",
+    "title": "Regression testing",
+    "summary": "Re-running a pinned set of cases after every change so a fix that breaks earlier behaviour is caught at the moment it is introduced.",
+    "prereqs": [
+      "nema:unit-testing",
+      "nema:acceptance-criteria"
+    ],
+    "confusableWith": [
+      "nema:unit-testing",
+      "nema:agent-evals",
+      "nema:eval-dataset-design"
+    ],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "explains why a case is added to the suite when a bug is found, not before",
+        "states what pinning means and why the expected values are stored",
+        "says how the suite is kept fast enough to actually run"
+      ],
+      "apply": [
+        "adds the failing case to the suite before fixing the defect",
+        "pins the expected output and shows the diff on a regression",
+        "quarantines a flaky case instead of deleting the signal"
+      ],
+      "discriminate": [
+        "separates a regression from a new requirement",
+        "separates a pinned expectation from a golden file nobody reviews",
+        "separates a regression suite from an eval set"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "regression-suite",
+      "security": "regression-testing"
+    }
+  },
+  {
+    "id": "nema:human-in-the-loop",
+    "title": "Human in the loop",
+    "summary": "Placing an explicit human decision point in an automated flow at the steps where a wrong action is expensive or irreversible.",
+    "prereqs": [
+      "nema:agent-loop"
+    ],
+    "confusableWith": [
+      "nema:permission-boundaries"
+    ],
+    "misconceptions": [
+      {
+        "id": "approval_prompts_are_free",
+        "text": "Adding an approval prompt to every action makes the system safe."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names the two properties that make a step worth interrupting, cost and reversibility",
+        "explains how approval fatigue turns a control into a rubber stamp",
+        "states what the human must see for the decision to be real"
+      ],
+      "apply": [
+        "picks the one step in a flow that deserves an approval and justifies the choice",
+        "shows the human the exact effect, not a summary of it",
+        "records the decision with who made it and what was shown"
+      ],
+      "discriminate": [
+        "separates an approval gate from a permission boundary enforced by code",
+        "separates a human decision from a human notification",
+        "separates a control that changes behaviour from one that only reassures"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "human-checkpoints",
+      "security": "human-in-the-loop"
+    }
+  },
+  {
+    "id": "nema:cost-latency",
+    "title": "Cost and latency",
+    "summary": "Treating tokens, wall clock time and tool round trips as a budget that shapes the design rather than a number to look at afterwards.",
+    "prereqs": [
+      "nema:agent-loop"
+    ],
+    "confusableWith": [
+      "nema:context-design"
+    ],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "names the three budgets, tokens, time and round trips, and how they trade off",
+        "explains why the step count usually dominates the per call cost",
+        "states where caching changes the shape of the budget"
+      ],
+      "apply": [
+        "measures one run and attributes its cost to steps rather than to the total",
+        "removes one round trip and shows the task still passes",
+        "sets a step budget that fails the run instead of spending without a bound"
+      ],
+      "discriminate": [
+        "separates a slow model from a chatty loop",
+        "separates cost per run from cost per successful run",
+        "separates a context problem from a latency problem"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 3
+    },
+    "aliases": {
+      "harness": "cost-and-latency",
+      "security": "resource-budget"
+    }
+  },
+  {
+    "id": "nema:rubric-grading",
+    "title": "Rubric grading",
+    "summary": "Scoring open ended work against named criteria that a second grader could apply to the same answer and reach the same verdict.",
+    "prereqs": [
+      "nema:acceptance-criteria"
+    ],
+    "confusableWith": [
+      "nema:deterministic-verification",
+      "nema:acceptance-criteria"
+    ],
+    "misconceptions": [
+      {
+        "id": "a_score_is_a_measurement",
+        "text": "A rubric score is a measurement, so it can be compared across rubrics."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states what makes a criterion independently checkable by two graders",
+        "explains why a rubric line must describe observable evidence, not quality",
+        "says how disagreement between graders is used to fix the rubric"
+      ],
+      "apply": [
+        "turns a vague quality into three criteria with a yes or no verdict each",
+        "grades one answer and shows which criterion each verdict came from",
+        "revises a criterion that two graders read differently"
+      ],
+      "discriminate": [
+        "separates a rubric score from a deterministic pass or fail",
+        "separates a criterion about evidence from one about style",
+        "separates grader disagreement from learner error"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "rubric-grading",
+      "security": "criteria-scoring"
+    }
+  },
+  {
+    "id": "nema:agent-evals",
+    "title": "Agent evals",
+    "summary": "Task level evaluation of an agent's end to end behaviour, as opposed to unit tests of its functions.",
+    "prereqs": [
+      "nema:agent-loop",
+      "nema:deterministic-verification"
+    ],
+    "confusableWith": [
+      "nema:unit-testing",
+      "nema:regression-testing",
+      "nema:software-testing",
+      "nema:harness-iteration",
+      "nema:eval-dataset-design"
+    ],
+    "misconceptions": [
+      {
+        "id": "unit_tests_are_equivalent_to_agent_evals",
+        "text": "If the unit tests pass, the agent works."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states what an eval measures that a unit test cannot, which is task completion",
+        "names the three parts of an eval case, the task, the environment and the verdict",
+        "explains why an eval needs a deterministic verdict to be comparable over time"
+      ],
+      "apply": [
+        "writes one eval case with a task, a fixed environment and an executable check",
+        "adds a task level check to a harness that already has passing unit tests",
+        "reports the result as a rate over cases rather than as a single run"
+      ],
+      "discriminate": [
+        "distinguishes deterministic function checks from task level agent evaluation",
+        "mentions end to end behaviour",
+        "gives one example where unit tests pass but the agent fails"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 8,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "agent-evaluation",
+      "security": "agent-evals"
+    }
+  },
+  {
+    "id": "nema:observability",
+    "title": "Observability",
+    "summary": "Emitting enough structured signal from a running agent that a question about a past run can be answered without reproducing it.",
+    "prereqs": [
+      "nema:state-management"
+    ],
+    "confusableWith": [
+      "nema:trace-analysis"
+    ],
+    "misconceptions": [
+      {
+        "id": "logs_are_observability",
+        "text": "If everything is logged, the system is observable."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states the question first and the signal needed to answer it second",
+        "names what must be on every step record, such as the step id and the inputs",
+        "explains why unstructured logs cannot answer a question about a rate"
+      ],
+      "apply": [
+        "adds a structured step record with a stable id and correlates two steps by it",
+        "emits the tool arguments and the verdict, not only the final answer",
+        "answers one concrete question from stored records without rerunning the agent"
+      ],
+      "discriminate": [
+        "separates emitting signal from reading a trace",
+        "separates a metric from an example",
+        "separates a missing signal from a signal nobody queried"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 7,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "run-observability",
+      "security": "observability"
+    }
+  },
+  {
+    "id": "nema:harness-iteration",
+    "title": "Harness iteration",
+    "summary": "Improving the scaffolding around the model, the tools, the briefs and the checks, instead of reaching for a bigger model when a task fails.",
+    "prereqs": [
+      "nema:feedback-loops",
+      "nema:deterministic-verification"
+    ],
+    "confusableWith": [
+      "nema:agent-evals"
+    ],
+    "misconceptions": [
+      {
+        "id": "a_better_model_fixes_the_harness",
+        "text": "A failing task means the model is not good enough."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names three parts of the harness that can be changed before the model is",
+        "explains why a change is kept only when the eval rate moves",
+        "states how one change at a time keeps the attribution honest"
+      ],
+      "apply": [
+        "diagnoses a failing run and names the harness part responsible",
+        "makes one change, reruns the eval set and reports the rate before and after",
+        "reverts a change that did not move the rate"
+      ],
+      "discriminate": [
+        "separates a harness defect from a model capability limit",
+        "separates iterating on the harness from iterating on the eval set",
+        "separates a real improvement from noise across a small case set"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 8,
+      "discriminate": 5
+    },
+    "aliases": {
+      "harness": "harness-iteration",
+      "security": "scaffold-iteration"
+    }
+  },
+  {
+    "id": "nema:attack-surface",
+    "title": "Attack surface",
+    "summary": "The complete set of inputs, tools and side channels through which an untrusted party can influence what an agent does.",
+    "prereqs": [
+      "nema:threat-modeling",
+      "nema:tool-interface-design"
+    ],
+    "confusableWith": [
+      "nema:threat-modeling",
+      "nema:prompt-injection"
+    ],
+    "misconceptions": [
+      {
+        "id": "only_user_input_is_untrusted",
+        "text": "Only what the user types is untrusted input."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "lists the entry points of an agent, including tool results and retrieved documents",
+        "explains why every write capable tool widens the surface twice, on read and on write",
+        "states how the surface changes when a new tool is added"
+      ],
+      "apply": [
+        "enumerates the surface of a given agent and marks each entry trusted or untrusted",
+        "identifies the two entry points that carry the most authority",
+        "proposes one reduction that removes an entry point rather than filtering it"
+      ],
+      "discriminate": [
+        "separates the attack surface from a specific attack such as injection",
+        "separates an entry point from a vulnerability at that point",
+        "separates surface reduction from input filtering"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 8,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "input-surface",
+      "security": "attack-surface"
+    }
+  },
+  {
+    "id": "nema:prompt-injection",
+    "title": "Prompt injection",
+    "summary": "An attack in which text the agent reads as data is treated as instructions, usually arriving through a tool result the agent already trusts.",
+    "prereqs": [
+      "nema:threat-modeling",
+      "nema:feedback-loops"
+    ],
+    "confusableWith": [
+      "nema:output-validation",
+      "nema:attack-surface",
+      "nema:tool-result-provenance"
+    ],
+    "misconceptions": [
+      {
+        "id": "instructions_can_forbid_injection",
+        "text": "Telling the model to ignore injected instructions prevents prompt injection."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names the path from untrusted source to context to action",
+        "explains why the model cannot reliably tell data from instructions",
+        "states why a mitigation must sit outside the model to hold"
+      ],
+      "apply": [
+        "marks which entries in a given trace are untrusted and which action they reached",
+        "adds one control outside the model, such as an allowlist or a confirmation",
+        "shows the same payload failing after the control is added"
+      ],
+      "discriminate": [
+        "separates injection at the input from unvalidated output at the exit",
+        "separates a jailbreak of the assistant from an injection through a tool result",
+        "separates a prompt level mitigation from an enforced one"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 8,
+      "discriminate": 5
+    },
+    "aliases": {
+      "harness": "prompt-injection",
+      "security": "indirect-prompt-injection"
+    }
+  },
+  {
+    "id": "nema:permission-boundaries",
+    "title": "Permission boundaries",
+    "summary": "The explicit line between what an agent may do without asking and what needs a separate authority, enforced outside the model.",
+    "prereqs": [
+      "nema:tool-interface-design",
+      "nema:threat-modeling"
+    ],
+    "confusableWith": [
+      "nema:least-privilege",
+      "nema:human-in-the-loop"
+    ],
+    "misconceptions": [
+      {
+        "id": "the_system_prompt_is_a_boundary",
+        "text": "A rule in the system prompt is a permission boundary."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states where the boundary is enforced and by which component",
+        "explains why a boundary written in the prompt is advice, not enforcement",
+        "names what crosses the boundary, the authority rather than the request"
+      ],
+      "apply": [
+        "splits a tool set into a group that runs freely and a group that needs authority",
+        "enforces the split in the tool layer and shows a denied call",
+        "records the denial so it can be read afterwards"
+      ],
+      "discriminate": [
+        "separates a boundary from a least privilege grant inside it",
+        "separates enforcement in code from an instruction to the model",
+        "separates an approval gate for a human from a boundary between components"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 7,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "capability-boundaries",
+      "security": "permission-boundaries"
+    }
+  },
+  {
+    "id": "nema:recovery",
+    "title": "Recovery",
+    "summary": "Returning a run to a known good state after a failed step, by retry, compensation or rollback, without losing what was already verified.",
+    "prereqs": [
+      "nema:feedback-loops",
+      "nema:state-management"
+    ],
+    "confusableWith": [
+      "nema:failure-taxonomy",
+      "nema:feedback-loops"
+    ],
+    "misconceptions": [
+      {
+        "id": "retry_is_recovery",
+        "text": "Retrying the failed step is a recovery strategy."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names retry, compensation and rollback and when each one applies",
+        "explains why a non idempotent side effect cannot simply be retried",
+        "states what a known good state means for a given run"
+      ],
+      "apply": [
+        "adds a compensating action for a step that cannot be rolled back",
+        "makes a retry safe by keying the side effect on a stable id",
+        "shows a run that fails mid way and resumes without repeating verified work"
+      ],
+      "discriminate": [
+        "separates recovery from retrying the same call again",
+        "separates a recoverable failure from one that must stop the run",
+        "separates the failure taxonomy from the recovery it selects"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 8,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "run-recovery",
+      "security": "failure-recovery"
+    }
+  },
+  {
+    "id": "nema:memory-design",
+    "title": "Memory design",
+    "summary": "Choosing what an agent keeps across runs, in what form, and what causes it to be written, read or forgotten.",
+    "prereqs": [
+      "nema:state-management",
+      "nema:context-design"
+    ],
+    "confusableWith": [
+      "nema:context-design",
+      "nema:retrieval-augmentation",
+      "nema:state-management"
+    ],
+    "misconceptions": [
+      {
+        "id": "memory_is_a_bigger_window",
+        "text": "Memory is just a larger context window."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names the write trigger, the read trigger and the forget rule as separate decisions",
+        "explains why unbounded memory degrades rather than improves behaviour",
+        "states how a stale memory is detected"
+      ],
+      "apply": [
+        "defines what is written after a run and what is deliberately dropped",
+        "reads memory into the window only when a named trigger fires",
+        "expires or supersedes an entry rather than accumulating contradictions"
+      ],
+      "discriminate": [
+        "separates memory from run state that dies with the run",
+        "separates memory from retrieval over an external corpus",
+        "separates a stale memory from a wrong one"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 7,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "agent-memory",
+      "security": "memory-design"
+    }
+  },
+  {
+    "id": "nema:retrieval-augmentation",
+    "title": "Retrieval augmentation",
+    "summary": "Fetching relevant documents at query time and placing them in the context so an answer is grounded in a source that can be cited.",
+    "prereqs": [
+      "nema:context-design"
+    ],
+    "confusableWith": [
+      "nema:memory-design",
+      "nema:context-design"
+    ],
+    "misconceptions": [
+      {
+        "id": "retrieval_guarantees_grounding",
+        "text": "If the document is in the context, the answer is grounded in it."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names the three stages, index, retrieve and place, and what fails at each",
+        "explains why recall and precision pull the chunk size in opposite directions",
+        "states how a citation is checked rather than assumed"
+      ],
+      "apply": [
+        "chooses a chunking rule for a given corpus and justifies it with one failure case",
+        "measures whether the retrieved passage actually contains the answer",
+        "requires a citation and rejects an answer whose citation does not support it"
+      ],
+      "discriminate": [
+        "separates retrieval failure from generation failure using the retrieved text",
+        "separates retrieval from memory by where the content lives",
+        "separates a grounded answer from one that merely quotes"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 8,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "retrieval-augmentation",
+      "security": "grounded-retrieval"
+    }
+  },
+  {
+    "id": "nema:tool-result-provenance",
+    "title": "Tool result provenance",
+    "summary": "Tracking where each piece of content in an agent's context came from, so trusted and untrusted material can be treated differently.",
+    "prereqs": [
+      "nema:feedback-loops",
+      "nema:tool-interface-design"
+    ],
+    "confusableWith": [
+      "nema:output-validation",
+      "nema:prompt-injection"
+    ],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "states why provenance has to travel with the content and not beside it",
+        "explains what changes once a block is labelled untrusted",
+        "names one decision that should read the label before acting"
+      ],
+      "apply": [
+        "labels each context block with its source and trust level",
+        "blocks an action whose only justification came from an untrusted block",
+        "keeps the label through a summarisation step"
+      ],
+      "discriminate": [
+        "separates provenance from validation of the content itself",
+        "separates a trusted source from a verified claim",
+        "separates a labelled block from a quoted one"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 7,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "context-provenance",
+      "security": "tool-result-provenance"
+    }
+  },
+  {
+    "id": "nema:trace-analysis",
+    "title": "Trace analysis",
+    "summary": "Reading a recorded run step by step to locate the first decision that went wrong rather than the step where the error surfaced.",
+    "prereqs": [
+      "nema:observability"
+    ],
+    "confusableWith": [
+      "nema:observability",
+      "nema:failure-taxonomy"
+    ],
+    "misconceptions": [
+      {
+        "id": "the_last_error_is_the_cause",
+        "text": "The step that threw the error is the step that caused the failure."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "explains why the first wrong decision is usually earlier than the visible error",
+        "names what to read at each step, the inputs, the choice and the verdict",
+        "states how two runs are compared to isolate the difference"
+      ],
+      "apply": [
+        "walks a failing trace and marks the first step whose decision was wrong",
+        "quotes the evidence in that step that should have changed the decision",
+        "names the harness change that would have prevented it"
+      ],
+      "discriminate": [
+        "separates reading a trace from emitting the signal that made it readable",
+        "separates the first wrong decision from the last error",
+        "separates a single trace finding from a pattern across runs"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 8,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "trace-analysis",
+      "security": "run-forensics"
+    }
+  },
+  {
+    "id": "nema:failure-taxonomy",
+    "title": "Failure taxonomy",
+    "summary": "A named and mutually exclusive set of failure modes that makes counts comparable across runs and points at a specific fix.",
+    "prereqs": [
+      "nema:observability"
+    ],
+    "confusableWith": [
+      "nema:trace-analysis",
+      "nema:recovery"
+    ],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "states why categories must be mutually exclusive to be counted",
+        "explains how a category is tied to the part of the harness that owns it",
+        "says what happens to the taxonomy when a new failure does not fit"
+      ],
+      "apply": [
+        "labels twenty failed runs with a taxonomy of at most six categories",
+        "reports the counts and names the category worth fixing first",
+        "splits a category that turned out to hide two different causes"
+      ],
+      "discriminate": [
+        "separates a failure mode from a single failing trace",
+        "separates a symptom category from a cause category",
+        "separates a rare category from a badly defined one"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 7,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "failure-taxonomy",
+      "security": "failure-classes"
+    }
+  },
+  {
+    "id": "nema:sandboxing",
+    "title": "Sandboxing",
+    "summary": "Running agent actions inside an environment whose reachable resources are limited by the runtime, not by the agent's intentions.",
+    "prereqs": [
+      "nema:permission-boundaries"
+    ],
+    "confusableWith": [
+      "nema:least-privilege"
+    ],
+    "misconceptions": [
+      {
+        "id": "a_container_is_a_sandbox",
+        "text": "Running the code in a container makes it sandboxed."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names what a sandbox limits, the filesystem, the network and the process table",
+        "explains why the limit must be enforced by the runtime and not requested by the code",
+        "states what escapes a sandbox, such as a shared credential or a mounted path"
+      ],
+      "apply": [
+        "chooses the resources an agent task actually needs and denies the rest by default",
+        "shows one denied operation and what the agent does after the denial",
+        "keeps the credential outside the sandbox and passes a scoped token in"
+      ],
+      "discriminate": [
+        "separates sandboxing, which limits reach, from least privilege, which limits grant",
+        "separates isolation from filtering",
+        "separates a sandbox from a sandbox with a shared writable mount"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 8,
+      "discriminate": 5
+    },
+    "aliases": {
+      "harness": "execution-sandbox",
+      "security": "sandboxing"
+    }
+  },
+  {
+    "id": "nema:least-privilege",
+    "title": "Least privilege",
+    "summary": "Granting each component only the authority its current task needs, for only as long as it needs it.",
+    "prereqs": [
+      "nema:permission-boundaries"
+    ],
+    "confusableWith": [
+      "nema:sandboxing",
+      "nema:permission-boundaries"
+    ],
+    "misconceptions": [
+      {
+        "id": "read_only_access_is_harmless",
+        "text": "Read only access cannot cause damage."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states the two dimensions of a grant, the scope and the duration",
+        "explains why a read grant can still leak an asset",
+        "names how a grant is revoked when the task ends"
+      ],
+      "apply": [
+        "rewrites a broad token into a task scoped one and names what it can no longer do",
+        "sets an expiry that matches the task rather than the session",
+        "shows the agent completing the task under the narrower grant"
+      ],
+      "discriminate": [
+        "separates a narrow grant from an isolated environment",
+        "separates least privilege from asking for approval",
+        "separates a scoped credential from a filtered interface over a broad one"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "scoped-authority",
+      "security": "least-privilege"
+    }
+  },
+  {
+    "id": "nema:output-validation",
+    "title": "Output validation",
+    "summary": "Checking what comes back from a model or a tool against a schema and a policy before any of it is allowed to affect the world.",
+    "prereqs": [
+      "nema:json-schema",
+      "nema:prompt-injection"
+    ],
+    "confusableWith": [
+      "nema:prompt-injection",
+      "nema:json-schema",
+      "nema:tool-result-provenance"
+    ],
+    "misconceptions": [
+      {
+        "id": "valid_shape_is_safe_content",
+        "text": "If the output parses against the schema, it is safe to act on."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "separates shape validation from policy validation and says why both are needed",
+        "explains why validation belongs at the exit, before the side effect",
+        "states what the system does with an output that fails, other than retrying"
+      ],
+      "apply": [
+        "validates a tool argument against a closed schema and rejects an extra field",
+        "adds a policy check, such as an allowlisted destination, on top of the schema",
+        "shows an injected instruction failing at the exit even though it parsed"
+      ],
+      "discriminate": [
+        "separates validating what comes out from sanitising what goes in",
+        "separates a schema violation from a policy violation",
+        "separates a rejected output from a retried one"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 7,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "output-checks",
+      "security": "output-validation"
+    }
+  },
+  {
+    "id": "nema:red-teaming",
+    "title": "Red teaming",
+    "summary": "Deliberately attacking your own agent with adversarial inputs to find failures that ordinary evaluation will never produce.",
+    "prereqs": [
+      "nema:attack-surface",
+      "nema:prompt-injection"
+    ],
+    "confusableWith": [
+      "nema:threat-modeling"
+    ],
+    "misconceptions": [
+      {
+        "id": "red_teaming_is_a_one_off",
+        "text": "A red team pass at the end of the project is enough."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states what a red team run produces, a reproducible attack case, not an opinion",
+        "explains why attacks are written against the surface, entry point by entry point",
+        "says how a found attack becomes a permanent regression case"
+      ],
+      "apply": [
+        "writes three attack cases against named entry points of a given agent",
+        "records one successful attack as a reproducible case with the expected refusal",
+        "adds the case to the suite so a regression is caught later"
+      ],
+      "discriminate": [
+        "separates red teaming from evaluating normal task performance",
+        "separates an attack case from a threat model entry",
+        "separates a real bypass from a refusal that only looks like one"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 8,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "adversarial-testing",
+      "security": "red-teaming"
+    }
+  },
+  {
+    "id": "nema:eval-dataset-design",
+    "title": "Eval dataset design",
+    "summary": "Assembling a set of tasks whose coverage, difficulty and answer keys make an eval score mean something over time.",
+    "prereqs": [
+      "nema:agent-evals",
+      "nema:rubric-grading"
+    ],
+    "confusableWith": [
+      "nema:agent-evals",
+      "nema:regression-testing"
+    ],
+    "misconceptions": [
+      {
+        "id": "more_cases_is_a_better_eval",
+        "text": "A larger eval set is always a better eval set."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "explains why coverage of failure modes matters more than raw case count",
+        "states how a saturated set stops distinguishing two harnesses",
+        "names the risk of tuning on the same set the score is reported from"
+      ],
+      "apply": [
+        "selects cases so each known failure mode has at least two of them",
+        "holds out a slice and reports the rate on it separately",
+        "retires a case that every version now passes and records why"
+      ],
+      "discriminate": [
+        "separates the dataset from the eval harness that runs it",
+        "separates an eval set from a regression suite by what each protects",
+        "separates a hard case from a badly specified one"
+      ]
+    },
+    "minutes": {
+      "retrieve": 5,
+      "explain": 5,
+      "apply": 8,
+      "discriminate": 4
+    },
+    "aliases": {
+      "harness": "eval-set-design",
+      "security": "attack-case-set"
+    }
+  }
+]
