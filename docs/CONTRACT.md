@@ -796,3 +796,88 @@ audience, no JSON, no object names, no tool names. Structure:
 Everything technical (objects, tokens, tool tables, conformance, threat
 model) lives in `protocol.html`, `judges.html`, `docs/` and the README, and
 stays intensive there.
+
+## 19. The example courses teach cooking, not agents (owner feedback, 2026-09-02)
+
+Courses about agents were being confused with nema itself. The two example
+providers now teach cooking. Internal keys (`apps/harness`, `apps/security`,
+`ORIGINS.harness`, `ORIGINS.security`, dev ports) stay as they are; public
+names, domains, key ids, content, concept registry, seed and docs change.
+
+| | was | now |
+|---|---|---|
+| provider A name | Harness Engineering Lab | Saucier School |
+| provider A origin | https://nema-harness.migarci2.dev | https://saucier.migarci2.dev (worker `saucier-school`) |
+| provider A keyId | harness-2026-09 | saucier-2026-09 |
+| provider B name | Agent Security | Line Cook Lab |
+| provider B origin | https://nema-security.migarci2.dev | https://linecook.migarci2.dev (worker `line-cook-lab`) |
+| provider B keyId | security-2026-09 | linecook-2026-09 |
+
+### Concept registry (34 ids, cooking)
+
+```
+nema:knife-skills       nema:mise-en-place     nema:heat-control      nema:ratios
+nema:emulsions          nema:pan-sauces        nema:deglazing         nema:reduction
+nema:seasoning          nema:maillard-reaction nema:caramelization    nema:braising
+nema:roasting           nema:blanching         nema:poaching          nema:stocks
+nema:roux               nema:thickeners        nema:acid-balance      nema:plating
+nema:menu-planning      nema:food-safety       nema:cross-contamination nema:cold-chain
+nema:temperature-control nema:allergen-handling nema:service-timing   nema:kitchen-communication
+nema:cost-control       nema:fermentation      nema:bread-basics      nema:pastry-basics
+nema:mother-sauces      nema:tasting-and-adjusting
+```
+
+Depth 0: knife-skills, heat-control, mise-en-place, ratios. Confusable pairs
+at least: maillard-reaction and caramelization; emulsions and reduction;
+blanching and poaching; braising and roasting; cross-contamination and
+allergen-handling; cold-chain and temperature-control. Misconceptions at
+least: maillard-reaction "searing_seals_in_juices"; food-safety
+"rinsing_chicken_makes_it_safer"; heat-control "hotter_is_always_faster";
+emulsions "a_sauce_can_be_boiled_once_it_holds"; seasoning
+"salt_only_at_the_end".
+
+### Saucier School, unit `pan-sauces-foundations`, "Pan Sauces and Emulsions", 68 min
+
+Requirements: `nema:knife-skills.apply`, `nema:heat-control.explain`,
+`nema:ratios.apply`. Outcomes: `nema:pan-sauces.apply`,
+`nema:pan-sauces.explain`, `nema:emulsions.discriminate`, `nema:ratios.apply`.
+
+1. `heat-control-primer` lesson 12 min, skipIf heat-control.explain verified
+2. `knife-skills-refresher` lesson 15 min, skipIf knife-skills.apply verified
+3. `ratios-diagnostic` diagnostic 6 min, onlyIf ratios.apply uncertain; one question: which of four written ratios gives a vinaigrette that holds (3 parts oil to 1 part acid with a spoon of mustard as emulsifier); distractors: 1:1, 3:1 with no emulsifier whisked cold, 1:3. Outcome ratios.apply
+4. `ratios-primer` lesson 14 min, skipIf ratios.apply verified or uncertain
+5. `pan-sauce-anatomy` lesson 4 min, always
+6. `fix-the-broken-sauce` interactive-lab 12 min, always. Scenario: a pan sauce that split and tastes flat during a dinner for six. Before console: tasting notes (greasy film, broken, flat, too thin). Checks (8): required 3 (deglaze the fond with wine or stock, reduce by half before mounting, mount with cold butter off the heat), harmful 2 (bring it back to a rolling boil after mounting, add the butter to the dry ripping hot pan), neutral 3. Stages to order: deglaze, reduce, mount. After console: glossy, coats the spoon, seasoned, holds on the pass. Outcomes pan-sauces.apply (application), emulsions.discriminate (discrimination)
+7. `explain-without-the-recipe` free-recall 5 min, optional, provider-rubric with keywords (emulsion or emulsify, fat and water or droplets, emulsifier or mustard or butter proteins, temperature or heat). Outcome pan-sauces.explain
+
+Personal path with the seed (heat-control verified, knife-skills verified,
+ratios uncertain): 3 + 5 + 6 + 7 = 27. After the diagnostic (ratios
+verified): 5 + 6 + 7 = 21.
+
+### Line Cook Lab, unit `service-under-pressure`, "Service Under Pressure", 42 min
+
+Requirements: `nema:mise-en-place.explain`, `nema:emulsions.explain`,
+`nema:food-safety.apply`.
+
+1. `mise-en-place-intro` lesson 7 min, skipIf mise-en-place.explain verified
+2. `food-safety-intro` lesson 9 min, skipIf food-safety.apply verified
+3. `service-log-audit` interactive-lab 12 min, unlock emulsions.explain at least uncertain. A service log of about 10 steps (tickets, prep, plating); exactly 3 steps are unsafe (raw chicken board reused for salad, a hollandaise held at room temperature for two hours, a nut allergy ticket plated with the shared spoon). Fixes: 3 effective (separate colour coded boards, hold emulsified sauces above 63 C or remake every hour, dedicated allergen station and utensils), 2 harmful (rinse the chicken, keep the sauce going by boiling it), 2 neutral. Outcomes food-safety.apply (application), cross-contamination.discriminate (discrimination)
+4. `incident-triage` interactive-lab 14 min, unlock emulsions.explain at least uncertain AND food-safety.apply verified AND mise-en-place.explain verified. Four incidents (a beurre blanc split mid service; chicken probes at 60 C; an allergen ticket may have touched shellfish; the walk in reads 8 C since morning) with four actions each (rescue and continue; cook further and re-probe; stop, tell the chef, remake; discard and log). Outcomes service-timing.apply, temperature-control.apply
+
+Story: with the Saucier receipt in the vault, emulsions is uncertain (fragile),
+mise-en-place and food-safety are verified, so both intros are skippable and
+the incident triage lab unlocks with "Prerequisite recognised from another
+provider".
+
+### Seed learner
+
+Verified: knife-skills apply, heat-control explain, mise-en-place explain,
+food-safety apply, plus enough others for about 18 verified concepts.
+Uncertain: ratios apply. Unknown: emulsions, pan-sauces, cross-contamination,
+service-timing, temperature-control. About 7 fragile and 4 reviews due, with
+the same early-coursework backfill so counts hold through 2026-09-21. Goal:
+"Cook a pan sauce I can hold through service" with concepts pan-sauces,
+emulsions, heat-control. Misconception recorded: maillard-reaction
+"searing_seals_in_juices". The five minute review should surface a
+discriminate need (maillard-reaction vs caramelization: strong apply, no
+discrimination evidence).
