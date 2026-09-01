@@ -35,6 +35,8 @@ worth checking in real Chrome.
 Nothing needs an account, an API key or a sign in. Nothing is stored on a
 server. The vault lives in your browser's `localStorage`.
 
+- No Chrome 149 at hand? Chrome for Testing canary has WebMCP on by default: `npx --yes @puppeteer/browsers install chrome@canary --path .chrome`, then open the URLs with that binary. Every page also loads the Chrome Labs polyfill, so the UI works in any browser; only agent calls need a WebMCP capable one.
+
 ## Before you start
 
 Open the coach: https://nema-coach.migarci2.dev
