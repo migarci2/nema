@@ -319,41 +319,33 @@ function renderPath() {
     if (skippable) row.classList.add('act--skippable');
     if (state.currentActivityId === activityId) row.classList.add('act--current');
 
-    row.append(el('span', 'act__index mono', String(index + 1).padStart(2, '0')));
+    row.append(el('span', 'act__index', String(index + 1)));
 
     const main = el('span', 'act__main');
     const head = el('span', 'act__head');
     head.append(el('span', 'act__title', activity.title));
-    head.append(pill(activity.type, 'unknown'));
+    /* One pill per row at most: what happened beats what is suggested. */
     if (attempt && (attempt.status === 'passed' || attempt.status === 'failed')) {
       head.append(pill(attempt.result, attempt.result === 'failed' ? 'danger' : 'usable'));
+    } else if (skippable) {
+      head.append(pill('already covered', 'usable'));
+    } else if (prereq.recommendedFirst === activityId) {
+      head.append(pill('recommended', 'durable'));
     }
-    if (skippable) head.append(pill('skip: already verified', 'usable'));
-    if (prereq.recommendedFirst === activityId) head.append(pill('recommended', 'durable'));
     main.append(head);
 
-    if (locked) {
-      main.append(el('span', 'act__reason', activity.lockedReason));
-      const missing = el('ul', 'act__missing');
-      for (const need of locked.missing) {
-        const item = el('li', 'mono');
-        item.append(el('code', null, conceptLabel(need.concept, need.ability)));
-        item.append(el('span', 'dim', ` needs ${need.needed}`));
-        missing.append(item);
-      }
-      main.append(missing);
-    } else if (skippable) {
-      main.append(el('span', 'act__reason', activity.skipReason));
-    } else {
-      main.append(el('span', 'act__reason', activity.includeReason));
-      if (activity.unlockReason) main.append(el('span', 'act__unlock', activity.unlockReason));
-    }
+    /* One line, and only when there is something to say. What is missing is
+       spelled out on the activity stage, where the row is expanded. */
+    if (locked) main.append(el('span', 'act__reason', plainReason(activity.lockedReason)));
+    else if (skippable) main.append(el('span', 'act__reason', plainReason(activity.skipReason)));
     row.append(main);
 
     const end = el('span', 'act__end');
-    end.append(el('span', 'act__minutes mono', `${activity.minutes} min`));
+    end.append(el('span', 'act__minutes', `${activity.minutes} min`));
     if (locked) {
-      end.append(pill('locked', 'due'));
+      const lock = el('span', 'act__lock');
+      lock.append(dot('locked'), el('span', null, 'Locked'));
+      end.append(lock);
     } else {
       const button = el('button', 'n-btn n-btn--sm', skippable ? 'Open anyway' : 'Start');
       button.type = 'button';
@@ -367,12 +359,6 @@ function renderPath() {
   });
 
   body.append(list);
-
-  const total = el('p', 'acts__total');
-  total.append(el('span', 'dim', 'unit total'));
-  total.append(el('b', 'display', String(MANIFEST.unit.estimatedMinutes)));
-  total.append(el('span', 'dim', 'minutes, graded on this origin'));
-  body.append(total);
 }
 
 /* ----------------------------------------------------------------- stage -- */
@@ -423,13 +409,8 @@ function renderStage() {
 
   if (!activity) {
     hint.textContent = 'nothing open';
-    body.append(el('div', 'n-empty', 'No activity open'));
     body.append(
-      el(
-        'p',
-        'muted stage__empty',
-        'Pick an activity above, or ask the agent to call start_activity. The agent can open an activity and poll it. It can never answer one: no tool on this page accepts an answer.'
-      )
+      el('p', 'empty', 'Nothing open. Start an activity above, or ask the agent to call start_activity.')
     );
     return;
   }
@@ -441,18 +422,20 @@ function renderStage() {
   heading.id = 'stage-activity-title';
   heading.tabIndex = -1;
   head.append(heading);
-  const tags = el('div', 'row row--tight');
-  tags.append(pill(activity.type, 'unknown'));
-  tags.append(pill(activity.difficulty, 'unknown'));
-  tags.append(pill(`grader ${activity.grader}`, 'unknown'));
-  head.append(tags);
+  head.append(
+    el(
+      'p',
+      'stage__facts',
+      `${sentenceCase(activity.type)}, ${activity.difficulty}, ${activity.grader} grading, ${activity.minutes} min`
+    )
+  );
   head.append(el('p', 'stage__does', activity.whatTheLearnerDoes));
   body.append(head);
 
   const locked = lockedEntry(activityId);
   if (locked) {
     const lock = el('div', 'lockbox');
-    lock.append(el('p', 'lockbox__title', activity.lockedReason));
+    lock.append(el('p', 'lockbox__title', plainReason(activity.lockedReason)));
     const missing = el('ul', 'lockbox__list');
     for (const need of locked.missing) {
       const item = el('li', 'mono');
@@ -461,13 +444,7 @@ function renderStage() {
       missing.append(item);
     }
     lock.append(missing);
-    lock.append(
-      el(
-        'p',
-        'dim',
-        'Close the gap anywhere you like: another provider, your own work, or a coached session your vault records. Present a fresh assertion and this lab unlocks.'
-      )
-    );
+    lock.append(el('p', 'lockbox__note', 'Close the gap anywhere, present a fresh assertion, and this lab unlocks.'));
     body.append(lock);
     return;
   }
@@ -510,7 +487,7 @@ function renderHints(activity) {
       announce(`Hint ${attempt.hintsUsed} shown. Hints used are recorded in the receipt.`);
     });
     wrap.append(button);
-    wrap.append(el('span', 'dim', `${hints.length - shown} hint${hints.length - shown === 1 ? '' : 's'} left. Hints used go into the receipt conditions.`));
+    wrap.append(el('span', 'dim', 'Hints used go into the receipt conditions.'));
   }
   return wrap;
 }
@@ -571,7 +548,7 @@ function renderLesson(body, activity) {
   }
 
   const points = el('div', 'lesson__points');
-  points.append(el('p', 'lesson__points-label mono', 'Key points'));
+  points.append(el('p', 'lesson__points-label', 'Key points'));
   const list = el('ul', 'lesson__points-list');
   for (const point of lesson.keyPoints) list.append(el('li', null, point));
   points.append(list);
@@ -584,9 +561,7 @@ function renderLesson(body, activity) {
   button.disabled = attempt.status === 'passed';
   button.addEventListener('click', () => submit(activity.id, { completed: true }));
   actions.append(button);
-  actions.append(
-    el('span', 'dim', 'Marking a lesson records exposure evidence only, the lowest weight the vault accepts.')
-  );
+  actions.append(el('span', 'dim', 'A lesson records exposure evidence, the lowest weight the vault accepts.'));
   wrap.append(actions);
 
   body.append(wrap);
@@ -627,14 +602,7 @@ function renderAttackSurfaceLab(body, activity) {
   form.noValidate = true;
 
   const traceSet = el('fieldset', 'lab__set');
-  traceSet.append(el('legend', 'lab__legend', 'Trace, ten steps. Mark every tool result authored outside your trust boundary.'));
-  traceSet.append(
-    el(
-      'p',
-      'dim',
-      'Only tool results can be marked. The principal request and the agent own steps are shown for context, because the last call is built from all of them.'
-    )
-  );
+  traceSet.append(el('legend', 'lab__legend', 'Mark every tool result authored outside your trust boundary.'));
 
   const trace = el('ol', 'trace');
   for (const entry of activity.trace) {
@@ -647,15 +615,15 @@ function renderAttackSurfaceLab(body, activity) {
     }
 
     const rail = el('span', 'trace__rail');
-    rail.append(el('span', 'trace__step mono', String(entry.step).padStart(2, '0')));
+    rail.append(el('span', 'trace__step mono', String(entry.step)));
     item.append(rail);
 
     const main = el('div', 'trace__main');
     const head = el('div', 'trace__head');
-    head.append(el('span', `trace__actor trace__actor--${entry.actor}`, entry.actor));
-    head.append(el('span', 'trace__label mono', entry.label));
+    head.append(el('span', `trace__actor trace__actor--${entry.actor}`, sentenceCase(entry.actor)));
+    head.append(el('span', 'trace__label', entry.label));
     main.append(head);
-    main.append(el('p', 'trace__source dim', `source: ${entry.source}`));
+    main.append(el('p', 'trace__source', `Source: ${entry.source}`));
 
     const content = el('pre', 'trace__content');
     content.textContent = entry.content;
@@ -689,7 +657,7 @@ function renderAttackSurfaceLab(body, activity) {
   form.append(traceSet);
 
   const mitSet = el('fieldset', 'lab__set');
-  mitSet.append(el('legend', 'lab__legend', 'Mitigations. Choose the ones you would actually ship.'));
+  mitSet.append(el('legend', 'lab__legend', 'Choose the mitigations you would actually ship.'));
   const mitigations = el('div', 'mits');
   for (const mitigation of activity.mitigations) {
     const card = el('label', 'mit');
@@ -764,12 +732,11 @@ function renderTriageLab(body, activity) {
     if (graded) card.dataset.verdict = chosenId === incident.answerKey ? 'correct' : 'wrong';
 
     const legend = el('legend', 'incident__legend');
-    legend.append(el('span', 'incident__index mono', `incident ${index + 1} of ${activity.incidents.length}`));
+    legend.append(el('span', 'incident__index', `Incident ${index + 1} of ${activity.incidents.length}`));
     legend.append(el('span', 'incident__summary', incident.summary));
     card.append(legend);
 
     const evidence = el('div', 'incident__evidence');
-    evidence.append(el('p', 'incident__evidence-label mono', 'Captured evidence'));
     for (const line of incident.evidence) {
       const row = el('pre', 'incident__line');
       row.textContent = line;
@@ -838,14 +805,7 @@ function renderReceipt() {
   const entries = Object.entries(state.receipts);
   if (entries.length === 0) {
     hint.textContent = 'none issued yet';
-    body.append(el('div', 'n-empty', 'No receipt issued yet'));
-    body.append(
-      el(
-        'p',
-        'muted stage__empty',
-        'Pass a lab and this panel fills with a signed evidence receipt: the token, the claims inside it, and a link that hands it to your vault. This origin keeps no copy of your answers.'
-      )
-    );
+    body.append(el('p', 'empty', 'Pass a lab and a signed receipt appears here, yours to take to the vault.'));
     return;
   }
 

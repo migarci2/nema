@@ -35,11 +35,7 @@ export async function registerHarnessTools(app) {
         'Return the LearningManifest of this unit: outcomes, requirements, and every activity with its minutes and grader. Highlights the unit panel on screen. Nothing about the learner is read or written.',
       inputSchema: EMPTY_SCHEMA,
       async execute() {
-        app.setBanner(
-          `Offer described to the agent: ${MANIFEST.activities.length} activities, ` +
-            `${MANIFEST.unit.estimatedMinutes} minutes, ${MANIFEST.requirements.length} requirements.`,
-          'info'
-        );
+        app.setBanner('The agent read the offer. Nothing about you was read.', 'info');
         app.flashUnit();
         app.scrollToUnit();
         return { status: 'ok', manifest: MANIFEST };

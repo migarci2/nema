@@ -87,9 +87,9 @@ function head(activity) {
   wrap.append(
     el(
       'p',
-      'stage__meta mono',
-      `${TYPE_LABEL[activity.type] || activity.type} / ${activity.minutes} min / ` +
-        `${activity.evidenceProduced} evidence / grader ${activity.grader}`
+      'stage__meta',
+      `${TYPE_LABEL[activity.type] || activity.type}, ${activity.minutes} min, ` +
+        `${activity.evidenceProduced} evidence, graded ${activity.grader}`
     )
   );
   return wrap;
@@ -106,7 +106,7 @@ function hintsBlock(activity, attempt, handlers) {
 
   for (let i = 0; i < used; i += 1) {
     const item = el('p', 'stage__hint');
-    item.append(el('span', 'stage__hint-index mono', `hint ${i + 1}`));
+    item.append(el('span', 'stage__hint-index', `Hint ${i + 1}`));
     item.append(el('span', null, hints[i]));
     wrap.append(item);
   }
@@ -120,7 +120,7 @@ function hintsBlock(activity, attempt, handlers) {
       )
     );
   } else {
-    wrap.append(el('p', 'lab-note', 'Every hint is open. Hints never change the grade, they travel to your vault as conditions.hintsUsed.'));
+    wrap.append(el('p', 'lab-note', 'Every hint is open. Hints never change the grade, your vault sees how many you used.'));
   }
   return wrap;
 }
@@ -178,21 +178,15 @@ function actionsBlock(activity, attempt, handlers, submitLabel, onSubmit) {
     row.append(issue);
   }
   if (attempt.receiptToken) {
-    const note = el('span', 'stage__receipt-note mono');
-    note.append(
-      el(
-        'span',
-        'n-pill n-pill--durable',
-        attempt.receiptAttempt ? `receipt issued for attempt ${attempt.receiptAttempt}` : 'receipt issued'
-      )
-    );
+    const note = el('span', 'stage__receipt-note');
+    note.append(el('span', 'n-pill n-pill--durable', 'receipt issued'));
     note.append(
       el(
         'span',
         null,
         passed
-          ? ' see panel 04'
-          : ' see panel 04. This attempt did not pass, and the receipt still describes the attempt that did.'
+          ? 'It is in the receipt panel below.'
+          : 'The receipt below still describes the attempt that passed.'
       )
     );
     row.append(note);
@@ -229,7 +223,7 @@ function renderLesson(activity, attempt, handlers) {
     el(
       'p',
       'lab-note',
-      'Marking this read produces an exposure receipt: the weakest evidence there is, weight 0.1 in your vault. Reading is not mastery, and the receipt says so.'
+      'Marking this read produces exposure evidence, weight 0.1 in your vault. Reading is not mastery.'
     )
   );
 
@@ -274,7 +268,8 @@ function renderDiagnostic(activity, attempt, handlers) {
     });
 
     const body = el('div', 'opt__body');
-    body.append(el('span', 'opt__id mono', option.id.replace('schema-', 'schema ').toUpperCase()));
+    const letter = option.id.split('-').pop().toUpperCase();
+    body.append(el('span', 'opt__id', `Schema ${letter}`));
     body.append(html('div', 'prose prose--tight', option.html));
 
     const isKey = option.id === content.answerKey;
@@ -323,10 +318,10 @@ function renderLab(activity, attempt, handlers) {
   frag.append(head(activity));
   frag.append(html('div', 'prose', content.scenario.html));
 
-  frag.append(consoleBlock('eval-design-lab, run 1, the harness as it stands', content.beforeRun));
+  frag.append(consoleBlock('Run 1, the harness as it stands', content.beforeRun));
 
   const harness = el('div', 'stack stack--tight');
-  harness.append(el('span', 'lab-cap', 'harness.json'));
+  harness.append(el('span', 'lab-cap mono', 'harness.json'));
   const pre = el('pre', 'code-panel');
   pre.append(el('code', null, JSON.stringify(content.brokenHarness.json, null, 2)));
   harness.append(pre);
@@ -446,13 +441,10 @@ function renderLab(activity, attempt, handlers) {
    * where the agent repairs its own work; a partial gets the run it actually
    * described, which decides before the feedback reaches the agent. */
   if (attempt.result === 'passed') {
-    frag.append(consoleBlock('eval-design-lab, run 2, with your checks and your order', content.afterRun));
+    frag.append(consoleBlock('Run 2, with your checks and your order', content.afterRun));
   } else if (attempt.result === 'partial') {
     frag.append(
-      consoleBlock(
-        'eval-design-lab, run 2, with your checks in the order you submitted',
-        partialRunLines(content, attempt)
-      )
+      consoleBlock('Run 2, in the order you submitted', partialRunLines(content, attempt))
     );
   } else {
     frag.append(
@@ -544,7 +536,7 @@ function renderFreeRecall(activity, attempt, handlers) {
     for (let i = 0; i < content.rubric.length; i += 1) {
       const row = el('div', 'rubric__row rubric__row--blank');
       row.append(el('span', 'n-pill n-pill--unknown', 'ungraded'));
-      row.append(el('span', 'rubric__text mono', `criterion ${i + 1}`));
+      row.append(el('span', 'rubric__text', `Criterion ${i + 1}`));
       rubric.append(row);
     }
   } else {
@@ -600,7 +592,7 @@ export function renderStage(activity, attempt, handlers) {
   const render = RENDERERS[activity.type];
   if (!render) {
     const frag = document.createDocumentFragment();
-    frag.append(el('p', 'n-empty', `No renderer for activity type ${activity.type}.`));
+    frag.append(el('p', 'lab-line', `No renderer for activity type ${activity.type}.`));
     return frag;
   }
   return render(activity, attempt, handlers);

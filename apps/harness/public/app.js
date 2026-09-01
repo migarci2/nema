@@ -116,7 +116,6 @@ const dom = {
   receiptPanel: document.getElementById('receipt'),
   receiptHint: document.querySelector('[data-receipt-hint]'),
   receipt: document.querySelector('[data-receipt]'),
-  toolsPanel: document.getElementById('tools'),
   strip: document.querySelector('[data-activity-strip]'),
   foot: document.querySelector('[data-lab-foot]')
 };

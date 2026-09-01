@@ -21,14 +21,14 @@ try {
   await page.evaluate(`document.querySelector('[data-action="load-demo"]').click(); new Promise(r => setTimeout(r, 3000))`);
   const sum = parse(await page.evaluate(tool('get_vault_summary', {})));
   ok(sum.receipts >= 60 && sum.fragile === 7 && sum.reviewsDue === 4 && (sum.durable + sum.usable) === 18, `demo summary: receipts ${sum.receipts} durable ${sum.durable} usable ${sum.usable} fragile ${sum.fragile} due ${sum.reviewsDue}`);
-  const state = parse(await page.evaluate(tool('get_learner_state', { concepts: ['nema:json-schema', 'nema:agent-evals', 'nema:software-testing'] })));
+  const state = parse(await page.evaluate(tool('get_learner_state', { concepts: ['nema:ratios', 'nema:pan-sauces', 'nema:knife-skills'] })));
   const band = c => state.state.find(x => x.concept === c)?.bands;
-  ok(band('nema:json-schema')?.apply === 'uncertain' && !band('nema:agent-evals')?.apply || band('nema:agent-evals')?.apply === 'unknown', `bands: json-schema.apply=${band('nema:json-schema')?.apply} agent-evals.apply=${band('nema:agent-evals')?.apply} software-testing.apply=${band('nema:software-testing')?.apply}`);
+  ok(band('nema:ratios')?.apply === 'uncertain' && (band('nema:pan-sauces')?.apply || 'unknown') === 'unknown', `bands: ratios.apply=${band('nema:ratios')?.apply} pan-sauces.apply=${band('nema:pan-sauces')?.apply} knife-skills.apply=${band('nema:knife-skills')?.apply}`);
   ok(JSON.stringify(state).includes('evidence') === false || !JSON.stringify(state).includes('receiptId'), 'learner state carries no receipt ids');
 
   // Consent flow: start the tool, approve in the page, collect the token.
-  const req = { audience: H, purpose: 'personalize-agent-evals-path', requirements: [
-    { concept: 'nema:software-testing', ability: 'apply' }, { concept: 'nema:agent-loop', ability: 'explain' }, { concept: 'nema:json-schema', ability: 'apply' } ] };
+  const req = { audience: H, purpose: 'personalize-pan-sauces-path', requirements: [
+    { concept: 'nema:knife-skills', ability: 'apply' }, { concept: 'nema:heat-control', ability: 'explain' }, { concept: 'nema:ratios', ability: 'apply' } ] };
   await page.evaluate(`window.__p = ${tool('create_readiness_assertion', req)}; true`);
   await sleep(800);
   const modalVisible = await page.evaluate(`!document.getElementById('consent-modal').hidden`);
@@ -52,13 +52,13 @@ try {
   ok(d.status === 'denied', 'denied consent returns denied: ' + d.status);
 
   // Receipt from the harness worker (diagnostic pass), then stage it.
-  const diag = content.ACTIVITIES['json-schema-diagnostic'];
+  const diag = content.ACTIVITIES['ratios-diagnostic'];
   const learnerKeyId = v.payload.learnerKeyId;
-  const res = await fetch(H + '/api/receipt', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ activityId: 'json-schema-diagnostic', submission: { optionId: diag.content.answerKey, hintsUsed: 0 }, learnerKeyId, conditions: { attempts: 1, hintsUsed: 0, durationSeconds: 90 } }) });
+  const res = await fetch(H + '/api/receipt', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ activityId: 'ratios-diagnostic', submission: { optionId: diag.content.answerKey, hintsUsed: 0 }, learnerKeyId, conditions: { attempts: 1, hintsUsed: 0, durationSeconds: 90 } }) });
   const issued = await res.json();
-  ok(res.status === 200 && issued.status === 'issued' && issued.token, 'harness worker issued a receipt: ' + res.status + ' ' + (issued.status || issued.error || ''));
+  ok(res.status === 200 && issued.status === 'issued' && issued.token, 'saucier worker issued a receipt: ' + res.status + ' ' + (issued.status || issued.error || ''));
   const staged = parse(await page.evaluate(tool('stage_evidence_receipt', { token: issued.token })));
-  ok(staged.status === 'accepted' && staged.changes?.some(c => c.concept === 'nema:json-schema' && c.ability === 'apply'), 'receipt accepted, json-schema.apply moved: ' + JSON.stringify(staged.changes || staged).slice(0, 200));
+  ok(staged.status === 'accepted' && staged.changes?.some(c => c.concept === 'nema:ratios' && c.ability === 'apply'), 'receipt accepted, ratios.apply moved: ' + JSON.stringify(staged.changes || staged).slice(0, 200));
   const replay = parse(await page.evaluate(tool('stage_evidence_receipt', { token: issued.token })));
   ok(replay.status === 'rejected' && replay.reason === 'duplicate', 'replay rejected: ' + replay.reason);
   const parts = issued.token.split('.');
@@ -79,7 +79,7 @@ try {
   ok(rec.status === 'accepted' && rec.result === 'passed', 'agent assessment recorded: ' + rec.status + ' ' + rec.result);
   const badNeed = parse(await page.evaluate(tool('record_agent_assessment', { needId: 'need_nope', rubricResults: [], learnerAnswerSummary: 'x' })));
   ok(badNeed.status !== 'accepted', 'unknown needId rejected: ' + badNeed.status);
-  const goal = parse(await page.evaluate(tool('set_learning_goal', { title: 'Ship an agent I can trust', concepts: ['nema:agent-evals'] })));
+  const goal = parse(await page.evaluate(tool('set_learning_goal', { title: 'Hold a pan sauce through service', concepts: ['nema:pan-sauces'] })));
   ok(goal.status === 'ok' && goal.goalId, 'goal set');
   await page.shot('/tmp/nema-e2e-vault.png');
   ok(page.errors.length === 0, 'vault console errors: ' + JSON.stringify(page.errors));
