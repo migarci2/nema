@@ -1126,3 +1126,84 @@ img, svg { display: block; }
   .n-modal__head, .n-modal__body { padding: var(--sp-4); }
   .n-modal__foot { padding: var(--sp-3) var(--sp-4); }
 }
+
+/* ===================================================================== */
+/* Minimal pass. Appended last so it overrides the dense defaults above. */
+/* Fewer borders, no corner ticks, sentence case labels, no index or     */
+/* hint noise, softer pills, more air. Opt back into density per element */
+/* with .n-panel--ticks or .n-dense.                                     */
+/* ===================================================================== */
+
+:root {
+  --panel-pad: var(--sp-6);
+  --line-soft: color-mix(in srgb, var(--line) 70%, transparent);
+}
+@media (max-width: 720px) { :root { --panel-pad: var(--sp-4); } }
+
+body { font-size: 15px; line-height: 1.6; }
+.n-app { max-width: 1080px; padding-left: var(--sp-5); padding-right: var(--sp-5); }
+.n-app--wide { max-width: 1320px; }
+
+.n-panel {
+  background: transparent;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-2);
+  gap: var(--sp-5);
+}
+.n-panel::before,
+.n-panel::after { display: none; }
+.n-panel--ticks::before,
+.n-panel--ticks::after { display: block; }
+.n-panel--quiet { border-color: transparent; padding-left: 0; padding-right: 0; }
+
+.n-panel__label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-16);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+  gap: var(--sp-3);
+}
+.n-panel__label::after { display: none; }
+.n-panel__index { display: none; }
+.n-panel__hint { display: none; }
+.n-dense .n-panel__hint { display: inline; font-family: var(--font-mono); font-size: var(--fs-11); margin-left: auto; }
+.n-panel__note { color: var(--ink-2); }
+
+.n-pill {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  border-color: transparent;
+  padding: 1px var(--sp-2);
+  min-height: 20px;
+}
+
+.n-stat__value { font-size: var(--fs-32); }
+.n-stat__label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-2);
+}
+
+.n-header { border-bottom: 1px solid var(--line-soft); }
+.n-header__app { display: none; }
+.n-header__link {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.n-footer { border-top: 1px solid var(--line-soft); color: var(--ink-3); }
+
+.n-ledger__row { border-color: var(--line-soft); }
+.n-console { border-color: var(--line-soft); }
+.activity-strip { opacity: 0.85; }
+.activity-row { font-size: var(--fs-12); }
+.n-btn { text-transform: none; letter-spacing: 0; }
+.n-btn--secondary { border-color: var(--line-soft); }

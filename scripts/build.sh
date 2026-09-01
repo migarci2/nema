@@ -13,7 +13,7 @@ if [ "$#" -gt 0 ]; then
   APPS=("$@")
 else
   APPS=("${ALL[@]}")
-  rm -rf dist
+  find dist -mindepth 1 -maxdepth 1 -type d ! -name "*.tmp" 2>/dev/null | while read -r d; do case " ${ALL[*]} " in *" $(basename "$d") "*) ;; *) rm -rf "$d";; esac; done
 fi
 
 for app in "${APPS[@]}"; do
