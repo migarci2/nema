@@ -23,63 +23,63 @@
 
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero__lead">
-        <p class="hero__eyebrow mono">Provider unit, feedback-loop-attack-surface</p>
         <h1 class="hero__title" id="hero-title">Feedback Loop Attack Surface</h1>
         <p class="hero__blurb">
-          A tool result is a message in the same context as your instructions. This unit
-          works through one contaminated agent trace, then puts you on call for four
-          injection incidents. The labs are graded deterministically on this origin and the
-          result leaves as a signed evidence receipt you own.
+          A tool result arrives in the same context as your instructions, so anyone who can
+          write a tool result can write to your agent.
         </p>
-        <div class="hero__stats n-stats" data-hero-stats></div>
+        <p class="hero__facts" data-hero-stats></p>
+        <p class="hero__note" data-hero-note hidden></p>
       </div>
-      <div class="hero__req">
-        <p class="hero__req-label mono">Requirements this unit assumes</p>
-        <ul class="hero__req-list" data-hero-requirements></ul>
-        <p class="hero__origin mono dim" data-hero-origin></p>
-        <p class="hero__note mono" data-hero-note hidden></p>
-      </div>
+
+      <section class="reqs" aria-labelledby="reqs-title">
+        <h2 class="reqs__title" id="reqs-title">
+          Requirements
+          <span class="n-panel__hint" data-prereq-hint></span>
+        </h2>
+        <ul class="reqs__list" data-hero-requirements></ul>
+        <div class="reqs__body" data-prereq-body></div>
+      </section>
     </section>
 
-    <div class="n-grid">
-      <section class="n-panel c-5" aria-labelledby="prereq-title">
-        <h2 class="n-panel__label" id="prereq-title">
-          <span class="n-panel__index">01</span> Prerequisites
-          <span class="n-panel__hint" data-prereq-hint>no assertion presented</span>
-        </h2>
-        <div class="n-panel__body" data-prereq-body></div>
-      </section>
+    <section class="sec" aria-labelledby="path-title">
+      <h2 class="n-panel__label" id="path-title">
+        Activities
+        <span class="n-panel__hint" data-path-hint></span>
+      </h2>
+      <div data-path-body></div>
+    </section>
 
-      <section class="n-panel c-7" aria-labelledby="path-title">
-        <h2 class="n-panel__label" id="path-title">
-          <span class="n-panel__index">02</span> Activities
-          <span class="n-panel__hint" data-path-hint></span>
-        </h2>
-        <div class="n-panel__body" data-path-body></div>
-      </section>
-    </div>
-
-    <section class="n-panel" aria-labelledby="stage-title" data-stage-panel>
+    <section class="sec" aria-labelledby="stage-title" data-stage-panel>
       <h2 class="n-panel__label" id="stage-title">
-        <span class="n-panel__index">03</span> Activity stage
-        <span class="n-panel__hint" data-stage-hint>nothing open</span>
+        Activity stage
+        <span class="n-panel__hint" data-stage-hint></span>
       </h2>
       <p class="sr-only" data-live-region role="status" aria-live="polite"></p>
-      <div class="n-panel__body" data-stage-body></div>
+      <div data-stage-body></div>
     </section>
 
-    <section class="n-panel" aria-labelledby="receipt-title" data-receipt-panel>
+    <section class="sec" aria-labelledby="receipt-title" data-receipt-panel>
       <h2 class="n-panel__label" id="receipt-title">
-        <span class="n-panel__index">04</span> Evidence receipt
-        <span class="n-panel__hint" data-receipt-hint>none issued yet</span>
+        Evidence receipt
+        <span class="n-panel__hint" data-receipt-hint></span>
       </h2>
-      <div class="n-panel__body" data-receipt-body></div>
+      <div data-receipt-body></div>
     </section>
 
-    <section aria-labelledby="tools-title">
-      <span class="activity-strip__head" id="tools-title">tool activity, last 8 calls</span>
+    <section class="sec sec--strip" aria-labelledby="tools-title">
+      <span class="strip__head" id="tools-title">Tool activity</span>
       <div data-activity-strip></div>
     </section>
+
+    <details class="more">
+      <summary class="more__summary">More</summary>
+      <div class="more__body">
+        <div data-prereq-meta></div>
+        <p class="more__origin" data-hero-origin></p>
+        <p><button type="button" class="text-action" data-action="reset">Reset this unit</button></p>
+      </div>
+    </details>
 
   </main>
 

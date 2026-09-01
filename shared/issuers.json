@@ -1,6 +1,6 @@
 {
   "harness": {
-    "kid": "harness-2026-09",
+    "kid": "saucier-2026-09",
     "jwk": {
       "kty": "EC",
       "x": "xaWcI2BOz8kZRsa6504j3aqIVrh_jelH1Mdd5U16IXU",
@@ -9,7 +9,7 @@
     }
   },
   "security": {
-    "kid": "security-2026-09",
+    "kid": "linecook-2026-09",
     "jwk": {
       "kty": "EC",
       "x": "VpXVWqsgWzp9JWZ1S9zv5VVzMTY2A4tRyxA7pFkDMvY",

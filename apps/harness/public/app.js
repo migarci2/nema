@@ -101,8 +101,9 @@ const dom = {
   unitTitle: document.querySelector('[data-unit-title]'),
   unitProvider: document.querySelector('[data-unit-provider]'),
   unitMeta: document.querySelector('[data-unit-meta]'),
-  unitStats: document.querySelector('[data-unit-stats]'),
+  unitIds: document.querySelector('[data-unit-ids]'),
   outcomes: document.querySelector('[data-outcomes]'),
+  reqLine: document.querySelector('[data-req-line]'),
   requirements: document.querySelector('[data-requirements]'),
   banner: document.querySelector('[data-banner]'),
   pathPanel: document.getElementById('path'),
@@ -116,7 +117,8 @@ const dom = {
   receiptHint: document.querySelector('[data-receipt-hint]'),
   receipt: document.querySelector('[data-receipt]'),
   toolsPanel: document.getElementById('tools'),
-  strip: document.querySelector('[data-activity-strip]')
+  strip: document.querySelector('[data-activity-strip]'),
+  foot: document.querySelector('[data-lab-foot]')
 };
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -146,6 +148,10 @@ function scrollToPanel(panel) {
  * through one after the other on the next render, then the set is emptied so a
  * later render draws the same path without replaying the animation. */
 let strikeQueue = new Set();
+
+/* Rows that came back onto the path on the most recent personalization. They
+ * are the only included rows that carry a reason, and only for one render. */
+let restoreQueue = new Set();
 
 /**
  * Count a number up or down in place, so the minutes counter reads as a change
@@ -211,53 +217,41 @@ function renderUnit({ countMinutesFrom = null } = {}) {
   /* The hero reads from the manifest, so the page and the API can never drift. */
   dom.unitTitle.textContent = MANIFEST.unit.title;
   dom.unitProvider.textContent = MANIFEST.provider.name;
-  dom.unitMeta.textContent = '';
-  dom.unitMeta.append(
-    el(
-      'span',
-      'unit__meta-line',
-      `${MANIFEST.unit.id} / version ${MANIFEST.unit.version} / ${MANIFEST.unit.price} / ` +
-        `${MANIFEST.activities.length} activities`
-    )
-  );
-  dom.unitMeta.append(el('span', 'unit__meta-line', `issuer ${MANIFEST.provider.keyId}`));
+  dom.unitMeta.textContent =
+    `${MANIFEST.activities.length} activities, ${FULL_MINUTES} minutes, ` +
+    `${MANIFEST.unit.price}, graded on this origin`;
+  dom.unitIds.textContent =
+    `${MANIFEST.unit.id} ${MANIFEST.unit.version} / issuer ${MANIFEST.provider.keyId}`;
+  dom.outcomes.textContent = MANIFEST.outcomes
+    .map((outcome) => `${outcome.concept}.${outcome.ability}`)
+    .join('  ');
 
-  const personal = state.path ? state.path.personalMinutes : null;
-  const inPath = state.path ? state.path.path.length : MANIFEST.activities.length;
-  const rows = requirementRows();
-  const verified = rows.filter((row) => row.status === 'verified').length;
-
-  const stats = [
-    { value: FULL_MINUTES, label: 'full path min' },
-    { value: personal === null ? '-' : personal, label: 'your path min', accent: true },
-    { value: inPath, label: 'activities for you' },
-    { value: state.assertion ? `${verified}/${rows.length}` : `-/${rows.length}`, label: 'requirements verified' }
-  ];
-
-  dom.unitStats.textContent = '';
-  for (const stat of stats) {
-    const item = el('span', `n-stat${stat.accent ? ' n-stat--accent' : ''}`);
-    const value = el('span', 'n-stat__value', stat.value);
-    if (stat.accent && countMinutesFrom !== null && personal !== null) {
-      countTo(value, countMinutesFrom, personal);
-    }
-    item.append(value);
-    item.append(el('span', 'n-stat__label', stat.label));
-    dom.unitStats.append(item);
-  }
-
-  dom.outcomes.textContent = '';
-  for (const outcome of MANIFEST.outcomes) {
-    dom.outcomes.append(
-      el('span', 'n-pill n-pill--nodot mono', `${outcome.concept}.${outcome.ability}`)
-    );
+  /* One sentence over the three requirement rows. Before an assertion it says
+   * nothing is assumed; after one it carries the beat of the demo, and the
+   * minutes count down in place. */
+  dom.reqLine.textContent = '';
+  if (state.path) {
+    dom.reqLine.append(document.createTextNode('Personalised from your vault: '));
+    dom.reqLine.append(el('span', 'num', FULL_MINUTES));
+    dom.reqLine.append(document.createTextNode(' minutes became '));
+    const minutes = el('b', 'num accent', state.path.personalMinutes);
+    if (countMinutesFrom !== null) countTo(minutes, countMinutesFrom, state.path.personalMinutes);
+    dom.reqLine.append(minutes);
+    dom.reqLine.append(document.createTextNode('.'));
+  } else {
+    dom.reqLine.textContent =
+      'What this unit assumes you know. Unchecked until your vault sends an assertion.';
   }
 
   dom.requirements.textContent = '';
-  for (const row of rows) {
+  for (const row of requirementRows()) {
     const line = el('div', 'lab-req');
     line.append(el('span', 'lab-req__id mono', `${row.concept}.${row.ability}`));
-    const pill = el('span', `n-pill ${pillClassFor(row.status)}`, row.status === 'unchecked' ? 'not checked' : row.status);
+    const pill = el(
+      'span',
+      `n-pill ${pillClassFor(row.status)}`,
+      row.status === 'unchecked' ? 'not checked' : row.status
+    );
     if (row.confidence) pill.title = `confidence ${row.confidence}`;
     line.append(pill);
     dom.requirements.append(line);
@@ -277,14 +271,17 @@ function setBanner(text, kind = 'ok') {
 
 /* ---------------------------------------------------------- path panel -- */
 
+function cleanReason(reason) {
+  const text = String(reason || '').replace(/^(skipped|included):\s*/i, '');
+  return text ? text.charAt(0).toUpperCase() + text.slice(1) : '';
+}
+
 function currentPathView() {
   if (!state.path) {
+    /* The full offer needs no per row explanation: the sentence under the list
+     * already says that nothing has been assumed about the learner yet. */
     return {
-      entries: ACTIVITY_LIST.map((activity) => ({
-        activity,
-        skipped: false,
-        reason: 'Included: no readiness assertion presented yet.'
-      })),
+      entries: ACTIVITY_LIST.map((activity) => ({ activity, skipped: false, reason: '' })),
       personalMinutes: FULL_MINUTES
     };
   }
@@ -293,10 +290,14 @@ function currentPathView() {
   return {
     entries: ACTIVITY_LIST.map((activity) => {
       const hit = included.get(activity.id) || skipped.get(activity.id);
+      const isSkipped = skipped.has(activity.id);
+      /* A reason is worth a line only where the row is not self explanatory:
+       * a struck through row, or one that just came back onto the path. */
+      const explain = isSkipped || restoreQueue.has(activity.id);
       return {
         activity,
-        skipped: skipped.has(activity.id),
-        reason: hit ? hit.reason : ''
+        skipped: isSkipped,
+        reason: explain && hit ? cleanReason(hit.reason) : ''
       };
     }),
     personalMinutes: state.path.personalMinutes
@@ -324,15 +325,15 @@ function renderPath() {
       strikeIndex += 1;
     }
 
-    row.append(el('span', 'n-path__index', String(index + 1).padStart(2, '0')));
+    row.append(el('span', 'n-path__index', String(index + 1)));
     const main = el('span', 'n-path__main');
     main.append(el('span', 'n-path__title', entry.activity.title));
-    main.append(el('span', 'n-path__reason', entry.reason));
+    if (entry.reason) main.append(el('span', 'n-path__reason', entry.reason));
     row.append(main);
     row.append(el('span', 'n-path__minutes', `${entry.activity.minutes} min`));
 
-    /* The pill lives under the reason, not beside the title: in a four column
-     * panel a pill on the title line wraps every title into three lines. */
+    /* The pill lives under the title, not beside it: in a narrow panel a pill
+     * on the title line wraps every title into three lines. */
     const attempt = attemptFor(entry.activity.id);
     if (attempt.status === 'passed') {
       main.append(el('span', 'n-pill n-pill--usable n-pill--nodot lab-path__pill', 'passed'));
@@ -344,25 +345,17 @@ function renderPath() {
     dom.pathList.append(row);
   });
 
-  const total = el('div', 'n-path__total');
-  total.append(el('span', null, state.path ? 'personal path' : 'full offer'));
-  total.append(el('b', null, view.personalMinutes));
-  total.append(el('span', null, `of ${FULL_MINUTES} minutes`));
-  dom.pathList.append(total);
   strikeQueue = new Set();
+  restoreQueue = new Set();
 
   if (state.path) {
-    const removed = FULL_MINUTES - state.path.personalMinutes;
     dom.pathHint.textContent = 'personal path';
     dom.pathNote.textContent =
-      `${state.path.skipped.length} activities skipped, ${removed} minutes removed. ` +
-      `Personalised from an assertion your vault signed for this origin, valid until ${shortTime(state.assertion.payload.expiresAt)}. ` +
-      'You can still open a skipped activity if you want to read it.';
+      `Your path: ${state.path.personalMinutes} of ${FULL_MINUTES} minutes, ` +
+      `from an assertion valid until ${shortTime(state.assertion.payload.expiresAt)}.`;
   } else {
     dom.pathHint.textContent = 'full offer';
-    dom.pathNote.textContent =
-      `The full offer: ${MANIFEST.activities.length} activities, ${FULL_MINUTES} minutes. ` +
-      'No readiness assertion has been presented yet, so nothing is assumed about you.';
+    dom.pathNote.textContent = `The full offer: ${FULL_MINUTES} minutes, nothing assumed about you yet.`;
   }
 }
 
@@ -391,30 +384,21 @@ function renderStagePanel(focusTarget = null) {
   if (!activityId || !ACTIVITIES[activityId]) {
     dom.stageHint.textContent = 'nothing open';
     const empty = el('div', 'lab-empty');
-    empty.append(el('p', 'n-empty', 'No activity open'));
     empty.append(
-      el(
-        'p',
-        'lab-note',
-        'Pick a row in the path, or ask your agent to call start_activity. The agent can open an activity. It cannot answer one.'
-      )
+      el('p', 'lab-line', 'Nothing open. Pick a row in the path, or let your agent call start_activity.')
     );
 
     const next = nextActivity();
     if (next) {
       const card = el('div', 'lab-next');
-      card.append(el('span', 'lab-cap', 'Up next on your path'));
+      card.append(el('span', 'lab-cap', 'Up next'));
       card.append(el('p', 'lab-next__title', next.title));
       card.append(
-        el(
-          'p',
-          'stage__meta mono',
-          `${TYPE_LABEL[next.type] || next.type} / ${next.minutes} min / ${next.evidenceProduced} evidence`
-        )
+        el('p', 'lab-next__meta', `${TYPE_LABEL[next.type] || next.type}, ${next.minutes} min`)
       );
-      card.append(el('p', 'lab-note', next.whatTheLearnerDoes));
-      const open = el('button', 'n-btn n-btn--primary', `Open ${next.title}`);
+      const open = el('button', 'n-btn n-btn--primary n-btn--sm', 'Open');
       open.type = 'button';
+      open.setAttribute('aria-label', `Open ${next.title}`);
       open.addEventListener('click', () => openActivity(next.id, { source: 'learner' }));
       card.append(open);
       empty.append(card);
@@ -493,16 +477,13 @@ function renderReceipt() {
 
   if (issued.length === 0) {
     dom.receiptHint.textContent = 'nothing issued yet';
-    const empty = el('div', 'lab-empty');
-    empty.append(el('p', 'n-empty', 'No receipt issued yet'));
-    empty.append(
+    dom.receipt.append(
       el(
         'p',
-        'lab-note',
-        'Pass an activity, then press Issue evidence receipt in the stage or let your agent call issue_evidence_receipt. The worker re-grades your submission before it signs anything.'
+        'lab-line',
+        'A receipt appears here once you pass an activity and the provider signs it.'
       )
     );
-    dom.receipt.append(empty);
     return;
   }
 
@@ -514,7 +495,6 @@ function renderReceipt() {
 
   if (issued.length > 1) {
     const picker = el('div', 'row row--tight lab-receipt-picker');
-    picker.append(el('span', 'lab-cap', 'Receipts'));
     for (const entry of issued) {
       const pick = el(
         'button',
@@ -535,10 +515,11 @@ function renderReceipt() {
 
   const wrap = el('div', 'receipt');
 
-  /* Left: the token itself. */
+  /* Left: the token itself, and the one link that matters. */
   const left = el('div', 'stack');
   const box = el('div', 'n-token');
-  const boxHead = el('span', 'n-token__head', 'evidence receipt');
+  const boxHead = el('span', 'n-token__head', 'Evidence receipt');
+  boxHead.append(el('span', 'n-pill n-pill--durable', 'signed'));
   const copy = el('button', 'n-btn n-btn--sm n-btn--mono', 'Copy');
   copy.type = 'button';
   copy.addEventListener('click', () => copyToClipboard(token, copy));
@@ -554,66 +535,48 @@ function renderReceipt() {
   send.href = `${ORIGINS.vault}/#receipt=${token}`;
   send.rel = 'noopener';
   actions.append(send);
-  actions.append(
-    el(
-      'span',
-      'lab-note',
-      'The link opens your vault with the token in the hash. The vault verifies the signature and asks you before it stages anything.'
-    )
-  );
+  actions.append(el('span', 'lab-line', 'Your vault verifies the signature before it stages anything.'));
   left.append(actions);
   wrap.append(left);
 
-  /* Right: the decoded claims and conditions. */
+  /* Right: what the token says, decoded. */
   const right = el('div', 'stack stack--tight');
   right.append(el('span', 'lab-cap', 'Decoded claims'));
 
-  const ledger = el('div', 'n-ledger');
+  const claims = el('div', 'lab-claims');
   for (const claim of payload.claims) {
-    const row = el('div', 'n-ledger__row');
-    row.append(el('span', 'n-ledger__id', 'claim'));
-    const main = el('span', 'n-ledger__main');
-    main.append(el('span', 'n-ledger__title mono', `${claim.concept}.${claim.ability}`));
-    main.append(
-      el('span', 'n-ledger__meta', `${claim.evidenceType} evidence, difficulty ${claim.difficulty || 'unstated'}`)
-    );
-    row.append(main);
-    const end = el('span', 'n-ledger__end');
-    end.append(
+    const row = el('div', 'lab-claim');
+    row.append(el('span', 'lab-claim__id mono', `${claim.concept}.${claim.ability}`));
+    row.append(el('span', 'lab-claim__meta', `${claim.evidenceType} evidence`));
+    row.append(
       el(
         'span',
         `n-pill ${claim.result === 'passed' ? 'n-pill--usable' : claim.result === 'partial' ? 'n-pill--uncertain' : 'n-pill--danger'}`,
         claim.result
       )
     );
-    row.append(end);
-    ledger.append(row);
+    claims.append(row);
   }
-  right.append(ledger);
+  right.append(claims);
 
-  /* The keys are set in small caps by .kv__key, so they are written here as
-   * words rather than as the camelCase field names: "ISSUEDAT" is a typo to
-   * read, "ISSUED AT" is a label. The value is always the field verbatim. */
   const meta = el('dl', 'kv');
   const entries = [
     ['issuer', payload.issuer],
-    ['key id', payload.keyId],
-    ['receipt id', payload.receiptId],
+    ['key', payload.keyId],
     ['subject', payload.subject],
     ['activity', `${payload.activity.id} ${payload.activity.version}`],
-    ['content hash', payload.activity.contentHash || 'not stated'],
     [
       'conditions',
       payload.conditions
-        ? `grader ${payload.conditions.grader} v${payload.conditions.graderVersion}, ` +
+        ? `${payload.conditions.grader} v${payload.conditions.graderVersion}, ` +
           `${payload.conditions.attempts ?? 0} attempts, ${payload.conditions.hintsUsed ?? 0} hints, ` +
           `${payload.conditions.durationSeconds ?? 0} s`
-        : 'none',
+        : 'none'
     ],
-    ['issued at', payload.issuedAt]
+    ['issued', payload.issuedAt]
   ];
   for (const [key, value] of entries) {
-    meta.append(el('dt', 'kv__key mono', key));
+    meta.append(el('dt', 'kv__key', key));
     meta.append(el('dd', 'kv__value mono', value));
   }
   right.append(meta);
@@ -801,6 +764,11 @@ function applyPersonalization(payload) {
   strikeQueue = new Set(
     result.skipped.map((item) => item.activityId).filter((id) => !wasSkipped.has(id))
   );
+  /* A row that was struck through and is on the path again explains itself
+   * once, the same way a row that just left the path does. */
+  restoreQueue = new Set(
+    result.path.map((item) => item.activityId).filter((id) => wasSkipped.has(id))
+  );
   const minutesBefore = state.path ? state.path.personalMinutes : FULL_MINUTES;
 
   state.assertion = { payload, receivedAt: new Date().toISOString() };
@@ -816,10 +784,9 @@ function applyPersonalization(payload) {
   renderUnit({ countMinutesFrom: minutesBefore });
   renderPath();
   renderStagePanel();
-  setBanner(
-    `Path personalised from your vault: ${result.fullMinutes} min to ${result.personalMinutes} min.`,
-    'ok'
-  );
+  /* The sentence over the requirements carries the news, so the banner is only
+   * ever a rejection or an agent note. A good assertion clears it. */
+  setBanner('');
   flash(dom.unit);
   flash(dom.pathPanel);
   scrollToPanel(dom.unit);
@@ -840,23 +807,13 @@ injectHeader({ app: 'harness', title: 'Harness Lab' });
 injectFooter({ note: 'Provider. Signs evidence receipts, never writes to your vault.' });
 mountActivityStrip(dom.strip);
 
-const resetRow = el('div', 'row lab-reset');
-const resetButton = el('button', 'n-btn n-btn--secondary n-btn--sm', 'Reset lab state');
+const resetButton = el('button', 'lab-reset', 'Reset lab state');
 resetButton.type = 'button';
+resetButton.title = 'Clears the attempts, the assertion and the receipts stored for this origin.';
 resetButton.addEventListener('click', resetLab);
-resetRow.append(resetButton);
-resetRow.append(
-  el('span', 'lab-note', 'Clears the attempts, the assertion and the receipts stored for this origin.')
-);
-dom.toolsPanel.querySelector('.n-panel__body').append(resetRow);
+dom.foot.append(resetButton);
 
 renderAll();
-if (state.path) {
-  setBanner(
-    `Path personalised from your vault: ${FULL_MINUTES} min to ${state.path.personalMinutes} min.`,
-    'ok'
-  );
-}
 
 registerHarnessTools({
   ORIGINS,

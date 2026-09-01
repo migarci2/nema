@@ -12,8 +12,8 @@ export const ORIGINS_BY_ENV = {
   prod: {
     site: 'https://nema.migarci2.dev',
     vault: 'https://nema-vault.migarci2.dev',
-    harness: 'https://nema-harness.migarci2.dev',
-    security: 'https://nema-security.migarci2.dev',
+    harness: 'https://saucier.migarci2.dev',
+    security: 'https://linecook.migarci2.dev',
     coach: 'https://nema-coach.migarci2.dev'
   },
   dev: {

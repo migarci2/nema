@@ -193,8 +193,8 @@ export function isSeedReceipt(entry) {
 
 export function audienceName(origin) {
   const names = {
-    harness: 'Harness Engineering Lab',
-    security: 'Agent Security',
+    harness: 'Saucier School',
+    security: 'Line Cook Lab',
     coach: 'nema Coach',
     site: 'nema Hub',
     vault: 'nema Vault'

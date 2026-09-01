@@ -92,7 +92,7 @@ function renderStrip() {
   if (rows.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'activity-row activity-row-empty';
-    empty.textContent = 'No tool calls yet. Pick a topic, or ask an agent to call a tool.';
+    empty.textContent = 'No tool calls yet.';
     stripEl.appendChild(empty);
     return;
   }
@@ -180,6 +180,11 @@ if (openForm) {
      * the event by the time this bubble listener runs. A human pressing the
      * button gets the same behaviour without it. */
     event.preventDefault();
+    /* The form lives inside the collapsed "More" block on the hub, so open it:
+     * a tool call a judge cannot see on screen is a tool call they cannot
+     * audit. */
+    const more = openForm.closest('details');
+    if (more) more.open = true;
     const started = performance.now();
     const app = String(openForm.elements.app.value || '').trim();
     const KNOWN = ['site', 'vault', 'harness', 'security', 'coach'];

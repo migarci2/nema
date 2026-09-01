@@ -21,97 +21,77 @@
   <header data-nema-header></header>
 
   <main class="n-app__main" id="main">
+
+    <!-- unit: title, one sentence, one line of facts, the requirements ---- -->
+    <section class="lab-hero" id="unit" aria-labelledby="unit-title">
+      <div class="lab-hero__intro">
+        <h1 class="unit__title" id="unit-title" data-unit-title>Designing Agent Evals</h1>
+        <p class="unit__lead">
+          Build the harness that catches an agent shipping a green run on the wrong work.
+        </p>
+        <p class="unit__meta" data-unit-meta></p>
+        <p class="unit__banner" data-banner role="status" aria-live="polite" hidden></p>
+      </div>
+      <div class="lab-hero__reqs">
+        <p class="lab-line" data-req-line></p>
+        <div class="lab-reqs" data-requirements></div>
+      </div>
+    </section>
+
     <div class="n-grid lab-grid">
 
-      <!-- 01 unit ------------------------------------------------------- -->
-      <section class="n-panel c-12" id="unit" aria-labelledby="unit-title">
-        <p class="n-panel__label">
-          <span class="n-panel__index">01</span> Unit
-          <span class="n-panel__hint" data-unit-provider>Harness Engineering Lab</span>
-        </p>
-        <div class="n-panel__body">
-
-          <div class="unit__head">
-            <div class="stack stack--tight unit__intro">
-              <h1 class="unit__title" id="unit-title" data-unit-title>Designing Agent Evals</h1>
-              <p class="muted unit__lead">
-                Build the harness that catches an agent shipping a green run on the wrong work.
-                Seven activities, deterministic grading on the server, a signed receipt for
-                anything you pass.
-              </p>
-              <p class="unit__meta mono" data-unit-meta></p>
-            </div>
-            <div class="n-stats unit__stats" data-unit-stats></div>
-          </div>
-
-          <p class="unit__banner" data-banner role="status" aria-live="polite" hidden></p>
-
-          <div class="unit__cols">
-            <div class="stack stack--tight">
-              <span class="lab-cap">Outcomes</span>
-              <p class="lab-note">What a receipt from this unit can claim.</p>
-              <div class="row row--tight" data-outcomes></div>
-            </div>
-            <div class="stack stack--tight">
-              <span class="lab-cap">Requirements</span>
-              <p class="lab-note">
-                What the unit assumes you already have. Grey until an approved readiness
-                assertion arrives from your vault.
-              </p>
-              <div class="stack stack--tight lab-reqs" data-requirements></div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- 02 path ------------------------------------------------------- -->
-      <section class="n-panel c-4" id="path" aria-labelledby="path-label">
+      <!-- path ---------------------------------------------------------- -->
+      <section class="n-panel c-5" id="path" aria-labelledby="path-label">
         <h2 class="n-panel__label" id="path-label">
-          <span class="n-panel__index">02</span> Path
+          Path
           <span class="n-panel__hint" data-path-hint>full offer</span>
         </h2>
         <div class="n-panel__body">
-          <div class="n-path" data-path-list></div>
-          <p class="lab-note" data-path-note></p>
+          <div class="n-path lab-path" data-path-list></div>
+          <p class="lab-line" data-path-note></p>
         </div>
       </section>
 
-      <!-- 03 activity --------------------------------------------------- -->
-      <section class="n-panel c-8" id="stage" aria-labelledby="stage-label">
+      <!-- activity ------------------------------------------------------ -->
+      <section class="n-panel c-7" id="stage" aria-labelledby="stage-label">
         <h2 class="n-panel__label" id="stage-label">
-          <span class="n-panel__index">03</span> Activity
+          Activity
           <span class="n-panel__hint" data-stage-hint>nothing open</span>
         </h2>
         <div class="n-panel__body" data-stage></div>
       </section>
 
-      <!-- 04 receipt ---------------------------------------------------- -->
+      <!-- receipt ------------------------------------------------------- -->
       <section class="n-panel c-12" id="receipt" aria-labelledby="receipt-label">
         <h2 class="n-panel__label" id="receipt-label">
-          <span class="n-panel__index">04</span> Evidence receipt
-          <span class="n-panel__hint" data-receipt-hint>signed by the provider, carried by you</span>
+          Evidence receipt
+          <span class="n-panel__hint" data-receipt-hint>nothing issued yet</span>
         </h2>
         <div class="n-panel__body" data-receipt></div>
       </section>
 
-      <!-- 05 tool activity ---------------------------------------------- -->
-      <section class="n-panel c-12" id="tools" aria-labelledby="tools-label">
-        <h2 class="n-panel__label" id="tools-label">
-          <span class="n-panel__index">05</span> Tool activity
-          <span class="n-panel__hint">last 8 calls, newest first</span>
-        </h2>
-        <div class="n-panel__body">
-          <span class="activity-strip__head">webmcp tools on this origin</span>
-          <div data-activity-strip></div>
-          <p class="lab-note">
-            No tool on this page submits an answer, grades one, or writes to your vault.
-            The learner answers, the server grades, the receipt is signed only after that.
-          </p>
-        </div>
-      </section>
-
     </div>
+
+    <!-- tool activity, a quiet strip under the page ---------------------- -->
+    <section class="lab-strip" id="tools" aria-labelledby="tools-label">
+      <p class="lab-strip__label" id="tools-label">Tool activity</p>
+      <div data-activity-strip></div>
+    </section>
+
+    <details class="lab-more">
+      <summary class="lab-more__summary">More</summary>
+      <div class="lab-more__body">
+        <p class="lab-line">A receipt from this unit can claim these.</p>
+        <p class="lab-ids mono" data-outcomes></p>
+        <p class="lab-line">
+          Offered by <span data-unit-provider>Harness Engineering Lab</span>.
+          No tool on this page submits an answer, grades one, or writes to your vault.
+        </p>
+        <p class="lab-ids mono" data-unit-ids></p>
+      </div>
+    </details>
+
+    <div class="lab-foot" data-lab-foot></div>
   </main>
 
   <footer data-nema-footer></footer>

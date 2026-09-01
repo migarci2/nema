@@ -186,14 +186,27 @@ function pill(text, variant) {
   return el('span', `n-pill n-pill--${variant} n-pill--nodot`, text);
 }
 
-const STATUS_PILL = { verified: 'durable', uncertain: 'uncertain', missing: 'unknown' };
-
-function statusPill(status) {
-  return pill(status, STATUS_PILL[status] || 'unknown');
+/** A band is a small coloured dot, not a bordered chip. */
+function dot(variant) {
+  return el('span', `dot dot--${variant}`);
 }
 
 function conceptLabel(concept, ability) {
   return `${concept}.${ability}`;
+}
+
+/* content.js prefixes its reason strings with the state they belong to
+   ("Included: ", "Skipped: ", "Locked: "). The row already shows the state, so
+   the prefix is dropped here and the sentence starts on its own. */
+function plainReason(text) {
+  const body = String(text || '').replace(/^(Included|Skipped|Locked|Unlocked)[:.]\s*/, '');
+  return body.charAt(0).toUpperCase() + body.slice(1);
+}
+
+/** "interactive-lab" reads as a label, "Interactive lab" reads as English. */
+function sentenceCase(value) {
+  const text = String(value || '').replace(/-/g, ' ');
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 function reducedMotion() {
@@ -208,25 +221,27 @@ function announce(message) {
 /* ---------------------------------------------------------------- hero -- */
 
 function renderHero() {
-  const stats = $('[data-hero-stats]');
-  stats.textContent = '';
-  const values = [
-    { value: String(MANIFEST.unit.estimatedMinutes), label: 'minutes' },
-    { value: String(MANIFEST.activities.length), label: 'activities' },
-    { value: String(prereq.unlocked.length), label: 'unlocked now' }
+  /* One line of facts instead of stat tiles. Only the unlocked count moves
+     during a demo, and it moves the moment check_prerequisites lands. */
+  const facts = $('[data-hero-stats]');
+  facts.textContent = '';
+  const parts = [
+    [String(MANIFEST.unit.estimatedMinutes), ' minutes'],
+    [String(MANIFEST.activities.length), ' activities'],
+    [`${prereq.unlocked.length} of ${ACTIVITY_ORDER.length}`, ' unlocked']
   ];
-  values.forEach((entry, index) => {
-    const stat = el('span', index === 2 ? 'n-stat n-stat--accent' : 'n-stat');
-    stat.append(el('span', 'n-stat__value', entry.value), el('span', 'n-stat__label', entry.label));
-    stats.append(stat);
+  parts.forEach(([value, label], index) => {
+    if (index > 0) facts.append(document.createTextNode(', '));
+    facts.append(el('b', null, value), document.createTextNode(label));
   });
 
   const list = $('[data-hero-requirements]');
   list.textContent = '';
   for (const requirement of prereq.recognized) {
-    const item = el('li', 'hero__req-item');
-    item.append(el('code', 'mono', conceptLabel(requirement.concept, requirement.ability)));
-    item.append(statusPill(requirement.status));
+    const item = el('li', 'reqs__item');
+    item.append(dot(requirement.status));
+    item.append(el('code', null, conceptLabel(requirement.concept, requirement.ability)));
+    item.append(el('span', 'reqs__status', requirement.status));
     list.append(item);
   }
 
@@ -235,7 +250,7 @@ function renderHero() {
   /* The origin that actually signs, not the one the manifest advertises: on the
      dev server those differ, and the receipt panel would contradict the hero. */
   origin.append(el('span', null, `${location.origin}, key ${PROVIDER.keyId}`));
-  const manifestLink = el('a', 'hero__manifest', 'GET /api/manifest');
+  const manifestLink = el('a', 'more__link', 'GET /api/manifest');
   manifestLink.href = '/api/manifest';
   origin.append(manifestLink);
 
@@ -246,86 +261,42 @@ function renderHero() {
 
 /* --------------------------------------------------------- prerequisites -- */
 
+/**
+ * The requirement rows live in the hero (renderHero). This writes the one
+ * sentence under them, which is the whole visible answer to "did the vault
+ * speak yet", and the assertion fields in the collapsed More block.
+ */
 function renderPrereq() {
   const body = $('[data-prereq-body]');
   const hint = $('[data-prereq-hint]');
+  const meta = $('[data-prereq-meta]');
   body.textContent = '';
+  meta.textContent = '';
 
   if (!state.assertion) {
     hint.textContent = 'no assertion presented';
-    const note = el(
-      'p',
-      'muted',
-      'This site holds no account for you and asks for no login. It can read three status bands, and only from a readiness assertion your vault signed for this exact origin.'
-    );
-    body.append(note);
-
-    const list = el('ul', 'prereq-list');
-    for (const requirement of prereq.recognized) {
-      const item = el('li', 'prereq-row');
-      item.append(el('code', 'mono', conceptLabel(requirement.concept, requirement.ability)));
-      item.append(statusPill(requirement.status));
-      item.append(el('span', 'prereq-source dim', 'no source'));
-      list.append(item);
-    }
-    body.append(list);
-
+    body.append(el('p', 'reqs__sentence', 'Waiting for a readiness assertion signed for this origin.'));
     if (assertionNote) body.append(el('p', 'prereq-alert', assertionNote));
-    body.append(
-      el(
-        'p',
-        'dim',
-        'Ask the agent to call check_prerequisites with an assertion minted for this origin. The learner approves that disclosure in the vault.'
-      )
-    );
     return;
   }
 
   const payload = state.assertion.payload;
   hint.textContent = 'verified assertion';
-
-  const headline = el('p', 'prereq-headline');
-  headline.append(el('b', null, 'Prerequisite recognised from another provider.'));
-  headline.append(
-    document.createTextNode(
-      ' Your vault answered for three concepts this unit assumes. Nothing else was disclosed.'
-    )
-  );
-  body.append(headline);
+  body.append(el('p', 'reqs__sentence reqs__sentence--ok', 'Prerequisites recognised from another provider.'));
 
   /* A rejected token never unseats the assertion the learner already approved.
-     The alert says what was refused, above the statuses that are still standing. */
+     The alert says what was refused, under the statuses that are still standing. */
   if (assertionNote) body.append(el('p', 'prereq-alert', assertionNote));
 
-  const list = el('ul', 'prereq-list');
-  for (const requirement of prereq.recognized) {
-    const item = el('li', 'prereq-row');
-    item.append(el('code', 'mono', conceptLabel(requirement.concept, requirement.ability)));
-    item.append(statusPill(requirement.status));
-    item.append(el('span', 'prereq-source dim', 'readiness assertion'));
-    list.append(item);
-  }
-  body.append(list);
-
-  const meta = el('dl', 'prereq-meta mono');
+  const list = el('dl', 'meta');
   const rows = [
-    ['learner id', payload.learnerKeyId],
-    ['audience', payload.audience],
-    ['purpose', payload.purpose],
-    ['expires', payload.expiresAt]
+    ['Learner', payload.learnerKeyId],
+    ['Audience', payload.audience],
+    ['Purpose', payload.purpose],
+    ['Expires', payload.expiresAt]
   ];
-  for (const [key, value] of rows) {
-    meta.append(el('dt', 'dim', key), el('dd', null, value));
-  }
-  body.append(meta);
-
-  body.append(
-    el(
-      'p',
-      'dim',
-      'Verified against the vault key embedded in the token, bound to this origin, and honoured only until it expires.'
-    )
-  );
+  for (const [key, value] of rows) list.append(el('dt', null, key), el('dd', null, value));
+  meta.append(list);
 }
 
 /* ------------------------------------------------------------ activities -- */

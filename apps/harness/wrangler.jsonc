@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "nema-harness",
+  "name": "saucier-school",
   "compatibility_date": "2026-08-01",
   "workers_dev": true,
   "main": "./worker.js",
@@ -10,6 +10,6 @@
     "run_worker_first": ["/api/*"]
   },
   "routes": [
-    { "pattern": "nema-harness.migarci2.dev", "custom_domain": true }
+    { "pattern": "saucier.migarci2.dev", "custom_domain": true }
   ]
 }

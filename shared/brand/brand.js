@@ -82,8 +82,8 @@ export const WORDMARK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 
 export const APP_LINKS = [
   { app: 'site', label: 'Hub' },
   { app: 'vault', label: 'Vault' },
-  { app: 'harness', label: 'Harness Lab' },
-  { app: 'security', label: 'Agent Security' },
+  { app: 'harness', label: 'Saucier School' },
+  { app: 'security', label: 'Line Cook Lab' },
   { app: 'coach', label: 'Coach' }
 ];
 

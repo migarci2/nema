@@ -105,8 +105,8 @@ const SHAPES = {
  * shared/issuers.json.
  */
 export const ISSUER_NAMES = Object.freeze({
-  harness: 'Harness Engineering Lab',
-  security: 'Agent Security',
+  harness: 'Saucier School',
+  security: 'Line Cook Lab',
   seed: 'nema demo seed'
 });
 

@@ -34,8 +34,8 @@ const SWITCH_WAIT_MS = 9000;
 
 const SITES = [
   { key: 'vault', label: 'Vault', origin: ORIGINS.vault },
-  { key: 'harness', label: 'Harness Lab', origin: ORIGINS.harness },
-  { key: 'security', label: 'Agent Security', origin: ORIGINS.security }
+  { key: 'harness', label: 'Saucier School', origin: ORIGINS.harness },
+  { key: 'security', label: 'Line Cook Lab', origin: ORIGINS.security }
 ];
 
 const SITE_LABEL = Object.fromEntries(SITES.map((site) => [site.key, site.label]));

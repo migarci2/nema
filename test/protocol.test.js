@@ -441,21 +441,21 @@ test('a receipt payload has the documented shape', () => {
 test('a receipt from a known issuer verifies', async () => {
   const harness = await generateKeyPair();
   const issuers = {
-    'harness-2026-09': { origin: HARNESS, jwk: harness.publicJwk, name: 'Harness Engineering Lab', id: 'harness' }
+    'harness-2026-09': { origin: HARNESS, jwk: harness.publicJwk, name: 'Saucier School', id: 'harness' }
   };
   const token = await signToken(buildReceiptPayload(sampleReceiptInput()), harness.privateJwk);
 
   const result = await verifyReceipt(token, issuers, { seenReceiptIds: new Set() });
   assert.equal(result.ok, true);
   assert.equal(result.payload.receiptId, 'rcpt_test_001');
-  assert.equal(result.issuer.name, 'Harness Engineering Lab');
+  assert.equal(result.issuer.name, 'Saucier School');
 });
 
 test('a receipt from an unknown issuer is not accepted', async () => {
   const stranger = await generateKeyPair();
   const harness = await generateKeyPair();
   const issuers = {
-    'harness-2026-09': { origin: HARNESS, jwk: harness.publicJwk, name: 'Harness Engineering Lab' }
+    'harness-2026-09': { origin: HARNESS, jwk: harness.publicJwk, name: 'Saucier School' }
   };
 
   const unknownKeyId = await signToken(
@@ -632,10 +632,10 @@ test('buildIssuerMap joins issuers with origins and names', () => {
   assert.deepEqual(map['harness-2026-09'], {
     origin: HARNESS,
     jwk: issuersJson.harness.jwk,
-    name: 'Harness Engineering Lab',
+    name: 'Saucier School',
     id: 'harness'
   });
-  assert.equal(map['security-2026-09'].name, 'Agent Security');
+  assert.equal(map['security-2026-09'].name, 'Line Cook Lab');
   assert.equal(map['seed-2026-09'].origin, SEED_ORIGIN);
   assert.equal(map['seed-2026-09'].name, 'nema demo seed');
 
@@ -667,7 +667,7 @@ test('the full handoff works end to end: assertion out, receipt back', async () 
   const vault = await generateKeyPair();
   const harness = await generateKeyPair();
   const issuers = {
-    'harness-2026-09': { origin: HARNESS, jwk: harness.publicJwk, name: 'Harness Engineering Lab' }
+    'harness-2026-09': { origin: HARNESS, jwk: harness.publicJwk, name: 'Saucier School' }
   };
 
   // 1. The provider asks, the vault answers with bands only.
