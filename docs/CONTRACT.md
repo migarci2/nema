@@ -681,3 +681,10 @@ At minimum:
   contrast of text on navy passes WCAG AA.
 - No emojis, no em dashes, no lorem ipsum, no placeholder assets.
 - Brand header and footer present; fonts self-hosted; no third party requests.
+
+## 16. Native WebMCP findings (verified 2026-09-01 on Chrome for Testing 154.0.8037.0)
+
+- `document.modelContext` exists with no flag on Chrome for Testing canary 154. On stable 149+ the flag `chrome://flags/#enable-webmcp-testing` (command line `--enable-features=WebMCP`) enables it. Chrome 147 has nothing, even with flags.
+- Native `executeTool(tool, input)` accepts a JSON string or an object as input and passes an object to `execute`. It RETURNS A JSON STRING (the execute result serialized), while the polyfill returns the object. Every consumer (the coach loop, tests, the site) must do `typeof r === 'string' ? JSON.parse(r) : r` with a try/catch.
+- Declarative `<form toolname ...>` tools register natively and are listed by `getTools()` next to imperative ones.
+- Probe harness: `scratchpad/native/cdp.mjs <chrome> <url>` (session scratchpad), reusable for smoke tests of every app.
