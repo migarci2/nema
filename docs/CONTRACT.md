@@ -688,3 +688,56 @@ At minimum:
 - Native `executeTool(tool, input)` accepts a JSON string or an object as input and passes an object to `execute`. It RETURNS A JSON STRING (the execute result serialized), while the polyfill returns the object. Every consumer (the coach loop, tests, the site) must do `typeof r === 'string' ? JSON.parse(r) : r` with a try/catch.
 - Declarative `<form toolname ...>` tools register natively and are listed by `getTools()` next to imperative ones.
 - Probe harness: `scratchpad/native/cdp.mjs <chrome> <url>` (session scratchpad), reusable for smoke tests of every app.
+
+## 17. `packages/nema-mcp`: the same vault tools over MCP (phase 4)
+
+Thesis: the vault is the infrastructure, the agent is a commodity. Browser
+agents (ChatGPT desktop, Chrome 149+) reach the vault through WebMCP on the
+vault page. Terminal agents (Claude Code, Codex) reach the same vault through
+MCP. Same nine tools, same names, same schemas, same return shapes.
+
+- Location: `packages/nema-mcp/` with its own `package.json` (name
+  `nema-mcp`, `bin: { "nema-mcp": "./bin.mjs" }`, type module, dependency
+  `@modelcontextprotocol/sdk` 1.30.x only). This is the only place in the repo
+  with an npm dependency. Node 20+.
+- Reuse, do not copy: import `../../apps/vault/public/vault.js` and
+  `../../apps/vault/public/tools.js` (the `TOOLS` array) and the shared
+  modules. Before importing, install minimal globals in Node:
+  `globalThis.localStorage` backed by a JSON file (`~/.nema/vault.json`,
+  overridable with `NEMA_VAULT_FILE`), `globalThis.document` with
+  `dispatchEvent` and `addEventListener` no-ops, `globalThis.location` with
+  `origin: "nema-mcp://local"`, `globalThis.fetch` resolving `/shared/*` and
+  `/seed.json` to repo files. If vault.js needs any other browser API, add a
+  shim here rather than editing vault.js; report it.
+- Storage schema is identical to the browser vault. Sync between browser and
+  terminal is by export/import of the JSON document; merging is a union of
+  receipts by `receiptId` plus union of disclosures, goals and misconceptions
+  (`nema-mcp merge <file>` subcommand). Keys: if the file has no vault key, the
+  server generates one; if the user imports a browser export, that key wins.
+- Consent: `create_readiness_assertion` calls `setConsentHandler`. The MCP
+  handler first tries MCP elicitation (`server.server.elicitInput`) with the
+  disclosure preview (audience, purpose, shared list, withheld list); if the
+  client does not support elicitation, it falls back to the vault's auto
+  approval policy for that audience, and otherwise returns `status: 'denied'`
+  with a hint that explains how to pre-approve
+  (`nema-mcp approve <audience> [--hours 1]`). The agent can never approve.
+- Transport: stdio by default. `nema-mcp serve` (default when no subcommand).
+  Subcommands: `serve`, `approve <audience>`, `merge <file>`, `export [file]`,
+  `seed` (loads apps/vault/public/seed.json), `summary` (prints the vault
+  summary, for humans).
+- Install lines documented in README and the site: 
+  `claude mcp add nema -- node /path/to/nema/packages/nema-mcp/bin.mjs` and
+  `codex mcp add nema -- node /path/to/nema/packages/nema-mcp/bin.mjs`
+  (use `npx nema-mcp` once published; do not publish during the hackathon).
+- Tests: `packages/nema-mcp/test/*.test.js` with `node --test`: the server
+  lists exactly the nine tool names; `get_vault_summary` on a fresh file;
+  `seed` then `get_learner_state` bands for the story concepts;
+  `stage_evidence_receipt` with a receipt signed by the harness key from
+  `secrets/` (skip if the secrets file is absent); `create_readiness_assertion`
+  denied without policy, approved with policy, token verifies with
+  `verifyAssertion` for that audience; `merge` is idempotent. Drive the server
+  in tests with the SDK's `Client` over `StdioClientTransport`.
+- Docs: `packages/nema-mcp/README.md` (what it is, install, the consent model,
+  the sync model, the same tool table as SPEC.md) and one paragraph plus the
+  two install lines in the root README and in the site's "Live" section
+  ("Bring your own agent").
