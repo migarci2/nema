@@ -7,3 +7,4 @@ secrets/
 dist/
 .gstack/
 .chrome/
+.dev-logs/
