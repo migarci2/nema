@@ -1371,3 +1371,26 @@ Rules:
   a mono block). The hub's "Try it" list points to compare.html.
 - The count of added lines is the headline: keep the nema additions as small
   as the embed allows (manifest, one script tag, anchors, attribution).
+
+## 28. A second real resource: cpu.land, "The Basics" (owner decision, 2026-09-02)
+
+`apps/cpu` mirrors chapter 1 of "Putting the You in CPU" by Lexi Mattick
+(https://cpu.land/the-basics, source repo hackclub/putting-the-you-in-cpu,
+MIT licence, about 3,200 words, six figures). Worker `nema-cpu`, domain
+`cpu.migarci2.dev`. Same treatment as section 27 and 27b: `original.html`
+untouched (only the analytics script removed and relative links fixed, said
+in the attribution), `index.html` with inline retrieval questions, one after
+each of the chapter's sections (How Computers Are Architected; Processors Are
+Naive; Two Rings to Rule Them All; What Even is a Syscall; The Need for
+Speed), the final block, `compare.html` with the diff headline, attribution
+"Mirror of cpu.land/the-basics by Lexi Mattick, MIT, with nema added" top
+and bottom, LICENSE.article with the MIT text and copyright line. Concept
+cluster added to `shared/concepts.json`: `nema:cpu-architecture`,
+`nema:fetch-execute-cycle`, `nema:privilege-rings`, `nema:system-calls`,
+`nema:interrupts`, `nema:instruction-sets` (prereqs among themselves,
+rubrics, minutes, confusableWith at least privilege-rings vs system-calls
+and interrupts vs system-calls, misconception system-calls
+"programs_call_the_kernel_like_a_function"). The chapter's Google Fonts
+links stay as they are (it is a mirror of someone else's page). The hub's
+"Try it" lists both real articles under one line: "Two real articles, the
+same page with and without nema".
