@@ -253,6 +253,7 @@ webmcp, javascript, html, css, cloudflare-workers, web-crypto-api, ecdsa, mcp, m
 - https://cpu.migarci2.dev/compare (a second real article, with and without nema)
 - https://nema.migarci2.dev/judges.html (the three minute walkthrough)
 - https://github.com/migarci2/nema (repository, MIT)
+- https://github.com/migarci2/nema/releases/tag/v0.1.0 (the Chrome extension, zipped and ready to load unpacked)
 
 ## Which agent(s) or client(s) did you test your WebMCP tools with?
 
