@@ -737,9 +737,23 @@ async function shareBands({ fromBar = false } = {}) {
     declareFrom(current.page && current.page.origin, manifest.concepts);
     renderAlignments();
 
-    const requirements = (manifest.requirements || [])
-      .filter((entry) => entry && entry.concept && entry.ability)
-      .map((entry) => ({ concept: entry.concept, ability: entry.ability }));
+    /* What the page asks for: its requirements plus every pair a skipIf or an
+     * unlock rule reads, the same set the site's own Connect button sends, so
+     * one approval answers everything the path is built from. */
+    const seen = new Set();
+    const requirements = [];
+    const addPair = (entry) => {
+      if (!entry || !entry.concept || !entry.ability) return;
+      const key = entry.concept + '|' + entry.ability;
+      if (seen.has(key)) return;
+      seen.add(key);
+      requirements.push({ concept: entry.concept, ability: entry.ability });
+    };
+    for (const entry of manifest.requirements || []) addPair(entry);
+    for (const activity of manifest.activities || []) {
+      for (const rule of activity.skipIf || []) addPair(rule);
+      for (const rule of activity.unlock || activity.unlockIf || []) addPair(rule);
+    }
     if (requirements.length === 0) {
       say(line('This page asks for nothing about you. There is nothing to share.'));
       if (fromBar) {

@@ -24,7 +24,7 @@ try {
   await page.goto(H + '/'); await page.waitForTools();
   const offer = parse(await page.evaluate(tool('describe_learning_offer', {})));
   ok(offer.status === 'ok' && offer.manifest?.unit?.id === 'pan-sauces-foundations', 'saucier describe_learning_offer ' + offer.manifest?.unit?.title);
-  const seedStatuses = { 'nema:knife-skills|apply': 'verified', 'nema:heat-control|explain': 'verified', 'nema:ratios|apply': 'uncertain' };
+  const seedStatuses = { 'nema:knife-skills|apply': 'verified', 'nema:heat-control|explain': 'verified', 'nema:ratios|apply': 'uncertain', 'nema:heat-control|recognize': 'verified', 'nema:pan-sauces|recognize': 'missing' };
   const t1 = await assertion(H, 'personalize-pan-sauces-path', seedStatuses);
   const p1 = parse(await page.evaluate(tool('personalize_learning_path', { assertionToken: t1 })));
   ok(p1.status === 'personalized' && p1.fullMinutes === 68 && p1.personalMinutes === 27, `saucier personalize seed state: ${p1.status} ${p1.fullMinutes} -> ${p1.personalMinutes}`);
@@ -47,7 +47,7 @@ try {
   await page.goto(SEC + '/'); await page.waitForTools();
   const offer2 = parse(await page.evaluate(tool('describe_learning_offer', {})));
   ok(offer2.manifest?.unit?.id === 'service-under-pressure', 'linecook describe_learning_offer ' + offer2.manifest?.unit?.title);
-  const secStatuses = { 'nema:mise-en-place|explain': 'verified', 'nema:food-safety|apply': 'verified', 'nema:emulsions|explain': 'uncertain' };
+  const secStatuses = { 'nema:mise-en-place|explain': 'verified', 'nema:food-safety|apply': 'verified', 'nema:emulsions|explain': 'uncertain', 'nema:heat-control|recognize': 'verified', 'nema:pan-sauces|recognize': 'uncertain' };
   const t3 = await assertion(SEC, 'unlock-service-labs', secStatuses);
   const c1 = parse(await page.evaluate(tool('check_prerequisites', { assertionToken: t3 })));
   ok(c1.status === 'checked' && c1.unlocked?.includes('incident-triage') && c1.recommendedFirst === 'service-log-audit', `linecook unlock: ${JSON.stringify(c1.unlocked)} first=${c1.recommendedFirst}`);
