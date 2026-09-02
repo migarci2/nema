@@ -19,7 +19,7 @@ real, testable and completely unrelated to the machinery underneath.
 | App | URL | What it is |
 |---|---|---|
 | Site | https://nema.migarci2.dev | The hub, and the install guide at `/creators.html`. Start here. |
-| Vault | https://nema-vault.migarci2.dev | The learner's vault. 9 imperative tools plus one declarative form, so `getTools()` lists 10. |
+| Vault | https://nema-vault.migarci2.dev | The learner's vault. 11 imperative tools plus one declarative form, so `getTools()` lists 12. |
 | Saucier School | https://saucier.migarci2.dev | Provider 1, "Pan Sauces and Emulsions". 5 tools. |
 | Line Cook Lab | https://linecook.migarci2.dev | Provider 2, "Service Under Pressure". 5 tools. |
 | Maillard, explained | https://maillard.migarci2.dev | One blog post, installed with one manifest tag and one script tag. The same 5 tools plus the `present_assertion` form, no server. |
@@ -97,12 +97,21 @@ a readiness assertion for `https://saucier.migarci2.dev` and approve through the
 MCP elicitation prompt. Then paste the token into **Paste an assertion** on the
 Saucier School page. The site verifies it exactly the same way.
 
-**By hand.** In the vault, click **Share with a site**. Fill in the audience
-`https://saucier.migarci2.dev`, a purpose, and the three requirements. The same
-consent modal appears, you Approve, and the signed token appears with a Copy
-button. Paste it into **Paste an assertion** on Saucier School and submit. That
-textarea is the declarative tool `present_assertion`, so a person and an agent
-land on the same verification path.
+**By hand, no agent and nothing installed.** On Saucier School, under the
+requirements, click **Connect your vault**. Your vault opens in a small window
+of its own, on its own origin, with this course's request in the address. The
+same consent modal appears there. Click **Approve** and the window says "Shared.
+You can close this window" and closes itself, and the course behind it rebuilds
+its path. The token never touched your clipboard and no site ever saw your
+vault: the two pages exchanged one signed message, and you were the only thing
+in the middle.
+
+If your browser blocks the popup, the page says so and points at the fallback:
+open **Paste an assertion**, mint the token in the vault under **Share with a
+site** (audience `https://saucier.migarci2.dev`, a purpose, the three
+requirements), Approve, Copy, paste, submit. That textarea is the declarative
+tool `present_assertion`, so a person and an agent land on the same verification
+path, and so does the button above it.
 
 **What happens on screen.** The unit hero shows "Pan Sauces and Emulsions", 68
 minutes, 7 activities. The three requirement pills fill in, two cyan `verified`
@@ -134,8 +143,11 @@ with a signed token, decoded beside it: issuer, activity, claim
 `nema:ratios.apply passed`, grader `deterministic`.
 
 **Take it home.** With an agent: `stage_evidence_receipt` with the token. By
-hand: click **Send to vault**, which opens the vault with `#receipt=<token>` and
-offers to stage it, or paste the token into the vault's manual token inbox.
+hand: click **Keep in my vault**. The same small vault window opens, checks the
+signature, stages the receipt and closes, and the course prints what your vault
+answered, in words: "Kept: ratios, now usable". Under **Do it by hand** the
+token, its Copy button and the old **Send to vault** link are still there for a
+browser with no popups.
 
 The vault verifies the signature against `issuers.json`, adds a row to the
 evidence ledger with a cyan `verified` badge, and animates one row of the state
@@ -149,8 +161,9 @@ assertion to Saucier School and 27 becomes 21, because `ratios.apply` is now
 incident triage lab?"* Tools called: `describe_learning_offer`, then
 `create_readiness_assertion` for the new audience, then `check_prerequisites`.
 
-**By hand.** Share with a site again, audience `https://linecook.migarci2.dev`,
-and paste the token into the Line Cook Lab assertion box.
+**By hand.** Click **Connect your vault** on Line Cook Lab and approve. Same
+button, different site, different question: this one asks about mise en place,
+food safety and emulsions, because that is what its own manifest requires.
 
 Either way, read the `learnerKeyId` line while the consent modal is open. It is
 a different string here than it was for Saucier School, because the id is
@@ -204,9 +217,14 @@ that", written the way a personal blog is written: white page, a serif, one
 column. It has no server, no database and no account. Its whole integration is
 two tags, and the source marks them with a comment so you can copy them.
 
-Read it, click **Mark as read**, answer the two questions at the end, and take
-the receipt to your vault with **Send to vault**. With an agent, the same five
-provider tool names are on that page and it can do all of it.
+Read it, click **Connect your vault** at the top of the block, approve, and the
+article tells you what you can skip. Answer the two questions at the end and
+click **Keep in my vault**. With an agent, the same five provider tool names are
+on that page and it can do all of it.
+
+That whole loop is the point of this step: a blog with no server, no account and
+no build step, talking to a vault it has never met, through two buttons that
+came with the one script tag.
 
 In the vault, that receipt reads `self`. The blog signs with a key it generated
 in the reader's browser and publishes inside the receipt, so the signature
@@ -253,10 +271,10 @@ this the moment you open the page with it). A site may vouch for its own
 vocabulary. It may not vouch for anyone else's, and it cannot overrule a name
 you have already ruled on.
 
-**By hand, no agent.** Answer the blog's two questions and press **Send to
-vault**, then **Stage receipt**. The receipt is accepted and the inbox says
-plainly that `browning-science` is a name this vault has not aligned, so that
-claim moved nothing. The Alignments list now shows the word itself, who signed
+**By hand, no agent.** Answer the blog's two questions and press **Keep in my
+vault**. The receipt is accepted and the vault window says plainly that
+`browning-science` is a name this vault has not aligned, so that claim moved
+nothing. The Alignments list now shows the word itself, who signed
 it, and a **Say what it means** button: press it, type `nema:maillard-reaction`,
 choose "is the same thing as", press **Align it**. The same bands move, and the
 list records it as your own word rather than an agent's.
@@ -335,22 +353,29 @@ Everything here is meant to be attacked. The apps show you what happened.
 | Inflate a self signed receipt | Edit the blog's manifest in devtools to claim `grader: "deterministic"`, then stage the receipt | It verifies, lands as `self`, and is still capped at 0.3. A site cannot promote itself. |
 | Confirm an alignment as the agent | Ask: "confirm that browning-science is nema:maillard-reaction in my vault" | The agent can propose and read, and finds no tool that decides. Confirm and Reject are two buttons in the vault, on every surface. |
 | Rename your way into a band | Propose `browning-science` as `nema:knife-skills`, confirm it, and watch what moves | Exactly the blog's own evidence, at the blog's own weight: a `self` receipt is 0.3 whatever it is called. Translation moves a name, never a weight, and Undo puts it back. |
+| Steal a token through the popup | Open `<vault>/connect.html#request=<a request addressed to Saucier School>&return=https://evil.example` yourself | "This request is not addressed to the site that opened it". The consent modal never appears, so no token exists to steal. The vault answers `request.audience` with `postMessage` and nobody else, never `'*'`. |
+| Answer the popup from somewhere else | Post `{ type: 'nema:assertion', status: 'approved', token }` to the course page from any other window | Ignored. The site side only reads a message whose `event.origin` is the vault origin it opened. |
 | Deny a disclosure | Click Deny in the consent modal | `{ status: 'denied' }`. No token, nothing written, and the disclosure ledger records nothing because nothing was disclosed. |
 
 ## Sixty second version
 
+No agent, no extension, no clipboard.
+
 1. Open https://nema-vault.migarci2.dev and click **Load demo learner**.
-2. Click **Share with a site**: audience `https://saucier.migarci2.dev`, the
-   three requirements. **Approve** the consent modal. Copy the token.
-3. Open https://saucier.migarci2.dev, paste it into **Paste an assertion**.
-   Watch 68 minutes become 27, with the reason on every struck through item.
-4. Repeat for `https://linecook.migarci2.dev` and read the prerequisite table.
-   Two of its three requirements come back `verified` from evidence the vault
-   holds from other origins, the third comes back `missing`, and the page names
-   it. A site with no relationship to anyone got a precise, minimal answer about
-   a stranger, because the learner clicked Approve.
+2. Open https://saucier.migarci2.dev and click **Connect your vault**. Your
+   vault opens in a small window, shows the exact three lines it would share,
+   and waits. Click **Approve**. It closes itself and the course rebuilds:
+   68 minutes become 27, with the reason on every struck through item.
+3. Answer "Which vinaigrette holds", ask the kitchen for the receipt, and click
+   **Keep in my vault**. The vault window opens, checks the signature, and the
+   course prints "Kept: ratios, now usable".
+4. Do step 2 again on https://linecook.migarci2.dev and read the prerequisite
+   table. Two of its three requirements come back `verified` from evidence the
+   vault holds from other origins, the third comes back `missing`, and the page
+   names it. A site with no relationship to anyone got a precise, minimal answer
+   about a stranger, because the learner clicked Approve.
 5. Open https://maillard.migarci2.dev and view source. That is the whole
-   install: one manifest tag, one script tag.
+   install: one manifest tag, one script tag, and the same two buttons.
 
 If you only look at one screen, make it the consent modal.
 

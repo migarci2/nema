@@ -939,3 +939,94 @@ person can answer their own review question in the vault or the extension panel
 with no agent in the room. It is worth 0.3, the weakest thing the vault will
 write down, and the ledger labels it "self check" against the issuer "you, in
 the vault". Ticking your own box is honest evidence. It is not a certificate.
+
+---
+
+## 14. The connect handshake
+
+Sections 12 and 13 assume something got a token from the vault to the site: an
+agent, an extension, or a person with a clipboard. This section is the fourth
+way, and the one that needs nothing installed. A site opens the vault in a
+popup, the learner approves there, and the vault answers the site with
+`postMessage`.
+
+It is a popup and not an iframe because of storage. A popup is a top level
+window on the vault's own origin, so it reads the same `nema.vault.v1` the
+vault page reads. Chrome partitions third party iframe storage, so an embedded
+vault would be a different, empty vault on every site.
+
+### 14.1 The site side: `shared/vault-link.js`
+
+```js
+import { connectVault, sendReceiptToVault } from '/shared/vault-link.js';
+
+const result = await connectVault({ vault, request });    // { status, token }
+const kept   = await sendReceiptToVault({ vault, token }); // { status, changes }
+```
+
+The module has no imports and resolves nothing against the page, so the hub can
+serve it to a blog on another origin unchanged. It only opens URLs and listens
+for messages: it never signs, never verifies and never reads storage.
+
+| what | rule |
+|---|---|
+| the window | `<vault>/connect.html#...`, 480 by 720, one at a time |
+| the gesture | `window.open` runs synchronously, so call it straight from a click |
+| the answer | the first `message` whose `event.origin` is the vault origin and whose `data.type` matches |
+| closed | the opener polls `popup.closed` every 500 ms and rejects with `status: 'closed'` |
+| blocked | `window.open` returned null, rejects with `status: 'blocked'` |
+| busy | one call is already in flight, rejects with `status: 'busy'` |
+
+`connectVault` opens
+`<vault>/connect.html#request=<b64url ReadinessRequest JSON>&return=<origin>`.
+`sendReceiptToVault` opens
+`<vault>/connect.html#receipt=<token>&return=<origin>`. `vault` defaults to
+`https://nema-vault.migarci2.dev`; the embed honours `data-vault` on its script
+tag, and the two example courses read a `?vault=` query.
+
+### 14.2 The vault side: `/connect.html`
+
+The same modules as the vault page, a compact layout, no graph and no ledgers,
+and deliberately no WebMCP tools: an agent that can reach a vault reaches the
+vault page, and a second door here would only widen the surface. It reads
+`location.hash` as URL search params.
+
+**A request.** The vault checks that `return` equals `request.audience`, and
+refuses with "This request is not addressed to the site that opened it" if it
+does not. That one comparison is what stops a page from opening this window
+with somebody else's request and collecting the token. Then the same consent
+modal as the vault page, the same auto approval rule, the same
+`createAssertion`. On approve it posts
+`{ type: 'nema:assertion', status: 'approved', token }` to `window.opener`
+with `targetOrigin = request.audience`, never `'*'`, shows "Shared. You can
+close this window" and closes itself after 1.5 s. On deny it posts
+`{ type: 'nema:assertion', status: 'denied' }`.
+
+**A receipt.** The same `stageReceipt` pipeline as the tool and the inbox, with
+`source: 'site'`, then
+`{ type: 'nema:receipt', status, receiptId?, trust?, changes?, reason? }` to
+`return`, and "Kept in your vault" with the bands that moved. A receipt whose
+issuer is not the origin that opened the window is still staged, because it is
+the learner's data whoever carried it, but the answer goes to `return` only.
+
+**No opener.** A person who opened the link by hand sees the same result and a
+"Back to the vault" link instead of a window that closes itself. The vault
+page keeps handling `#receipt=` as before, so older links still work.
+
+### 14.3 What the pages show
+
+Next to the requirements, a primary **Connect your vault**. It asks for the
+manifest's requirements plus every pair a `skipIf` reads, so one approval
+answers everything the personalised path is built from, including a site's own
+local names. The answer runs the same code as `present_assertion`, and "Paste
+an assertion" stays underneath as the fallback.
+
+After a pass, the receipt panel leads with **Keep in my vault**, which takes
+the token `issue_evidence_receipt` already signed and shows the vault's answer
+in words: "Kept: ratios, now usable". One phrase per concept, naming the
+furthest ability that moved, because a claim about `apply` lifts every rung
+under it and that is still one piece of news. The token box, Copy and the old
+"Send to vault" link move under a "Do it by hand" fold.
+
+A blocked popup is named, not swallowed: "Your browser blocked the vault
+window. Allow popups for this site or use the paste box below."

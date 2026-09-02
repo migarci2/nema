@@ -100,8 +100,38 @@
         yourself and only for yourself: enough to be useful, too little to be worth faking.
       </p>
 
-      <h2>Two optional upgrades</h2>
+      <h2>The two buttons that need no agent</h2>
+      <p>
+        Your readers do not have to install anything, and most of them will not have an agent. The block
+        renders two buttons that do the whole loop with the browser alone.
+      </p>
       <ul class="doc__list">
+        <li>
+          <b>Connect your vault.</b> The reader's vault opens in a small window of its own, on its own
+          origin, carrying your requirements plus every pair your <span class="mono">skipIf</span> rules
+          read. The reader approves there, the vault posts the signed assertion back to your page, and the
+          window closes. Your page then says what they can skip. You never see their vault, and the token
+          never touches a clipboard.
+        </li>
+        <li>
+          <b>Keep in my vault.</b> After a pass, the same window opens with the receipt you just signed. The
+          vault checks the signature, keeps it, and answers your page with the bands that moved, which your
+          page prints in words: "Kept: browning science, now usable".
+        </li>
+      </ul>
+      <p>
+        Popups are a top level window, which is the point: a vault inside an iframe would get a different,
+        empty storage jar on every site, because browsers partition it. If a browser blocks the window, the
+        block says so and points at the paste box underneath, which is the same code path.
+      </p>
+
+      <h2>Three optional upgrades</h2>
+      <ul class="doc__list">
+        <li>
+          <b>Point at another vault.</b> Add <span class="mono">data-vault="https://your-vault.example"</span>
+          to the script tag and both buttons talk to that origin instead. Default:
+          <span class="mono">https://nema-vault.migarci2.dev</span>.
+        </li>
         <li>
           <b>Sign on your server.</b> Add <span class="mono">data-endpoint="/api/receipt"</span> to the script
           tag and the submission is posted to you, graded again and signed with your own key.
@@ -118,11 +148,11 @@
 
       <h2>What readers see</h2>
       <p>
-        Under your text, a small block in your own type: a button, a check of two questions, and afterwards a
-        receipt with Copy and a "Send to vault" link. A reader with an agent never touches it, because the
-        agent calls the tools. A reader with no agent uses the buttons, pastes an assertion into the textarea
-        and watches the path shorten the same way. Nothing there looks like nema except a 16 pixel mark and
-        the words "Works with nema".
+        Under your text, a small block in your own type: "Connect your vault", a button to mark the piece
+        read, a check of two questions, and afterwards a receipt with "Keep in my vault". A reader with an
+        agent never touches any of it, because the agent calls the tools. A reader with no agent presses the
+        two buttons, or opens "Paste an assertion" and "Do it by hand" and carries the tokens themselves.
+        Nothing there looks like nema except a 16 pixel mark and the words "Works with nema".
       </p>
 
       <h2>A working example</h2>

@@ -12,16 +12,19 @@
  *   4. open Saucier School, wait for the strip and the in page bar
  *   5. Share from the bar, tick "Remember this site for 30 days", approve in
  *      the consent modal, assert 27 minutes of 68 and the 30 day approval
- *   6. answer the ratios diagnostic in the page, as the learner
- *   7. the receipt is collected with no click, and the page gets the toast
- *   8. "Check for receipts now" still works and says it is already kept
- *   9. an ordinary page offers nothing
- *  10. the Next card's rubric is ticked and Done records a self check
- *  11. Saucier School again: a remembered site personalises with no consent
+ *   6. the page itself rebuilds its path around what was shared
+ *   7. answer the ratios diagnostic in the page, as the learner
+ *   8. the receipt is collected with no click, and the page gets the toast
+ *   9. "Check for receipts now" still works and says it is already kept
+ *  10. an ordinary page offers nothing
+ *  11. the Next card's rubric is ticked and Done records a self check
+ *  12. Saucier School again: a remembered site personalises with no consent
+ *  13. the blog, which names things its own way: the alignment it declares
+ *      arrives confirmed, and the name it declares nothing about waits
  *
  * Usage:
  *   bash scripts/build-extension.sh
- *   CHROME=<chrome with WebMCP> node packages/nema-extension/test/e2e.mjs [saucierOrigin]
+ *   CHROME=<chrome with WebMCP> node packages/nema-extension/test/e2e.mjs [saucierOrigin] [blogOrigin]
  *
  * Screenshots land in SHOTS (default /tmp/nema-ext-shots).
  */
@@ -33,6 +36,7 @@ import { fileURLToPath } from 'node:url';
 const REPO = fileURLToPath(new URL('../../..', import.meta.url)).replace(/\/$/, '');
 const DIST = `${REPO}/packages/nema-extension/dist`;
 const SAUCIER = process.argv[2] || process.env.SAUCIER || 'http://localhost:8782';
+const BLOG = process.argv[3] || process.env.BLOG || 'http://localhost:8785';
 const SHOTS = process.env.SHOTS || '/tmp/nema-ext-shots';
 const CHROME = process.env.CHROME;
 
@@ -450,9 +454,44 @@ try {
     `a remembered site shares on load with nothing to approve: ${quietBar.slice(0, 90)}`);
   console.log('shot ' + await again.shot('13-saucier-remembered'));
 
-  /* console hygiene, both sides */
+  /* 13. the blog: a site with its own vocabulary, and no server behind it.
+   * Its manifest declares that sugar-browning is nema:caramelization, so that
+   * one arrives confirmed on the site's own word. It says nothing about
+   * browning-science, so the panel says that name is still waiting. */
+  const blog = await browser.newPage(BLOG + '/');
+  const aligns = await panel.waitFor(
+    `(() => { const el = document.querySelector('[data-ext-aligns]');
+       return el && !el.hidden ? el.textContent.replace(/\\s+/g, ' ').trim() : ''; })()`,
+    { timeoutMs: 30000, label: 'the alignments the blog declares' }
+  );
+  ok(aligns.includes('This site names things its own way') && aligns.includes('sugar-browning equivalent caramelization'),
+    `the strip lists the name the blog uses and what it means: ${aligns.slice(0, 140)}`);
+  const declared = await panel.evaluate(`(() => {
+    const doc = JSON.parse(localStorage.getItem('nema.vault.v1'));
+    const rows = (doc.alignments || []).filter((a) => a.origin === ${JSON.stringify(BLOG)});
+    const sugar = rows.find((a) => a.providerConcept === 'sugar-browning');
+    return JSON.stringify({
+      rows: rows.length,
+      sugar: sugar ? { concept: sugar.concept, status: sugar.status, by: sugar.proposedBy } : null,
+      browning: rows.some((a) => a.providerConcept === 'browning-science')
+    });
+  })()`);
+  const blogAligns = JSON.parse(declared);
+  ok(blogAligns.sugar && blogAligns.sugar.concept === 'nema:caramelization'
+    && blogAligns.sugar.status === 'confirmed' && blogAligns.sugar.by === 'provider',
+    `the declared alignment is confirmed on the provider's word: ${JSON.stringify(blogAligns.sugar)}`);
+  const buttons = await panel.evaluate(`document.querySelectorAll('[data-ext-aligns] [data-ext-confirm]').length`);
+  ok(buttons === 0 && blogAligns.browning === false,
+    `a confirmed alignment needs no decision, and the undeclared name is not invented: ${buttons} buttons`);
+  ok(aligns.includes('No match proposed yet for browning-science'),
+    `the name the blog declared nothing about is still waiting: ${aligns.slice(-160)}`);
+  console.log('shot ' + await panel.shot('14-panel-alignments'));
+  console.log('shot ' + await blog.shot('15-blog'));
+
+  /* console hygiene, all three sides */
   ok(panel.errors.length === 0, `panel console errors: ${JSON.stringify(panel.errors)}`);
   ok(site.errors.length === 0, `page console errors: ${JSON.stringify(site.errors)}`);
+  ok(blog.errors.length === 0, `blog console errors: ${JSON.stringify(blog.errors)}`);
 } catch (err) {
   failures += 1;
   console.error('FAIL ' + (err && err.stack ? err.stack : err));

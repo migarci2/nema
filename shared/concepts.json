@@ -1495,5 +1495,261 @@
       "harness": "pastry-fundamentals",
       "security": "pastry-basics"
     }
+  },
+  {
+    "id": "nema:block-ciphers",
+    "title": "Block ciphers",
+    "summary": "A keyed, reversible permutation on one fixed size block, such as AES on 128 bits, which says nothing about longer messages and authenticates nothing.",
+    "prereqs": [],
+    "confusableWith": [
+      "nema:counter-mode",
+      "nema:authenticated-encryption"
+    ],
+    "misconceptions": [
+      {
+        "id": "decrypting_cleanly_proves_the_key_was_used",
+        "text": "If a ciphertext decrypts without error, it must have been encrypted with my key."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states that the cipher maps one fixed size block to another under a key and back again",
+        "says that the map is bijective, so every block is a valid ciphertext for some plaintext",
+        "separates the primitive from a mode of operation, which is what handles longer messages"
+      ],
+      "apply": [
+        "encrypts and decrypts a single block with a chosen key and predicts the output length",
+        "picks a mode of operation rather than calling the raw primitive on a long message",
+        "refuses to treat a successful decryption as proof of origin"
+      ],
+      "discriminate": [
+        "separates the block cipher from the mode that uses it",
+        "separates confidentiality from integrity and names which one the primitive gives",
+        "gives one case where a tampered ciphertext still decrypts to something"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "aesgcm": "aes"
+    }
+  },
+  {
+    "id": "nema:counter-mode",
+    "title": "Counter mode",
+    "summary": "Turning a block cipher into a stream cipher by encrypting a counter block per position and XORing the result with the plaintext, so the keystream, not the cipher, does the encrypting.",
+    "prereqs": [
+      "nema:block-ciphers"
+    ],
+    "confusableWith": [
+      "nema:block-ciphers"
+    ],
+    "misconceptions": [
+      {
+        "id": "the_plaintext_goes_through_the_block_cipher",
+        "text": "In counter mode the plaintext blocks are the input to the block cipher."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "describes the counter block, its increment, and the keystream it produces",
+        "states that encryption is the XOR of plaintext and keystream, and that XOR is its own inverse",
+        "explains why the counter block must differ per message, which is what the nonce is for"
+      ],
+      "apply": [
+        "derives the plaintext of a second message from a known plaintext and ciphertext pair under a repeated keystream",
+        "computes a keystream block from the counter and the key",
+        "chooses a fresh nonce per message under one key"
+      ],
+      "discriminate": [
+        "separates the keystream from the ciphertext and from the block cipher output",
+        "separates a repeated key, which is fine, from a repeated keystream, which is not",
+        "gives one case where counter mode keeps a message secret and still lets it be altered"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 5,
+      "apply": 7,
+      "discriminate": 4
+    },
+    "aliases": {
+      "aesgcm": "ctr-keystream"
+    }
+  },
+  {
+    "id": "nema:galois-field-arithmetic",
+    "title": "Galois field arithmetic",
+    "summary": "Addition and multiplication in a finite field such as GF(2^128), where addition is XOR and multiplication is polynomial multiplication reduced by a fixed irreducible polynomial.",
+    "prereqs": [],
+    "confusableWith": [],
+    "misconceptions": [
+      {
+        "id": "field_multiplication_is_integer_multiplication",
+        "text": "Multiplying two field elements is the same as multiplying the two 128-bit integers."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states that the field has a finite number of elements and that addition is the XOR of the two elements",
+        "describes multiplication as polynomial multiplication followed by reduction modulo a fixed polynomial",
+        "says why a 128-bit block can be read as an element of GF(2^128)"
+      ],
+      "apply": [
+        "adds two 128-bit elements by XOR and predicts the result",
+        "multiplies two small elements and reduces the product by the field polynomial",
+        "reads a polynomial equation over the field as an ordinary equation in one unknown"
+      ],
+      "discriminate": [
+        "separates field addition from integer addition with carries",
+        "separates the reduction polynomial from the elements being multiplied",
+        "gives one case where the field result differs from the integer result"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
+      "explain": 6,
+      "apply": 9,
+      "discriminate": 4
+    },
+    "aliases": {
+      "aesgcm": "gf2-128"
+    }
+  },
+  {
+    "id": "nema:message-authentication",
+    "title": "Message authentication",
+    "summary": "A short tag computed with a secret key over a message, so a recipient can tell that the message came from a key holder and was not altered on the way.",
+    "prereqs": [
+      "nema:block-ciphers"
+    ],
+    "confusableWith": [
+      "nema:authenticated-encryption"
+    ],
+    "misconceptions": [
+      {
+        "id": "encryption_implies_integrity",
+        "text": "If a message is encrypted, nobody can change it without me noticing."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states what a tag proves: origin among the key holders, and that the bytes are unaltered",
+        "says that the tag is keyed, so an attacker without the key cannot recompute it",
+        "explains why a hash with no key is not a message authentication tag"
+      ],
+      "apply": [
+        "verifies a tag before using the message it covers",
+        "authenticates the associated data as well as the ciphertext when the format carries both",
+        "rejects a message whose tag does not check, rather than reading it first"
+      ],
+      "discriminate": [
+        "separates authentication, which detects change, from encryption, which hides content",
+        "separates an unkeyed hash from a keyed tag",
+        "gives one case where a ciphertext is secret and still forgeable"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 5,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "aesgcm": "ghash"
+    }
+  },
+  {
+    "id": "nema:authenticated-encryption",
+    "title": "Authenticated encryption",
+    "summary": "One construction that both hides a message and authenticates it, usually with associated data left in the clear, so a recipient gets secrecy and integrity from a single key.",
+    "prereqs": [
+      "nema:counter-mode",
+      "nema:message-authentication"
+    ],
+    "confusableWith": [
+      "nema:message-authentication",
+      "nema:block-ciphers"
+    ],
+    "misconceptions": [
+      {
+        "id": "aead_is_just_encryption_plus_a_hash",
+        "text": "Authenticated encryption is encryption with a hash of the plaintext appended."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names the two guarantees, secrecy and integrity, and says which part of the construction gives each",
+        "explains what associated data is and why it is authenticated but not encrypted",
+        "states that the tag is checked before the plaintext is used"
+      ],
+      "apply": [
+        "encrypts with a fresh nonce and transmits nonce, ciphertext and tag together",
+        "puts routing or header data in the associated data instead of leaving it unauthenticated",
+        "treats a failed tag check as a hard error"
+      ],
+      "discriminate": [
+        "separates authenticated encryption from a bare mode of operation with no tag",
+        "separates the tag from the ciphertext and says what each one protects",
+        "gives one case where a scheme keeps a message secret and still accepts a forgery"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 5,
+      "apply": 7,
+      "discriminate": 5
+    },
+    "aliases": {
+      "aesgcm": "aes-gcm"
+    }
+  },
+  {
+    "id": "nema:nonce-misuse",
+    "title": "Nonce misuse",
+    "summary": "What a repeated nonce costs. Under one key a reused nonce repeats the keystream and, in a polynomial tag scheme, exposes the hash key, so both secrecy and forgery resistance are lost.",
+    "prereqs": [
+      "nema:authenticated-encryption",
+      "nema:galois-field-arithmetic"
+    ],
+    "confusableWith": [
+      "nema:counter-mode"
+    ],
+    "misconceptions": [
+      {
+        "id": "a_nonce_only_needs_to_be_secret",
+        "text": "A nonce is safe as long as an attacker cannot guess it."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "states that a nonce must be unique under a key, and that secrecy and randomness are not what makes it safe",
+        "explains why a repeated keystream lets one known plaintext reveal another message",
+        "explains why the per nonce value cancels between two tags and leaves an equation in the hash key"
+      ],
+      "apply": [
+        "recovers a second plaintext from a known pair encrypted under the same key and nonce",
+        "builds the polynomial from two tags and their blocks and solves it for the hash key",
+        "chooses a nonce strategy, counter or random with a size argument, that cannot repeat under one key"
+      ],
+      "discriminate": [
+        "separates a repeated nonce from a repeated key",
+        "separates the loss of secrecy from the loss of forgery resistance and says how each one happens",
+        "gives one case where a nonce is unpredictable and still unsafe because it repeats"
+      ]
+    },
+    "minutes": {
+      "retrieve": 4,
+      "explain": 6,
+      "apply": 10,
+      "discriminate": 5
+    },
+    "aliases": {
+      "aesgcm": "nonce-reuse"
+    }
   }
 ]

@@ -78,6 +78,15 @@
         <ul class="reqs__list" data-hero-requirements></ul>
         <div class="reqs__body" data-prereq-body></div>
 
+        <!-- The handshake, contract section 25. One button opens the learner's
+             vault in a popup with these requirements, the learner approves
+             there, and the vault posts the signed assertion back to this page,
+             which runs the same check as present_assertion. -->
+        <div class="connect">
+          <button class="n-btn n-btn--primary" type="button" data-connect-vault>Connect your vault</button>
+          <span class="connect__status" data-connect-status role="status" aria-live="polite"></span>
+        </div>
+
         <!-- Hand delivery. No agent needed: the learner carries the token from
              their vault and pastes it here. The same form is a declarative
              WebMCP tool, so an agent can present a token the same way. -->

@@ -143,9 +143,13 @@ Word count: 193.
 
 ---
 
-The same tool table also runs outside the browser: `packages/nema-mcp` boots the vault inside Node with four shims and serves the nine tools over MCP, so Claude Code and Codex reach the learner's vault with the same names and schemas that ChatGPT reaches through WebMCP on the page. Consent travels through MCP elicitation. Nothing was rewritten: WebMCP tools turned out to be a good enough contract to be the MCP contract too.
+The same tool table also runs outside the browser: `packages/nema-mcp` boots the vault inside Node with four shims and serves the eleven tools over MCP, so Claude Code and Codex reach the learner's vault with the same names and schemas that ChatGPT reaches through WebMCP on the page. Consent travels through MCP elicitation. Nothing was rewritten: WebMCP tools turned out to be a good enough contract to be the MCP contract too.
 
 The repo also ships nema as a Chrome extension: the vault as a side panel with a model free broker, one click to share bands with the page you are on and one click to take the receipt home.
+
+Concept alignment is one array in the vault document and no change anywhere else. An alignment record points one origin's local id at one registry id with a relation and a status, and `shared/inference.js` never sees it: derivation runs over a translated view of the ledger in which each confirmed local claim is read as its registry concept and each unconfirmed one is left out. That is why confirming an alignment moves bands with no write to the evidence, and why rejecting it moves them back. Two tools reach it, `propose_concept_alignment` and `get_concept_alignments`, and there is deliberately no third: what a site's own name means is the learner's judgement, so confirming exists only as a button in the vault page and the extension panel.
+
+The connect handshake is `shared/vault-link.js` and `apps/vault/public/connect.html`, and it is the whole no agent path. A site calls `connectVault({ vault, request })` inside a click, which opens `<vault>/connect.html#request=<b64url>&return=<origin>` at 480 by 720. The vault side checks that `return` equals `request.audience` and refuses otherwise, which is the one comparison that stops a page from opening the window with somebody else's request, then runs the same consent modal and the same `createAssertion` as the vault page and posts the token back with `targetOrigin` set to the audience, never `'*'`. `sendReceiptToVault` is the same window in the other direction. The module has no imports, resolves nothing against the page and never signs, verifies or reads storage: the vault decides, and this side only asks.
 
 ## About the project
 
@@ -194,6 +198,29 @@ the protocol installable by a stranger in the first place.
 The agent is whichever one you already use: ChatGPT desktop, Chrome 149 or
 later, Claude Code or Codex over MCP. nema ships none, and every flow works with
 none.
+
+Sites speak their own names, and nema does not ask them to stop. A site that
+already calls something `sugar-browning` publishes it under that name, and the
+registry stays the anchor underneath. When a name is one the vault does not
+know, the agent proposes what it means: `browning-science` is
+`nema:maillard-reaction`, here is one sentence saying why. The learner confirms
+or rejects it, and only then does the vault translate, at its two edges: a
+receipt written in the site's names counts toward the registry concept, and a
+requirement asked in the site's names is answered in the site's own words. The
+signed evidence is never rewritten. A confirmed alignment moves bands by
+changing how the vault reads a ledger it did not touch, and a rejected one moves
+them back. A site may also vouch for its own vocabulary in its manifest, which
+arrives confirmed on the site's word rather than on a guess.
+
+You do not need an agent, or an extension, to use any of this. A site can talk
+to your vault by itself: "Connect your vault" opens the vault's own page in a
+small popup, the popup shows the same consent modal, and the answer is posted
+back to the page that asked. It is a popup and not an iframe for one reason:
+a popup is a top level window on the vault's origin, so it reads the vault you
+actually have, and Chrome's storage partitioning would have given an embedded
+vault an empty one per site. The same window keeps a receipt after you pass
+something. Agent, extension or nothing at all, the three routes end in the same
+consent modal and the same ledger.
 
 The two example sites teach cooking, deliberately. Saucier School runs a unit on
 pan sauces and emulsions; Line Cook Lab drills service under pressure. A course

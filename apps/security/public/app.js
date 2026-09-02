@@ -33,9 +33,23 @@ import { ORIGINS } from '/shared/origins.js';
    for the "Works with nema" badge and the tools indicator behaviour. */
 import { markSvg, mountToolsIndicator, toast, copyToClipboard } from '/shared/brand/brand.js';
 import { mountActivityStrip } from '/shared/webmcp.js';
+import {
+  connectVault,
+  sendReceiptToVault,
+  describeChanges,
+  describeFailure,
+  trimOrigin
+} from '/shared/vault-link.js';
 
 const STORAGE_KEY = 'nema.security.v1';
-const VAULT_ORIGIN = ORIGINS.vault;
+const PURPOSE = 'unlock-service-labs';
+
+/* Which vault this course talks to. `?vault=<origin>` for a judge running the
+ * whole thing locally, the vault for this environment otherwise. */
+const VAULT_ORIGIN = (() => {
+  const asked = new URLSearchParams(location.search).get('vault');
+  return asked ? trimOrigin(asked) : ORIGINS.vault;
+})();
 
 /* --------------------------------------------------------------- state -- */
 
@@ -304,6 +318,100 @@ function renderPrereq() {
   ];
   for (const [key, value] of rows) list.append(el('dt', null, key), el('dd', null, value));
   meta.append(list);
+}
+
+/* --------------------------------------------------- connect the vault -- */
+
+/**
+ * What this unit asks a vault for: its three requirements plus every pair a
+ * `skipIf` reads, so one approval answers everything the lock rules and the
+ * skip rules are built from.
+ */
+function vaultRequest() {
+  const seen = new Set();
+  const requirements = [];
+  const add = (concept, ability) => {
+    const key = `${concept}|${ability}`;
+    if (!concept || !ability || seen.has(key)) return;
+    seen.add(key);
+    requirements.push({ concept, ability });
+  };
+  for (const entry of MANIFEST.requirements) add(entry.concept, entry.ability);
+  for (const activity of MANIFEST.activities) {
+    for (const rule of activity.skipIf || []) add(rule.concept, rule.ability);
+  }
+  return { audience: location.origin, purpose: PURPOSE, requirements };
+}
+
+function setConnectStatus(text) {
+  const node = $('[data-connect-status]');
+  if (node) node.textContent = text || '';
+}
+
+function renderConnect() {
+  const button = $('[data-connect-vault]');
+  if (!button) return;
+  const has = Boolean(state.assertion);
+  button.textContent = has ? 'Ask your vault again' : 'Connect your vault';
+  button.classList.toggle('n-btn--primary', !has);
+  button.classList.toggle('n-btn--secondary', has);
+}
+
+/**
+ * The handshake, contract section 25. `connectVault` opens the popup inside
+ * the click so the gesture survives; the token it brings back goes through
+ * `presentAssertion`, the same function `check_prerequisites` runs.
+ */
+async function connectToVault(button) {
+  setConnectStatus('Waiting for your vault.');
+  button.disabled = true;
+  try {
+    const answer = await connectVault({ vault: VAULT_ORIGIN, request: vaultRequest() });
+    if (answer.status !== 'approved' || typeof answer.token !== 'string') {
+      setConnectStatus('Your vault shared nothing. This page is unchanged.');
+      return;
+    }
+    const result = await presentAssertion(answer.token);
+    setConnectStatus(
+      result.status === 'checked'
+        ? `Verified. ${result.unlocked.length} of ${ACTIVITY_ORDER.length} activities unlocked.`
+        : `Rejected: ${result.reason}. Nothing on this page changed.`
+    );
+  } catch (error) {
+    setConnectStatus(describeFailure(error).message);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+/**
+ * "Keep in my vault": the receipt this activity already holds, handed to the
+ * vault in its own window, and the vault's answer said in words.
+ */
+async function keepInVault(activityId, button, say) {
+  const stored = state.receipts[activityId];
+  if (!stored) {
+    say('There is no receipt for this activity yet.');
+    return;
+  }
+  say('Waiting for your vault.');
+  button.disabled = true;
+  try {
+    const kept = await sendReceiptToVault({ vault: VAULT_ORIGIN, token: stored.token });
+    if (kept.status === 'accepted') {
+      const moved = describeChanges(kept.changes);
+      say(moved ? `Kept: ${moved}.` : 'Kept. Your vault already knew this much.');
+      toast(moved ? `Kept in your vault: ${moved}.` : 'Kept in your vault.', 'ok');
+    } else if (kept.status === 'pending') {
+      say('Kept, but your vault does not know this issuer, so nothing moved.');
+    } else {
+      say(`Not kept: ${kept.reason || kept.status}.`);
+    }
+  } catch (error) {
+    say(describeFailure(error).message);
+  } finally {
+    button.disabled = false;
+  }
 }
 
 /* ------------------------------------------------------------ activities -- */
@@ -876,7 +984,8 @@ function renderReceipt() {
        (brand.css component 10), which is what the harness provider and the
        vault also use, so the three token surfaces look the same. The full token
        is in the DOM, the Copy button puts the whole string on the clipboard,
-       and the box clamps to a readable height instead of a resizable field. */
+       and the box clamps to a readable height instead of a resizable field.
+       Since section 25 it lives one fold down, under "Do it by hand". */
     const token = el('div', 'n-token');
     const head = el('span', 'n-token__head', 'Signed receipt for ');
     head.append(el('code', 'mono', activityId));
@@ -889,7 +998,6 @@ function renderReceipt() {
     text.append(el('b', null, 'nema1.'));
     text.append(document.createTextNode(receipt.token.slice(6)));
     token.append(text);
-    block.append(token);
 
     const claims = el('div', 'n-ledger');
     payload.claims.forEach((claim, index) => {
@@ -928,13 +1036,40 @@ function renderReceipt() {
     details.append(metaWrap);
     block.append(details);
 
+    /* One button finishes the job: the vault opens in its own window, checks
+       the signature and says what moved. The token, the Copy box and the old
+       link are still here, one fold down, for a browser with no popups. */
     const actions = el('div', 'row');
-    const link = el('a', 'n-btn n-btn--primary', 'Send to vault');
-    link.href = `${VAULT_ORIGIN}/#receipt=${encodeURIComponent(receipt.token)}`;
-    link.rel = 'noopener';
-    actions.append(link);
+    const keep = el('button', 'n-btn n-btn--primary', 'Keep in my vault');
+    keep.type = 'button';
+    keep.setAttribute('data-keep-vault', activityId);
+    const keepStatus = el('p', 'receipt__note');
+    keepStatus.setAttribute('data-keep-status', activityId);
+    keepStatus.setAttribute('role', 'status');
+    keepStatus.setAttribute('aria-live', 'polite');
+    keep.addEventListener('click', () =>
+      keepInVault(activityId, keep, (line) => {
+        keepStatus.textContent = line;
+      })
+    );
+    actions.append(keep);
     actions.append(el('span', 'receipt__note', 'The vault checks the signature before anything moves.'));
     block.append(actions);
+    block.append(keepStatus);
+
+    const byHand = el('details', 'byhand');
+    byHand.append(el('summary', 'byhand__summary', 'Do it by hand'));
+    const byHandBody = el('div', 'byhand__body');
+    byHandBody.append(token);
+    const handRow = el('div', 'row');
+    const link = el('a', 'n-btn n-btn--secondary', 'Send to vault');
+    link.href = `${VAULT_ORIGIN}/#receipt=${encodeURIComponent(receipt.token)}`;
+    link.rel = 'noopener';
+    handRow.append(link);
+    handRow.append(el('span', 'receipt__note', 'Opens your vault with the token in the address, ready to stage.'));
+    byHandBody.append(handRow);
+    byHand.append(byHandBody);
+    block.append(byHand);
 
     body.append(block);
   }
@@ -943,6 +1078,7 @@ function renderReceipt() {
 function renderAll() {
   renderHero();
   renderPrereq();
+  renderConnect();
   renderPath();
   renderStage();
   renderReceipt();
@@ -1278,6 +1414,9 @@ document.addEventListener('nema:toolcall', () => {
   renderHero();
   renderPath();
 });
+
+const connectButton = $('[data-connect-vault]');
+if (connectButton) connectButton.addEventListener('click', () => connectToVault(connectButton));
 
 const { registerSecurityTools } = await import('/tools.js');
 await registerSecurityTools({

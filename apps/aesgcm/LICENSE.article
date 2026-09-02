@@ -1,0 +1,27 @@
+The article in this directory is not ours.
+
+"AES-GCM and breaking it on nonce reuse" was written by frereit (Frederik
+Reiter) and published at https://frereit.de/aes_gcm/ under the Creative
+Commons Attribution ShareAlike 4.0 International licence (CC BY-SA 4.0),
+https://creativecommons.org/licenses/by-sa/4.0/. The original page carries
+that licence in its own footer.
+
+public/original.html is that page as mirrored, byte for byte, together with
+the styles, scripts, wasm module and images it loads.
+
+public/index.html is the same page with nema added: one manifest, one script
+tag, five inline question anchors, one activities block and an attribution
+paragraph at the top and the bottom. Nothing of the article's text, markup or
+widgets was changed. public/compare.html shows the exact diff.
+
+This copy, and the nema additions inside it, are published under the same
+licence, CC BY-SA 4.0, as the licence requires of a derivative work.
+Attribution: frereit, https://frereit.de/aes_gcm/.
+
+The point of the mirror is to show what a learning protocol adds to an
+article that already exists, on a real article rather than a demo one. If
+frereit would rather we did not host this copy, we will take it down: write
+to the address on https://nema.migarci2.dev.
+
+The rest of the nema repository is under the licence in the repository root
+LICENSE file. This file governs apps/aesgcm/public only.

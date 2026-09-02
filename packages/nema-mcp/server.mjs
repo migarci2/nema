@@ -1,4 +1,4 @@
-// The nema vault as an MCP server: the nine WebMCP tools, verbatim, over stdio.
+// The nema vault as an MCP server: the eleven WebMCP tools, verbatim, over stdio.
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';

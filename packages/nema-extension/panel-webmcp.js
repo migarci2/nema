@@ -3,7 +3,7 @@
  * Chrome's native WebMCP refuses to run on a chrome-extension:// document. Every
  * call comes back with "document.modelContext cannot be used when document.domain
  * is enabled", asynchronously, so there is no synchronous probe to branch on and
- * the decision has to be taken from the scheme. The vault registers its nine
+ * the decision has to be taken from the scheme. The vault registers its eleven
  * tools on load, so without this the panel would show a dead tools pill and an
  * empty tool activity strip.
  *

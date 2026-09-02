@@ -415,6 +415,18 @@
 .lab-req:first-child { border-top: 0; }
 .lab-req__id { font-size: var(--fs-12); color: var(--ink); overflow-wrap: anywhere; }
 
+/* The handshake, one button wide. It sits directly under the requirements
+ * because that is the sentence it answers. */
+.lab-connect {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  padding-top: var(--sp-4);
+  max-width: 52ch;
+}
+.lab-connect .lab-note { margin: 0; }
+
 /* Hand delivery sits under the requirements as one line until it is wanted:
  * the block it opens is a field and a button, no panel and no border. */
 .lab-paste { max-width: 52ch; }
@@ -862,6 +874,20 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
 @media (max-width: 900px) {
   .receipt { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* The token is no longer the first thing in the receipt: "Keep in my vault"
+ * is. The bytes fold away for the learner who wants them. */
+.lab-byhand { padding-top: var(--sp-2); }
+.lab-byhand__summary {
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+  cursor: pointer;
+  width: max-content;
+}
+.lab-byhand__summary:hover { color: var(--ink); }
+.lab-byhand__summary:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+.lab-byhand[open] > .n-token { margin-top: var(--sp-3); }
+.lab-byhand > .row { padding-top: var(--sp-3); }
 
 /* The token box is the one place a signature is shown verbatim. On paper it
  * is a slip in the receipt, not a code block. */

@@ -1,0 +1,18 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "nema-aesgcm",
+  "compatibility_date": "2026-08-01",
+  "workers_dev": true,
+  // A real article, mirrored as it is (CC BY-SA 4.0, see LICENSE.article) with
+  // nema added by the one tag install. Like the blog, this origin carries the
+  // article and nothing else: no Worker script, no issuer secret, no copy of
+  // shared/. It loads the embed and the modules the embed imports from the hub,
+  // cross origin, and its receipts are signed by a key generated in the
+  // reader's browser, so they land in the vault's self certified tier.
+  "assets": {
+    "directory": "../../dist/aesgcm"
+  },
+  "routes": [
+    { "pattern": "aesgcm.migarci2.dev", "custom_domain": true }
+  ]
+}

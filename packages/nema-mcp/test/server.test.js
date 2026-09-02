@@ -170,6 +170,64 @@ test('stages a receipt signed by the harness key, rejects a replay', { skip: !fs
   } finally { await client.close(); }
 });
 
+test('merge unions alignments by id, and by name when the ids differ, keeping the confirmed one', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const BLOG = 'https://maillard.migarci2.dev';
+
+  /* The browser side: two alignments, one of which the learner confirmed. */
+  const browser = tmpFile();
+  const browserEnv = { ...process.env, NEMA_VAULT_FILE: browser };
+  let client = await connect(browser);
+  try {
+    for (const [providerConcept, concept] of [['browning-science', 'nema:maillard-reaction'], ['sugar-browning', 'nema:caramelization']]) {
+      const r = parse(await client.callTool({
+        name: 'propose_concept_alignment',
+        arguments: { origin: BLOG, providerConcept, concept, relation: 'equivalent', rationale: 'The article names it its own way.' }
+      }));
+      assert.equal(r.status, 'proposed');
+    }
+  } finally { await client.close(); }
+
+  const exported = path.join(path.dirname(browser), 'export.json');
+  execFileSync(process.execPath, [BIN, 'export', exported], { env: browserEnv });
+  const doc = JSON.parse(fs.readFileSync(exported, 'utf8'));
+  const confirmed = doc.alignments.find((a) => a.providerConcept === 'browning-science');
+  confirmed.status = 'confirmed';
+  confirmed.decidedAt = new Date().toISOString();
+  fs.writeFileSync(exported, JSON.stringify(doc));
+
+  /* The terminal side: the same name, asked again, so a different id. */
+  const terminal = tmpFile();
+  const terminalEnv = { ...process.env, NEMA_VAULT_FILE: terminal };
+  client = await connect(terminal);
+  let mine;
+  try {
+    mine = parse(await client.callTool({
+      name: 'propose_concept_alignment',
+      arguments: { origin: BLOG, providerConcept: 'browning-science', concept: 'nema:maillard-reaction', relation: 'equivalent', rationale: 'Asked here too.' }
+    }));
+    assert.equal(mine.status, 'proposed');
+  } finally { await client.close(); }
+  assert.notEqual(mine.alignmentId, confirmed.alignmentId, 'the two vaults minted different ids for the same name');
+
+  const first = execFileSync(process.execPath, [BIN, 'merge', exported], { env: terminalEnv }).toString();
+  assert.match(first, /1 -> 2 alignments/);
+  const second = execFileSync(process.execPath, [BIN, 'merge', exported], { env: terminalEnv }).toString();
+  assert.match(second, /2 -> 2 alignments/, 'merging the same export twice adds nothing');
+
+  client = await connect(terminal);
+  try {
+    const listed = parse(await client.callTool({ name: 'get_concept_alignments', arguments: { origin: BLOG } }));
+    assert.equal(listed.alignments.length, 2, 'one row per name, not one per id');
+    const browning = listed.alignments.filter((a) => a.providerConcept === 'browning-science');
+    assert.equal(browning.length, 1);
+    assert.equal(browning[0].status, 'confirmed', 'the answer the learner gave survives the merge');
+    assert.equal(browning[0].alignmentId, confirmed.alignmentId);
+    const sugar = listed.alignments.find((a) => a.providerConcept === 'sugar-browning');
+    assert.ok(sugar && sugar.status === 'proposed', 'a name this vault had never seen arrives as it stood');
+  } finally { await client.close(); }
+});
+
 test('merge is a union by receipt id and idempotent', async () => {
   const a = tmpFile();
   const { execFileSync } = await import('node:child_process');

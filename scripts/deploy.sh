@@ -11,7 +11,7 @@ cd "$ROOT"
 
 bash scripts/build.sh
 
-APPS=(site vault harness security blog)
+APPS=(site vault harness security blog aesgcm)
 
 for app in "${APPS[@]}"; do
   echo

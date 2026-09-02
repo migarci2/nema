@@ -1,7 +1,7 @@
 {
   "name": "nema-mcp",
   "version": "0.1.0",
-  "description": "The nema learning vault over MCP: the same nine tools terminal agents can call",
+  "description": "The nema learning vault over MCP: the same eleven tools terminal agents can call",
   "type": "module",
   "license": "MIT",
   "bin": {

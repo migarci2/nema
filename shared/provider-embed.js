@@ -633,11 +633,12 @@ async function boot() {
   };
 
   await ensureModelContext();
-  const [{ registerTools, EXPOSED_TO }, protocol, crypto, origins] = await Promise.all([
+  const [{ registerTools, EXPOSED_TO }, protocol, crypto, origins, vaultLink] = await Promise.all([
     import(helperUrl('webmcp.js')),
     import(helperUrl('protocol.js')),
     import(helperUrl('crypto.js')),
-    import(helperUrl('origins.js'))
+    import(helperUrl('origins.js')),
+    import(helperUrl('vault-link.js'))
   ]);
 
   const vaultOrigin = options.vault || origins.ORIGINS.vault;
@@ -658,9 +659,14 @@ async function boot() {
     contentHash,
     protocol,
     crypto,
+    vaultLink,
     assertion: store.read().assertion || null,
     personal: null,
-    message: null
+    message: null,
+    /* One line under the two buttons, so the reader always knows what the
+     * vault window answered without a toast the host page never asked for. */
+    connectNote: '',
+    keepNote: {}
   };
 
   const view = mount(app);
@@ -880,6 +886,90 @@ async function postToEndpoint(app, activityId, attempt, learnerKeyId, conditions
   return null;
 }
 
+/**
+ * What this page asks a vault for: the manifest's requirements plus every pair
+ * a `skipIf` reads. One approval then answers everything the personalised path
+ * is built from, including the site's own local names, which is what makes the
+ * "You can skip" note appear after a single click.
+ *
+ * Pure: `test/vault-link.test.js` builds it from the blog's own manifest.
+ *
+ * @param {object} manifest a parsed LearningManifest
+ * @param {string} audience the origin the assertion must be addressed to
+ */
+export function readinessRequestFor(manifest, audience) {
+  const seen = new Set();
+  const requirements = [];
+  const add = (concept, ability) => {
+    const key = `${concept}|${ability}`;
+    if (!concept || !ability || seen.has(key)) return;
+    seen.add(key);
+    requirements.push({ concept, ability });
+  };
+  for (const entry of manifest.requirements || []) add(entry.concept, entry.ability);
+  for (const activity of manifest.activities || []) {
+    for (const rule of activity.skipIf || []) add(rule.concept, rule.ability);
+    for (const rule of activity.onlyIf || []) add(rule.concept, rule.ability);
+  }
+  return { audience, purpose: `personalize-${manifest.unit.id}`, requirements };
+}
+
+/**
+ * The handshake, contract section 25. The vault opens in a popup, the reader
+ * approves there, and the token comes back through `presentAssertion`, the
+ * same function the `present_assertion` form and the tool run.
+ */
+async function connectToVault(app) {
+  app.connectNote = 'Waiting for your vault.';
+  app.render();
+  try {
+    const answer = await app.vaultLink.connectVault({
+      vault: app.vaultOrigin,
+      request: readinessRequestFor(app.manifest, location.origin)
+    });
+    if (answer.status !== 'approved' || typeof answer.token !== 'string') {
+      app.connectNote = 'Your vault shared nothing. This page is unchanged.';
+      app.render();
+      return;
+    }
+    const result = await presentAssertion(app, answer.token);
+    app.connectNote =
+      result.status === 'personalized'
+        ? ''
+        : `Your vault answered, but the token was refused: ${result.reason}.`;
+    app.render();
+  } catch (error) {
+    app.connectNote = app.vaultLink.describeFailure(error).message;
+    app.render();
+  }
+}
+
+/** Hand one signed receipt to the vault and say what it moved, in words. */
+async function keepInVault(app, activityId) {
+  const stored = app.store.read().receipts.find((entry) => entry.activityId === activityId);
+  if (!stored) {
+    app.keepNote[activityId] = 'There is no receipt for this activity yet.';
+    app.render();
+    return;
+  }
+  app.keepNote[activityId] = 'Waiting for your vault.';
+  app.render();
+  try {
+    const kept = await app.vaultLink.sendReceiptToVault({ vault: app.vaultOrigin, token: stored.token });
+    if (kept.status === 'accepted') {
+      const moved = app.vaultLink.describeChanges(kept.changes);
+      app.keepNote[activityId] = moved ? `Kept: ${moved}.` : 'Kept. Your vault already knew this much.';
+    } else if (kept.status === 'pending') {
+      app.keepNote[activityId] = 'Kept, but your vault does not know this issuer, so nothing moved.';
+    } else {
+      app.keepNote[activityId] = `Not kept: ${kept.reason || kept.status}.`;
+    }
+  } catch (error) {
+    app.keepNote[activityId] = app.vaultLink.describeFailure(error).message;
+  }
+  app.render();
+}
+
 async function presentAssertion(app, token) {
   const text = typeof token === 'string' ? token.trim() : '';
   if (text === '') return { status: 'rejected', reason: 'malformed' };
@@ -944,6 +1034,11 @@ function mount(app) {
     if (app.message) {
       root.appendChild(el('p', { class: 'nema-embed-note', 'data-nema-message': '', text: app.message }));
     }
+    /* The handshake comes first, because it is the thing that changes what the
+     * rest of the block says. The paste box stays directly under it as the
+     * fallback for a browser that will not open a popup. */
+    root.appendChild(connectSection(app));
+    root.appendChild(assertionSection(app));
     if (app.personal) root.appendChild(pathNote(app));
     for (const activity of app.manifest.activities) {
       const full = app.activities[activity.id];
@@ -951,11 +1046,43 @@ function mount(app) {
     }
     const receipts = app.store.read().receipts;
     if (receipts.length > 0) root.appendChild(receiptSection(app, receipts));
-    root.appendChild(assertionSection(app));
     root.appendChild(footer(app));
   }
 
   return { root, render };
+}
+
+/**
+ * The one button that does the whole first half: open the reader's vault, let
+ * them approve, and personalise this page from what comes back.
+ */
+function connectSection(app) {
+  const section = el('div', { class: 'nema-embed-section', 'data-nema-connect': '' });
+  const connected = Boolean(app.assertion);
+  const button = el('button', {
+    class: 'nema-embed-btn',
+    type: 'button',
+    'data-nema-connect-vault': '',
+    text: connected ? 'Ask your vault again' : 'Connect your vault',
+    onclick: () => connectToVault(app)
+  });
+  section.appendChild(
+    el('div', { class: 'nema-embed-row' }, [
+      button,
+      el('span', {
+        class: 'nema-embed-sub',
+        text: connected
+          ? 'Your vault answered this page once. Ask again after you learn something.'
+          : 'Your vault opens in its own window. You approve there, and this page skips what you already know.'
+      })
+    ])
+  );
+  if (app.connectNote) {
+    section.appendChild(
+      el('p', { class: 'nema-embed-note', 'data-nema-connect-status': '', text: app.connectNote })
+    );
+  }
+  return section;
 }
 
 function pathNote(app) {
@@ -1129,7 +1256,36 @@ function receiptSection(app, receipts) {
         text: `${activity ? activity.title : entry.activityId}: ${entry.payload.claims.map((claim) => `${claim.concept}.${claim.ability} ${claim.result}`).join(', ')}`
       })
     );
-    row.appendChild(el('code', { class: 'nema-embed-token', 'data-nema-token': entry.activityId, text: entry.token }));
+    /* The primary action is the one that finishes the job. The bytes and the
+       old link fold away under "Do it by hand" for a reader with no popups. */
+    row.appendChild(
+      el('div', { class: 'nema-embed-row' }, [
+        el('button', {
+          class: 'nema-embed-btn',
+          type: 'button',
+          'data-nema-keep': entry.activityId,
+          text: 'Keep in my vault',
+          onclick: () => keepInVault(app, entry.activityId)
+        }),
+        el('span', {
+          class: 'nema-embed-sub',
+          text: 'Your vault opens, checks this signature, and tells you what moved.'
+        })
+      ])
+    );
+    if (app.keepNote[entry.activityId]) {
+      row.appendChild(
+        el('p', {
+          class: 'nema-embed-note',
+          'data-nema-keep-status': entry.activityId,
+          text: app.keepNote[entry.activityId]
+        })
+      );
+    }
+
+    const byHand = el('details', { 'data-nema-byhand': entry.activityId });
+    byHand.appendChild(el('summary', { class: 'nema-embed-sub', text: 'Do it by hand' }));
+    byHand.appendChild(el('code', { class: 'nema-embed-token', 'data-nema-token': entry.activityId, text: entry.token }));
     const copy = el('button', {
       class: 'nema-embed-btn',
       type: 'button',
@@ -1153,7 +1309,7 @@ function receiptSection(app, receipts) {
         }, 2000);
       }
     });
-    row.appendChild(
+    byHand.appendChild(
       el('div', { class: 'nema-embed-row' }, [
         copy,
         el('a', {
@@ -1165,6 +1321,7 @@ function receiptSection(app, receipts) {
         })
       ])
     );
+    row.appendChild(byHand);
     section.appendChild(row);
   }
   return section;

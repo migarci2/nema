@@ -35,12 +35,35 @@ nema is a WebMCP protocol for learning, plus the pages that implement it.
    second cooking site recognises prerequisites it never taught, with no
    partnership between the two.
 
+**Sites speak their own names.** The concept registry is the anchor and it is
+closed, but a site that already calls something `sugar-browning` is not asked to
+rename its material to join. When the vault meets a name it does not know, the
+agent proposes what it means, with one sentence saying why, and the learner
+confirms or rejects it in the vault. Only a confirmed alignment translates
+anything, and it translates at the vault's edges: a receipt written in a site's
+names counts toward the registry concept, and a requirement asked in those names
+is answered in the site's own words. Nothing signed is ever rewritten, so
+confirming an alignment moves bands by changing how the vault reads its ledger
+and rejecting one moves them back. A site may also declare its own vocabulary in
+its manifest, which arrives confirmed on the site's word.
+
+**A site can talk to the vault by itself.** No agent, no extension, only the
+browser: "Connect your vault" opens the vault's own `/connect.html` in a small
+popup with the request in the hash, the learner answers in the same consent
+modal the vault page uses, and the token is posted back to the page that asked,
+addressed to that origin and no other. It is a popup rather than an iframe
+because a popup is a top level window on the vault's origin, so it reads the
+learner's real vault; Chrome partitions third party iframe storage, which would
+have given every site an empty one. The same window keeps a receipt after a
+pass. Whichever route a person takes, the consent modal and the ledger are the
+same.
+
 ## Live
 
 | App | URL | Tools |
 |---|---|---|
 | Site (hub) | https://nema.migarci2.dev | `explain_nema`, `open_app` (declarative) |
-| Vault | https://nema-vault.migarci2.dev | 9 imperative + 1 declarative form (10 in `getTools()`) |
+| Vault | https://nema-vault.migarci2.dev | 11 imperative + 1 declarative form (12 in `getTools()`) |
 | Saucier School (provider) | https://saucier.migarci2.dev | 5 + `present_assertion` (declarative) |
 | Line Cook Lab (provider) | https://linecook.migarci2.dev | 5 + `present_assertion` (declarative) |
 | Maillard, explained (a blog) | https://maillard.migarci2.dev | the same 5 + `present_assertion`, from the embed, with no server |
@@ -55,7 +78,7 @@ of things to try to break.
 
 ## Bring your own agent
 
-The vault is the infrastructure. The agent is a commodity, and the same nine
+The vault is the infrastructure. The agent is a commodity, and the same eleven
 tools reach it over two transports:
 
 | agent | transport | how |
@@ -123,6 +146,28 @@ Five origins. No shared database, no accounts, no server that sees both sides.
 
 The vault never sends history. The site never reads the vault. The agent never
 writes state.
+
+**Concept alignment** is one more array in the vault document, `alignments`, and
+no change anywhere else. A record points one origin's local id at one registry
+id with a relation and a status; `shared/inference.js` never sees it. Derivation
+runs over a translated view of the ledger in which every confirmed local claim
+is read as its registry concept and every unconfirmed one is left out, which is
+why a decision moves bands with no write to the evidence. Two tools reach it,
+`propose_concept_alignment` and `get_concept_alignments`, and there is no third:
+confirming is the learner's judgement, so it exists only as a button in the
+vault page and the extension panel.
+
+**The connect handshake** is `shared/vault-link.js` on the site side and
+`apps/vault/public/connect.html` on the vault side.
+`connectVault({ vault, request })` runs inside a click and opens
+`<vault>/connect.html#request=<b64url>&return=<origin>`. The vault checks that
+`return` equals `request.audience` and refuses otherwise, which is what stops a
+page from opening the window with somebody else's request, then runs the same
+consent modal and the same `createAssertion` as the vault page and posts the
+token back with `targetOrigin` set to the audience, never `'*'`.
+`sendReceiptToVault` is the same window carrying a receipt the other way. The
+module has no imports, resolves nothing against the page, and never signs,
+verifies or reads storage.
 
 ## For creators
 
@@ -216,7 +261,7 @@ nema/
     brand/             tokens.css, brand.css, self-hosted fonts, wordmark, mark
   apps/
     site/              the hub, the creator guide and the presentation
-    vault/             the learner's vault, 9 tools + 1 declarative form
+    vault/             the learner's vault, 11 tools + 1 declarative form
     harness/           provider 1, Saucier School, "Pan Sauces and Emulsions", 5 tools + Worker
     security/          provider 2, Line Cook Lab, "Service Under Pressure", 5 tools + Worker
     blog/              one article, "Why browning tastes like that", installed with the embed
@@ -300,11 +345,12 @@ pastes into when no agent is present.
 
 ## Tool catalogs
 
-**Vault**, 9 imperative tools. `get_vault_summary`, `get_learner_state`,
+**Vault**, 11 imperative tools. `get_vault_summary`, `get_learner_state`,
 `set_learning_goal`, `create_readiness_assertion`, `stage_evidence_receipt`,
 `get_learning_needs`, `record_agent_assessment`, `get_disclosure_ledger`,
-`get_evidence_ledger`. Plus the declarative form `set_learning_goal_form`, so
-`document.modelContext.getTools()` on the vault returns ten.
+`get_evidence_ledger`, `propose_concept_alignment`, `get_concept_alignments`.
+Plus the declarative form `set_learning_goal_form`, so
+`document.modelContext.getTools()` on the vault returns twelve.
 
 **Providers**, 5 tools each, plus the declarative `present_assertion` form.
 `describe_learning_offer`, `personalize_learning_path` (Saucier School) or

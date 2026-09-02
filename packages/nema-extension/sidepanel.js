@@ -408,17 +408,27 @@ function alignmentsFor(origin) {
   return all.filter((entry) => entry.origin === origin);
 }
 
-/** A site may vouch for its own names, so a declared alignment goes straight in. */
+/**
+ * A site may vouch for its own names, so a declared alignment goes straight in,
+ * confirmed and marked as the provider's word. Once per origin per session,
+ * from whichever read of the manifest happens first: the page detection in
+ * content.js, or the panel's own `describe_learning_offer` on Share.
+ */
+function declareFrom(origin, concepts) {
+  if (!origin || declaredFor.has(origin)) return;
+  if (typeof vault.declareAlignments !== 'function') return;
+  const list = Array.isArray(concepts) ? concepts : [];
+  if (list.length === 0) return;
+  declaredFor.add(origin);
+  try {
+    vault.declareAlignments({ origin, concepts: list });
+  } catch { /* the vault decides what it accepts; the panel only offers */ }
+}
+
+/** The manifest the page detection summarized, as the strip renders it. */
 function declareOnce(page) {
   const info = page && page.manifest;
-  if (!info || !page.origin || declaredFor.has(page.origin)) return;
-  if (typeof vault.declareAlignments !== 'function') return;
-  const concepts = Array.isArray(info.concepts) ? info.concepts : [];
-  if (concepts.length === 0) return;
-  declaredFor.add(page.origin);
-  try {
-    vault.declareAlignments({ origin: page.origin, concepts });
-  } catch { /* the vault decides what it accepts; the panel only offers */ }
+  declareFrom(page && page.origin, info && info.concepts);
 }
 
 function alignmentRow(entry, actions) {
@@ -684,6 +694,11 @@ async function shareBands({ fromBar = false } = {}) {
     const offer = await run('describe_learning_offer', {});
     manifest = offer && offer.manifest ? offer.manifest : null;
     if (!manifest) throw new Error('the page did not describe an offer');
+    /* The site's own word about its own vocabulary, taken here too: a share
+     * may be the first time this panel reads the manifest, and a requirement
+     * written in the site's names is only answerable once they are aligned. */
+    declareFrom(current.page && current.page.origin, manifest.concepts);
+    renderAlignments();
 
     const requirements = (manifest.requirements || [])
       .filter((entry) => entry && entry.concept && entry.ability)

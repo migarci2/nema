@@ -336,6 +336,27 @@ a:not([class]):hover {
   font-size: var(--fs-13);
 }
 
+/* The handshake: the button that answers the requirements above it. */
+.connect {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  padding-top: var(--sp-2);
+}
+.connect__status { font-size: var(--fs-12); color: var(--ink-2); }
+
+/* Keeping a receipt is one button; the bytes fold away under it. */
+.byhand { padding-top: var(--sp-1); }
+.byhand__summary {
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+  cursor: pointer;
+  width: max-content;
+}
+.byhand__summary:hover { color: var(--ink); }
+.byhand__body { display: flex; flex-direction: column; gap: var(--sp-3); padding-top: var(--sp-3); }
+
 /* Hand delivery: one line under the requirements until the learner wants it.
  * Inside the requirements card already, so it earns no border of its own. */
 .paste__summary {

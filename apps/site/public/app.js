@@ -37,7 +37,7 @@ const TOPICS = {
     'The vault is a page on an origin the learner controls, storing signed receipts in the browser and nothing on a server. '
     + 'It stores evidence, never state: bands are recomputed from the ledger on every read by pure functions, so everything it shows can be reproduced from the receipts. '
     + 'Evidence is weighted by how it was produced, from 1.0 for a deterministic grader down to 0.1 for mere exposure, and it decays with time. '
-    + 'It registers nine imperative tools and one declarative form, and not one of them can write a band. '
+    + 'It registers eleven imperative tools and one declarative form, and not one of them can write a band. '
     + 'Receipts carry a trust tier: registered, origin published, or self certified and capped at the weight of a self report.',
   providers:
     'A provider keeps its content, its pedagogy, its pricing and its brand. What it publishes is a LearningManifest: what a unit teaches, what it assumes, and what evidence each activity can produce. '

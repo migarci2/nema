@@ -94,7 +94,7 @@
             <tr>
               <td><a class="mono" href="https://nema-vault.migarci2.dev" data-app-link="vault">nema-vault.migarci2.dev</a></td>
               <td>vault</td>
-              <td>the learner's receipts, goals and key, in <span class="mono">localStorage</span>. 9 imperative tools plus one declarative form.</td>
+              <td>the learner's receipts, goals and key, in <span class="mono">localStorage</span>. 11 imperative tools plus one declarative form.</td>
             </tr>
             <tr>
               <td><a class="mono" href="https://saucier.migarci2.dev" data-app-link="harness">saucier.migarci2.dev</a></td>
@@ -130,7 +130,7 @@
         <span class="mono">localStorage</span> with <span class="mono">~/.nema/vault.json</span>, and asks
         for consent through MCP elicitation. If the client cannot elicit, the tool returns
         <span class="mono">denied</span> with the command that pre-approves that audience, so the agent still
-        cannot approve on its own. Same nine tools, same names, same schemas, same return shapes: browser
+        cannot approve on its own. Same eleven tools, same names, same schemas, same return shapes: browser
         agents reach the vault through WebMCP, terminal agents reach it through MCP, and the vault does not
         know the difference.
       </p>
@@ -461,9 +461,9 @@ await verifyToken(token, publicJwk) -&gt; { ok, payload, reason? }</pre>
 
       <h3>Vault role</h3>
       <p>
-        Nine imperative tools, plus one declarative form
+        Eleven imperative tools, plus one declarative form
         (<span class="mono">set_learning_goal_form</span>), so
-        <span class="mono">getTools()</span> lists ten. Every result is a JSON object with a
+        <span class="mono">getTools()</span> lists twelve. Every result is a JSON object with a
         <span class="mono">status</span> field.
       </p>
       <div class="s-table-wrap">
@@ -517,6 +517,16 @@ await verifyToken(token, publicJwk) -&gt; { ok, payload, reason? }</pre>
               <td class="mono">{ limit?: number }</td>
               <td class="mono">{ status:'ok', receipts:[{ receiptId, issuerName, activity, claims, grader, signature, receivedAt, effect }] }</td>
             </tr>
+            <tr>
+              <td class="mono">propose_concept_alignment</td>
+              <td class="mono">{ origin, providerConcept, concept, relation, rationale }</td>
+              <td class="mono">{ status:'proposed', alignmentId, alignment }</td>
+            </tr>
+            <tr>
+              <td class="mono">get_concept_alignments</td>
+              <td class="mono">{ origin?: string }</td>
+              <td class="mono">{ status:'ok', alignments:[{ alignmentId, origin, providerConcept, concept, relation, status, proposedBy, rationale }] }</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -524,6 +534,7 @@ await verifyToken(token, publicJwk) -&gt; { ok, payload, reason? }</pre>
         <li><span class="mono">get_learner_state</span> returns bands. Never scores, never receipts, never dates of study. Its description says so, because the agent reads descriptions.</li>
         <li><span class="mono">create_readiness_assertion</span> opens the consent modal and blocks until the human decides. It returns <span class="mono">{ status:'denied' }</span> on Deny and <span class="mono">{ status:'timeout' }</span> after 120 seconds. There is no auto approve by default; the modal offers one hour for one provider as an explicit choice.</li>
         <li><span class="mono">stage_evidence_receipt</span> returns <span class="mono">pending</span> with reason <span class="mono">unknown-issuer</span>, or <span class="mono">rejected</span> with reason <span class="mono">bad-signature</span>, <span class="mono">duplicate</span> or <span class="mono">malformed</span>.</li>
+        <li><span class="mono">propose_concept_alignment</span> only asks. The alignment lands in the vault as <span class="mono">proposed</span>, and nothing is translated until the learner confirms it on the page. There is no tool that confirms one, on either surface.</li>
         <li><span class="mono">record_agent_assessment</span> writes a receipt with <span class="mono">grader: 'agent-assessed'</span>, weight 0.6, no signature, reported as <span class="mono">signature: 'agent'</span> and rendered with the "agent assessed" badge. It rejects a <span class="mono">needId</span> the vault did not issue, so an agent cannot invent an assessment for an exercise that never happened.</li>
       </ul>
 

@@ -58,10 +58,39 @@ if (cmd === 'serve') {
   doc.disclosures = unionBy(doc.disclosures || [], incoming.disclosures, (d) => `${d.audience}|${d.requestHash}|${d.sharedAt}`);
   doc.goals = unionBy(doc.goals || [], incoming.goals, (g) => g.goalId);
   doc.misconceptions = unionBy(doc.misconceptions || [], incoming.misconceptions, (m) => `${m.concept}|${m.id}`);
+  /* Alignments are unioned by id, then by the name they are about: the same
+   * site concept aligned on two machines can carry two ids, and the answer the
+   * learner actually gave is the confirmed one, whichever side it came from. */
+  const alignments = (doc.alignments || []).slice();
+  const byId = new Map(alignments.map((a) => [a.alignmentId, a]));
+  const byName = new Map(alignments.map((a) => [`${a.origin}|${a.providerConcept}`, a]));
+  for (const entry of incoming.alignments || []) {
+    if (!entry || typeof entry.alignmentId !== 'string') continue;
+    if (byId.has(entry.alignmentId)) continue;
+    const nameKey = `${entry.origin}|${entry.providerConcept}`;
+    const held = byName.get(nameKey);
+    if (held) {
+      /* Same name, different id: one row survives. A confirmed alignment is
+       * the answer the learner gave, so it wins; otherwise the row already
+       * here stands and the newcomer is dropped. */
+      if (entry.status === 'confirmed' && held.status !== 'confirmed') {
+        alignments[alignments.indexOf(held)] = entry;
+        byId.delete(held.alignmentId);
+        byId.set(entry.alignmentId, entry);
+        byName.set(nameKey, entry);
+      }
+      continue;
+    }
+    alignments.push(entry);
+    byId.set(entry.alignmentId, entry);
+    byName.set(nameKey, entry);
+  }
+  const alignedBefore = (doc.alignments || []).length;
+  doc.alignments = alignments;
   if (!doc.vaultKey && incoming.vaultKey) doc.vaultKey = incoming.vaultKey;
   const before = JSON.parse(vault.exportJson()).receipts.length;
   await vault.importJson(JSON.stringify(doc));
-  console.log(`merged: ${before} -> ${doc.receipts.length} receipts`);
+  console.log(`merged: ${before} -> ${doc.receipts.length} receipts, ${alignedBefore} -> ${doc.alignments.length} alignments`);
 } else {
   console.error(`unknown command ${cmd}`);
   process.exit(2);

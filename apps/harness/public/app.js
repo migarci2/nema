@@ -26,6 +26,13 @@ import {
 } from '/shared/brand/brand.js';
 import { mountActivityStrip } from '/shared/webmcp.js';
 import { ORIGINS } from '/shared/origins.js';
+import {
+  connectVault,
+  sendReceiptToVault,
+  describeChanges,
+  describeFailure,
+  trimOrigin
+} from '/shared/vault-link.js';
 import { ACTIVITIES, MANIFEST, grade, personalizePath } from '/content.js';
 import { renderStage, TYPE_LABEL } from '/activities.js';
 import { presentAssertion, registerHarnessTools } from '/tools.js';
@@ -35,6 +42,15 @@ import { presentAssertion, registerHarnessTools } from '/tools.js';
 const STORAGE_KEY = 'nema.harness.v1';
 const ACTIVITY_LIST = MANIFEST.activities.map((entry) => ACTIVITIES[entry.id]);
 const FULL_MINUTES = MANIFEST.unit.estimatedMinutes;
+const PURPOSE = 'personalize-pan-sauces-path';
+
+/* Which vault this course talks to. A judge running the whole thing on
+ * localhost, or a learner who keeps their vault somewhere else, passes
+ * ?vault=<origin>; everyone else gets the vault for this environment. */
+const VAULT_ORIGIN = (() => {
+  const asked = new URLSearchParams(location.search).get('vault');
+  return asked ? trimOrigin(asked) : ORIGINS.vault;
+})();
 
 const EMPTY_ATTEMPT = {
   status: 'not_started',
@@ -120,6 +136,8 @@ const dom = {
   stagePanel: document.getElementById('stage'),
   stageHint: document.querySelector('[data-stage-hint]'),
   stage: document.querySelector('[data-stage]'),
+  connectButton: document.querySelector('[data-connect-vault]'),
+  connectStatus: document.querySelector('[data-connect-status]'),
   receiptPanel: document.getElementById('receipt'),
   receiptHint: document.querySelector('[data-receipt-hint]'),
   receipt: document.querySelector('[data-receipt]'),
@@ -283,6 +301,106 @@ function renderUnit({ countMinutesFrom = null } = {}) {
     if (row.confidence) pill.title = `confidence ${row.confidence}`;
     line.append(pill);
     dom.requirements.append(line);
+  }
+
+  renderConnect();
+}
+
+/* --------------------------------------------------- connect the vault -- */
+
+/**
+ * What this course asks a vault for: its three requirements plus every pair a
+ * `skipIf` reads, so the vault answers everything the path is built from and
+ * the personalisation is complete after one approval.
+ */
+function vaultRequest() {
+  const seen = new Set();
+  const requirements = [];
+  const add = (concept, ability) => {
+    const key = `${concept}|${ability}`;
+    if (!concept || !ability || seen.has(key)) return;
+    seen.add(key);
+    requirements.push({ concept, ability });
+  };
+  for (const entry of MANIFEST.requirements) add(entry.concept, entry.ability);
+  for (const activity of MANIFEST.activities) {
+    for (const rule of activity.skipIf || []) add(rule.concept, rule.ability);
+  }
+  return { audience: location.origin, purpose: PURPOSE, requirements };
+}
+
+function setConnectStatus(text) {
+  if (dom.connectStatus) dom.connectStatus.textContent = text || '';
+}
+
+function renderConnect() {
+  if (!dom.connectButton) return;
+  const has = Boolean(state.assertion);
+  dom.connectButton.textContent = has ? 'Ask your vault again' : 'Connect your vault';
+  dom.connectButton.classList.toggle('n-btn--primary', !has);
+  dom.connectButton.classList.toggle('n-btn--secondary', has);
+}
+
+/**
+ * The handshake, contract section 25. The popup is opened synchronously inside
+ * the click so the browser keeps the gesture; everything after it is the same
+ * code the `present_assertion` form and the `personalize_learning_path` tool
+ * run, because a token is a token however it arrived.
+ */
+async function connectToVault() {
+  setConnectStatus('Waiting for your vault.');
+  dom.connectButton.disabled = true;
+  try {
+    const answer = await connectVault({ vault: VAULT_ORIGIN, request: vaultRequest() });
+    if (answer.status !== 'approved' || typeof answer.token !== 'string') {
+      setConnectStatus('Your vault shared nothing. The path is unchanged.');
+      return;
+    }
+    const result = await presentAssertion(controller, answer.token);
+    setConnectStatus(
+      result.status === 'personalized'
+        ? `Your vault answered. ${result.personalMinutes} minutes left of ${result.fullMinutes}.`
+        : `Rejected: ${result.reason}. Nothing changed.`
+    );
+  } catch (err) {
+    setConnectStatus(describeFailure(err).message);
+  } finally {
+    dom.connectButton.disabled = false;
+  }
+}
+
+/**
+ * "Keep in my vault": the token this activity's receipt already holds, handed
+ * to the vault in its own window, and the vault's answer said in words.
+ */
+async function keepInVault(activityId, button) {
+  const token = attemptFor(activityId).receiptToken;
+  const say = (text) => {
+    const note = dom.receipt.querySelector('[data-keep-status]');
+    if (note) note.textContent = text;
+  };
+  if (!token) {
+    say('There is no receipt for this activity yet.');
+    return;
+  }
+
+  say('Waiting for your vault.');
+  button.disabled = true;
+  try {
+    const kept = await sendReceiptToVault({ vault: VAULT_ORIGIN, token });
+    if (kept.status === 'accepted') {
+      const moved = describeChanges(kept.changes);
+      say(moved ? `Kept: ${moved}.` : 'Kept. Your vault already knew this much.');
+      toast(moved ? `Kept in your vault: ${moved}.` : 'Kept in your vault.', 'ok');
+    } else if (kept.status === 'pending') {
+      say('Kept, but your vault does not know this issuer, so nothing moved.');
+    } else {
+      say(`Not kept: ${kept.reason || kept.status}.`);
+    }
+  } catch (err) {
+    say(describeFailure(err).message);
+  } finally {
+    button.disabled = false;
   }
 }
 
@@ -543,8 +661,26 @@ function renderReceipt() {
 
   const wrap = el('div', 'receipt');
 
-  /* Left: the token itself, and the one link that matters. */
+  /* Left: one button that finishes the job. The token, the Copy box and the
+   * old link are still here, one fold down, for a learner with no popups or a
+   * judge who wants to see the bytes. */
   const left = el('div', 'stack');
+  const actions = el('div', 'row');
+  const keep = el('button', 'n-btn n-btn--primary', 'Keep in my vault');
+  keep.type = 'button';
+  keep.setAttribute('data-keep-vault', selected.activityId);
+  keep.addEventListener('click', () => keepInVault(selected.activityId, keep));
+  actions.append(keep);
+  actions.append(el('span', 'lab-line', 'Your vault opens, checks our signature, and tells you what moved.'));
+  left.append(actions);
+  const keepStatus = el('p', 'lab-note');
+  keepStatus.setAttribute('data-keep-status', '');
+  keepStatus.setAttribute('role', 'status');
+  keepStatus.setAttribute('aria-live', 'polite');
+  left.append(keepStatus);
+
+  const byHand = el('details', 'lab-byhand');
+  byHand.append(el('summary', 'lab-byhand__summary', 'Do it by hand'));
   const box = el('div', 'n-token');
   const boxHead = el('span', 'n-token__head', 'Signed receipt');
   boxHead.append(el('span', 'n-pill n-pill--durable', 'signed'));
@@ -556,15 +692,16 @@ function renderReceipt() {
   const text = el('p', 'n-token__text');
   text.innerHTML = `<b>nema1.</b>${escapeHtml(token.slice(6))}`;
   box.append(text);
-  left.append(box);
+  byHand.append(box);
 
-  const actions = el('div', 'row');
-  const send = el('a', 'n-btn n-btn--primary', 'Send to vault');
-  send.href = `${ORIGINS.vault}/#receipt=${token}`;
+  const handRow = el('div', 'row');
+  const send = el('a', 'n-btn n-btn--secondary', 'Send to vault');
+  send.href = `${VAULT_ORIGIN}/#receipt=${token}`;
   send.rel = 'noopener';
-  actions.append(send);
-  actions.append(el('span', 'lab-line', 'Your vault checks our signature before it keeps anything.'));
-  left.append(actions);
+  handRow.append(send);
+  handRow.append(el('span', 'lab-line', 'Opens your vault with the token in the address, ready to stage.'));
+  byHand.append(handRow);
+  left.append(byHand);
   wrap.append(left);
 
   /* Right: what the token says, decoded. */
@@ -852,6 +989,7 @@ dom.startCourse.addEventListener('click', (event) => {
   event.preventDefault();
   openActivity((nextActivity() || ACTIVITY_LIST[0]).id, { source: 'learner' });
 });
+if (dom.connectButton) dom.connectButton.addEventListener('click', () => connectToVault());
 
 const controller = {
   ORIGINS,

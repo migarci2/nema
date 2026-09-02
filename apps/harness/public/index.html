@@ -69,6 +69,15 @@
         <p class="lab-line" data-req-line></p>
         <div class="lab-reqs" data-requirements></div>
 
+        <!-- The whole handshake in one button. It opens the learner's vault in
+             a popup with this unit's requirements, the learner approves there,
+             and the vault posts the signed assertion back to this page, which
+             runs the same personalise path as present_assertion. -->
+        <div class="lab-connect">
+          <button class="n-btn n-btn--primary" type="button" data-connect-vault>Connect your vault</button>
+          <span class="lab-note" data-connect-status role="status" aria-live="polite"></span>
+        </div>
+
         <!-- Hand delivery. No agent needed: a learner can carry the token from
              their vault and paste it here. The same form is a declarative
              WebMCP tool, so an agent can present a token the same way. -->
