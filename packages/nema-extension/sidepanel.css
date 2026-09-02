@@ -12,6 +12,18 @@
  * the wordmark and the line that says where you are. */
 .n-header__nav { display: none; }
 
+/* brand.css hides the app line on the web, where the nav already says where
+ * you are. In the panel it is the only thing that can. */
+.n-header__app {
+  display: inline;
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-2);
+  padding-left: var(--sp-3);
+}
+
 .n-app { padding: var(--sp-4); gap: var(--sp-4); }
 .n-app__main { gap: var(--sp-4); }
 .v-main { gap: var(--sp-6); }
@@ -91,6 +103,12 @@
   flex-direction: column;
   gap: 2px;
   margin-top: var(--sp-2);
+}
+
+.x-calls__label {
+  margin: 0 0 var(--sp-1);
+  font-size: var(--fs-12);
+  color: var(--ink-3);
 }
 
 .x-call {

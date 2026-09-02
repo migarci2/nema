@@ -115,7 +115,7 @@ function renderCalls() {
     return;
   }
   refs.calls.hidden = false;
-  refs.calls.innerHTML = calls
+  refs.calls.innerHTML = '<p class="x-calls__label">Tool calls, newest first</p>' + calls
     .slice()
     .reverse()
     .map((entry) => `
@@ -409,7 +409,7 @@ async function takeReceipt() {
       }
     }
 
-    say(line(`${passed.length} activity result${passed.length === 1 ? '' : 's'} on this page.`, 'strong')
+    say(line(`${passed.length} ${passed.length === 1 ? 'activity' : 'activities'} you passed on this page.`, 'strong')
       + `<div class="x-rows">${rows.join('')}</div>`
       + line('The evidence ledger below is the record. Nothing was sent anywhere else.'));
   } catch (err) {

@@ -16,6 +16,7 @@ export async function launch(bin, extra = []) {
     errors,
     async goto(url, waitMs = 2000) { errors.length = 0; await send('Page.navigate', { url }); await sleep(waitMs); },
     async evaluate(expression) { const r = await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true }); if (r.result?.exceptionDetails) throw new Error(r.result.exceptionDetails.exception?.description || 'evaluate failed'); return r.result?.result?.value; },
+    async waitForTools(min = 1, maxMs = 15000) { const t0 = Date.now(); while (Date.now() - t0 < maxMs) { try { const n = await this.evaluate('document.modelContext.getTools().then(t => t.length)'); if (n >= min) return n; } catch {} await sleep(500); } return 0; },
     async shot(path) { const s = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true }); (await import('node:fs')).writeFileSync(path, Buffer.from(s.result.data, 'base64')); },
     async close() { ws.close(); chrome.kill(); },
   };

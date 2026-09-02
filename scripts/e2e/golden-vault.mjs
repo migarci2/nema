@@ -13,9 +13,9 @@ const ok = (cond, msg) => { console.log((cond ? 'PASS ' : 'FAIL ') + msg); if (!
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const page = await launch(bin);
 try {
-  await page.goto(V + '/', 2500);
+  await page.goto(V + '/', 2500); await page.waitForTools();
   await page.evaluate(`localStorage.clear(); true`);
-  await page.goto(V + '/', 2500);
+  await page.goto(V + '/', 2500); await page.waitForTools();
   const empty = parse(await page.evaluate(tool('get_vault_summary', {})));
   ok(empty.status === 'ok' && empty.receipts === 0, 'empty vault summary: ' + JSON.stringify(empty).slice(0, 120));
   await page.evaluate(`document.querySelector('[data-action="load-demo"]').click(); new Promise(r => setTimeout(r, 3000))`);

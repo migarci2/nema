@@ -21,7 +21,7 @@ const ok = (cond, msg) => { console.log((cond ? 'PASS ' : 'FAIL ') + msg); if (!
 const page = await launch(bin);
 try {
   // Saucier School: full path, then personalised path (seed state), then after diagnostic
-  await page.goto(H + '/');
+  await page.goto(H + '/'); await page.waitForTools();
   const offer = parse(await page.evaluate(tool('describe_learning_offer', {})));
   ok(offer.status === 'ok' && offer.manifest?.unit?.id === 'pan-sauces-foundations', 'saucier describe_learning_offer ' + offer.manifest?.unit?.title);
   const seedStatuses = { 'nema:knife-skills|apply': 'verified', 'nema:heat-control|explain': 'verified', 'nema:ratios|apply': 'uncertain' };
@@ -44,7 +44,7 @@ try {
   ok(page.errors.length === 0, 'saucier console errors: ' + JSON.stringify(page.errors));
 
   // Security
-  await page.goto(SEC + '/');
+  await page.goto(SEC + '/'); await page.waitForTools();
   const offer2 = parse(await page.evaluate(tool('describe_learning_offer', {})));
   ok(offer2.manifest?.unit?.id === 'service-under-pressure', 'linecook describe_learning_offer ' + offer2.manifest?.unit?.title);
   const secStatuses = { 'nema:mise-en-place|explain': 'verified', 'nema:food-safety|apply': 'verified', 'nema:emulsions|explain': 'uncertain' };

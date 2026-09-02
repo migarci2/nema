@@ -34,7 +34,8 @@ rsync -a --exclude shared "$VAULT/" "$OUT/"
 rsync -a "shared/" "$OUT/shared/"
 
 # 3. The extension's own files.
-cp "$PKG/sw.js" "$PKG/content.js" "$PKG/bridge.js" "$PKG/sidepanel.js" "$PKG/sidepanel.css" "$OUT/"
+cp "$PKG/sw.js" "$PKG/content.js" "$PKG/bridge.js" \
+   "$PKG/sidepanel.js" "$PKG/sidepanel.css" "$PKG/panel-webmcp.js" "$OUT/"
 cp "$PKG"/icons/icon*.png "$OUT/icons/"
 
 # 4. sidepanel.html: the vault page with the hub nav hidden, the "This page"
@@ -64,6 +65,8 @@ replace('<title>nema vault</title>',
   () => '<title>nema in your browser</title>', 'the title');
 replace('<link rel="stylesheet" href="/app.css">',
   (found) => found + '\n<link rel="stylesheet" href="/sidepanel.css">', 'the app.css link');
+replace('<script src="/shared/webmcp-polyfill.js"></script>',
+  (found) => '<script src="/panel-webmcp.js"></script>\n' + found, 'the polyfill script');
 replace('<section class="n-panel n-panel--quiet v-summary"',
   (found) => STRIP + found, 'the summary section');
 replace('<script type="module" src="/app.js"></script>',
