@@ -1192,3 +1192,84 @@ questions. Everything else is the extension's job.
    the panel lists the proposed alignments (from the provider or from an
    agent) with Confirm and Reject, using the vault functions of section 23.
 6. **Tokens** never appear in the normal path; they live under "More".
+
+## 25. Sites talk to the vault by themselves: the connect handshake (owner decision, 2026-09-02)
+
+No agent, no extension, only the browser. A site opens the vault in a popup
+with a request; the learner approves there; the vault answers the site with
+`postMessage`. Same for receipts. Storage is first party in a popup (top level
+window), which is why this is a popup and not an iframe (Chrome partitions
+third party iframe storage).
+
+### Vault side: `/connect`
+
+`apps/vault/public/connect.html` (same modules as the vault, compact layout,
+no graph, no ledgers): reads `location.hash` as URL search params.
+
+- `#request=<b64url ReadinessRequest JSON>&return=<origin>`: the vault
+  validates that `return` equals `request.audience` (else it shows "This
+  request is not addressed to the site that opened it" and does nothing),
+  runs the same consent modal, and on approve posts
+  `{ type: 'nema:assertion', status: 'approved', token }` to `window.opener`
+  with `targetOrigin = request.audience`, then shows "Shared. You can close
+  this window" and closes itself after 1.5 s. On deny it posts
+  `{ type: 'nema:assertion', status: 'denied' }` and closes. Auto approval
+  (remembered site) applies: approve without the modal.
+- `#receipt=<token>&return=<origin>`: the vault stages the receipt (same
+  `stageReceipt` path, source `site`), posts
+  `{ type: 'nema:receipt', status, receiptId?, trust?, changes?, reason? }`
+  to the opener with `targetOrigin = return`, shows "Kept in your vault:
+  <bands that moved>" for 1.5 s and closes. A receipt whose issuer does not
+  match `return` is still staged (it is the learner's data) but the answer
+  goes to `return` only.
+- With no opener (a person opened the link by hand) the page shows the same
+  result and a "Back to the vault" link instead of closing.
+- `apps/vault/public/index.html` keeps handling `#receipt=` as today (inbox
+  prefilled) so old links keep working.
+
+### Site side: `shared/vault-link.js` (copied into the embed and used by the courses)
+
+```js
+import { connectVault, sendReceiptToVault } from '/shared/vault-link.js';
+const result = await connectVault({ vault, request });   // { status, token }
+const kept = await sendReceiptToVault({ vault, token });  // { status, changes }
+```
+
+- `connectVault` opens `<vault>/connect.html#request=...&return=<location.origin>`
+  in a popup of 480 x 720 (must be called from a user gesture), listens for
+  the message with `event.origin === vault`, resolves, and rejects with
+  `{ status: 'closed' }` if the popup closes without answering (poll
+  `popup.closed` every 500 ms). One pending call at a time.
+- `sendReceiptToVault` opens `<vault>/connect.html#receipt=...&return=...`
+  the same way and resolves with the vault's answer.
+- Default `vault` is `https://nema-vault.migarci2.dev`; the embed honours
+  `data-vault`; the courses read a `?vault=` query or default.
+
+### What the pages show
+
+- Courses and the embed: next to the requirements, a primary button
+  "Connect your vault" (when no assertion is on file) that calls
+  `connectVault` with the manifest requirements (plus every skipIf pair) and
+  then runs the same personalise path as `present_assertion`. The "Paste an
+  assertion" details stays as the fallback below it.
+- After a pass: the receipt panel's primary action becomes "Keep in my vault"
+  (calls `issue_evidence_receipt`'s code path to get the token, then
+  `sendReceiptToVault`), showing the vault's answer in words ("Kept: ratios,
+  now usable"). The copy box and the old "Send to vault" link move under a
+  details "Do it by hand".
+- The embed (`nema-provider.js`) does the same with its two buttons, so the
+  blog shows the whole loop with zero installs: Connect your vault, read,
+  answer, Keep in my vault.
+
+### Tests
+
+- `test/vault-link.test.js`: request encoding, origin checks, message
+  parsing (pure parts).
+- `scripts/e2e/golden-connect.mjs` (native, CDP): on Saucier School click
+  "Connect your vault"; a new target opens (`Target.getTargets`), attach,
+  approve, the popup posts back, the course shows 27 of 68; pass the
+  diagnostic, click "Keep in my vault", the popup stages and closes, the
+  vault (opened afterwards in a tab) lists the receipt. Same on the blog.
+- Popup blocking: the click handlers call `window.open` synchronously; a
+  blocked popup shows "Your browser blocked the vault window. Allow popups
+  for this site or use the paste box below."
