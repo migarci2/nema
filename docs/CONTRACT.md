@@ -1018,3 +1018,68 @@ articles, courses. Install it in a minute, keep your content and your voice,
 and every reader who arrives keeps what they learned with them. The vault is
 the reader's; the protocol is everyone's; the agents are whichever the reader
 already uses. The hub says this first. The docs say how.
+
+## 22. nema in your browser: the Chrome extension (owner decision, 2026-09-02)
+
+`packages/nema-extension/`: Manifest V3, loadable unpacked from the repo
+(`packages/nema-extension/dist`), built by `scripts/build-extension.sh`.
+
+What it is: the vault as a side panel, plus a broker that needs no model.
+
+- **Side panel = the vault.** The build copies `apps/vault/public/*`
+  (index.html, app.js, app.css, graph.js, vault.js, tools.js, seed.json) to
+  the extension root and `shared/` to `<root>/shared/`, so the vault's absolute
+  imports (`/shared/...`, `/vault.js`) resolve inside
+  `chrome-extension://<id>/`. `sidepanel.html` is the vault page with a
+  small header line "nema in your browser" instead of the site nav (a build
+  time text substitution or a tiny wrapper page that loads the same
+  modules). Storage stays `localStorage` of the extension origin (one vault per
+  browser profile). The WebMCP tools registered by tools.js inside the side
+  panel are harmless (no agent reads them there); registration must not throw
+  when `document.modelContext` is absent (the polyfill is loaded as usual).
+- **Content script on every page** (`content.js`, `<all_urls>`, run at idle):
+  injects `bridge.js` into the MAIN world (via `chrome.scripting` from the
+  service worker, or a script tag) which asks `document.modelContext.getTools()`
+  and reports the tool names to the content script over `window.postMessage`
+  (message type `nema-ext:tools`). If the page has any of
+  `describe_learning_offer`, `personalize_learning_path`, `check_prerequisites`,
+  `present_assertion`, `issue_evidence_receipt`, the page "works with nema":
+  the action badge shows a small count and the side panel's "This page" strip
+  lists what it can do. The bridge also executes tools on request
+  (`nema-ext:execute` with name and JSON args, reply `nema-ext:result`),
+  always passing a JSON string to `executeTool` and parsing string results.
+- **Broker actions in the side panel** ("This page" strip, only when the page
+  works with nema):
+  1. *Share bands with this page*: calls `describe_learning_offer` on the
+     page, builds the ReadinessRequest from the manifest requirements
+     (audience = page origin, purpose = "personalize-" + unit id), runs the
+     vault's `createAssertion` (same consent modal, same code path), then
+     executes `present_assertion` (or `personalize_learning_path` /
+     `check_prerequisites`) on the page with the token. The page updates in
+     place.
+  2. *Take the receipt to my vault*: executes `issue_evidence_receipt` for the
+     activity the page reports as passed (poll `get_attempt_status` for the
+     manifest's activities, pick the passed ones without a stored receipt),
+     stages the token in the vault (same `stageReceipt` path), and shows the
+     effect (bands moved) in the strip.
+  Both actions are buttons a person clicks; nothing runs automatically. The
+  strip shows the last tool call and result like the tool activity strip does.
+- **Service worker** (`sw.js`): opens the side panel on action click
+  (`chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })`),
+  relays messages between content scripts and the side panel
+  (`chrome.runtime` messaging, tab id keyed), updates the badge.
+- **Permissions**: `sidePanel`, `scripting`, `activeTab`, `tabs`, `storage`;
+  host permissions `<all_urls>` (a prototype; the docs say so).
+- **Look**: the vault's own design; the "This page" strip uses the same
+  components; the extension icon is the nema mark (16, 32, 48, 128 PNGs
+  rendered from `shared/brand/mark.svg` with a script, or the SVG rasterised
+  once and committed).
+- **Verification**: Chrome for Testing 154 headless with
+  `--load-extension=<dist>` and `--disable-extensions-except=<dist>`: open
+  `chrome-extension://<id>/sidepanel.html` in a tab (find the id from
+  `chrome://extensions` is not possible headless; instead read it from
+  `Target.getTargets` service worker URL), load the demo learner, open the
+  blog or Saucier School in another tab, and drive the two broker actions
+  end to end through CDP; assert the page personalised and the vault gained a
+  receipt. Document the manual load steps for judges in the package README
+  and in JUDGE_GUIDE ("nema in your browser, optional, 30 seconds to load").
