@@ -19,19 +19,17 @@ const CAPTION_CSS = `
 `;
 const CURSOR_SVG = `<svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 2 L20 12 L12 13.5 L9 21 Z" fill="#F2F6FF" stroke="#0B1320" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
 
-export async function openRecorder({ chrome, width = 1920, height = 1080, out, name = 'take', fps = 25, extraArgs = [] }) {
+export async function openRecorder({ chrome, width = 1920, height = 1080, out, fps = 25, extraArgs = [], profile = null }) {
   fs.mkdirSync(out, { recursive: true });
-  const framesDir = path.join(out, name + '-frames');
-  fs.rmSync(framesDir, { recursive: true, force: true });
-  fs.mkdirSync(framesDir);
+  let framesDir = null; let takeName = null;
   const port = 9500 + Math.floor(Math.random() * 400);
-  const proc = spawn(chrome, ['--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', '--hide-scrollbars', `--remote-debugging-port=${port}`, `--user-data-dir=/tmp/claude-1000/cft-rec-${port}`, `--window-size=${width},${height}`, ...extraArgs, 'about:blank'], { stdio: 'ignore' });
+  const proc = spawn(chrome, ['--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', '--hide-scrollbars', `--remote-debugging-port=${port}`, `--user-data-dir=${profile || '/tmp/claude-1000/cft-rec-' + port}`, `--window-size=${width},${height}`, ...extraArgs, 'about:blank'], { stdio: 'ignore' });
   let target;
   for (let i = 0; i < 60; i++) { try { const l = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json(); target = l.find((t) => t.type === 'page'); if (target) break; } catch {} await sleep(250); }
   if (!target) throw new Error('no page target');
   const ws = new WebSocket(target.webSocketDebuggerUrl);
   let id = 0; const pending = new Map();
-  const frames = []; let recording = false; let t0 = 0;
+  const frames = []; let recording = false; let t0 = 0; let wallStart = 0; let wallEnd = 0;
   ws.onmessage = (ev) => {
     const m = JSON.parse(ev.data);
     if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); return; }
@@ -82,18 +80,25 @@ export async function openRecorder({ chrome, width = 1920, height = 1080, out, n
       await sleep(520);
       if (click) { await rec.eval(`(() => { const el = document.querySelector(${JSON.stringify(selector)}); el.click(); return true; })()`, contextId); }
     },
-    async start() { recording = true; t0 = 0; await send('Page.startScreencast', { format: 'jpeg', quality: 85, maxWidth: width, maxHeight: height, everyNthFrame: 1 }); },
-    async stop() { await send('Page.stopScreencast'); recording = false; },
+    async start(name) {
+      takeName = name; framesDir = path.join(out, name + '-frames');
+      fs.rmSync(framesDir, { recursive: true, force: true }); fs.mkdirSync(framesDir);
+      frames.length = 0; t0 = 0; recording = true; wallStart = Date.now();
+      await send('Page.startScreencast', { format: 'jpeg', quality: 85, maxWidth: width, maxHeight: height, everyNthFrame: 1 });
+    },
+    async stop() { wallEnd = Date.now(); await send('Page.stopScreencast'); recording = false; await sleep(300); return rec.encode(); },
+    async take(name, fn) { await rec.start(name); try { await fn(); } finally { return await rec.stop(); } },
     sleep,
-    async close() {
-      if (recording) await rec.stop();
-      ws.close(); proc.kill();
+    async close() { if (recording) await rec.stop(); ws.close(); proc.kill(); },
+    encode() {
+      const name = takeName;
       if (!frames.length) return null;
       // Build a concat list with real durations, then encode at a fixed fps.
       const list = path.join(out, name + '.txt');
       let txt = '';
       for (let i = 0; i < frames.length; i++) {
-        const dur = i + 1 < frames.length ? Math.max(0.02, frames[i + 1].t - frames[i].t) : 0.5;
+        const total = (wallEnd - wallStart) / 1000;
+        const dur = i + 1 < frames.length ? Math.max(0.02, frames[i + 1].t - frames[i].t) : Math.max(0.5, total - frames[i].t);
         txt += `file '${frames[i].file}'\nduration ${dur.toFixed(3)}\n`;
       }
       txt += `file '${frames[frames.length - 1].file}'\n`;
