@@ -881,3 +881,39 @@ emulsions, heat-control. Misconception recorded: maillard-reaction
 "searing_seals_in_juices". The five minute review should surface a
 discriminate need (maillard-reaction vs caramelization: strong apply, no
 discrimination evidence).
+
+## 20. Design principles for nema surfaces (owner pointed at vercel.com/design.md, 2026-09-02)
+
+Adopted, adapted to the nema palette and fonts (Inter, JetBrains Mono, Pixelify
+for the wordmark and section titles only):
+
+- Precise, calm, direct, evidence led, restrained. No hype, decoration or
+  novelty. No gradient text, glows, blobs, textures, grid backgrounds, glass,
+  paper simulations, ornamental shadows or fake depth.
+- Design in monochrome first. Colour only where it carries meaning, always
+  paired with a non colour cue. On the hub the three semantic colours are the
+  whole colour budget: cyan for the learner and the vault, teal for the web
+  and the sites, yellow for the agent. Two or three coloured words per
+  paragraph at most, never a coloured paragraph.
+- One continuous canvas. Earn a border or a box only for selection,
+  interaction, warning or a real grouping spacing cannot express. Prefer
+  spacing, alignment, typography and a change of density before borders. Do
+  not wrap every section in a card; no nested panels; no badges or pills for
+  ordinary metadata.
+- Typography has roles, not arbitrary sizes: display (one page defining line),
+  title, heading 24, heading 20, lede, body, label, caption. Body regular,
+  emphasis scarce. Prose 60 to 68 characters per line. Heading close to its
+  first paragraph, one body rhythm between paragraphs.
+- Grid: 12 columns desktop, 6 tablet, 4 mobile. Everything aligns to a shared
+  edge or baseline. Reading prose takes 6 to 7 desktop columns. Gutters
+  unmistakable. Open space must amplify a focal object; empty rectangles from
+  an underfilled split or an orphaned third item are failures.
+- Sentence case headings that state the claim. No all caps eyebrows, no
+  decorative section numbers, no synthetic symmetry, no repetitive cadence.
+- Default to stillness. Motion only to explain a state change or confirm an
+  action. Nothing revealed on scroll, no parallax, no marquees.
+- Icons are not decoration. Prefer text labels.
+- Semantic HTML, one h1, ordered headings, native controls, visible focus,
+  WCAG AA, source order is reading order.
+- Copy: simplify the language, never the claim. Keep every qualifier that
+  changes meaning. No authoring narration.
