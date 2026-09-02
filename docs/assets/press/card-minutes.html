@@ -3,59 +3,31 @@
 <title>nema story card, 68 to 27 to 21</title>
 <link rel="stylesheet" href="card.css">
 <style>
-  .card { padding: 56px 80px 60px; }
-  .steps { display: flex; align-items: flex-start; margin-top: 44px; }
-  .step { width: 400px; flex: none; }
-  .arrow { width: 120px; flex: none; height: 170px; display: flex; align-items: center; justify-content: center; }
-
-  .n { display: flex; align-items: baseline; gap: 18px; }
-  .n b { font-size: 156px; line-height: 1.05; font-weight: 600; letter-spacing: -0.045em;
-         font-variant-numeric: tabular-nums; }
-  .n span { font-family: var(--font-mono), monospace; font-size: 32px; }
-  .n--before b { color: #9FB0CC; } .n--before span { color: #5E7095; }
-  .n--after  b { color: #00E5FF; } .n--after  span { color: #5E7095; }
-
-  .step p { font-size: 32px; line-height: 1.4; color: #F2F6FF; margin: 18px 0 0; max-width: 350px; text-wrap: balance; }
-  .step p b { font-weight: 600; }
-
-  .note { margin: 52px 0 0; font-size: 28px; line-height: 1.45; color: #5E7095; max-width: 1320px; }
+  .card { padding: 132px 80px 124px; }
+  .row { display: flex; align-items: center; justify-content: center; gap: 44px; }
+  .row > svg { flex: none; }
+  .row > b { flex: none; }
+  b { font-size: 200px; line-height: 1; font-weight: 600; letter-spacing: -0.05em;
+      font-variant-numeric: tabular-nums; }
+  .before { color: #9FB0CC; }
+  .after { color: #00E5FF; }
+  .unit { font-family: var(--font-mono), monospace; font-size: 40px; color: #5E7095;
+          align-self: flex-end; padding-bottom: 40px; margin-left: 10px; }
 </style>
 
 <div class="card">
-  <p class="eyebrow">The same course, three visits</p>
-  <h1 class="title">Nothing is added. Only what you can already do is taken out.</h1>
-
-  <div class="steps">
-    <div class="step">
-      <div class="n n--before"><b>68</b><span>minutes</span></div>
-      <p>a course with no account</p>
-    </div>
-
-    <div class="arrow">
-      <svg width="104" height="26" viewBox="0 0 104 26" fill="none">
-        <path d="M0 13 H86" stroke="#00E5FF" stroke-width="4"/>
-        <path d="M78 5 L90 13 L78 21" stroke="#00E5FF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-
-    <div class="step">
-      <div class="n n--after"><b>27</b><span>minutes</span></div>
-      <p>after your vault answered</p>
-    </div>
-
-    <div class="arrow">
-      <svg width="104" height="26" viewBox="0 0 104 26" fill="none">
-        <path d="M0 13 H86" stroke="#00E5FF" stroke-width="4"/>
-        <path d="M78 5 L90 13 L78 21" stroke="#00E5FF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-
-    <div class="step">
-      <div class="n n--after"><b>21</b><span>minutes</span></div>
-      <p>after the course saw your new receipt</p>
-    </div>
+  <div class="row">
+    <b class="before">68</b>
+    <svg width="170" height="60" viewBox="0 0 170 60" fill="none">
+      <rect x="0" y="25" width="128" height="10" fill="#00E5FF"/>
+      <path d="M124 12 L162 30 L124 48 Z" fill="#00E5FF"/>
+    </svg>
+    <b class="after">27</b>
+    <svg width="170" height="60" viewBox="0 0 170 60" fill="none">
+      <rect x="0" y="25" width="128" height="10" fill="#00E5FF"/>
+      <path d="M124 12 L162 30 L124 48 Z" fill="#00E5FF"/>
+    </svg>
+    <b class="after">21</b>
+    <span class="unit">minutes</span>
   </div>
-
-  <p class="note">Saucier School asks your vault three questions, strikes out the activities you have already
-  proved, and prints the reason on each. No account, and no partnership with anybody.</p>
 </div>
