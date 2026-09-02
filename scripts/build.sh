@@ -9,7 +9,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-ALL=(site vault harness security blog aesgcm)
+ALL=(site vault harness security blog aesgcm cpu)
 if [ "$#" -gt 0 ]; then APPS=("$@"); else APPS=("${ALL[@]}"); fi
 
 for app in "${APPS[@]}"; do
@@ -18,21 +18,21 @@ for app in "${APPS[@]}"; do
   if [ -d "apps/$app/public" ]; then
     rsync -a --delete --exclude shared "apps/$app/public/" "dist/$app/"
   fi
-  if [ "$app" = "blog" ] || [ "$app" = "aesgcm" ]; then
-    # The blog and the mirrored article are the proof that the install is one
-    # tag: their origins carry the article and nothing else. They load the embed
-    # and the modules the embed imports from the hub, cross origin.
+  if [ "$app" = "blog" ] || [ "$app" = "aesgcm" ] || [ "$app" = "cpu" ]; then
+    # The blog and the two mirrored articles are the proof that the install is
+    # one tag: their origins carry the article and nothing else. They load the
+    # embed and the modules the embed imports from the hub, cross origin.
     rm -rf "dist/$app/shared"
   else
     mkdir -p "dist/$app/shared"
     rsync -a --delete "shared/" "dist/$app/shared/"
   fi
-  if [ "$app" = "aesgcm" ]; then
+  if [ "$app" = "aesgcm" ] || [ "$app" = "cpu" ]; then
     # compare.html reads this file to show, and to count, exactly what nema
     # added to the article. diff exits 1 when the files differ, which is the
     # normal case here, so its status is ignored on purpose.
-    ( cd "apps/aesgcm/public" && diff -u original.html index.html > diff.txt || true )
-    cp "apps/aesgcm/public/diff.txt" "dist/aesgcm/diff.txt"
+    ( cd "apps/$app/public" && diff -u original.html index.html > diff.txt || true )
+    cp "apps/$app/public/diff.txt" "dist/$app/diff.txt"
   fi
   echo "built dist/$app"
 done

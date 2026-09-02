@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Same chapter, with and without nema</title>
+<link rel="icon" href="/favicon-on-light.png">
+<style>
+  :root { color-scheme: light; }
+  body {
+    margin: 0;
+    background: #fff;
+    color: #111;
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 1360px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  h1 { font-size: 1.5rem; font-weight: 600; margin: 0 0 .35rem; letter-spacing: -.01em; }
+  .lede { margin: 0 0 1.5rem; color: #555; max-width: 74ch; }
+  .lede a { color: inherit; }
+  .panes { display: flex; gap: 1rem; }
+  .pane { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
+  .pane h2 {
+    font-size: .8rem; font-weight: 600; margin: 0 0 .4rem;
+    text-transform: uppercase; letter-spacing: .06em; color: #555;
+  }
+  .pane h2 a { color: inherit; }
+  .pane iframe {
+    width: 100%; height: 72vh; border: 1px solid #ddd; border-radius: 4px; background: #fff;
+  }
+  h3 { font-size: .8rem; font-weight: 600; margin: 2.25rem 0 .5rem;
+       text-transform: uppercase; letter-spacing: .06em; color: #555; }
+  pre.diff {
+    margin: 0; padding: .75rem .5rem; border: 1px solid #ddd; border-radius: 4px;
+    background: #fcfcfc; max-height: 60vh; overflow: auto;
+    font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    white-space: pre; tab-size: 2;
+  }
+  pre.diff span { display: block; padding: 0 .35rem; }
+  pre.diff .add { background: #eaf6ec; }
+  pre.diff .del { background: #fbeceb; }
+  pre.diff .hunk { color: #777; }
+  .foot { margin-top: 2rem; font-size: .85rem; color: #666; max-width: 74ch; }
+  .foot a { color: inherit; }
+  @media (max-width: 800px) { .panes { flex-direction: column; } .pane iframe { height: 55vh; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1 id="headline">Same chapter.</h1>
+  <p class="lede">
+    On the left, a chapter as it was published. On the right, the same bytes with nema added:
+    a manifest, one script tag, five question anchors and an attribution line. The reader keeps a
+    signed note of what they understood, and any other site can ask about it. The two frames scroll
+    together.
+  </p>
+
+  <div class="panes">
+    <div class="pane">
+      <h2><a href="original.html">original.html</a>, as published</h2>
+      <iframe id="left" src="original.html" title="The chapter as published"></iframe>
+    </div>
+    <div class="pane">
+      <h2><a href="index.html">index.html</a>, with nema</h2>
+      <iframe id="right" src="index.html" title="The same chapter with nema added"></iframe>
+    </div>
+  </div>
+
+  <h3>The whole difference</h3>
+  <pre class="diff" id="diff">Loading diff.txt ...</pre>
+
+  <p class="foot">
+    The chapter is <a href="https://cpu.land/the-basics">The &ldquo;Basics&rdquo;</a>, chapter 1 of
+    <a href="https://cpu.land/">Putting the &ldquo;You&rdquo; in CPU</a> by Lexi Mattick, mirrored
+    under the <a href="https://opensource.org/license/mit" rel="license">MIT licence</a> and
+    republished under the same licence with nema added. The analytics script was removed and the
+    canonical link was pointed at this copy; nothing else was changed.
+  </p>
+
+</div>
+
+<script>
+  // The headline number is the diff itself: lines that start with "+" and are
+  // not the "+++" file header. It is counted here, at load, from the same
+  // diff.txt that is printed below, so the claim and the evidence cannot drift.
+  fetch('diff.txt')
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(function (text) {
+      var lines = text.split('\n');
+      var added = 0;
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].charAt(0) === '+' && lines[i].slice(0, 3) !== '+++') added++;
+      }
+      document.getElementById('headline').textContent =
+        'Same article. ' + added + (added === 1 ? ' line added.' : ' lines added.');
+      var pre = document.getElementById('diff');
+      pre.textContent = '';
+      for (var j = 0; j < lines.length; j++) {
+        var line = lines[j];
+        var span = document.createElement('span');
+        if (line.slice(0, 3) === '+++' || line.slice(0, 3) === '---') span.className = 'hunk';
+        else if (line.charAt(0) === '+') span.className = 'add';
+        else if (line.charAt(0) === '-') span.className = 'del';
+        else if (line.slice(0, 2) === '@@') span.className = 'hunk';
+        span.textContent = line === '' ? ' ' : line;
+        pre.appendChild(span);
+      }
+    })
+    .catch(function () {
+      document.getElementById('headline').textContent = 'Same article, with nema added.';
+      document.getElementById('diff').textContent =
+        'diff.txt is written by scripts/build.sh: run bash scripts/build.sh cpu.';
+    });
+
+  // Synchronised scrolling. Both frames are same origin, so this is one
+  // listener each. This chapter does not scroll the window: its own stylesheet
+  // sets html and body to overflow hidden and scrolls <main>, so the pair of
+  // frames is synchronised on whichever element actually scrolls.
+  // Mirroring a scroll makes the other frame fire a scroll of its own, so one
+  // frame leads until it has been still for a moment and the other only
+  // follows: without that the two push each other back and forth.
+  (function () {
+    var frames = [document.getElementById('left'), document.getElementById('right')];
+    var leader = null;
+    var release = null;
+
+    function scroller(frame) {
+      var doc = frame.contentDocument;
+      var main = doc.querySelector('main');
+      if (main && main.scrollHeight > main.clientHeight + 1) return main;
+      return doc.scrollingElement || doc.documentElement;
+    }
+
+    function follow(from, to) {
+      return function () {
+        if (leader && leader !== from) return;
+        leader = from;
+        clearTimeout(release);
+        release = setTimeout(function () { leader = null; }, 200);
+        try {
+          var src = scroller(from);
+          var dst = scroller(to);
+          if (Math.abs(dst.scrollTop - src.scrollTop) > 1) {
+            // behavior: instant on purpose. The chapter's own stylesheet asks
+            // for smooth scrolling, and an animation started on every frame of
+            // the other frame's scroll never arrives.
+            dst.scrollTo({ left: src.scrollLeft, top: src.scrollTop, behavior: 'instant' });
+          }
+        } catch (err) { /* a frame that has not loaded yet */ }
+      };
+    }
+
+    function wire() {
+      try {
+        for (var i = 0; i < 2; i++) {
+          var from = frames[i];
+          var to = frames[1 - i];
+          var element = scroller(from);
+          // A document level scroller reports its scroll on the window, an
+          // overflowing element on the element itself.
+          var target = element === from.contentDocument.scrollingElement
+            ? from.contentWindow
+            : element;
+          target.addEventListener('scroll', follow(from, to), { passive: true });
+        }
+      } catch (err) { /* nothing to synchronise */ }
+    }
+
+    var pending = frames.length;
+    frames.forEach(function (frame) {
+      frame.addEventListener('load', function () {
+        pending--;
+        if (pending === 0) wire();
+      });
+    });
+  })();
+</script>
+</body>
+</html>

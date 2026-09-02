@@ -1,0 +1,51 @@
+The article in this directory is not ours.
+
+"The Basics" is chapter 1 of "Putting the You in CPU", written by Lexi Mattick
+and published at https://cpu.land/the-basics. The book is open source at
+https://github.com/hackclub/putting-the-you-in-cpu under the MIT licence:
+
+    MIT License
+
+    Copyright (c) 2023 Lexi Mattick
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+public/original.html is that chapter as mirrored, together with the stylesheet,
+the six figures and the favicons it loads. Two things were changed while
+mirroring, and both are said in the attribution on the page: the Plausible
+analytics script was removed, and the canonical link was pointed at this copy.
+The chapter's Google Fonts links are left as they are, because this is a mirror
+of someone else's page.
+
+public/index.html is the same chapter with nema added: one manifest, one script
+tag, five inline question anchors, one activities block and an attribution
+paragraph at the top and the bottom. Nothing of the chapter's text or markup was
+changed. public/compare.html shows the exact diff.
+
+This copy, and the nema additions inside it, are published under the same MIT
+licence, with the copyright notice above kept as the licence requires.
+Attribution: Lexi Mattick, https://cpu.land/the-basics.
+
+The point of the mirror is to show what a learning protocol adds to an article
+that already exists, on a real article rather than a demo one. If Lexi Mattick
+would rather we did not host this copy, we will take it down: write to the
+address on https://nema.migarci2.dev.
+
+The rest of the nema repository is under the licence in the repository root
+LICENSE file. This file governs apps/cpu/public only.

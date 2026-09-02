@@ -1751,5 +1751,264 @@
     "aliases": {
       "aesgcm": "nonce-reuse"
     }
+  },
+  {
+    "id": "nema:cpu-architecture",
+    "title": "CPU and RAM",
+    "summary": "The division of labour a computer is built on: RAM holds the machine code and the data, and the CPU fetches instructions from it and executes them, keeping a little state in registers.",
+    "prereqs": [],
+    "confusableWith": [
+      "nema:instruction-sets",
+      "nema:fetch-execute-cycle"
+    ],
+    "misconceptions": [
+      {
+        "id": "the_cpu_runs_code_straight_from_disk",
+        "text": "The processor reads a program off the disk and runs it from there."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "says that machine code has to be in RAM before the CPU can run it",
+        "names registers as the small, very fast storage the CPU keeps its own state in",
+        "separates an opcode and its operands from the assembly text a human reads"
+      ],
+      "apply": [
+        "points at where a running program and the kernel both live at once",
+        "reads a short assembly listing and says which bytes are the opcode",
+        "names the register that holds the address of the next instruction"
+      ],
+      "discriminate": [
+        "separates RAM from a disk and says which one the CPU can fetch from",
+        "separates a register from a memory address",
+        "separates machine code from the assembly written to stand for it"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 5,
+      "discriminate": 4
+    },
+    "aliases": {
+      "cpu": "cpu-architecture"
+    }
+  },
+  {
+    "id": "nema:fetch-execute-cycle",
+    "title": "Fetch-execute cycle",
+    "summary": "The loop the processor never leaves: read the instruction the pointer names, execute it, move the pointer, repeat, with no notion of programs or of an operating system.",
+    "prereqs": [
+      "nema:cpu-architecture"
+    ],
+    "confusableWith": [
+      "nema:cpu-architecture"
+    ],
+    "misconceptions": [
+      {
+        "id": "the_cpu_keeps_track_of_processes",
+        "text": "The processor knows which processes are running and switches between them itself."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "describes fetch, execute and the move of the instruction pointer as one repeating loop",
+        "says that a jump is nothing but a write to the instruction pointer",
+        "states that a process is an operating system abstraction the CPU never sees"
+      ],
+      "apply": [
+        "traces a short sequence of instructions and says where the pointer is after each",
+        "explains a conditional branch as a choice of what to put in the pointer",
+        "says what has to happen for the processor to start running a program that was just loaded"
+      ],
+      "discriminate": [
+        "separates what the CPU tracks from what the kernel tracks",
+        "separates sequential execution from the illusion of several programs at once",
+        "separates a jump instruction from a call into the operating system"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "cpu": "fetch-execute"
+    }
+  },
+  {
+    "id": "nema:privilege-rings",
+    "title": "Privilege rings",
+    "summary": "The mode a processor runs in, kernel or user, which decides what instructions and what memory the running code is allowed to touch, held in a register the code cannot raise on its own.",
+    "prereqs": [
+      "nema:fetch-execute-cycle"
+    ],
+    "confusableWith": [
+      "nema:system-calls"
+    ],
+    "misconceptions": [
+      {
+        "id": "a_program_can_raise_its_own_privilege",
+        "text": "A program that needs more access can switch itself into kernel mode."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names kernel mode and user mode and what each one may do",
+        "says that the mode is held in a processor register, on x86-64 the low bits of cs",
+        "states that the processor starts in kernel mode and the kernel drops to user mode to run a program"
+      ],
+      "apply": [
+        "reads a privilege level out of a given cs value",
+        "says which ring the kernel, a driver and an application run in",
+        "names one instruction a user mode program is not allowed to execute"
+      ],
+      "discriminate": [
+        "separates the mode the processor is in from the request a program makes to cross it",
+        "separates the four architectural rings from the two that are actually used",
+        "separates a privilege level from a memory permission"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 5,
+      "discriminate": 4
+    },
+    "aliases": {
+      "cpu": "rings"
+    }
+  },
+  {
+    "id": "nema:interrupts",
+    "title": "Interrupts",
+    "summary": "A numbered entry into code the kernel registered in advance: the processor looks the number up in a vector table, switches mode and jumps there, and returns to where it was when the handler is done.",
+    "prereqs": [
+      "nema:fetch-execute-cycle"
+    ],
+    "confusableWith": [
+      "nema:system-calls"
+    ],
+    "misconceptions": [
+      {
+        "id": "an_interrupt_jumps_wherever_the_caller_says",
+        "text": "The code that raises an interrupt chooses the address the processor jumps to."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "describes the interrupt vector table as a map from interrupt numbers to handler pointers",
+        "says the table is registered with the CPU at boot and can only be written from kernel mode",
+        "names the pair of instructions that enter a handler and return from it"
+      ],
+      "apply": [
+        "follows one interrupt from the instruction that raises it to the handler and back",
+        "says what the processor does with the instruction pointer on the way in and on the way out",
+        "names where the caller has to put data the handler will need"
+      ],
+      "discriminate": [
+        "separates a software interrupt raised by an instruction from a hardware one raised by a device",
+        "separates the interrupt mechanism from the system call built on top of it",
+        "separates an interrupt from an ordinary jump or call"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 5,
+      "apply": 6,
+      "discriminate": 4
+    },
+    "aliases": {
+      "cpu": "interrupt"
+    }
+  },
+  {
+    "id": "nema:system-calls",
+    "title": "System calls",
+    "summary": "The standard way a user mode program asks the kernel to act for it: arguments go in registers, an instruction hands control to code the kernel chose, and the kernel returns to user mode with an answer.",
+    "prereqs": [
+      "nema:privilege-rings",
+      "nema:interrupts"
+    ],
+    "confusableWith": [
+      "nema:privilege-rings",
+      "nema:interrupts"
+    ],
+    "misconceptions": [
+      {
+        "id": "programs_call_the_kernel_like_a_function",
+        "text": "A system call is an ordinary function call into kernel code: the program jumps into the kernel the way it jumps into a library function."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "says that a system call is a controlled transition from user space into kernel code, not a jump the program chooses",
+        "names the mechanism underneath, a software interrupt or a dedicated instruction, and how arguments are passed",
+        "explains that libc and ntdll wrap that mechanism, and that calling the wrapper is still an ordinary function call"
+      ],
+      "apply": [
+        "traces one call such as open or exit from the library function down to the mode switch and back",
+        "names where the call number and the arguments are placed before control is handed over",
+        "says why the same C program works on two machines whose syscall mechanisms differ"
+      ],
+      "discriminate": [
+        "separates a library call, which stays in user mode, from the system call inside it",
+        "separates the request a program makes from the privilege level it runs at",
+        "separates the syscall interface from the interrupt mechanism that carries it"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 5,
+      "apply": 7,
+      "discriminate": 5
+    },
+    "aliases": {
+      "cpu": "syscall"
+    }
+  },
+  {
+    "id": "nema:instruction-sets",
+    "title": "Instruction sets",
+    "summary": "What a processor architecture offers as instructions, and the CISC and RISC habits behind that choice: many specialised instructions on one side, a small uniform set on the other.",
+    "prereqs": [
+      "nema:cpu-architecture"
+    ],
+    "confusableWith": [
+      "nema:cpu-architecture"
+    ],
+    "misconceptions": [
+      {
+        "id": "a_dedicated_instruction_changes_what_happens",
+        "text": "A dedicated system call instruction does something different from an interrupt, not the same thing faster."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "says what an instruction set is and that machine code is written against one architecture",
+        "contrasts the CISC habit of adding specialised instructions with the RISC habit of keeping few",
+        "gives the system call instructions as an example of a common operation given its own opcode"
+      ],
+      "apply": [
+        "names which instruction a 64-bit program on x86-64 would use for a system call and why",
+        "says what an AArch64 program uses instead",
+        "explains why a binary built for one architecture does not run on another"
+      ],
+      "discriminate": [
+        "separates the instruction set from the microarchitecture that implements it",
+        "separates a faster path to the kernel from a different privilege outcome",
+        "separates assembly, which is text, from the encoding an architecture defines"
+      ]
+    },
+    "minutes": {
+      "retrieve": 3,
+      "explain": 4,
+      "apply": 5,
+      "discriminate": 4
+    },
+    "aliases": {
+      "cpu": "cisc-risc"
+    }
   }
 ]
