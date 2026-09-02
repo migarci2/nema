@@ -24,18 +24,24 @@ const LAB_KEY = LAB.answerKey;
 const ALL_MISSING = {
   'nema:knife-skills|apply': 'missing',
   'nema:heat-control|explain': 'missing',
+  'nema:heat-control|recognize': 'missing',
+  'nema:pan-sauces|recognize': 'missing',
   'nema:ratios|apply': 'missing'
 };
 
 const SEED = {
   'nema:knife-skills|apply': 'verified',
   'nema:heat-control|explain': 'verified',
+  'nema:heat-control|recognize': 'verified',
+  'nema:pan-sauces|recognize': 'missing',
   'nema:ratios|apply': 'uncertain'
 };
 
 const AFTER_DIAGNOSTIC = {
   'nema:knife-skills|apply': 'verified',
   'nema:heat-control|explain': 'verified',
+  'nema:heat-control|recognize': 'verified',
+  'nema:pan-sauces|recognize': 'missing',
   'nema:ratios|apply': 'verified'
 };
 
@@ -569,7 +575,7 @@ test('after the diagnostic passes: 27 becomes 21', () => {
   }
 });
 
-test('a verified status satisfies an uncertain gate, but not the reverse', () => {
+test('a verified status satisfies an uncertain gate', () => {
   // ratios-primer is skipped at uncertain and at verified.
   const uncertain = personalizePath({ 'nema:ratios|apply': 'uncertain' });
   assert.ok(uncertain.skipped.some((s) => s.activityId === 'ratios-primer'));
@@ -577,9 +583,8 @@ test('a verified status satisfies an uncertain gate, but not the reverse', () =>
   const verified = personalizePath({ 'nema:ratios|apply': 'verified' });
   assert.ok(verified.skipped.some((s) => s.activityId === 'ratios-primer'));
 
-  // heat-control-primer requires verified: uncertain is not enough.
-  const weakHeat = personalizePath({ 'nema:heat-control|explain': 'uncertain' });
-  assert.ok(weakHeat.path.some((p) => p.activityId === 'heat-control-primer'));
+  const seenHeat = personalizePath({ 'nema:heat-control|recognize': 'uncertain' });
+  assert.ok(seenHeat.skipped.some((p) => p.activityId === 'heat-control-primer'));
 });
 
 test('unknown status values and unrelated keys are treated as missing', () => {
@@ -591,11 +596,10 @@ test('unknown status values and unrelated keys are treated as missing', () => {
   assert.equal(noisy.personalMinutes, 62);
 });
 
-test('the lab and the retrieval task are never skipped', () => {
+test('the graded lab and retrieval task are never skipped', () => {
   for (const statuses of [ALL_MISSING, SEED, AFTER_DIAGNOSTIC]) {
     const { path } = personalizePath(statuses);
     assert.ok(path.some((p) => p.activityId === 'fix-the-broken-sauce'));
     assert.ok(path.some((p) => p.activityId === 'explain-without-the-recipe'));
-    assert.ok(path.some((p) => p.activityId === 'pan-sauce-anatomy'));
   }
 });

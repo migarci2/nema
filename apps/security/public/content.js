@@ -223,6 +223,70 @@ const FOOD_SAFETY_LESSON = {
   exposureClaim: { concept: 'nema:food-safety', ability: 'recognize', evidenceType: 'recognition' }
 };
 
+const HEAT_CONTROL_LESSON = {
+  intro:
+    'During service, heat control is recovery control. Every cold portion, crowded pan and lifted lid changes the cooking surface, and the useful question is not where the dial sits but what the pan is doing now.',
+  sections: [
+    {
+      heading: 'Recover before the next portion',
+      html:
+        '<p>A pan loses heat when food lands in it. Give it time to recover between batches and leave space for steam to escape. If the sizzle collapses into a wet hiss, stop adding food: the surface has fallen towards the boiling point of water and the station is steaming instead of browning.</p>' +
+        '<p>Use the smallest batch that lets the pan recover before the next ticket. A heavy pan stores more energy, but it still needs time. Wiping out burnt fat and reheating a clean film of oil is faster than carrying bitter fond through the rest of service.</p>'
+    },
+    {
+      heading: 'Read the pan, not the knob',
+      html:
+        '<p>Sound, steam and colour are faster than a dial. A steady sharp sizzle means moisture is leaving and the surface is hot enough to brown. Pools of liquid mean crowding. Smoke before colour means the pan or the fat is too hot.</p>' +
+        '<p>Move the pan as well as the knob. Pull it half off the flame to slow a reduction, lift it completely to mount butter, and return it only when the surface has settled. The burner changes input; the pan tells you the result.</p>'
+    },
+    {
+      heading: 'Hold without continuing to cook',
+      html:
+        '<p>The pass is a holding problem. Protein keeps climbing after it leaves the pan, fried food softens under a tight cover, and a butter emulsion can split above about 90 C. Rest meat, vent crisp food and hold mounted sauces warm rather than simmering.</p>' +
+        '<p>When a ticket stalls, name a ceiling and a clock. A sauce can sit near 65 C for a short hold; it cannot sit over a live flame indefinitely. If quality has crossed the ceiling, remake it instead of hiding the damage.</p>'
+    }
+  ],
+  keyPoints: [
+    'Let the pan recover between batches and leave room for steam to escape.',
+    'Sound, steam and colour describe the surface better than the burner dial.',
+    'Move the pan off the flame when reducing or mounting needs to slow down.',
+    'Hold mounted sauces warm, near 65 C, rather than simmering them.'
+  ],
+  exposureClaim: { concept: 'nema:heat-control', ability: 'recognize', evidenceType: 'recognition' }
+};
+
+const PAN_SAUCE_SERVICE_LESSON = {
+  intro:
+    'A pan sauce survives service when the station treats it as a sequence, not a last minute improvisation: preserve the fond, dissolve it, reduce the liquid, mount off the heat and hold only as long as the emulsion stays sound.',
+  sections: [
+    {
+      heading: 'Build from what the pan left behind',
+      html:
+        '<p>Pour off excess fat and keep the brown fond. Deglaze with wine, stock or water while the pan is hot enough to release it, then scrape every useful brown patch into the liquid. Black patches are burnt and should not be rescued.</p>' +
+        '<p>Reduce before enrichment. The reduced stock supplies flavour and gelatin; cold butter supplies fat, water and milk solids. If the liquid is still thin when the butter goes in, the cook will be tempted to boil the finished sauce and split it.</p>'
+    },
+    {
+      heading: 'Mount for the pass',
+      html:
+        '<p>Take the pan off the flame and swirl in cold butter a few cubes at a time. The movement breaks the fat into droplets while the butter milk solids help keep those droplets apart. Stop when the sauce coats a spoon and still moves freely.</p>' +
+        '<p>Season after mounting. Reduction concentrates salt, so seasoning early can make the final sauce harsh. A few drops of acid at the end make a rich sauce readable without thinning it back into stock.</p>'
+    },
+    {
+      heading: 'Know when to rescue and when to remake',
+      html:
+        '<p>A sauce that is merely too thick can be loosened with warm water. A sauce beginning to look oily may come back with a spoon of cold water and gentle whisking off the heat. A sauce boiled into separate pools of fat has crossed the useful line.</p>' +
+        '<p>For a long service, hold the reduction and mount small batches to order. That keeps the fragile emulsion out of the bain marie until the ticket needs it and makes the fastest rescue a fresh finish, not a larger batch of damage.</p>'
+    }
+  ],
+  keyPoints: [
+    'Fond, deglaze, reduce, mount and adjust is the sequence.',
+    'Reduce before butter so the finished emulsion never needs to boil.',
+    'Mount cold butter off the flame and season only after reduction.',
+    'For long service, hold the reduction and mount small batches to order.'
+  ],
+  exposureClaim: { concept: 'nema:pan-sauces', ability: 'recognize', evidenceType: 'recognition' }
+};
+
 /* ------------------------------------------------------------------------- */
 /* Lab 1: service-log-audit                                                   */
 /* ------------------------------------------------------------------------- */
@@ -633,6 +697,44 @@ export const ACTIVITIES = {
     unlockReason: '',
     lockedReason: '',
     lesson: FOOD_SAFETY_LESSON
+  },
+  'heat-control-on-the-line': {
+    id: 'heat-control-on-the-line',
+    version: UNIT_VERSION,
+    title: 'Heat control when tickets land',
+    type: 'lesson',
+    minutes: 6,
+    difficulty: 'introductory',
+    grader: 'exposure',
+    evidenceProduced: 'recognition',
+    outcomes: [{ concept: 'nema:heat-control', ability: 'recognize', evidenceType: 'recognition' }],
+    skipIf: [{ concept: 'nema:heat-control', ability: 'recognize', status: 'uncertain' }],
+    unlock: [],
+    whatTheLearnerDoes: 'Reads how a busy station recovers, reads the pan and holds food without overcooking it.',
+    includeReason: 'Included: nema has no record that you already covered heat control.',
+    skipReason: 'Done via nema: your vault already records this heat control lesson from another course.',
+    unlockReason: '',
+    lockedReason: '',
+    lesson: HEAT_CONTROL_LESSON
+  },
+  'pan-sauces-during-service': {
+    id: 'pan-sauces-during-service',
+    version: UNIT_VERSION,
+    title: 'Pan sauces during service',
+    type: 'lesson',
+    minutes: 6,
+    difficulty: 'intermediate',
+    grader: 'exposure',
+    evidenceProduced: 'recognition',
+    outcomes: [{ concept: 'nema:pan-sauces', ability: 'recognize', evidenceType: 'recognition' }],
+    skipIf: [{ concept: 'nema:pan-sauces', ability: 'recognize', status: 'uncertain' }],
+    unlock: [],
+    whatTheLearnerDoes: 'Reads how to build, hold and rescue a pan sauce through a live service.',
+    includeReason: 'Included: nema has no record that you already covered pan sauces.',
+    skipReason: 'Done via nema: your vault already records this pan sauce lesson from another course.',
+    unlockReason: '',
+    lockedReason: '',
+    lesson: PAN_SAUCE_SERVICE_LESSON
   },
   'service-log-audit': {
     id: 'service-log-audit',

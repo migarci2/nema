@@ -161,9 +161,14 @@ assertion to Saucier School and 27 becomes 21, because `ratios.apply` is now
 incident triage lab?"* Tools called: `describe_learning_offer`, then
 `create_readiness_assertion` for the new audience, then `check_prerequisites`.
 
+Before leaving Saucier School, mark **Anatomy of a pan sauce** as read and keep
+that receipt in the vault. This is the small piece of shared course progress the
+next site will recognise.
+
 **By hand.** Click **Connect your vault** on Line Cook Lab and approve. Same
 button, different site, different question: this one asks about mise en place,
-food safety and emulsions, because that is what its own manifest requires.
+food safety and emulsions, plus heat control and pan sauces for its skippable
+lessons.
 
 Either way, read the `learnerKeyId` line while the consent modal is open. It is
 a different string here than it was for Saucier School, because the id is
@@ -174,16 +179,19 @@ derived from the vault key and the audience.
 | `nema:mise-en-place.explain` | `verified` | receipts already in the vault, issued by other origins |
 | `nema:food-safety.apply` | `verified` | receipts already in the vault, issued by other origins |
 | `nema:emulsions.explain` | `missing` | nothing in the vault claims it |
+| `nema:heat-control.recognize` | `verified` | earlier evidence also covers this lower ability |
+| `nema:pan-sauces.recognize` | `uncertain` | the lesson receipt just kept from Saucier School |
 
-Both intro lessons, `mise-en-place-intro` and `food-safety-intro`, are marked
-skippable on the strength of the first two, which is 16 of the unit's 42
-minutes. Both labs stay locked, and the page names the exact reason:
+Four lessons are marked `done via nema`, including the two shared lessons
+`heat-control-on-the-line` and `pan-sauces-during-service`. That removes 28 of
+the unit's 54 minutes without pretending they were completed on this site.
+Both labs stay locked, and the page names the exact reason:
 `emulsions.explain` needs to be at least `uncertain`.
 
 This is the honest version of the cross site claim, and it is the interesting
 one. Line Cook Lab never spoke to the sites that produced that evidence. It
 verified one signature from the vault, checked that the token was minted for its
-own origin, and got three bands.
+own origin, and got five bands.
 
 **Close the gap, with an agent.** Ask: *"Line Cook Lab wants emulsions. Ask my
 vault what I should do about that and coach me through it."* Tools called:

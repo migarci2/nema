@@ -82,7 +82,7 @@
  * ---------------------------------------------------------------------------
  * MINUTES ARITHMETIC (the 68 -> 27 -> 21 story)
  * ---------------------------------------------------------------------------
- *   1 heat-control-primer      12   skipIf heat-control.explain verified
+ *   1 heat-control-primer      12   skipIf heat-control.recognize uncertain
  *   2 knife-skills-refresher   15   skipIf knife-skills.apply verified
  *   3 ratios-diagnostic         6   onlyIf ratios.apply uncertain
  *   4 ratios-primer            14   skipIf ratios.apply uncertain (or better)
@@ -127,9 +127,9 @@ export const ACTIVITIES = {
     grader: 'exposure',
     evidenceProduced: 'recognition',
     outcomes: [{ concept: 'nema:heat-control', ability: 'recognize' }],
-    skipIf: [{ concept: 'nema:heat-control', ability: 'explain', status: 'verified' }],
-    includeReason: 'Included: no verified evidence that you can explain heat control.',
-    skipReason: 'Skipped: your vault already proves you can explain heat control.',
+    skipIf: [{ concept: 'nema:heat-control', ability: 'recognize', status: 'uncertain' }],
+    includeReason: 'Included: nema has no record that you already covered heat control.',
+    skipReason: 'Done via nema: your vault already records this heat control lesson from another course.',
     whatTheLearnerDoes: 'Reads three short sections and marks the lesson complete.',
     content: {
       intro:
@@ -371,9 +371,9 @@ export const ACTIVITIES = {
     grader: 'exposure',
     evidenceProduced: 'recognition',
     outcomes: [{ concept: 'nema:pan-sauces', ability: 'recognize' }],
-    skipIf: [],
-    includeReason: 'Included: this is the core lesson of the unit.',
-    skipReason: '',
+    skipIf: [{ concept: 'nema:pan-sauces', ability: 'recognize', status: 'uncertain' }],
+    includeReason: 'Included: nema has no record that you already covered pan sauces.',
+    skipReason: 'Done via nema: your vault already records this pan sauce lesson from another course.',
     whatTheLearnerDoes: 'Reads three short sections and marks the lesson complete.',
     content: {
       intro:

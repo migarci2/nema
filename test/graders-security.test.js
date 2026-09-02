@@ -11,9 +11,16 @@ import {
   grade,
   checkPrerequisites
 } from '../apps/security/public/content.js';
+import {
+  grade as gradeSaucier,
+  personalizePath
+} from '../apps/harness/public/content.js';
+import { deriveState, toAssertionStatus } from '../shared/inference.js';
 
 const LAB = 'service-log-audit';
 const TRIAGE = 'incident-triage';
+const HEAT_LESSON = 'heat-control-on-the-line';
+const SAUCE_LESSON = 'pan-sauces-during-service';
 
 const KEY = ACTIVITIES[LAB].answerKey;
 const INCIDENTS = ACTIVITIES[TRIAGE].incidents;
@@ -26,6 +33,16 @@ function correctTriageAnswers() {
 
 function wrongOptionFor(incident) {
   return incident.options.find((option) => option.id !== incident.answerKey).id;
+}
+
+function statusFromNema(claim) {
+  const at = '2026-09-03T12:00:00.000Z';
+  const state = deriveState([{
+    status: 'verified',
+    receiptId: 'cross-course-lesson',
+    payload: { issuedAt: at, conditions: { grader: 'exposure' }, claims: [claim] }
+  }], { now: at });
+  return toAssertionStatus(state[claim.concept][claim.ability].band);
 }
 
 /* --------------------------------------------------------------------- */
@@ -47,23 +64,31 @@ test('manifest describes the Line Cook Lab unit', () => {
   assert.deepEqual(ACTIVITY_ORDER, [
     'mise-en-place-intro',
     'food-safety-intro',
+    HEAT_LESSON,
+    SAUCE_LESSON,
     LAB,
     TRIAGE
   ]);
-  assert.equal(MANIFEST.activities.length, 4);
-  assert.equal(MANIFEST.unit.estimatedMinutes, 42);
+  assert.equal(MANIFEST.activities.length, 6);
+  assert.equal(MANIFEST.unit.estimatedMinutes, 54);
   assert.equal(
     MANIFEST.unit.estimatedMinutes,
     ACTIVITY_ORDER.reduce((total, id) => total + ACTIVITIES[id].minutes, 0)
   );
 });
 
-test('the intros carry skipIf and the labs carry unlock', () => {
+test('the lessons carry skipIf and the labs carry unlock', () => {
   assert.deepEqual(ACTIVITIES['mise-en-place-intro'].skipIf, [
     { concept: 'nema:mise-en-place', ability: 'explain', status: 'verified' }
   ]);
   assert.deepEqual(ACTIVITIES['food-safety-intro'].skipIf, [
     { concept: 'nema:food-safety', ability: 'apply', status: 'verified' }
+  ]);
+  assert.deepEqual(ACTIVITIES[HEAT_LESSON].skipIf, [
+    { concept: 'nema:heat-control', ability: 'recognize', status: 'uncertain' }
+  ]);
+  assert.deepEqual(ACTIVITIES[SAUCE_LESSON].skipIf, [
+    { concept: 'nema:pan-sauces', ability: 'recognize', status: 'uncertain' }
   ]);
   assert.deepEqual(ACTIVITIES[LAB].unlock, [
     { concept: 'nema:emulsions', ability: 'explain', minStatus: 'uncertain' }
@@ -305,6 +330,16 @@ test('a completed lesson produces one exposure claim', () => {
     ACTIVITIES['food-safety-intro'].lesson.exposureClaim,
     { concept: 'nema:food-safety', ability: 'recognize', evidenceType: 'recognition' }
   );
+  assert.deepEqual(
+    grade(HEAT_LESSON, { completed: true }).claims[0],
+    {
+      concept: 'nema:heat-control',
+      ability: 'recognize',
+      evidenceType: 'recognition',
+      result: 'passed',
+      difficulty: 'introductory'
+    }
+  );
 });
 
 test('an unopened lesson claims nothing', () => {
@@ -323,11 +358,13 @@ test('an unknown activity fails instead of throwing', () => {
 /* checkPrerequisites                                                     */
 /* --------------------------------------------------------------------- */
 
-test('the demo story: both intros skippable, both labs unlocked', () => {
+test('knowledge from Saucier marks the shared lessons done and unlocks both labs', () => {
   const out = checkPrerequisites({
     'nema:mise-en-place|explain': 'verified',
     'nema:food-safety|apply': 'verified',
-    'nema:emulsions|explain': 'uncertain'
+    'nema:emulsions|explain': 'uncertain',
+    'nema:heat-control|recognize': 'verified',
+    'nema:pan-sauces|recognize': 'uncertain'
   });
 
   assert.deepEqual(out.recognized, [
@@ -335,10 +372,12 @@ test('the demo story: both intros skippable, both labs unlocked', () => {
     { concept: 'nema:emulsions', ability: 'explain', status: 'uncertain' },
     { concept: 'nema:food-safety', ability: 'apply', status: 'verified' }
   ]);
-  assert.deepEqual(out.skippable, ['mise-en-place-intro', 'food-safety-intro']);
+  assert.deepEqual(out.skippable, ['mise-en-place-intro', 'food-safety-intro', HEAT_LESSON, SAUCE_LESSON]);
   assert.deepEqual(out.unlocked, [
     'mise-en-place-intro',
     'food-safety-intro',
+    HEAT_LESSON,
+    SAUCE_LESSON,
     LAB,
     TRIAGE
   ]);
@@ -350,7 +389,9 @@ test('the same story works with bare concept ids', () => {
   const out = checkPrerequisites({
     'mise-en-place|explain': 'verified',
     'food-safety|apply': 'verified',
-    'emulsions|explain': 'uncertain'
+    'emulsions|explain': 'uncertain',
+    'heat-control|recognize': 'verified',
+    'pan-sauces|recognize': 'uncertain'
   });
   assert.equal(out.recommendedFirst, LAB);
   assert.deepEqual(out.locked, []);
@@ -361,7 +402,9 @@ test('without emulsions both labs are locked with the missing entry', () => {
   const out = checkPrerequisites({
     'nema:mise-en-place|explain': 'verified',
     'nema:food-safety|apply': 'verified',
-    'nema:emulsions|explain': 'missing'
+    'nema:emulsions|explain': 'missing',
+    'nema:heat-control|recognize': 'uncertain',
+    'nema:pan-sauces|recognize': 'uncertain'
   });
 
   assert.deepEqual(out.locked, [
@@ -374,8 +417,8 @@ test('without emulsions both labs are locked with the missing entry', () => {
       missing: [{ concept: 'nema:emulsions', ability: 'explain', needed: 'uncertain' }]
     }
   ]);
-  assert.deepEqual(out.unlocked, ['mise-en-place-intro', 'food-safety-intro']);
-  assert.deepEqual(out.skippable, ['mise-en-place-intro', 'food-safety-intro']);
+  assert.deepEqual(out.unlocked, ['mise-en-place-intro', 'food-safety-intro', HEAT_LESSON, SAUCE_LESSON]);
+  assert.deepEqual(out.skippable, ['mise-en-place-intro', 'food-safety-intro', HEAT_LESSON, SAUCE_LESSON]);
   assert.equal(out.recommendedFirst, null);
 });
 
@@ -395,7 +438,7 @@ test('uncertain never satisfies a requirement that needs verified', () => {
     'nema:emulsions|explain': 'verified'
   });
   assert.deepEqual(out.skippable, []);
-  assert.deepEqual(out.unlocked, ['mise-en-place-intro', 'food-safety-intro', LAB]);
+  assert.deepEqual(out.unlocked, ['mise-en-place-intro', 'food-safety-intro', HEAT_LESSON, SAUCE_LESSON, LAB]);
   assert.deepEqual(out.locked, [
     {
       activityId: TRIAGE,
@@ -406,6 +449,20 @@ test('uncertain never satisfies a requirement that needs verified', () => {
     }
   ]);
   assert.equal(out.recommendedFirst, 'mise-en-place-intro');
+});
+
+test('lesson exposure crosses between both cooking providers through nema', () => {
+  const fromLineCook = grade(HEAT_LESSON, { completed: true }).claims[0];
+  assert.ok(
+    personalizePath({ [`${fromLineCook.concept}|${fromLineCook.ability}`]: statusFromNema(fromLineCook) })
+      .skipped.some((entry) => entry.activityId === 'heat-control-primer')
+  );
+
+  const fromSaucier = gradeSaucier('pan-sauce-anatomy', { completed: true }).claims[0];
+  assert.ok(
+    checkPrerequisites({ [`${fromSaucier.concept}|${fromSaucier.ability}`]: statusFromNema(fromSaucier) })
+      .skippable.includes(SAUCE_LESSON)
+  );
 });
 
 test('garbage input is treated as missing, not as an error', () => {
@@ -482,7 +539,7 @@ test('service log content must be rendered as text, not as markup', () => {
   for (const activity of [ACTIVITIES[LAB], ACTIVITIES[TRIAGE]]) {
     assert.ok(activity.scenario.html.startsWith('<p>'));
   }
-  for (const id of ['mise-en-place-intro', 'food-safety-intro']) {
+  for (const id of ['mise-en-place-intro', 'food-safety-intro', HEAT_LESSON, SAUCE_LESSON]) {
     for (const section of ACTIVITIES[id].lesson.sections) {
       assert.ok(section.html.startsWith('<p>'));
       assert.equal(/[<>]/.test(section.heading), false);
@@ -506,6 +563,8 @@ test('every activity carries the copy start_activity and the path panel need', (
 
   assert.ok(ACTIVITIES['mise-en-place-intro'].skipReason.startsWith('Skipped:'));
   assert.ok(ACTIVITIES['food-safety-intro'].skipReason.startsWith('Skipped:'));
+  assert.ok(ACTIVITIES[HEAT_LESSON].skipReason.startsWith('Done via nema:'));
+  assert.ok(ACTIVITIES[SAUCE_LESSON].skipReason.startsWith('Done via nema:'));
 
   for (const id of [LAB, TRIAGE]) {
     assert.ok(

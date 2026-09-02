@@ -25,8 +25,7 @@ const ACTIVITY_INPUT = {
   properties: {
     activityId: {
       type: 'string',
-      description:
-        'Activity id from the manifest: mise-en-place-intro, food-safety-intro, service-log-audit or incident-triage.'
+      description: 'Activity id from the manifest returned by describe_learning_offer.'
     }
   },
   required: ['activityId'],
