@@ -2,38 +2,43 @@
  *
  * Everything visual that is shared with the other four origins lives in
  * /shared/brand/tokens.css and /shared/brand/brand.css. This file only adds
- * what the presentation site needs: the hub grid and manifesto, and the three
- * document pages (protocol, judges, philosophy).
+ * what the presentation site needs: the hub landing page and the four
+ * document pages (creators, protocol, judges, philosophy).
  *
  * Type rule for this site: Pixelify Sans is used for the wordmark and for
  * section titles, nothing else. Everything that is read as a sentence is Inter.
  * Monospace is left for identifiers, commands and tool names.
  *
  * Hub rules (contract section 20):
- *   - one continuous canvas. The only bordered things on the front page are
- *     the consent figure and the two demo controls at the end.
+ *   - a product landing page, read top to bottom: hero and one real product
+ *     visual, then beliefs, then what nema is, then the creator case, then
+ *     three moments, then the destinations. One even rhythm between sections,
+ *     no empty rectangles.
  *   - monochrome first. Three semantic colours carry meaning and nothing else:
  *     cyan for the learner and the vault, teal for the web and the sites,
  *     yellow for the agent. .hl-cyan .hl-teal .hl-yellow set colour and weight,
  *     nothing more.
+ *   - the panels are drawn, not screenshotted, and they are live: every one of
+ *     them is driven by /landing.js through real buttons, so a reader can play
+ *     the consent, the install, the five clients and the three moments. With
+ *     JavaScript off each panel stays in its opening state and still reads.
  *   - typography has roles, not sizes: display, title, lede, heading, body,
  *     label, caption.
- *   - a 12 column grid, 1120 px wide, 24 px gutter. Prose reads in columns
- *     1 to 7. Everything stacks below 900 px with the same rhythm.
- *   - stillness. No animation, nothing revealed on scroll.
+ *   - stillness. The only motion is the short fade a state change earns, and
+ *     prefers-reduced-motion removes it.
  *
  * Contents
  *   1  shared page rhythm (document pages)
- *   2  hub grid
- *   3  hub typography roles and highlights
- *   4  hero
- *   5  what we believe
- *   6  how it feels
- *   7  what nema is, and the consent figure
- *   8  try it, for builders, install lines
- *   9  hub stacking
- *  10  tables
- *  11  quote and callout
+ *   2  landing rhythm and typography roles
+ *   3  hero
+ *   4  what we believe, and the brand tile
+ *   5  the four cards of "what nema is"
+ *   6  shared panel parts: rows, bands, notes, actions, drawn pages
+ *   7  for people who teach on the web
+ *   8  how it feels
+ *   9  try it, for builders, install lines
+ *  10  landing stacking
+ *  11  tables, quote and callout
  *  12  tools dock: ask, open app, activity strip
  *  13  document pages, prose, code, checklist
  */
@@ -103,91 +108,51 @@
 .site-nav__link:hover { color: var(--ink); background: var(--navy-2); }
 .site-nav__link[aria-current='page'] { color: var(--cyan); }
 
-/* ------------------------------------------------ 2. hub grid -- */
+/* ------------------------ 2. landing rhythm and type roles -- */
 
-/* 1120 px of content plus the shell padding, so the header, the manifesto and
- * the footer all hang off the same two edges. */
+/* 1120 px of content plus the shell padding, so the header, the page and the
+ * footer all hang off the same two edges. */
 body[data-page-title='Hub'] .n-app { max-width: 1168px; }
 
+/* The whole page is one column of sections separated by one distance. Nothing
+ * on the hub is spaced by anything else, so the reader never meets a void. */
 .site-main--hub {
-  --gutter: var(--sp-5);
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--gutter);
-  row-gap: var(--sp-8);
-  padding-top: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(88px, 9vw, 148px);
+  padding-top: clamp(32px, 4.4vw, 64px);
+  padding-bottom: var(--sp-6);
 }
 
-/* Sections are not boxes. Each one repeats the same 12 columns so every
- * heading, sentence and figure lands on a column edge. */
 .hub-sec {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--gutter);
-  row-gap: var(--sp-5);
-  align-content: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
 }
-
-/* Prose reads in columns 1 to 7. Wider things opt out below. */
-.hub-sec > * { grid-column: 1 / 8; }
-
-/* --------------------------- 3. hub typography and highlights -- */
 
 /* title: the section claim, sentence case, no number and no dot. */
+.lp-h2,
 .u-title {
-  grid-column: 1 / -1;
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(26px, 2.4vw, 30px);
+  font-size: clamp(26px, 2.8vw, 34px);
   line-height: var(--lh-tight);
   color: var(--ink);
 }
 
-/* lede: one orientation sentence under the thesis. */
-.u-lede {
-  font-size: 20px;
-  line-height: 1.5;
-  color: var(--ink-2);
-  max-width: 56ch;
-}
-
-/* body: every sentence on the page. */
-.u-body,
-.belief__text,
-.moment__text,
-.thing__text,
-.dest__text {
-  font-size: 18px;
+/* body: the sentences that are not inside a panel. */
+.u-body {
+  font-size: var(--fs-16);
   line-height: var(--lh-body);
   color: var(--ink-2);
   max-width: 62ch;
 }
 
-/* heading: the short claim above a body sentence. */
-.belief__title,
-.moment__title,
-.thing__title,
-.dest__name {
-  font-size: var(--fs-20);
-  font-weight: 600;
-  line-height: var(--lh-snug);
-  color: var(--ink);
-}
-
-/* label: the install lines and the demo block. */
 .u-label {
   font-family: var(--font-ui);
   font-size: var(--fs-13);
   font-weight: 500;
   color: var(--ink-2);
-}
-
-.u-caption {
-  font-size: var(--fs-13);
-  line-height: var(--lh-body);
-  color: var(--ink-2);
-  max-width: 46ch;
 }
 
 /* The whole colour budget of the page: colour plus weight, nothing else.
@@ -198,185 +163,587 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
 .hl-teal { color: var(--teal); font-weight: 600; }
 .hl-yellow { color: var(--yellow); font-weight: 600; }
 
-/* ---------------------------------------------------- 4. hero -- */
+/* ---------------------------------------------------- 3. hero -- */
 
-.hero__inner {
-  grid-column: 1 / 9;
+.lp-hero { gap: clamp(40px, 4.4vw, 64px); }
+
+.lp-hero__copy {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
+  max-width: 720px;
 }
 
-.hero__wordmark { width: min(232px, 60%); color: var(--ink); }
-.hero__wordmark svg { width: 100%; height: auto; }
+.lp-wordmark { width: min(232px, 58%); color: var(--ink); }
+.lp-wordmark svg { width: 100%; height: auto; }
 
-.hero__tagline { font-size: var(--fs-16); color: var(--cyan); }
+.lp-tagline { font-size: var(--fs-16); color: var(--cyan); }
 
 /* display: the wordmark and these three lines, nothing else. */
-.hero__thesis {
+.lp-thesis {
   display: flex;
   flex-direction: column;
   margin-top: var(--sp-4);
-  font-size: clamp(28px, 3.4vw, 40px);
+  font-size: clamp(30px, 4.2vw, 46px);
   font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  line-height: 1.14;
+  letter-spacing: -0.025em;
   color: var(--ink);
 }
 
-.hero__inner .u-lede { margin-top: var(--sp-3); }
+.lp-lede {
+  margin-top: var(--sp-2);
+  font-size: clamp(17px, 1.5vw, 20px);
+  line-height: 1.5;
+  color: var(--ink-2);
+  max-width: 52ch;
+}
 
-/* ------------------------------------------ 5. what we believe -- */
+.lp-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-5);
+  margin-top: var(--sp-4);
+}
 
-/* Two columns of five, with the sixth column left as the gap, so both start
- * on a column edge of the same grid the rest of the page uses. */
-.beliefs {
-  grid-column: 1 / -1;
+.lp-btn { min-height: 44px; padding: 0 var(--sp-5); font-size: var(--fs-16); }
+
+.lp-link {
+  font-size: var(--fs-16);
+  color: var(--ink);
+  border-bottom: 1px solid var(--ink-3);
+}
+
+.lp-link:hover { border-bottom-color: var(--ink); }
+
+/* The one photograph of the page: the real product, in a window. */
+.lp-shot { margin: 0; display: flex; flex-direction: column; gap: var(--sp-3); }
+
+.lp-shot__frame {
+  max-width: 1100px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-3);
+  background: var(--navy-2);
+  overflow: hidden;
+}
+
+.lp-shot__img { display: block; width: 100%; height: auto; }
+
+.lp-shot__cap { font-size: var(--fs-13); color: var(--ink-2); max-width: 52ch; }
+
+/* --------------------------- 4. what we believe, brand tile -- */
+
+.lp-believe__grid {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--gutter);
-  row-gap: var(--sp-6);
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: clamp(32px, 5vw, 72px);
+  align-items: start;
 }
 
-.belief {
-  grid-column: 1 / span 5;
+.lp-beliefs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--sp-7);
+}
+
+.lp-belief {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
+  padding: var(--sp-5) 0;
+  border-top: 1px solid var(--line-soft);
 }
 
-.belief:nth-child(2n) { grid-column: 7 / span 5; }
-.belief__text { max-width: 46ch; }
+.lp-belief:nth-child(1),
+.lp-belief:nth-child(2) { padding-top: 0; border-top: 0; }
 
-/* ------------------------------- 5b. for people who teach on the web -- */
-
-/* Three claims at the heading role, stacked tighter than a list of
- * paragraphs, so they read as one short address to a creator and not as three
- * more sections. No bullets and no box: the install lines under them are the
- * only thing on the page that has to look like code. */
-.claims {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
-
-.claim {
-  font-size: var(--fs-20);
+.lp-belief__title {
+  font-size: var(--fs-16);
   font-weight: 600;
   line-height: var(--lh-snug);
   color: var(--ink);
 }
 
-/* --------------------------------------------- 6. how it feels -- */
+.lp-belief__text {
+  font-size: var(--fs-14);
+  line-height: var(--lh-body);
+  color: var(--ink-2);
+  max-width: 40ch;
+}
 
-/* Three moments, four columns each, on the same gutter as everything else. */
-.moments {
-  grid-column: 1 / -1;
+.lp-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-5);
+  padding: clamp(32px, 4vw, 56px) var(--sp-5);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-3);
+  background: var(--navy-2);
+}
+
+.lp-tile__mark { width: 104px; height: 104px; }
+.lp-tile__word { width: 128px; height: auto; color: var(--ink); }
+.lp-tile__line { font-size: var(--fs-13); color: var(--ink-2); }
+
+/* ------------------------------------- 5. what nema is: cards -- */
+
+.lp-cards {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  column-gap: var(--gutter);
-  row-gap: var(--sp-6);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-5);
 }
 
-.moment { display: flex; flex-direction: column; gap: var(--sp-2); }
-
-/* --------------------------------------------- 7. what nema is -- */
-
-/* Five columns of text against six of figure, sharing a top edge. The three
- * entries are spaced at sp-7: wider than the sp-6 inside the other lists,
- * because the figure beside them is tall, but still narrower than the sp-8
- * between sections, so a reader never mistakes the three for three sections.
- * The space left under them is the figure's, not a hole: the consent moment is
- * the focal object of this section and the open ground amplifies it. */
-.things {
-  grid-column: 1 / 6;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-7);
-}
-
-.thing { display: flex; flex-direction: column; gap: var(--sp-1); }
-.thing__text { max-width: 40ch; }
-
-/* The one figure of the page: the consent moment, still, in six columns. */
-.still {
-  grid-column: 7 / 13;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-}
-
-.still .n-modal__dialog {
-  width: 100%;
-  max-height: none;
-  overflow: visible;
-  animation: none;
-  box-shadow: none;
-  background: var(--navy);
-}
-
-.still .n-modal__foot { position: static; background: var(--navy); }
-
-.still .n-modal__eyebrow {
-  font-family: var(--font-ui);
-  font-size: var(--fs-12);
-  font-weight: 500;
-  letter-spacing: 0;
-  text-transform: none;
-}
-
-/* The provider name in the still is not a nema wordmark. */
-.still .n-modal__title {
-  font-family: var(--font-ui);
-  font-size: var(--fs-20);
-  font-weight: 600;
-}
-
-.withheld {
+/* Card, Obsidian style: the claim at the top, and the working panel running
+ * off the bottom edge so it reads as a piece of the product, not a picture. */
+.lp-card {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
+  padding: var(--sp-6) var(--sp-6) 0;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-3);
+  background: var(--navy-2);
+}
+
+.lp-card__title { font-size: var(--fs-20); font-weight: 600; line-height: var(--lh-snug); }
+
+.lp-card__text {
+  font-size: var(--fs-14);
+  line-height: var(--lh-body);
+  color: var(--ink-2);
+  max-width: 42ch;
+}
+
+.lp-card__demo {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--sp-4);
+  margin-top: var(--sp-5);
+  padding: var(--sp-5);
+  border: 1px solid var(--line-soft);
+  border-bottom: 0;
+  border-radius: var(--r-3) var(--r-3) 0 0;
+  background: var(--navy);
+}
+
+.lp-consent__head { font-size: var(--fs-12); color: var(--ink-2); }
+
+/* The closing line of a panel sits on the bottom edge, so two cards in a row
+ * end on the same line whatever their middles hold. */
+.lp-card__demo > .lp-note:last-child { margin-top: auto; }
+
+.lp-plan { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+.lp-plan__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-3);
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+}
+
+.lp-plan__total {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.lp-plan__items { display: flex; flex-direction: column; gap: var(--sp-1); }
+
+.lp-step {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-3);
   font-size: var(--fs-13);
   color: var(--ink-2);
 }
 
-.withheld li { position: relative; padding-left: 22px; }
-.withheld li::before {
+.lp-step__why { flex: none; font-size: var(--fs-12); color: var(--teal); }
+.lp-step[data-done] .lp-step__name { text-decoration: line-through; color: var(--ink-3); }
+
+/* The install demo: two tags, then the six tools they register. */
+.lp-file {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-2);
+  background: var(--navy-2);
+  overflow: hidden;
+}
+
+.lp-file__name {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  color: var(--ink-3);
+}
+
+.lp-file .install__line {
+  padding: 3px 10px;
+  font-size: var(--fs-11);
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.lp-file .install__line:first-of-type { padding-top: var(--sp-2); }
+.lp-file .install__line:last-of-type { padding-bottom: var(--sp-2); }
+
+.lp-tools {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2) var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  color: var(--ink-2);
+}
+
+.lp-tools li { display: flex; align-items: center; gap: var(--sp-2); }
+
+.lp-tools li::before {
+  content: '';
+  flex: none;
+  width: 5px;
+  height: 5px;
+  background: var(--teal);
+}
+
+/* Progressive enhancement: with no script every tool is already listed. */
+.lp-tools[data-js] li { opacity: 0.22; }
+
+.lp-tools[data-js] li[data-on] {
+  opacity: 1;
+  transition: opacity var(--dur-3) var(--ease-out);
+}
+
+.lp-tools[data-js] li::before { background: var(--ink-3); }
+.lp-tools[data-js] li[data-on]::before { background: var(--teal); }
+
+/* Five clients, one bus, one vault. Hover or focus lights the line. */
+.lp-agents { display: flex; flex-direction: column; gap: var(--sp-4); }
+
+.lp-agents__bus { position: relative; padding-right: 104px; }
+
+.lp-agents__list { display: flex; flex-direction: column; gap: var(--sp-2); }
+.lp-agents__list li { position: relative; }
+
+.lp-agents__list li::after {
   content: '';
   position: absolute;
-  left: 0;
-  top: 9px;
-  width: 10px;
+  left: 100%;
+  top: 50%;
+  width: 32px;
   height: 1px;
-  background: var(--ink-3);
+  background: var(--line);
 }
 
-/* ----------------------------- 8. try it, builders, install -- */
+.lp-agents__list li[data-on]::after { background: var(--yellow); }
 
-.dests {
-  grid-column: 1 / -1;
+.lp-agent {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-2);
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs-13);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.lp-agent:hover,
+.lp-agent[data-on] { border-color: var(--yellow); background: var(--navy-2); }
+
+.lp-agents__spine {
+  position: absolute;
+  right: 72px;
+  top: 14px;
+  bottom: 14px;
+  width: 1px;
+  background: var(--line);
+}
+
+.lp-agents__stub {
+  position: absolute;
+  right: 48px;
+  top: 50%;
+  width: 24px;
+  height: 1px;
+  background: var(--line);
+}
+
+.lp-agents[data-on] .lp-agents__spine,
+.lp-agents[data-on] .lp-agents__stub { background: var(--yellow); }
+
+.lp-agents__line { max-width: 44ch; }
+
+.lp-agents__mark {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+}
+
+/* The bar the extension draws on any page that installed the two tags. */
+.lp-ext { position: relative; }
+
+.lp-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding: var(--sp-3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-3);
+  background: var(--navy-2);
+  box-shadow: var(--shadow-2);
+}
+
+.lp-bar__mark { flex: none; width: 22px; height: 22px; }
+.lp-bar__text { flex: 1 1 12ch; font-size: var(--fs-13); color: var(--ink); }
+
+.lp-toast {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 6px 10px;
+  border: 1px solid var(--cyan-24);
+  border-radius: var(--r-2);
+  background: var(--cyan-12);
+  font-size: var(--fs-12);
+  color: var(--cyan);
+}
+
+.lp-toast[hidden] { display: none; }
+
+/* ---------------------------- 6. shared panel parts -- */
+
+.lp-rows { display: flex; flex-direction: column; }
+
+.lp-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: var(--fs-13);
+}
+
+.lp-row:last-child { border-bottom: 0; }
+.lp-row[data-done] .lp-row__name { text-decoration: line-through; color: var(--ink-3); }
+.lp-row__name { color: var(--ink); }
+.lp-row__state { flex: none; font-size: var(--fs-12); color: var(--ink-2); }
+
+.lp-band { display: inline-flex; align-items: center; gap: 6px; }
+
+.lp-band::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+}
+
+.lp-band--durable { color: var(--band-durable-ink); }
+.lp-band--usable { color: var(--band-usable-ink); }
+.lp-band--fragile { color: var(--band-fragile-ink); }
+.lp-band--uncertain { color: var(--band-uncertain-ink); }
+
+.lp-acts { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-3); }
+
+/* A shared button draws itself with display:inline-flex, which would beat the
+ * hidden attribute, so say it once here for the buttons these panels swap. */
+.lp-acts .n-btn[hidden] { display: none; }
+
+.lp-again {
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--ink-3);
+  background: none;
+  font: inherit;
+  font-size: var(--fs-13);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.lp-again:hover { color: var(--ink); border-bottom-color: var(--ink); }
+.lp-again[hidden] { display: none; }
+
+.lp-note { font-size: var(--fs-12); line-height: 1.5; color: var(--ink-2); }
+.lp-note[data-state='ok'] { color: var(--cyan); }
+.lp-note[data-state='off'] { color: var(--ink-3); }
+
+/* A page, drawn: a head, some lines, sometimes a button. Never a screenshot. */
+.lp-page { display: flex; flex-direction: column; gap: 10px; padding-bottom: var(--sp-5); }
+
+.lp-page__head {
+  height: 12px;
+  width: 58%;
+  border-radius: 2px;
+  background: var(--navy-3);
+}
+
+.lp-page__line { height: 8px; border-radius: 2px; background: var(--navy-3); }
+.lp-page__line--short { width: 70%; }
+
+.lp-page__pill {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: var(--r-round);
+  background: var(--teal-14);
+  color: var(--teal);
+  font-size: var(--fs-12);
+}
+
+.lp-browser {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-2);
+  background: var(--navy);
+  overflow: hidden;
+}
+
+.lp-browser__bar {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  color: var(--ink-3);
+}
+
+.lp-browser__body { display: flex; flex-direction: column; gap: 10px; padding: var(--sp-4); }
+.lp-browser__body .lp-page__line--short { width: 76%; }
+
+/* --------------------- 7. for people who teach on the web -- */
+
+.lp-teach__grid {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--gutter);
-  row-gap: var(--sp-5);
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: clamp(28px, 4vw, 56px);
+  align-items: start;
 }
 
-.dest {
-  grid-column: 1 / span 5;
+.lp-features { display: flex; flex-direction: column; gap: var(--sp-1); }
+
+.lp-feature {
+  display: flex;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-4);
+  border: 1px solid transparent;
+  border-radius: var(--r-3);
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.lp-feature:hover { background: var(--navy-2); }
+.lp-feature[aria-pressed='true'] { background: var(--navy-2); border-color: var(--line-soft); }
+
+.lp-feature__glyph { flex: none; width: 16px; height: 16px; margin-top: 3px; color: var(--teal); }
+.lp-feature__glyph svg { display: block; width: 100%; height: 100%; }
+
+.lp-feature__body { display: flex; flex-direction: column; gap: var(--sp-1); }
+
+.lp-feature__title {
+  font-size: var(--fs-16);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+  color: var(--ink);
+}
+
+.lp-feature__text { font-size: var(--fs-14); line-height: var(--lh-body); color: var(--ink-2); }
+
+.lp-stage {
+  display: flex;
+  min-height: 340px;
+  padding: var(--sp-6);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-3);
+  background: var(--navy-2);
+}
+
+.lp-stage__panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--sp-4);
+  width: 100%;
+}
+.lp-stage__panel[hidden] { display: none; }
+.lp-stage__panel .lp-note { max-width: 46ch; }
+
+/* --------------------------------------------- 8. how it feels -- */
+
+.lp-moments {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-6);
+}
+
+.lp-moment { display: flex; flex-direction: column; gap: var(--sp-2); height: 100%; }
+
+.lp-moment__title {
+  font-size: var(--fs-16);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+  color: var(--ink);
+}
+
+.lp-moment__text { font-size: var(--fs-14); line-height: var(--lh-body); color: var(--ink-2); }
+
+.lp-moment__demo {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+  padding: var(--sp-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-3);
+  background: var(--navy-2);
+}
+
+.lp-rows--ordered .lp-row { order: 0; }
+.lp-moment__demo > .lp-note:last-child { margin-top: auto; }
+
+/* ----------------------------- 9. try it, builders, install -- */
+
+.lp-dests {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-5);
+}
+
+.lp-dest {
   display: flex;
   flex-direction: column;
   gap: var(--sp-1);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line-soft);
 }
 
-.dest:nth-child(2n) { grid-column: 7 / span 5; }
-
-.dest__name {
+.lp-dest__name {
   align-self: flex-start;
+  font-size: var(--fs-16);
+  font-weight: 600;
   border-bottom: 1px solid color-mix(in srgb, currentColor 30%, transparent);
 }
 
-.dest__name:hover { border-bottom-color: currentColor; }
+/* Only the one destination that carries no meaning colour reads as ink. */
+.lp-dest__name:not(.hl-cyan):not(.hl-teal):not(.hl-yellow) { color: var(--ink); }
+
+.lp-dest__name:hover { border-bottom-color: currentColor; }
+.lp-dest__text { font-size: var(--fs-14); line-height: var(--lh-body); color: var(--ink-2); }
 
 .tlinks { display: flex; flex-wrap: wrap; gap: var(--sp-5); }
 
@@ -388,12 +755,7 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
 
 .tlink:hover { border-bottom-color: var(--ink); }
 
-.install {
-  grid-column: 1 / 9;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
+.install { display: flex; flex-direction: column; gap: var(--sp-2); }
 
 /* Ligatures off: the two hyphens of a command flag must stay two hyphens. */
 .install__line {
@@ -407,49 +769,44 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
   scrollbar-width: thin;
 }
 
-/* The demo at the end: one label, two controls, one quiet activity line. */
-.hub-sec.dock {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--gutter, var(--sp-5));
-  row-gap: var(--sp-4);
+/* ------------------------------------- 10. landing stacking -- */
+
+@media (max-width: 1000px) {
+  .lp-dests { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-
-.hub-sec.dock > * { grid-column: 1 / -1; }
-
-/* ------------------------------------------- 9. hub stacking -- */
 
 @media (max-width: 900px) {
-  .site-main--hub,
-  .hub-sec,
-  .hub-sec.dock { grid-template-columns: minmax(0, 1fr); }
+  .lp-believe__grid,
+  .lp-teach__grid,
+  .lp-cards { grid-template-columns: minmax(0, 1fr); }
 
-  .hub-sec > *,
-  .hub-sec.dock > * { grid-column: 1 / -1; }
-
-  .beliefs,
-  .moments,
-  .dests {
-    grid-template-columns: minmax(0, 1fr);
-    column-gap: 0;
-    row-gap: var(--sp-6);
-  }
-
-  .belief,
-  .belief:nth-child(2n),
-  .dest,
-  .dest:nth-child(2n) { grid-column: 1 / -1; }
-
-  /* The dock stacks with the rest, but its rule lives beside its definition in
-   * section 12: this file is read top to bottom and section 12 comes later. */
-
-  /* Stacked, no figure sits beside the three, so they close back to sp-6. */
-  .things { gap: var(--sp-6); }
-
-  .hero__wordmark { width: min(196px, 56%); }
+  .lp-tile { padding: var(--sp-6) var(--sp-5); }
+  .lp-moments { grid-template-columns: minmax(0, 1fr); }
+  .lp-dests { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lp-wordmark { width: min(196px, 56%); }
 }
 
-/* ------------------------------------------------ 10. tables -- */
+@media (max-width: 620px) {
+  .lp-beliefs { grid-template-columns: minmax(0, 1fr); }
+  .lp-belief:nth-child(2) { padding-top: var(--sp-5); border-top: 1px solid var(--line-soft); }
+  .lp-dests { grid-template-columns: minmax(0, 1fr); }
+  .lp-tools { grid-template-columns: minmax(0, 1fr); }
+  .lp-card { padding: var(--sp-5) var(--sp-5) 0; }
+  .lp-card__demo { padding: var(--sp-4); }
+  .lp-agents__bus { padding-right: 86px; }
+  .lp-agents__list li::after { width: 22px; }
+  .lp-agents__spine { right: 62px; }
+  .lp-agents__stub { right: 40px; width: 22px; }
+  .lp-agents__mark { width: 40px; height: 40px; }
+  .lp-stage { padding: var(--sp-4); }
+  .lp-feature { padding: var(--sp-3); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-tools[data-js] li[data-on] { transition: none; }
+}
+
+/* ------------------------------------ 11. tables, quote, callout -- */
 
 .s-table-wrap { overflow-x: auto; }
 
@@ -495,8 +852,6 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
   text-decoration-color: var(--danger);
 }
 
-/* ------------------------------------- 11. quote and callout -- */
-
 .quote {
   border-left: 2px solid var(--cyan);
   padding-left: var(--sp-4);
@@ -523,19 +878,16 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
 
 .dock { display: flex; flex-direction: column; gap: var(--sp-4); }
 
-/* The two demo controls sit on the same 12 columns as the manifesto: the form
- * starts on column 7, the edge the consent figure above it starts on. */
+/* The two demo controls sit side by side, on the same edges as the cards. */
 .dock__grid {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--gutter, var(--sp-5));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--sp-6);
   row-gap: var(--sp-6);
   align-items: start;
 }
 
 .ask { display: flex; flex-direction: column; gap: var(--sp-3); }
-.ask:nth-child(1) { grid-column: 1 / 6; }
-.ask:nth-child(2) { grid-column: 7 / 13; }
 
 /* Topic switches, not chips. The page earns two boxes at the end (the answer
  * and the form); these six do not need a seventh through twelfth. Selection is
@@ -566,8 +918,6 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
 
 @media (max-width: 900px) {
   .dock__grid { grid-template-columns: minmax(0, 1fr); column-gap: 0; }
-  .ask:nth-child(1),
-  .ask:nth-child(2) { grid-column: 1 / -1; }
 }
 
 .explain-out {

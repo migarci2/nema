@@ -28,10 +28,10 @@
 
   <main class="n-app__main site-main site-main--hub" id="main">
 
-    <!-- 1. wordmark, thesis, one orientation line ---------------------- -->
-    <section class="hub-sec hero" aria-labelledby="hero-title">
-      <div class="hero__inner">
-        <h1 class="hero__wordmark" id="hero-title">
+    <!-- 1. hero: wordmark, thesis, two actions, the product ------------ -->
+    <section class="hub-sec lp-hero" aria-labelledby="hero-title">
+      <div class="lp-hero__copy">
+        <h1 class="lp-wordmark" id="hero-title">
           <span class="sr-only">nema</span>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 24" aria-hidden="true" focusable="false" shape-rendering="crispEdges">
             <g fill="currentColor">
@@ -42,205 +42,447 @@
             </g>
           </svg>
         </h1>
-        <p class="hero__tagline">your learning state, everywhere.</p>
-        <p class="hero__thesis">
+        <p class="lp-tagline">your learning state, everywhere.</p>
+
+        <p class="lp-thesis">
           <span class="hl-teal">The web teaches.</span>
           <span class="hl-cyan">Your vault remembers.</span>
           <span class="hl-yellow">Your agent connects the two.</span>
         </p>
-        <p class="u-lede">A protocol anyone who teaches on the web can install in a minute, so readers keep what they learned.</p>
+
+        <p class="lp-lede">A protocol anyone who teaches on the web can install in a minute, so readers keep what they learned.</p>
+
+        <p class="lp-actions">
+          <a class="n-btn n-btn--primary lp-btn" href="https://nema-vault.migarci2.dev/" data-app-link="vault">Open your vault</a>
+          <a class="lp-link" href="/creators.html">Install it on your site</a>
+        </p>
+      </div>
+
+      <figure class="lp-shot">
+        <div class="lp-shot__frame">
+          <img class="lp-shot__img" src="/story-ask-poster.png" data-gif="/press/story-ask.gif"
+               width="1100" height="890" decoding="async"
+               alt="A course asks the vault what the reader can already do, the reader approves, and the path drops from 68 minutes to 27.">
+        </div>
+        <figcaption class="lp-shot__cap">A course asks. Nothing leaves until <span class="hl-cyan">you say yes</span>.</figcaption>
+      </figure>
+    </section>
+
+    <!-- 2. what we believe --------------------------------------------- -->
+    <section class="hub-sec lp-believe" aria-labelledby="believe-title">
+      <h2 class="lp-h2" id="believe-title">What we believe</h2>
+
+      <div class="lp-believe__grid">
+        <ul class="lp-beliefs">
+          <li class="lp-belief">
+            <h3 class="lp-belief__title">Learning happens <span class="hl-teal">everywhere</span></h3>
+            <p class="lp-belief__text">Most of what you know came from outside a course.</p>
+          </li>
+          <li class="lp-belief">
+            <h3 class="lp-belief__title"><span class="hl-cyan">Reading</span> is not remembering</h3>
+            <p class="lp-belief__text">Recognising a page is easy. Retrieval is not.</p>
+          </li>
+          <li class="lp-belief">
+            <h3 class="lp-belief__title"><span class="hl-cyan">Evidence</span> beats grades</h3>
+            <p class="lp-belief__text">A score is a claim. A receipt is a record.</p>
+          </li>
+          <li class="lp-belief">
+            <h3 class="lp-belief__title">Hard practice repeats the <span class="hl-teal">easy parts</span></h3>
+            <p class="lp-belief__text">Pass something advanced and what sits under it moves.</p>
+          </li>
+          <li class="lp-belief">
+            <h3 class="lp-belief__title">Your state is <span class="hl-cyan">yours</span></h3>
+            <p class="lp-belief__text">It lives with you. No subscription erases it.</p>
+          </li>
+          <li class="lp-belief">
+            <h3 class="lp-belief__title"><span class="hl-yellow">Coaching</span>, not judging</h3>
+            <p class="lp-belief__text">Your agent plans and explains. It never answers for you.</p>
+          </li>
+        </ul>
+
+        <div class="lp-tile">
+          <svg class="lp-tile__mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+            <defs>
+              <linearGradient id="lp-mark-tile" x1="32" y1="4" x2="58" y2="34" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#00E5FF"/><stop offset="0.5" stop-color="#15C4B4"/><stop offset="1" stop-color="#3A78FF"/>
+              </linearGradient>
+            </defs>
+            <path d="M32 6 L54 19 L54 45 L32 58 L10 45 L10 19 Z" fill="none" stroke="url(#lp-mark-tile)" stroke-width="2" stroke-linejoin="miter"/>
+            <g shape-rendering="crispEdges">
+              <rect x="29" y="3" width="6" height="6" fill="url(#lp-mark-tile)"/>
+              <rect x="51" y="16" width="6" height="6" fill="url(#lp-mark-tile)"/>
+              <rect x="51" y="42" width="6" height="6" fill="url(#lp-mark-tile)"/>
+              <rect x="29" y="55" width="6" height="6" fill="#FFCA2E"/>
+              <rect x="7" y="42" width="6" height="6" fill="url(#lp-mark-tile)"/>
+              <rect x="7" y="16" width="6" height="6" fill="url(#lp-mark-tile)"/>
+            </g>
+            <g fill="#F2F6FF" shape-rendering="crispEdges">
+              <rect x="24" y="24" width="16" height="4"/><rect x="24" y="28" width="4" height="12"/><rect x="36" y="28" width="4" height="12"/>
+            </g>
+          </svg>
+          <svg class="lp-tile__word" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 24" aria-hidden="true" focusable="false" shape-rendering="crispEdges">
+            <g fill="currentColor">
+              <rect x="0" y="0" width="16" height="4"/><rect x="0" y="4" width="4" height="20"/><rect x="12" y="4" width="4" height="20"/>
+              <rect x="20" y="0" width="16" height="4"/><rect x="20" y="4" width="4" height="20"/><rect x="32" y="4" width="4" height="4"/><rect x="20" y="8" width="16" height="4"/><rect x="20" y="20" width="16" height="4"/>
+              <rect x="40" y="0" width="28" height="4"/><rect x="40" y="4" width="4" height="20"/><rect x="52" y="4" width="4" height="20"/><rect x="64" y="4" width="4" height="20"/>
+              <rect x="72" y="0" width="16" height="4"/><rect x="84" y="4" width="4" height="20"/><rect x="72" y="8" width="16" height="4"/><rect x="72" y="12" width="4" height="8"/><rect x="72" y="20" width="16" height="4"/>
+            </g>
+          </svg>
+          <p class="lp-tile__line">One protocol, any agent.</p>
+        </div>
       </div>
     </section>
 
-    <!-- 2. what we believe -------------------------------------------- -->
-    <section class="hub-sec" aria-labelledby="believe-title">
-      <h2 class="u-title" id="believe-title">What we believe</h2>
+    <!-- 3. what nema is, four live cards -------------------------------- -->
+    <section class="hub-sec lp-what" aria-labelledby="what-title">
+      <h2 class="lp-h2" id="what-title">What nema is</h2>
 
-      <div class="beliefs">
-        <div class="belief">
-          <h3 class="belief__title">Learning happens <span class="hl-teal">everywhere</span></h3>
-          <p class="belief__text">Most of what you know came from outside a course.</p>
-        </div>
+      <div class="lp-cards">
 
-        <div class="belief">
-          <h3 class="belief__title"><span class="hl-cyan">Reading</span> is not remembering</h3>
-          <p class="belief__text">Recognising a page is easy. Retrieval is not.</p>
-        </div>
+        <!-- vault: a real consent, a real path -->
+        <article class="lp-card">
+          <h3 class="lp-card__title hl-cyan">Vault</h3>
+          <p class="lp-card__text">A page you own, holding notes of real work.</p>
 
-        <div class="belief">
-          <h3 class="belief__title"><span class="hl-cyan">Evidence</span> beats grades</h3>
-          <p class="belief__text">A score is a claim. A receipt is a record.</p>
-        </div>
+          <div class="lp-card__demo lp-consent" data-consent>
+            <p class="lp-consent__head">Saucier School is asking</p>
 
-        <div class="belief">
-          <h3 class="belief__title">Hard practice repeats the <span class="hl-teal">easy parts</span></h3>
-          <p class="belief__text">Pass something advanced and what sits under it moves.</p>
-        </div>
+            <ul class="lp-rows">
+              <li class="lp-row" data-req="durable">
+                <span class="lp-row__name">Knife skills</span>
+                <span class="lp-row__state" data-req-state>not shared</span>
+              </li>
+              <li class="lp-row" data-req="durable">
+                <span class="lp-row__name">Heat control</span>
+                <span class="lp-row__state" data-req-state>not shared</span>
+              </li>
+              <li class="lp-row" data-req="uncertain">
+                <span class="lp-row__name">Ratios</span>
+                <span class="lp-row__state" data-req-state>not shared</span>
+              </li>
+            </ul>
 
-        <div class="belief">
-          <h3 class="belief__title">Your state is <span class="hl-cyan">yours</span></h3>
-          <p class="belief__text">It lives with you. No subscription erases it.</p>
-        </div>
+            <p class="lp-acts">
+              <button class="n-btn n-btn--secondary n-btn--sm" type="button" data-consent="deny">Deny</button>
+              <button class="n-btn n-btn--primary n-btn--sm" type="button" data-consent="approve">Approve</button>
+              <button class="lp-again" type="button" data-consent="reset" hidden>Play again</button>
+            </p>
 
-        <div class="belief">
-          <h3 class="belief__title"><span class="hl-yellow">Coaching</span>, not judging</h3>
-          <p class="belief__text">Your agent plans and explains. It never answers for you.</p>
-        </div>
+            <div class="lp-plan">
+              <p class="lp-plan__head">
+                <span>Your path at Saucier School</span>
+                <b class="lp-plan__total" data-plan-total>68 minutes</b>
+              </p>
+              <ul class="lp-plan__items">
+                <li class="lp-step" data-step="skip"><span class="lp-step__name">Knife skills, hands on</span><span class="lp-step__why" data-step-why hidden>already proved</span></li>
+                <li class="lp-step" data-step="skip"><span class="lp-step__name">Heat control, in your own words</span><span class="lp-step__why" data-step-why hidden>already proved</span></li>
+                <li class="lp-step"><span class="lp-step__name">Ratios, hands on</span></li>
+                <li class="lp-step"><span class="lp-step__name">Emulsions, hands on</span></li>
+              </ul>
+            </div>
+
+            <p class="lp-note" data-consent-note role="status">Nothing has left your vault.</p>
+          </div>
+        </article>
+
+        <!-- protocol: two tags, six tools -->
+        <article class="lp-card">
+          <h3 class="lp-card__title hl-teal">Protocol</h3>
+          <p class="lp-card__text">A small way for a site to ask one question.</p>
+
+          <div class="lp-card__demo lp-proto" data-proto>
+            <div class="lp-file">
+              <p class="lp-file__name">index.html</p>
+              <p class="install__line">&lt;script type="application/nema+json"&gt; your unit &lt;/script&gt;</p>
+              <p class="install__line">&lt;script type="module" src="https://nema.migarci2.dev/nema-provider.js"&gt;&lt;/script&gt;</p>
+            </div>
+
+            <p class="lp-acts">
+              <button class="n-btn n-btn--secondary n-btn--sm" type="button" data-proto-run>Install</button>
+            </p>
+
+            <ul class="lp-tools" data-proto-tools>
+              <li>describe_learning_offer</li>
+              <li>personalize_learning_path</li>
+              <li>start_activity</li>
+              <li>get_attempt_status</li>
+              <li>issue_evidence_receipt</li>
+              <li>present_assertion</li>
+            </ul>
+
+            <p class="lp-note" data-proto-note role="status">Two tags on any page, and no backend.</p>
+          </div>
+        </article>
+
+        <!-- your agent: five clients, one vault -->
+        <article class="lp-card">
+          <h3 class="lp-card__title hl-yellow">Your agent</h3>
+          <p class="lp-card__text">Whichever you use. It never writes your record.</p>
+
+          <div class="lp-card__demo lp-agents" data-agents>
+            <div class="lp-agents__bus">
+            <ul class="lp-agents__list">
+              <li><button class="lp-agent" type="button" data-agent="Calls the tools on the page, over WebMCP.">ChatGPT desktop</button></li>
+              <li><button class="lp-agent" type="button" data-agent="Calls the tools on the page, over WebMCP.">Chrome 149+</button></li>
+              <li><button class="lp-agent" type="button" data-agent="Reaches the vault over MCP, from your terminal.">Claude Code</button></li>
+              <li><button class="lp-agent" type="button" data-agent="Reaches the vault over MCP, from your terminal.">Codex</button></li>
+              <li><button class="lp-agent" type="button" data-agent="Needs no model at all.">The nema extension</button></li>
+            </ul>
+
+            <span class="lp-agents__spine" aria-hidden="true"></span>
+            <span class="lp-agents__stub" aria-hidden="true"></span>
+            <svg class="lp-agents__mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+              <defs>
+                <linearGradient id="lp-mark-agents" x1="32" y1="4" x2="58" y2="34" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="#00E5FF"/><stop offset="0.5" stop-color="#15C4B4"/><stop offset="1" stop-color="#3A78FF"/>
+                </linearGradient>
+              </defs>
+              <path d="M32 6 L54 19 L54 45 L32 58 L10 45 L10 19 Z" fill="none" stroke="url(#lp-mark-agents)" stroke-width="2" stroke-linejoin="miter"/>
+              <g shape-rendering="crispEdges">
+                <rect x="29" y="3" width="6" height="6" fill="url(#lp-mark-agents)"/>
+                <rect x="51" y="16" width="6" height="6" fill="url(#lp-mark-agents)"/>
+                <rect x="51" y="42" width="6" height="6" fill="url(#lp-mark-agents)"/>
+                <rect x="29" y="55" width="6" height="6" fill="#FFCA2E"/>
+                <rect x="7" y="42" width="6" height="6" fill="url(#lp-mark-agents)"/>
+                <rect x="7" y="16" width="6" height="6" fill="url(#lp-mark-agents)"/>
+              </g>
+              <g fill="#F2F6FF" shape-rendering="crispEdges">
+                <rect x="24" y="24" width="16" height="4"/><rect x="24" y="28" width="4" height="12"/><rect x="36" y="28" width="4" height="12"/>
+              </g>
+            </svg>
+            </div>
+
+            <p class="lp-note lp-agents__line" data-agent-line role="status">WebMCP on the page, MCP in the terminal.</p>
+          </div>
+        </article>
+
+        <!-- in your browser: the bar the extension draws -->
+        <article class="lp-card">
+          <h3 class="lp-card__title hl-cyan">In your browser</h3>
+          <p class="lp-card__text">A Chrome side panel.</p>
+
+          <div class="lp-card__demo lp-ext" data-ext>
+            <div class="lp-page" aria-hidden="true">
+              <span class="lp-page__head"></span>
+              <span class="lp-page__line"></span>
+              <span class="lp-page__line lp-page__line--short"></span>
+              <span class="lp-page__line"></span>
+              <span class="lp-page__line lp-page__line--short"></span>
+            </div>
+
+            <div class="lp-bar">
+              <svg class="lp-bar__mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+                <defs>
+                  <linearGradient id="lp-mark-ext" x1="32" y1="4" x2="58" y2="34" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#00E5FF"/><stop offset="0.5" stop-color="#15C4B4"/><stop offset="1" stop-color="#3A78FF"/>
+                  </linearGradient>
+                </defs>
+                <path d="M32 6 L54 19 L54 45 L32 58 L10 45 L10 19 Z" fill="none" stroke="url(#lp-mark-ext)" stroke-width="3" stroke-linejoin="miter"/>
+                <g fill="#F2F6FF" shape-rendering="crispEdges">
+                  <rect x="24" y="24" width="16" height="4"/><rect x="24" y="28" width="4" height="12"/><rect x="36" y="28" width="4" height="12"/>
+                </g>
+              </svg>
+              <p class="lp-bar__text">This site works with nema.</p>
+              <button class="n-btn n-btn--primary n-btn--sm" type="button" data-ext-share>Share bands with this page</button>
+            </div>
+
+            <p class="lp-toast" data-ext-toast role="status" hidden>Kept in your vault.</p>
+            <p class="lp-note" data-ext-note>The bar appears on any page that installed the two tags.</p>
+          </div>
+        </article>
+
       </div>
     </section>
 
-    <!-- 3. for people who teach on the web ----------------------------- -->
-    <section class="hub-sec" aria-labelledby="creators-title">
-      <h2 class="u-title" id="creators-title">For people who teach on the web</h2>
+    <!-- 4. for people who teach on the web ------------------------------ -->
+    <section class="hub-sec lp-teach" aria-labelledby="creators-title">
+      <h2 class="lp-h2" id="creators-title">For people who teach on the web</h2>
 
-      <ul class="claims">
-        <li class="claim">Keep your site and your <span class="hl-teal">voice</span>.</li>
-        <li class="claim">Install it in <span class="hl-teal">a minute</span>.</li>
-        <li class="claim">Every <span class="hl-cyan">reader</span> keeps what they learned.</li>
-      </ul>
+      <div class="lp-teach__grid" data-teach-root>
+        <ul class="lp-features">
+          <li>
+            <button class="lp-feature" type="button" data-teach="voice" aria-pressed="true" aria-controls="teach-voice">
+              <span class="lp-feature__glyph" aria-hidden="true">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="2.5" width="13" height="11" rx="1"/><path d="M1.5 5.5h13"/></svg>
+              </span>
+              <span class="lp-feature__body">
+                <span class="lp-feature__title">Keep your site and your <span class="hl-teal">voice</span>.</span>
+                <span class="lp-feature__text">nema adds two tags and changes nothing else.</span>
+              </span>
+            </button>
+          </li>
+          <li>
+            <button class="lp-feature" type="button" data-teach="minute" aria-pressed="false" aria-controls="teach-minute">
+              <span class="lp-feature__glyph" aria-hidden="true">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8.5" r="5.5"/><path d="M8 5.5v3.2l2 1.4M6 1.5h4"/></svg>
+              </span>
+              <span class="lp-feature__body">
+                <span class="lp-feature__title">Install it in <span class="hl-teal">a minute</span>.</span>
+                <span class="lp-feature__text">One manifest tag, one script tag, no backend.</span>
+              </span>
+            </button>
+          </li>
+          <li>
+            <button class="lp-feature" type="button" data-teach="reader" aria-pressed="false" aria-controls="teach-reader">
+              <span class="lp-feature__glyph" aria-hidden="true">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2.5 2.5h11v11l-2-1.2-2 1.2-2-1.2-2 1.2-2-1.2z"/><path d="M5 6h6M5 9h4"/></svg>
+              </span>
+              <span class="lp-feature__body">
+                <span class="lp-feature__title">Every <span class="hl-cyan">reader</span> keeps what they learned.</span>
+                <span class="lp-feature__text">Your page signs a receipt they carry away.</span>
+              </span>
+            </button>
+          </li>
+        </ul>
 
-      <div class="install">
-        <p class="install__line">&lt;script type="application/nema+json"&gt; your unit &lt;/script&gt;</p>
-        <p class="install__line">&lt;script type="module" src="https://nema.migarci2.dev/nema-provider.js"&gt;&lt;/script&gt;</p>
+        <div class="lp-stage">
+          <div class="lp-stage__panel" id="teach-voice" data-teach-panel="voice">
+            <div class="lp-browser">
+              <p class="lp-browser__bar">yoursite.com</p>
+              <div class="lp-browser__body">
+                <span class="lp-page__head"></span>
+                <span class="lp-page__line"></span>
+                <span class="lp-page__line lp-page__line--short"></span>
+                <span class="lp-page__pill">Start the lesson</span>
+                <span class="lp-page__line"></span>
+                <span class="lp-page__line lp-page__line--short"></span>
+              </div>
+            </div>
+            <p class="lp-note">Your layout, your words, your pricing. nema never renders your page.</p>
+          </div>
+
+          <div class="lp-stage__panel" id="teach-minute" data-teach-panel="minute" hidden>
+            <div class="lp-file">
+              <p class="lp-file__name">index.html</p>
+              <p class="install__line">&lt;script type="application/nema+json"&gt; your unit &lt;/script&gt;</p>
+              <p class="install__line">&lt;script type="module" src="https://nema.migarci2.dev/nema-provider.js"&gt;&lt;/script&gt;</p>
+            </div>
+            <p class="lp-note">Paste them once. The page can then ask a vault one question.</p>
+          </div>
+
+          <div class="lp-stage__panel" id="teach-reader" data-teach-panel="reader" hidden>
+            <ul class="lp-rows">
+              <li class="lp-row">
+                <span class="lp-row__name">Emulsions, hands on</span>
+                <span class="lp-row__state"><span class="lp-band lp-band--durable">verified</span></span>
+              </li>
+              <li class="lp-row">
+                <span class="lp-row__name">Ratios, hands on</span>
+                <span class="lp-row__state"><span class="lp-band lp-band--uncertain">uncertain</span></span>
+              </li>
+            </ul>
+            <p class="lp-note">Your site signed what the reader did. It lives in their vault, not in your database.</p>
+          </div>
+        </div>
       </div>
 
       <p class="tlinks"><a class="tlink" href="/creators.html">How to install</a></p>
     </section>
 
-    <!-- 4. how it feels ----------------------------------------------- -->
-    <section class="hub-sec" aria-labelledby="feels-title">
-      <h2 class="u-title" id="feels-title">How it feels</h2>
+    <!-- 5. how it feels -------------------------------------------------- -->
+    <section class="hub-sec lp-feels" aria-labelledby="feels-title">
+      <h2 class="lp-h2" id="feels-title">How it feels</h2>
 
-      <div class="moments">
-        <div class="moment">
-          <h3 class="moment__title">A night on <span class="hl-teal">pan sauces</span></h3>
-          <p class="moment__text">I pass the emulsion check. My <span class="hl-cyan">vault</span> credits what sits under it.</p>
-        </div>
+      <div class="lp-moments">
 
-        <div class="moment">
-          <h3 class="moment__title"><span class="hl-teal">Another site</span> already knows</h3>
-          <p class="moment__text">Line Cook Lab asks first and skips two lessons.</p>
-        </div>
+        <article class="lp-moment" data-moment="pass">
+          <h3 class="lp-moment__title">A night on <span class="hl-teal">pan sauces</span></h3>
+          <p class="lp-moment__text">I pass the emulsion check. My <span class="hl-cyan">vault</span> credits what sits under it.</p>
 
-        <div class="moment">
-          <h3 class="moment__title">My <span class="hl-yellow">agent</span> catches the drift</h3>
-          <p class="moment__text">Maillard and caramelisation are blurring. <span class="hl-yellow">Four minutes</span> over coffee.</p>
-        </div>
+          <div class="lp-moment__demo">
+            <ul class="lp-rows">
+              <li class="lp-row"><span class="lp-row__name">Emulsions</span><span class="lp-row__state"><span class="lp-band lp-band--uncertain" data-band="uncertain">uncertain</span></span></li>
+              <li class="lp-row"><span class="lp-row__name">Heat control</span><span class="lp-row__state"><span class="lp-band lp-band--fragile" data-band="fragile">fragile</span></span></li>
+              <li class="lp-row"><span class="lp-row__name">Ratios</span><span class="lp-row__state"><span class="lp-band lp-band--fragile" data-band="fragile">fragile</span></span></li>
+            </ul>
+            <p class="lp-acts"><button class="n-btn n-btn--secondary n-btn--sm" type="button" data-moment-run>Pass the emulsion check</button></p>
+            <p class="lp-note" data-moment-note role="status">One receipt, and three bands move.</p>
+          </div>
+        </article>
+
+        <article class="lp-moment" data-moment="second">
+          <h3 class="lp-moment__title"><span class="hl-teal">Another site</span> already knows</h3>
+          <p class="lp-moment__text">Line Cook Lab asks first and skips two lessons.</p>
+
+          <div class="lp-moment__demo">
+            <ul class="lp-rows">
+              <li class="lp-row" data-lesson><span class="lp-row__name">Knife handling</span><span class="lp-row__state" data-lesson-state>in the path</span></li>
+              <li class="lp-row" data-lesson><span class="lp-row__name">Pan temperature</span><span class="lp-row__state" data-lesson-state>in the path</span></li>
+              <li class="lp-row"><span class="lp-row__name">Service timing</span><span class="lp-row__state">in the path</span></li>
+            </ul>
+            <p class="lp-acts"><button class="n-btn n-btn--secondary n-btn--sm" type="button" data-moment-run>Ask my vault</button></p>
+            <p class="lp-note" data-moment-note role="status">A site it never heard of, teaching something else.</p>
+          </div>
+        </article>
+
+        <article class="lp-moment" data-moment="drift">
+          <h3 class="lp-moment__title">My <span class="hl-yellow">agent</span> catches the drift</h3>
+          <p class="lp-moment__text">Maillard and caramelisation are blurring. <span class="hl-yellow">Four minutes</span> over coffee.</p>
+
+          <div class="lp-moment__demo">
+            <ul class="lp-rows lp-rows--ordered" data-review>
+              <li class="lp-row" data-review-item="fond"><span class="lp-row__name">Fond and deglazing</span><span class="lp-row__state" data-review-min hidden>1 min</span></li>
+              <li class="lp-row" data-review-item="ratio"><span class="lp-row__name">Ratios by weight</span><span class="lp-row__state" data-review-min hidden>1 min</span></li>
+              <li class="lp-row" data-review-item="maillard"><span class="lp-row__name">Maillard against caramelisation</span><span class="lp-row__state" data-review-min hidden>2 min</span></li>
+            </ul>
+            <p class="lp-acts"><button class="n-btn n-btn--secondary n-btn--sm" type="button" data-moment-run>Plan four minutes</button></p>
+            <p class="lp-note" data-moment-note role="status">Your agent plans. It never answers for you.</p>
+          </div>
+        </article>
+
       </div>
     </section>
 
-    <!-- 5. what nema is ----------------------------------------------- -->
-    <section class="hub-sec" aria-labelledby="what-title">
-      <h2 class="u-title" id="what-title">What nema is</h2>
+    <!-- 6. try it -------------------------------------------------------- -->
+    <section class="hub-sec lp-try" aria-labelledby="try-title">
+      <h2 class="lp-h2" id="try-title">Try it</h2>
 
-      <div class="things">
-        <div class="thing">
-          <h3 class="thing__title hl-cyan">Vault</h3>
-          <p class="thing__text">A page you own, holding notes of real work.</p>
-        </div>
-
-        <div class="thing">
-          <h3 class="thing__title hl-teal">Protocol</h3>
-          <p class="thing__text">A small way for a site to ask one question.</p>
-        </div>
-
-        <div class="thing">
-          <h3 class="thing__title hl-yellow">Your agent</h3>
-          <p class="thing__text">Whichever you use. It never writes your record.</p>
-        </div>
-      </div>
-
-      <figure class="still">
-        <div class="n-modal__dialog">
-          <div class="n-modal__head">
-            <p class="n-modal__eyebrow">A site is asking</p>
-            <h3 class="n-modal__title">Saucier School</h3>
-          </div>
-          <div class="n-modal__body">
-            <div class="stack stack--tight">
-              <span class="n-label">Shared</span>
-              <div class="n-ledger">
-                <div class="n-ledger__row">
-                  <span class="n-ledger__main"><span class="n-ledger__title">Knife skills</span></span>
-                  <span class="n-ledger__end"><span class="n-pill n-pill--durable">verified</span></span>
-                </div>
-                <div class="n-ledger__row">
-                  <span class="n-ledger__main"><span class="n-ledger__title">Heat control</span></span>
-                  <span class="n-ledger__end"><span class="n-pill n-pill--durable">verified</span></span>
-                </div>
-                <div class="n-ledger__row">
-                  <span class="n-ledger__main"><span class="n-ledger__title">Ratios</span></span>
-                  <span class="n-ledger__end"><span class="n-pill n-pill--uncertain">uncertain</span></span>
-                </div>
-              </div>
-            </div>
-            <div class="stack stack--tight">
-              <span class="n-label">Not shared</span>
-              <ul class="withheld">
-                <li>Your mistakes</li>
-                <li>Your scores</li>
-                <li>Everything else</li>
-              </ul>
-            </div>
-          </div>
-          <div class="n-modal__foot">
-            <button class="n-btn n-btn--secondary" type="button" disabled>Deny</button>
-            <button class="n-btn n-btn--primary" type="button" disabled>Approve</button>
-          </div>
-        </div>
-        <figcaption class="u-caption">Nothing leaves until <span class="hl-cyan">you say yes</span>.</figcaption>
-      </figure>
-    </section>
-
-    <!-- 6. try it ------------------------------------------------------ -->
-    <section class="hub-sec" aria-labelledby="try-title">
-      <h2 class="u-title" id="try-title">Try it</h2>
-
-      <ul class="dests">
-        <li class="dest">
-          <a class="dest__name hl-cyan" href="https://nema-vault.migarci2.dev/" data-app-link="vault">Vault</a>
-          <p class="dest__text">Your evidence, and the consent box.</p>
+      <ul class="lp-dests">
+        <li class="lp-dest">
+          <a class="lp-dest__name hl-cyan" href="https://nema-vault.migarci2.dev/" data-app-link="vault">Vault</a>
+          <p class="lp-dest__text">Your evidence, and the consent box.</p>
         </li>
 
-        <li class="dest">
-          <a class="dest__name hl-teal" href="https://saucier.migarci2.dev/" data-app-link="harness">Saucier School</a>
-          <p class="dest__text">It asks before it plans.</p>
+        <li class="lp-dest">
+          <a class="lp-dest__name hl-teal" href="https://saucier.migarci2.dev/" data-app-link="harness">Saucier School</a>
+          <p class="lp-dest__text">It asks before it plans.</p>
         </li>
 
-        <li class="dest">
-          <a class="dest__name hl-teal" href="https://linecook.migarci2.dev/" data-app-link="security">Line Cook Lab</a>
-          <p class="dest__text">A second, unrelated site.</p>
+        <li class="lp-dest">
+          <a class="lp-dest__name hl-teal" href="https://linecook.migarci2.dev/" data-app-link="security">Line Cook Lab</a>
+          <p class="lp-dest__text">A second, unrelated site.</p>
         </li>
 
-        <li class="dest">
-          <a class="dest__name hl-teal" href="https://maillard.migarci2.dev/" rel="noopener">A blog post</a>
-          <p class="dest__text">One article, one tag.</p>
+        <li class="lp-dest">
+          <a class="lp-dest__name hl-teal" href="https://maillard.migarci2.dev/" rel="noopener">A blog post</a>
+          <p class="lp-dest__text">One article, one tag.</p>
         </li>
 
-        <li class="dest">
-          <a class="dest__name hl-teal" href="https://aesgcm.migarci2.dev/compare" rel="noopener">Two real articles</a>
-          <p class="dest__text">The same page with and without nema, <a href="https://aesgcm.migarci2.dev/compare" rel="noopener">AES-GCM</a> and <a href="https://cpu.migarci2.dev/compare" rel="noopener">the CPU</a>.</p>
+        <li class="lp-dest">
+          <a class="lp-dest__name hl-teal" href="https://aesgcm.migarci2.dev/compare" rel="noopener">Two real articles</a>
+          <p class="lp-dest__text">The same page with and without nema, <a href="https://aesgcm.migarci2.dev/compare" rel="noopener">AES-GCM</a> and <a href="https://cpu.migarci2.dev/compare" rel="noopener">the CPU</a>.</p>
         </li>
 
-        <li class="dest">
-          <a class="dest__name hl-yellow" href="https://github.com/migarci2/nema/tree/main/packages/nema-mcp" rel="noopener">Your own agent</a>
-          <p class="dest__text">From your terminal.</p>
-        </li>
-<li class="dest">
-          <a class="dest__name hl-yellow" href="https://github.com/migarci2/nema/tree/main/packages/nema-extension" rel="noopener">nema in your browser</a>
-          <p class="dest__text">A Chrome side panel.</p>
+        <li class="lp-dest">
+          <a class="lp-dest__name hl-yellow" href="https://github.com/migarci2/nema/tree/main/packages/nema-mcp" rel="noopener">Your own agent</a>
+          <p class="lp-dest__text">From your terminal.</p>
         </li>
 
-        <li class="dest">
-          <a class="dest__name" href="/philosophy.html">Philosophy</a>
-          <p class="dest__text">The longer argument.</p>
+        <li class="lp-dest">
+          <a class="lp-dest__name hl-yellow" href="https://github.com/migarci2/nema/tree/main/packages/nema-extension" rel="noopener">nema in your browser</a>
+          <p class="lp-dest__text">A Chrome side panel.</p>
+        </li>
+
+        <li class="lp-dest">
+          <a class="lp-dest__name" href="/philosophy.html">Philosophy</a>
+          <p class="lp-dest__text">The longer argument.</p>
         </li>
       </ul>
     </section>
 
-    <!-- 7. for builders and judges ------------------------------------- -->
-    <section class="hub-sec" aria-labelledby="builders-title">
-      <h2 class="u-title" id="builders-title">For builders and judges</h2>
+    <!-- 7. for builders and judges --------------------------------------- -->
+    <section class="hub-sec lp-builders" aria-labelledby="builders-title">
+      <h2 class="lp-h2" id="builders-title">For builders and judges</h2>
 
       <p class="u-body">Every claim here is checkable. The tools appear in ChatGPT desktop.</p>
 
@@ -311,5 +553,6 @@
 </div>
 
 <script type="module" src="/app.js"></script>
+<script type="module" src="/landing.js"></script>
 </body>
 </html>
