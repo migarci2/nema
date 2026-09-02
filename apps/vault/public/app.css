@@ -132,7 +132,7 @@
 }
 .v-graph .n-graph__edge {
   stroke-width: 1;
-  stroke-opacity: 0.3;
+  stroke-opacity: 0.16;
 }
 .v-graph__due {
   fill: var(--yellow);
@@ -518,3 +518,4 @@
   border-top-color: var(--line-soft);
   font-size: var(--fs-11);
 }
+.v-graph .n-graph__edge--active { stroke-opacity: 0.9; stroke: var(--cyan); }
