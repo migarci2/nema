@@ -1,0 +1,65 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>nema story card, any agent</title>
+<link rel="stylesheet" href="card.css">
+<style>
+  .card { padding: 56px 80px 56px; }
+  .fan { position: relative; width: 1440px; height: 372px; margin-top: 48px; }
+  .fan svg { position: absolute; inset: 0; }
+  .tag {
+    position: absolute; top: 0; transform: translateX(-50%);
+    display: flex; align-items: center; justify-content: center;
+    height: 74px; padding: 0 26px; box-sizing: border-box;
+    border: 1px solid #1E3050; border-radius: 8px; background: #101B2D;
+    font-size: 29px; color: #F2F6FF; white-space: nowrap;
+  }
+  .cap {
+    position: absolute; left: 0; right: 0; bottom: 0; text-align: center;
+    font-size: 32px; color: #9FB0CC; margin: 0;
+  }
+  .cap b { color: #F2F6FF; font-weight: 500; }
+</style>
+
+<div class="card card--yellow">
+  <p class="eyebrow">Any agent, and no agent at all</p>
+  <h1 class="title">The agent is a commodity. The vault is the infrastructure.</h1>
+
+  <div class="fan">
+    <svg width="1440" height="372" viewBox="0 0 1440 372" fill="none">
+      <defs>
+        <linearGradient id="ag-edge" x1="32" y1="4" x2="58" y2="34" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#00E5FF"/><stop offset="0.5" stop-color="#15C4B4"/><stop offset="1" stop-color="#3A78FF"/>
+        </linearGradient>
+      </defs>
+      <g stroke="#FFCA2E" stroke-width="3" stroke-linecap="round">
+        <path d="M144 82 V 130 H 720 V 200"/>
+        <path d="M432 82 V 156 H 720 V 200"/>
+        <path d="M720 82 V 200"/>
+        <path d="M1008 82 V 156 H 720 V 200"/>
+        <path d="M1296 82 V 130 H 720 V 200"/>
+      </g>
+      <g transform="translate(660 202) scale(1.875)">
+        <path d="M32 6 L54 19 L54 45 L32 58 L10 45 L10 19 Z" fill="#101B2D" stroke="url(#ag-edge)" stroke-width="1.8" stroke-linejoin="miter"/>
+        <g shape-rendering="crispEdges">
+          <rect x="29" y="3" width="6" height="6" fill="url(#ag-edge)"/>
+          <rect x="51" y="16" width="6" height="6" fill="url(#ag-edge)"/>
+          <rect x="51" y="42" width="6" height="6" fill="url(#ag-edge)"/>
+          <rect x="29" y="55" width="6" height="6" fill="#FFCA2E"/>
+          <rect x="7" y="42" width="6" height="6" fill="url(#ag-edge)"/>
+          <rect x="7" y="16" width="6" height="6" fill="url(#ag-edge)"/>
+        </g>
+        <g fill="#F2F6FF" shape-rendering="crispEdges">
+          <rect x="24" y="24" width="16" height="4"/><rect x="24" y="28" width="4" height="12"/><rect x="36" y="28" width="4" height="12"/>
+        </g>
+      </g>
+    </svg>
+
+    <span class="tag" style="left: 144px">ChatGPT desktop</span>
+    <span class="tag" style="left: 432px">Chrome 149+</span>
+    <span class="tag" style="left: 720px">Claude Code</span>
+    <span class="tag" style="left: 1008px">Codex</span>
+    <span class="tag" style="left: 1296px">The nema extension</span>
+
+    <p class="cap"><b>One vault, the same eleven tools.</b> WebMCP on the page, MCP in the terminal.</p>
+  </div>
+</div>

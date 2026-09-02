@@ -1,0 +1,104 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>nema story card, the diff</title>
+<link rel="stylesheet" href="card.css">
+<style>
+  .card { padding: 46px 80px 46px; }
+  .panes { display: flex; gap: 60px; margin-top: 36px; }
+  .pane { width: 690px; flex: none; }
+  .pane h2 { font-family: var(--font-mono), monospace; font-size: 27px; font-weight: 400;
+             color: #9FB0CC; margin: 0 0 16px; }
+  .pane h2 b { color: #F2F6FF; font-weight: 400; }
+  .legend { display: flex; align-items: center; gap: 18px; font-size: 29px; color: #F2F6FF; margin: 24px 0 0; }
+  .legend i { width: 30px; height: 20px; background: rgba(0, 229, 255, 0.22); border-left: 5px solid #00E5FF; flex: none; }
+  .legend span { color: #9FB0CC; }
+  .foot { margin: 28px 0 0; padding-top: 26px; border-top: 1px solid #1E3050; }
+</style>
+
+<div class="card">
+  <p class="eyebrow">A real article, mirrored under its licence</p>
+  <h1 class="title">Same article. 112 lines added.</h1>
+
+  <div class="panes">
+
+    <div class="pane">
+      <h2><b>original.html</b>, as published</h2>
+      <svg width="690" height="392" viewBox="0 0 690 392" fill="none">
+        <rect width="690" height="392" rx="10" fill="#FAFAFA"/>
+        <g fill="#C9C9C9">
+          <rect x="40" y="26" width="52" height="11" rx="3"/>
+          <rect x="104" y="26" width="82" height="11" rx="3"/>
+          <rect x="198" y="26" width="40" height="11" rx="3"/>
+        </g>
+        <rect x="40" y="60" width="452" height="22" rx="4" fill="#3A3A3A"/>
+        <rect x="40" y="98" width="150" height="10" rx="3" fill="#CFCFCF"/>
+        <g fill="#BDBDBD">
+          <rect x="40" y="132" width="610" height="11" rx="3"/>
+          <rect x="40" y="154" width="598" height="11" rx="3"/>
+          <rect x="40" y="176" width="606" height="11" rx="3"/>
+          <rect x="40" y="198" width="392" height="11" rx="3"/>
+        </g>
+        <rect x="40" y="234" width="196" height="16" rx="4" fill="#4A4A4A"/>
+        <g fill="#BDBDBD">
+          <rect x="40" y="272" width="610" height="11" rx="3"/>
+          <rect x="40" y="294" width="584" height="11" rx="3"/>
+          <rect x="40" y="316" width="452" height="11" rx="3"/>
+        </g>
+        <rect x="40" y="348" width="610" height="30" rx="4" fill="#ECECEC"/>
+        <g fill="#C4C4C4">
+          <rect x="54" y="358" width="220" height="9" rx="3"/>
+          <rect x="290" y="358" width="120" height="9" rx="3"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="pane">
+      <h2><b>index.html</b>, with nema</h2>
+      <svg width="690" height="392" viewBox="0 0 690 392" fill="none">
+        <rect width="690" height="392" rx="10" fill="#FAFAFA"/>
+        <g fill="#C9C9C9">
+          <rect x="40" y="26" width="52" height="11" rx="3"/>
+          <rect x="104" y="26" width="82" height="11" rx="3"/>
+          <rect x="198" y="26" width="40" height="11" rx="3"/>
+        </g>
+        <rect x="40" y="60" width="452" height="22" rx="4" fill="#3A3A3A"/>
+
+        <!-- added: the attribution line and the manifest -->
+        <rect x="28" y="96" width="634" height="52" fill="rgba(0,229,255,0.16)"/>
+        <rect x="28" y="96" width="5" height="52" fill="#00E5FF"/>
+        <g fill="#3FA9BC">
+          <rect x="48" y="108" width="420" height="10" rx="3"/>
+          <rect x="48" y="128" width="330" height="10" rx="3"/>
+        </g>
+
+        <g fill="#BDBDBD">
+          <rect x="40" y="166" width="610" height="11" rx="3"/>
+          <rect x="40" y="188" width="598" height="11" rx="3"/>
+          <rect x="40" y="210" width="606" height="11" rx="3"/>
+          <rect x="40" y="232" width="392" height="11" rx="3"/>
+        </g>
+
+        <!-- added: a question anchor inside the text -->
+        <rect x="28" y="252" width="634" height="34" fill="rgba(0,229,255,0.16)"/>
+        <rect x="28" y="252" width="5" height="34" fill="#00E5FF"/>
+        <rect x="48" y="263" width="300" height="10" rx="3" fill="#3FA9BC"/>
+
+        <rect x="40" y="302" width="196" height="16" rx="4" fill="#4A4A4A"/>
+
+        <!-- added: the activities block and the one script tag -->
+        <rect x="28" y="334" width="634" height="46" fill="rgba(0,229,255,0.16)"/>
+        <rect x="28" y="334" width="5" height="46" fill="#00E5FF"/>
+        <g fill="#3FA9BC">
+          <rect x="48" y="344" width="500" height="10" rx="3"/>
+          <rect x="48" y="362" width="240" height="10" rx="3"/>
+        </g>
+      </svg>
+    </div>
+
+  </div>
+
+  <p class="legend"><i></i>Cyan is what nema added: <span>a manifest, one script tag, five question anchors and an attribution line.</span></p>
+
+  <p class="foot">The article is "AES-GCM and breaking it on nonce reuse" by frereit, mirrored under CC BY-SA 4.0 at
+  frereit.de/aes_gcm. Nothing was changed except the additions shown.</p>
+</div>
