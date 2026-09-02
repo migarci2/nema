@@ -1,5 +1,5 @@
---- original.html	2026-09-02 19:19:12.067442095 +0200
-+++ index.html	2026-09-02 19:19:12.065775685 +0200
+--- original.html	2026-09-02 15:07:54.706868839 +0200
++++ index.html	2026-09-02 15:08:41.564522661 +0200
 @@ -2,10 +2,16 @@
  <a href="https://frereit.de/blog/">Blog</a>
  <a href="https://frereit.de/bookmarks/">Bookmarks</a>

@@ -149,8 +149,6 @@ who signed it does.
   golden path, the connect handshake, the extension, replay and tampering
   rejections, wrong audience, expired tokens.
 
-![Trust has three tiers](https://nema.migarci2.dev/press/card-trust-sm.png)
-
 ## Challenges we ran into
 
 - Native WebMCP differs from the polyfill in two ways that only show up in a

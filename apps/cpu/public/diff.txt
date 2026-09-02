@@ -1,5 +1,5 @@
---- original.html	2026-09-02 19:19:12.068775785 +0200
-+++ index.html	2026-09-02 19:19:12.068775785 +0200
+--- original.html	2026-09-02 15:47:13.603275037 +0200
++++ index.html	2026-09-02 15:47:13.605477806 +0200
 @@ -36,7 +36,114 @@
  					" style="opacity: 0.2"> <a href="https://cpu.land/epilogue"> <div class="chapter">Ch. 7</div> <div class="title">Epilogue</div> </a> </li> </ul> </nav> <script>(function(){const noScript = undefined;
  
