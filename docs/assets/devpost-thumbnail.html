@@ -6,9 +6,9 @@
   html, body { margin: 0; background: #0B1320; }
   .card { position: relative; width: 1800px; height: 1200px; overflow: hidden; background: #0B1320; font-family: var(--font-ui, Inter, sans-serif); color: #F2F6FF; }
   .diagram { position: absolute; inset: 0; width: 1800px; height: 1200px; }
-  .word { position: absolute; left: 120px; top: 270px; width: 800px; color: #F2F6FF; }
+  .word { position: absolute; left: 120px; top: 300px; width: 800px; color: #F2F6FF; }
   .word svg { width: 100%; height: auto; display: block; }
-  .sub { position: absolute; left: 120px; top: 745px; font-size: 84px; line-height: 1.15; font-weight: 600; color: #F2F6FF; white-space: nowrap; }
+  .sub { position: absolute; left: 120px; top: 785px; font-size: 84px; line-height: 1.15; font-weight: 600; color: #F2F6FF; white-space: nowrap; }
   .sub .a { color: #FFCA2E; }
 </style>
 <div class="card">
@@ -18,6 +18,7 @@
         <stop offset="0" stop-color="#00E5FF"/><stop offset="0.5" stop-color="#15C4B4"/><stop offset="1" stop-color="#3A78FF"/>
       </linearGradient>
     </defs>
+    <g transform="translate(0 50)">
     <!-- three sites -->
     <rect x="1010" y="100" width="200" height="250" rx="10" fill="#EDE6D8"/>
     <g fill="#B9A688"><rect x="1034" y="128" width="150" height="18" rx="4"/><rect x="1034" y="160" width="120" height="12" rx="3"/><rect x="1034" y="196" width="64" height="64" rx="4"/><rect x="1110" y="196" width="76" height="12" rx="3"/><rect x="1110" y="220" width="76" height="12" rx="3"/><rect x="1110" y="244" width="76" height="12" rx="3"/><rect x="1034" y="282" width="152" height="12" rx="3"/><rect x="1034" y="306" width="120" height="12" rx="3"/></g>
@@ -45,6 +46,7 @@
       <g fill="#F2F6FF" shape-rendering="crispEdges">
         <rect x="24" y="24" width="16" height="4"/><rect x="24" y="28" width="4" height="12"/><rect x="36" y="28" width="4" height="12"/>
       </g>
+    </g>
     </g>
   </svg>
   <div class="word">WORDMARK_SVG</div>
