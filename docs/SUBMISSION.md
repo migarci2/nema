@@ -33,7 +33,7 @@ could declare what it teaches, ask a reader's own vault what they already know,
 and hand back a signed note of what they did? That is nema: your learning
 state, everywhere.
 
-![The protocol in three beats](https://nema.migarci2.dev/press/card-how-it-works.png)
+![The protocol in three beats](https://nema.migarci2.dev/press/card-how-it-works-sm.png)
 
 ## What it does
 
@@ -43,11 +43,11 @@ per concept and per ability (recognise, retrieve, explain, apply, transfer,
 discriminate), a memory schedule, and a list of what to learn next. It lives
 in your browser. There is no account.
 
-![A receipt, signed by the course and kept in the vault](https://nema.migarci2.dev/press/story-receipt.gif)
+![A receipt, signed by the course and kept in the vault](https://nema.migarci2.dev/press/story-receipt-sm.gif)
 
 **A protocol a site installs in a minute.** Two tags on any page.
 
-![Two tags on any page](https://nema.migarci2.dev/press/card-one-tag.png)
+![Two tags on any page](https://nema.migarci2.dev/press/card-one-tag-sm.png)
 
 That page now exposes six WebMCP tools: it describes what it teaches, asks the
 vault about three prerequisites, adapts, and signs a receipt when the reader
@@ -70,48 +70,48 @@ will not (history, scores, other subjects), for which site, for how long. You
 approve. The answer is a signed token bound to that one site, valid thirty
 minutes.
 
-![The consent modal, in words](https://nema.migarci2.dev/press/card-consent.png)
+![The consent modal, in words](https://nema.migarci2.dev/press/card-consent-sm.png)
 
-![A course asks, you approve, 68 minutes become 27](https://nema.migarci2.dev/press/story-ask.gif)
+![A course asks, you approve, 68 minutes become 27](https://nema.migarci2.dev/press/story-ask-sm.gif)
 
 **Two example courses that look nothing like nema.** Saucier School (pan
 sauces) asks your vault three things and turns 68 minutes into 27, then 21.
 Line Cook Lab (food safety on the pass) has never spoken to Saucier School, but
 recognises what you did there and unlocks its advanced lab.
 
-![68 to 27 to 21 minutes](https://nema.migarci2.dev/press/card-minutes.png)
+![68 to 27 to 21 minutes](https://nema.migarci2.dev/press/card-minutes-sm.png)
 
-![A second site recognises the first](https://nema.migarci2.dev/press/story-second-site.gif)
+![A second site recognises the first](https://nema.migarci2.dev/press/story-second-site-sm.gif)
 
 **Two real articles, with and without nema.** We mirrored a CC BY-SA article
 on AES-GCM and an MIT chapter of "Putting the You in CPU", added retrieval
 questions inside the text, and put the original and the nema version side by
 side with the exact diff as the headline.
 
-![Same article. 112 lines added.](https://nema.migarci2.dev/press/card-diff.png)
+![Same article. 112 lines added.](https://nema.migarci2.dev/press/card-diff-sm.png)
 
-![The two columns, and a question inside the text](https://nema.migarci2.dev/press/story-article.gif)
+![The two columns, and a question inside the text](https://nema.migarci2.dev/press/story-article-sm.gif)
 
 **Any agent.** ChatGPT desktop and Chrome 149 call the tools on the page.
 Claude Code and Codex reach the same vault over MCP (`packages/nema-mcp`, the
 same eleven tools, same schemas). The agent is a commodity; the vault is the
 infrastructure.
 
-![Any agent, one vault](https://nema.migarci2.dev/press/card-agents.png)
+![Any agent, one vault](https://nema.migarci2.dev/press/card-agents-sm.png)
 
 **nema in your browser.** A Chrome extension puts the vault in the side panel
 and does the boring transport with no model: a bar appears on any site that
 works with nema, one click shares your bands, and receipts are collected
 automatically when you pass something.
 
-![The extension: share from the bar, the receipt is collected on its own](https://nema.migarci2.dev/press/story-extension.gif)
+![The extension: share from the bar, the receipt is collected on its own](https://nema.migarci2.dev/press/story-extension-sm.gif)
 
 **Sites that speak their own names.** A site can use its own concept ids. An
 agent proposes what they mean, you confirm once, and the vault translates at
 its edges. Who translated a name never changes how much a receipt is worth;
 who signed it does.
 
-![A site's own word meets the vault's](https://nema.migarci2.dev/press/card-alignment.png)
+![A site's own word meets the vault's](https://nema.migarci2.dev/press/card-alignment-sm.png)
 
 ## How we built it
 
@@ -147,7 +147,7 @@ who signed it does.
   golden path, the connect handshake, the extension, replay and tampering
   rejections, wrong audience, expired tokens.
 
-![Trust has three tiers](https://nema.migarci2.dev/press/card-trust.png)
+![Trust has three tiers](https://nema.migarci2.dev/press/card-trust-sm.png)
 
 ## Challenges we ran into
 
