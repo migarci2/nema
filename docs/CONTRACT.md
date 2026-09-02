@@ -1424,3 +1424,59 @@ same page with and without nema".
   https://nema-vault.migarci2.dev, https://saucier.migarci2.dev and
   https://maillard.migarci2.dev; fix the two ledger expectations that only
   held on localhost.
+
+## 30. The learner model implements the principles of learning fast (owner decision, 2026-09-02)
+
+Source: `docs/LEARNING_FAST_NOTES.md`. The vault is the "learning management"
+half of a tutor: an explicit student model over a knowledge graph with a
+forgetting model. Changes, all in `shared/inference.js` and the registry,
+pure and unit tested:
+
+- **Encompassing graph and fractional implicit repetition.** A passed claim
+  on concept C at ability A also counts, at a fraction, for each prerequisite
+  of C at the same or lower ability: `implicit = weight x result x recency x f`
+  with `f = concept.encompasses?.[prereq] ?? 0.5`, one level only (no
+  transitive chains beyond the direct prerequisites, but a prerequisite's own
+  prerequisites get `f^2` when the registry marks the relation `encompasses`).
+  Implicit evidence also refreshes the prerequisite's `lastSuccess` and
+  extends its stability as half a pass, so new learning is the spaced
+  repetition of what sits below it. `concepts.json` may declare
+  `encompasses: { "nema:x": 0.7 }` per concept; default 0.5 for prereqs.
+- **Edge of mastery.** `acquire` needs only for concepts whose prerequisites
+  are all at least `usable`; otherwise the need is for the weakest
+  prerequisite, with reason `prerequisite_first` naming the goal concept.
+- **Interleaving and interference.** When filling a session, never place two
+  needs on the same concept adjacent, alternate kinds where possible, and do
+  not put two `confusableWith` concepts in the same session unless one is a
+  `discriminate` need (which is the point). Reason strings say so
+  (`interleaved`, `interference_avoided`).
+- **Illusion of understanding.** A concept with exposure evidence only
+  (grader `exposure` or `self-report` and nothing else) produces a
+  `retrieve` need with reason `exposure_only` and the copy "You have read
+  about this. You have not retrieved it yet." Exposure alone never exceeds
+  `uncertain` (already true; keep the test).
+- **Minimum effective dose.** `computeNeeds` budgets by minutes and prefers
+  many short retrievals over one long one when a budget is given; needs
+  carry `minutes` from the registry, retrieve needs at most 4 minutes.
+- **Audits, not grades.** A failed claim creates a `repair` need (kind
+  `repair_misconception` when a misconception is recorded, `reassess`
+  otherwise) instead of only lowering the band.
+- Every reason string that reaches a person is plain English and short. The
+  SPEC documents the formulas with the source notes cited.
+
+### Writing
+
+All prose that a person reads (the hub, creators, philosophy, judges pages;
+README; PHILOSOPHY, JUDGE_GUIDE, DEVPOST, SUBMISSION) is rewritten in the
+voice of a good essayist: first person plural where the team speaks, first
+person singular is fine in the philosophy, short declarative sentences,
+concrete examples before abstractions, one idea per paragraph, no hype, no
+lists of three, no em dashes, no title case headings, no aphorism formulas,
+claims that come from the source notes are attributed to Skycak and to the
+Moontower essay by name and link. Then every text passes the humanizer rules
+(`~/.claude/skills/humanizer/SKILL.md`) in file mode. The philosophy page
+becomes the essay of the project: why the web is where most learning
+happens, why evidence beats grades, why memory needs you to come back, why
+the encompassing graph changes what "review" means, why the agent should
+manage learning rather than explain, and why nema refuses to make effort
+disappear.
