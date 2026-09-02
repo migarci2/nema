@@ -1,38 +1,46 @@
-/* nema hub, app specific layout.
+/* nema site, app specific layout.
  *
  * Everything visual that is shared with the other four origins lives in
  * /shared/brand/tokens.css and /shared/brand/brand.css. This file only adds
- * what the presentation site needs: the hub nav, the manifesto sections on the
- * front page, and the three document pages. Every value is a token.
+ * what the presentation site needs: the hub grid and manifesto, and the three
+ * document pages (protocol, judges, philosophy).
  *
  * Type rule for this site: Pixelify Sans is used for the wordmark and for
  * section titles, nothing else. Everything that is read as a sentence is Inter.
  * Monospace is left for identifiers, commands and tool names.
  *
- * Minimal pass: no section indices or hints, no uppercase mono micro labels,
- * hairline dividers in --line-soft, spacing instead of borders.
+ * Hub rules (contract section 20):
+ *   - one continuous canvas. The only bordered things on the front page are
+ *     the consent figure and the two demo controls at the end.
+ *   - monochrome first. Three semantic colours carry meaning and nothing else:
+ *     cyan for the learner and the vault, teal for the web and the sites,
+ *     yellow for the agent. .hl-cyan .hl-teal .hl-yellow set colour and weight,
+ *     nothing more.
+ *   - typography has roles, not sizes: display, title, lede, heading, body,
+ *     label, caption.
+ *   - a 12 column grid, 1120 px wide, 24 px gutter. Prose reads in columns
+ *     1 to 7. Everything stacks below 900 px with the same rhythm.
+ *   - stillness. No animation, nothing revealed on scroll.
  *
  * Contents
- *   1  page rhythm and sections
- *   2  hub nav
- *   3  hero
- *   4  what we believe
- *   5  how it feels
- *   6  what nema is: paragraphs, illustration, consent still
- *   7  try it, app cards
- *   8  for builders, install lines
- *   9  tables
- *  10  quote and callout
- *  11  tools dock: ask, open app, activity strip
- *  12  document pages, prose, code, checklist
+ *   1  shared page rhythm (document pages)
+ *   2  hub grid
+ *   3  hub typography roles and highlights
+ *   4  hero
+ *   5  what we believe
+ *   6  how it feels
+ *   7  what nema is, and the consent figure
+ *   8  try it, for builders, install lines
+ *   9  hub stacking
+ *  10  tables
+ *  11  quote and callout
+ *  12  tools dock: ask, open app, activity strip
+ *  13  document pages, prose, code, checklist
  */
 
-/* ------------------------------------------- 1. rhythm and sections -- */
+/* --------------------------------------- 1. shared page rhythm -- */
 
 .site-main { gap: var(--sp-7); }
-
-/* The manifesto breathes: a full 64 px between one idea and the next. */
-.site-main--hub { gap: var(--sp-8); }
 
 .section { display: flex; flex-direction: column; gap: var(--sp-5); }
 
@@ -52,8 +60,6 @@
   line-height: var(--lh-tight);
   color: var(--ink);
 }
-
-.site-main--hub .section__title { font-size: clamp(22px, 2.2vw, 28px); }
 
 .lede { max-width: 66ch; color: var(--ink-2); font-size: var(--fs-16); }
 .lede b { color: var(--ink); font-weight: 600; }
@@ -76,8 +82,6 @@
   color: var(--ink-2);
 }
 
-/* -------------------------------------------------------- 2. nav -- */
-
 .site-nav {
   display: flex;
   gap: var(--sp-1);
@@ -99,110 +103,185 @@
 .site-nav__link:hover { color: var(--ink); background: var(--navy-2); }
 .site-nav__link[aria-current='page'] { color: var(--cyan); }
 
-/* ------------------------------------------------------- 3. hero -- */
+/* ------------------------------------------------ 2. hub grid -- */
 
-.hero {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
-  padding: var(--sp-5) 0 0;
-}
+/* 1120 px of content plus the shell padding, so the header, the manifesto and
+ * the footer all hang off the same two edges. */
+body[data-page-title='Hub'] .n-app { max-width: 1168px; }
 
-.hero__wordmark { width: min(268px, 62%); color: var(--ink); }
-.hero__wordmark svg { width: 100%; height: auto; }
-
-.hero__tagline {
-  font-size: var(--fs-16);
-  color: var(--cyan);
-}
-
-/* Inter, not the pixel face: three lines that read as a sentence. */
-.hero__thesis {
-  display: flex;
-  flex-direction: column;
-  font-size: clamp(26px, 3.2vw, 38px);
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.015em;
-  color: var(--ink);
-  max-width: 22ch;
-  padding-top: var(--sp-3);
-}
-
-.hero__thesis span:last-child { color: var(--ink-2); }
-
-/* --------------------------------------------- 4. what we believe -- */
-
-.beliefs {
+.site-main--hub {
+  --gutter: var(--sp-5);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: var(--sp-6) var(--sp-7);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: var(--sp-8);
+  padding-top: var(--sp-5);
 }
 
-.belief { display: flex; flex-direction: column; gap: var(--sp-2); }
+/* Sections are not boxes. Each one repeats the same 12 columns so every
+ * heading, sentence and figure lands on a column edge. */
+.hub-sec {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: var(--sp-5);
+  align-content: start;
+}
 
-.belief__title {
-  font-size: var(--fs-16);
+/* Prose reads in columns 1 to 7. Wider things opt out below. */
+.hub-sec > * { grid-column: 1 / 8; }
+
+/* --------------------------- 3. hub typography and highlights -- */
+
+/* title: the section claim, sentence case, no number and no dot. */
+.u-title {
+  grid-column: 1 / -1;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(26px, 2.4vw, 30px);
+  line-height: var(--lh-tight);
+  color: var(--ink);
+}
+
+/* lede: one orientation sentence under the thesis. */
+.u-lede {
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  max-width: 56ch;
+}
+
+/* body: every sentence on the page. */
+.u-body,
+.belief__text,
+.moment__text,
+.thing__text,
+.dest__text {
+  font-size: 18px;
+  line-height: var(--lh-body);
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+
+/* heading: the short claim above a body sentence. */
+.belief__title,
+.moment__title,
+.thing__title,
+.dest__name {
+  font-size: var(--fs-20);
   font-weight: 600;
   line-height: var(--lh-snug);
   color: var(--ink);
 }
 
-.belief__text {
-  font-size: var(--fs-14);
-  line-height: var(--lh-body);
+/* label: the install lines and the demo block. */
+.u-label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  font-weight: 500;
   color: var(--ink-2);
-  max-width: 60ch;
 }
 
-/* ------------------------------------------------ 5. how it feels -- */
+.u-caption {
+  font-size: var(--fs-13);
+  line-height: var(--lh-body);
+  color: var(--ink-2);
+  max-width: 46ch;
+}
 
-.moments { display: flex; flex-direction: column; gap: var(--sp-6); }
+/* The whole colour budget of the page: colour plus weight, nothing else.
+ * cyan = the learner and the vault, teal = the web and the sites,
+ * yellow = the agent. Every one of them is also a key word, so the colour
+ * never carries the meaning alone. */
+.hl-cyan { color: var(--cyan); font-weight: 600; }
+.hl-teal { color: var(--teal); font-weight: 600; }
+.hl-yellow { color: var(--yellow); font-weight: 600; }
 
-.moment {
-  max-width: 62ch;
-  padding-left: var(--sp-5);
-  border-left: 1px solid var(--line);
-  font-size: var(--fs-16);
-  line-height: 1.7;
+/* ---------------------------------------------------- 4. hero -- */
+
+.hero__inner {
+  grid-column: 1 / 9;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.hero__wordmark { width: min(232px, 60%); color: var(--ink); }
+.hero__wordmark svg { width: 100%; height: auto; }
+
+.hero__tagline { font-size: var(--fs-16); color: var(--cyan); }
+
+/* display: the wordmark and these three lines, nothing else. */
+.hero__thesis {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--sp-4);
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   color: var(--ink);
 }
 
-/* ------------------------------------------------ 6. what nema is -- */
+.hero__inner .u-lede { margin-top: var(--sp-3); }
 
-.what {
+/* ------------------------------------------ 5. what we believe -- */
+
+/* Two columns of five, with the sixth column left as the gap, so both start
+ * on a column edge of the same grid the rest of the page uses. */
+.beliefs {
+  grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--sp-6);
-  align-items: start;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: var(--sp-6);
 }
 
-@media (min-width: 900px) {
-  .what { grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); gap: var(--sp-7); }
+.belief {
+  grid-column: 1 / span 5;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
 }
 
-.what__text { display: flex; flex-direction: column; gap: var(--sp-5); }
+.belief:nth-child(2n) { grid-column: 7 / span 5; }
+.belief__text { max-width: 46ch; }
 
-/* The picture of the idea: a site, a vault, an agent. */
-.idea {
-  width: 100%;
-  max-width: 540px;
-  height: auto;
-  margin-top: var(--sp-3);
+/* --------------------------------------------- 6. how it feels -- */
+
+/* Three moments, four columns each, on the same gutter as everything else. */
+.moments {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: var(--sp-6);
 }
 
-.idea__stroke { fill: none; stroke: var(--line); stroke-width: 1.25; }
-.idea__ink { fill: var(--ink-3); stroke: var(--ink-3); stroke-width: 1; }
-.idea__link { stroke: var(--cyan-60); stroke-width: 1; stroke-dasharray: 3 4; }
-.idea__label { fill: var(--ink-2); stroke: none; font-family: var(--font-ui); font-size: 12px; }
+.moment { display: flex; flex-direction: column; gap: var(--sp-2); }
 
-/* The illustration scales with the column, so its labels have to grow in
- * viewBox units to stay readable on a phone. */
-@media (max-width: 700px) {
-  .idea__label { font-size: 20px; }
+/* --------------------------------------------- 7. what nema is -- */
+
+/* Five columns of text against six of figure, sharing a top edge. The three
+ * entries are spaced at sp-7: wider than the sp-6 inside the other lists,
+ * because the figure beside them is tall, but still narrower than the sp-8
+ * between sections, so a reader never mistakes the three for three sections.
+ * The space left under them is the figure's, not a hole: the consent moment is
+ * the focal object of this section and the open ground amplifies it. */
+.things {
+  grid-column: 1 / 6;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-7);
 }
 
+.thing { display: flex; flex-direction: column; gap: var(--sp-1); }
+.thing__text { max-width: 40ch; }
+
+/* The one figure of the page: the consent moment, still, in six columns. */
 .still {
+  grid-column: 7 / 13;
   margin: 0;
   display: flex;
   flex-direction: column;
@@ -214,7 +293,7 @@
   max-height: none;
   overflow: visible;
   animation: none;
-  box-shadow: var(--shadow-2);
+  box-shadow: none;
   background: var(--navy);
 }
 
@@ -235,15 +314,6 @@
   font-weight: 600;
 }
 
-.still__note { font-size: var(--fs-13); color: var(--ink-2); }
-
-.still__caption {
-  font-size: var(--fs-13);
-  line-height: var(--lh-body);
-  color: var(--ink-2);
-  max-width: 46ch;
-}
-
 .withheld {
   display: flex;
   flex-direction: column;
@@ -260,67 +330,57 @@
   top: 9px;
   width: 10px;
   height: 1px;
-  background: var(--danger);
+  background: var(--ink-3);
 }
 
-/* ----------------------------------------------------- 7. try it -- */
+/* ----------------------------- 8. try it, builders, install -- */
 
-.apps {
+.dests {
+  grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--sp-4);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: var(--sp-5);
 }
 
-.app-card {
+.dest {
+  grid-column: 1 / span 5;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.dest:nth-child(2n) { grid-column: 7 / span 5; }
+
+.dest__name {
+  align-self: flex-start;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+}
+
+.dest__name:hover { border-bottom-color: currentColor; }
+
+.tlinks { display: flex; flex-wrap: wrap; gap: var(--sp-5); }
+
+.tlink {
+  font-size: var(--fs-16);
+  color: var(--ink);
+  border-bottom: 1px solid var(--ink-3);
+}
+
+.tlink:hover { border-bottom-color: var(--ink); }
+
+.install {
+  grid-column: 1 / 9;
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  padding: var(--sp-4);
-  background: var(--navy-2);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-2);
-  color: inherit;
-  transition: border-color var(--dur-1) var(--ease-out), background var(--dur-1) var(--ease-out);
 }
 
-.app-card:hover { background: var(--navy-3); border-color: var(--cyan-24); }
-
-.app-card__name {
-  display: flex;
-  align-items: baseline;
-  gap: var(--sp-3);
-  font-size: var(--fs-16);
-  font-weight: 600;
-  line-height: var(--lh-snug);
-  color: var(--ink);
-}
-
-.app-card__tag {
-  margin-left: auto;
-  font-size: var(--fs-12);
-  font-weight: 400;
-  color: var(--cyan);
-}
-
-.app-card__text { font-size: var(--fs-13); color: var(--ink-2); flex: 1 1 auto; line-height: var(--lh-body); }
-
-.app-card__url {
-  padding-top: var(--sp-2);
-  font-family: var(--font-mono);
-  font-size: var(--fs-11);
-  color: var(--ink-3);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ------------------------------------------------ 8. for builders -- */
-
-.install { display: flex; flex-direction: column; gap: var(--sp-2); max-width: 66ch; }
-
+/* Ligatures off: the two hyphens of a command flag must stay two hyphens. */
 .install__line {
   font-family: var(--font-mono);
-  font-size: var(--fs-12);
+  font-variant-ligatures: none;
+  font-size: var(--fs-13);
   line-height: 1.7;
   color: var(--ink);
   overflow-x: auto;
@@ -328,7 +388,49 @@
   scrollbar-width: thin;
 }
 
-/* ------------------------------------------------------ 9. tables -- */
+/* The demo at the end: one label, two controls, one quiet activity line. */
+.hub-sec.dock {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter, var(--sp-5));
+  row-gap: var(--sp-4);
+}
+
+.hub-sec.dock > * { grid-column: 1 / -1; }
+
+/* ------------------------------------------- 9. hub stacking -- */
+
+@media (max-width: 900px) {
+  .site-main--hub,
+  .hub-sec,
+  .hub-sec.dock { grid-template-columns: minmax(0, 1fr); }
+
+  .hub-sec > *,
+  .hub-sec.dock > * { grid-column: 1 / -1; }
+
+  .beliefs,
+  .moments,
+  .dests {
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
+    row-gap: var(--sp-6);
+  }
+
+  .belief,
+  .belief:nth-child(2n),
+  .dest,
+  .dest:nth-child(2n) { grid-column: 1 / -1; }
+
+  /* The dock stacks with the rest, but its rule lives beside its definition in
+   * section 12: this file is read top to bottom and section 12 comes later. */
+
+  /* Stacked, no figure sits beside the three, so they close back to sp-6. */
+  .things { gap: var(--sp-6); }
+
+  .hero__wordmark { width: min(196px, 56%); }
+}
+
+/* ------------------------------------------------ 10. tables -- */
 
 .s-table-wrap { overflow-x: auto; }
 
@@ -374,7 +476,7 @@
   text-decoration-color: var(--danger);
 }
 
-/* ------------------------------------------- 10. quote and callout -- */
+/* ------------------------------------- 11. quote and callout -- */
 
 .quote {
   border-left: 2px solid var(--cyan);
@@ -398,20 +500,56 @@
 
 .callout__title { font-size: var(--fs-13); color: var(--ink); font-weight: 600; }
 
-/* --------------------------------------------------- 11. tools dock -- */
+/* --------------------------------------------- 12. tools dock -- */
 
 .dock { display: flex; flex-direction: column; gap: var(--sp-4); }
 
+/* The two demo controls sit on the same 12 columns as the manifesto: the form
+ * starts on column 7, the edge the consent figure above it starts on. */
 .dock__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--sp-6);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter, var(--sp-5));
+  row-gap: var(--sp-6);
   align-items: start;
 }
 
-.ask { display: flex; flex-direction: column; gap: var(--sp-3); max-width: 66ch; }
+.ask { display: flex; flex-direction: column; gap: var(--sp-3); }
+.ask:nth-child(1) { grid-column: 1 / 6; }
+.ask:nth-child(2) { grid-column: 7 / 13; }
 
-.topics { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+/* Topic switches, not chips. The page earns two boxes at the end (the answer
+ * and the form); these six do not need a seventh through twelfth. Selection is
+ * carried by colour and by the underline together, never by colour alone. */
+.topics { display: flex; gap: var(--sp-4); flex-wrap: wrap; }
+
+.topics .n-btn {
+  min-height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+  background: none;
+}
+
+.topics .n-btn:hover {
+  color: var(--ink);
+  border-bottom-color: var(--ink-3);
+  background: none;
+}
+
+.topics .n-btn[aria-pressed='true'] {
+  color: var(--cyan);
+  border-bottom-color: var(--cyan);
+}
+
+@media (max-width: 900px) {
+  .dock__grid { grid-template-columns: minmax(0, 1fr); column-gap: 0; }
+  .ask:nth-child(1),
+  .ask:nth-child(2) { grid-column: 1 / -1; }
+}
 
 .explain-out {
   border: 1px solid var(--line-soft);
@@ -445,7 +583,7 @@
 .feed .activity-strip { background: transparent; border: 0; }
 .feed .activity-row { border-top: 1px solid var(--line-soft); }
 
-/* --------------------------------------------- 12. document pages -- */
+/* --------------------------------------- 13. document pages -- */
 
 .doc { display: flex; flex-direction: column; gap: var(--sp-5); max-width: 68ch; }
 .doc--wide { max-width: none; }
