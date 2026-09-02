@@ -1273,3 +1273,34 @@ const kept = await sendReceiptToVault({ vault, token });  // { status, changes }
 - Popup blocking: the click handlers call `window.open` synchronously; a
   blocked popup shows "Your browser blocked the vault window. Allow popups
   for this site or use the paste box below."
+
+## 26. Under the hood by default (owner decision, 2026-09-02)
+
+The learner never sees cryptography unless they ask. Applies to the vault,
+the courses, the embed and blog, the extension panel and the connect page.
+
+- **Hidden by default, everywhere:** tokens (`nema1.` strings), key ids,
+  JWKs, signatures, receipt ids, request hashes, learner ids (`lk_...`),
+  alignment ids, content hashes, grader versions, the word "token" itself in
+  normal copy. They live inside one `<details>` per panel titled "Under the
+  hood", closed by default, styled quiet (13px, mono inside). Copy buttons
+  live inside it. Nothing in the normal path requires opening it.
+- **Normal copy speaks in outcomes.** Receipt panel: "Saucier School signed
+  what you did. Verified." plus the bands in words ("Ratios: uncertain to
+  usable") and one primary action ("Keep in my vault"). Consent modal: site
+  name, purpose in words ("to skip what you already know"), the "Shared" and
+  "Not shared" lists, expiry in words, Approve and Deny; the learner id line
+  moves under the hood. Ledger rows: activity, site, date, one word for the
+  state (verified, self issued, waiting); the tier explanation is a tooltip
+  or a line under the hood. Alignments: "This site calls Maillard 'browning
+  science'" with Confirm and Reject; no ids. Disclosure ledger: site, what
+  was shared, until when.
+- **The vault's manual paths** (receipt inbox, share form, import and export)
+  move into the More block under a heading "Do it by hand", with one
+  sentence each; they remain fully functional and tested.
+- **Tool results** (what agents see) are unchanged: agents need the tokens.
+  Only the human facing UI changes.
+- **The hub and docs** keep the technical pages technical; the manifesto and
+  creators page do not show tokens.
+- Verify by reading every page as a first time learner: if a string looks like
+  base64, a hash, an id or a key, it must be inside "Under the hood".
