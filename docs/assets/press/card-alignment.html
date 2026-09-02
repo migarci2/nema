@@ -3,60 +3,42 @@
 <title>nema story card, concept alignment</title>
 <link rel="stylesheet" href="card.css">
 <style>
-  .card { padding: 56px 80px 60px; }
-  .pair { display: flex; align-items: center; gap: 48px; margin-top: 56px; }
-  .side { flex: 1 1 0; min-width: 0; }
-  .side .lbl { font-family: var(--font-mono), monospace; font-size: 26px; color: #5E7095; margin: 0 0 16px; height: 34px; }
+  .card { padding: 120px 80px; }
+  .pair { display: flex; align-items: center; gap: 40px; }
+  .side { flex: 1 1 0; min-width: 0; text-align: center; }
+  .side .lbl { font-size: 30px; color: #9FB0CC; margin: 0 0 22px; }
   .word {
-    display: flex; align-items: center; height: 108px; box-sizing: border-box;
-    border: 1px solid #1E3050; border-radius: 10px; background: #101B2D;
-    padding: 0 32px; font-size: 40px; line-height: 1.2; white-space: nowrap;
+    display: flex; align-items: center; justify-content: center;
+    height: 150px; box-sizing: border-box;
+    border: 1px solid #1E3050; border-radius: 12px; background: #101B2D;
+    font-size: 42px; white-space: nowrap;
   }
   .word--theirs { font-family: var(--font-mono), monospace; color: #F2F6FF; }
   .word--ours { color: #00E5FF; }
-  .side .id { font-family: var(--font-mono), monospace; font-size: 26px; color: #5E7095; margin: 16px 0 0; height: 34px; }
 
-  .same { flex: none; width: 300px; text-align: center; }
-  .same p { font-size: 30px; color: #9FB0CC; margin: 0 0 18px; }
-
-  .after { display: flex; align-items: center; gap: 28px; margin-top: 52px;
-           padding-top: 34px; border-top: 1px solid #1E3050; }
-  .after p { font-size: 30px; color: #9FB0CC; margin: 0; }
-  .btns { display: flex; gap: 18px; margin-left: auto; }
-  .btn { font-size: 28px; font-weight: 500; padding: 13px 30px; border-radius: 5px; }
-  .btn--ok { color: #0B1320; background: #00E5FF; font-weight: 600; }
-  .btn--no { color: #F2F6FF; border: 1px solid #2B3E60; }
+  .same { flex: none; width: 360px; text-align: center; padding-top: 86px; }
+  .same p { font-size: 34px; color: #9FB0CC; margin: 0 0 26px; }
 </style>
 
 <div class="card">
-  <p class="eyebrow">Sites speak their own names</p>
-  <h1 class="title">An agent proposes what a name means. You are the one who says yes.</h1>
-
   <div class="pair">
     <div class="side">
-      <p class="lbl">Maillard, explained calls it</p>
+      <p class="lbl">site</p>
       <span class="word word--theirs">"browning science"</span>
-      <p class="id">a name only that site uses</p>
     </div>
 
     <div class="same">
       <p>is the same thing as</p>
-      <svg width="300" height="26" viewBox="0 0 300 26" fill="none">
-        <path d="M16 13 H284" stroke="#00E5FF" stroke-width="3"/>
-        <path d="M28 4 L16 13 L28 22" stroke="#00E5FF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        <path d="M272 4 L284 13 L272 22" stroke="#00E5FF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <svg width="360" height="30" viewBox="0 0 360 30" fill="none">
+        <rect x="30" y="11" width="300" height="8" fill="#00E5FF"/>
+        <path d="M34 3 L14 15 L34 27 Z" fill="#00E5FF"/>
+        <path d="M326 3 L346 15 L326 27 Z" fill="#00E5FF"/>
       </svg>
     </div>
 
     <div class="side">
-      <p class="lbl">your vault's registry name</p>
+      <p class="lbl">vault</p>
       <span class="word word--ours">Maillard reaction</span>
-      <p class="id">nema:maillard-reaction</p>
     </div>
-  </div>
-
-  <div class="after">
-    <p>Proposed by an agent, confirmed by you. Who translated a name never changes what a receipt is worth; who signed it does.</p>
-    <span class="btns"><span class="btn btn--ok">Confirm</span><span class="btn btn--no">Reject</span></span>
   </div>
 </div>

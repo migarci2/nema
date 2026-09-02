@@ -3,68 +3,51 @@
 <title>nema story card, how it works</title>
 <link rel="stylesheet" href="card.css">
 <style>
-  .beats { display: flex; align-items: flex-start; margin-top: 44px; }
-  .beat { width: 420px; }
-  .stage { height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; }
-  .step { display: flex; align-items: baseline; gap: 16px; margin: 30px 0 0; }
-  .step__n { font-family: var(--font-mono), monospace; font-size: 28px; color: #5E7095; }
-  .step__h { font-size: 36px; line-height: 1.25; font-weight: 600; margin: 0; min-height: 135px; }
-  .beat p { font-size: 28px; line-height: 1.45; color: #9FB0CC; margin: 14px 0 0 44px; max-width: 372px; text-wrap: balance; }
-  .beat p .mono { color: #F2F6FF; font-size: 26px; }
-
-  .link { width: 90px; height: 260px; display: flex; align-items: center; justify-content: center; }
-
-  .chips { display: flex; gap: 12px; }
-  .chip {
-    font-family: var(--font-mono), monospace; font-size: 24px; letter-spacing: 0.02em;
-    padding: 8px 16px; border-radius: 999px;
-  }
-  .chip--v { color: #00E5FF; background: rgba(0, 229, 255, 0.12); }
-  .chip--u { color: #A2CCFF; background: rgba(162, 204, 255, 0.14); }
+  .row { display: flex; align-items: center; justify-content: center; }
+  .item { width: 340px; flex: none; text-align: center; }
+  .art { height: 400px; display: flex; align-items: center; justify-content: center; }
+  .item .lbl { margin-top: 36px; font-size: 34px; color: #F2F6FF; }
+  .arrow { width: 190px; flex: none; height: 400px; display: flex; align-items: center; justify-content: center; }
 </style>
 
 <div class="card">
-  <p class="eyebrow">The protocol, in three beats</p>
+  <div class="row">
 
-  <div class="beats">
-
-    <div class="beat">
-      <div class="stage">
-        <svg width="200" height="236" viewBox="0 0 200 236" fill="none">
-          <rect x="0" y="0" width="200" height="236" rx="10" fill="#EDE6D8"/>
+    <div class="item">
+      <div class="art">
+        <svg width="300" height="360" viewBox="0 0 300 360" fill="none">
+          <rect width="300" height="360" rx="14" fill="#EDE6D8"/>
           <g fill="#B9A688">
-            <rect x="24" y="26" width="140" height="16" rx="4"/>
-            <rect x="24" y="54" width="104" height="11" rx="3"/>
-            <rect x="24" y="90" width="60" height="60" rx="4"/>
-            <rect x="96" y="90" width="80" height="11" rx="3"/>
-            <rect x="96" y="112" width="80" height="11" rx="3"/>
-            <rect x="96" y="134" width="56" height="11" rx="3"/>
-            <rect x="24" y="170" width="152" height="11" rx="3"/>
-            <rect x="24" y="192" width="120" height="11" rx="3"/>
+            <rect x="36" y="42" width="200" height="24" rx="6"/>
+            <rect x="36" y="86" width="150" height="16" rx="5"/>
+            <rect x="36" y="140" width="92" height="92" rx="6"/>
+            <rect x="148" y="140" width="116" height="16" rx="5"/>
+            <rect x="148" y="172" width="116" height="16" rx="5"/>
+            <rect x="148" y="204" width="80" height="16" rx="5"/>
+            <rect x="36" y="262" width="228" height="16" rx="5"/>
           </g>
-          <rect x="0" y="224" width="200" height="12" fill="#00E5FF"/>
+          <rect x="0" y="340" width="300" height="20" fill="#00E5FF"/>
         </svg>
       </div>
-      <div class="step"><span class="step__n">01</span><h3 class="step__h">A page says<br>what it teaches</h3></div>
-      <p><span class="mono">application/nema+json</span><br>a manifest of concepts and activities</p>
+      <p class="lbl">page asks</p>
     </div>
 
-    <div class="link">
-      <svg width="90" height="24" viewBox="0 0 90 24" fill="none">
-        <path d="M0 12 H74" stroke="#00E5FF" stroke-width="4"/>
-        <path d="M66 4 L78 12 L66 20" stroke="#00E5FF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <div class="arrow">
+      <svg width="150" height="34" viewBox="0 0 150 34" fill="none">
+        <path d="M0 17 H128" stroke="#00E5FF" stroke-width="6"/>
+        <path d="M116 5 L134 17 L116 29" stroke="#00E5FF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
 
-    <div class="beat">
-      <div class="stage">
-        <svg width="156" height="156" viewBox="0 0 64 64" fill="none">
+    <div class="item">
+      <div class="art">
+        <svg width="280" height="280" viewBox="0 0 64 64" fill="none">
           <defs>
             <linearGradient id="hw-edge" x1="32" y1="4" x2="58" y2="34" gradientUnits="userSpaceOnUse">
               <stop offset="0" stop-color="#00E5FF"/><stop offset="0.5" stop-color="#15C4B4"/><stop offset="1" stop-color="#3A78FF"/>
             </linearGradient>
           </defs>
-          <path d="M32 6 L54 19 L54 45 L32 58 L10 45 L10 19 Z" fill="#101B2D" stroke="url(#hw-edge)" stroke-width="2" stroke-linejoin="miter"/>
+          <path d="M32 6 L54 19 L54 45 L32 58 L10 45 L10 19 Z" fill="#101B2D" stroke="url(#hw-edge)" stroke-width="1.6" stroke-linejoin="miter"/>
           <g shape-rendering="crispEdges">
             <rect x="29" y="3" width="6" height="6" fill="url(#hw-edge)"/>
             <rect x="51" y="16" width="6" height="6" fill="url(#hw-edge)"/>
@@ -77,56 +60,32 @@
             <rect x="24" y="24" width="16" height="4"/><rect x="24" y="28" width="4" height="12"/><rect x="36" y="28" width="4" height="12"/>
           </g>
         </svg>
-        <div class="chips">
-          <span class="chip chip--v">verified</span>
-          <span class="chip chip--v">verified</span>
-          <span class="chip chip--u">uncertain</span>
-        </div>
       </div>
-      <div class="step"><span class="step__n">02</span><h3 class="step__h">Your vault answers<br>three words, with<br>your consent</h3></div>
-      <p>one status band per question, and nothing else at all</p>
+      <p class="lbl">vault answers</p>
     </div>
 
-    <div class="link">
-      <svg width="90" height="24" viewBox="0 0 90 24" fill="none">
-        <path d="M0 12 H74" stroke="#00E5FF" stroke-width="4"/>
-        <path d="M66 4 L78 12 L66 20" stroke="#00E5FF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <div class="arrow">
+      <svg width="150" height="34" viewBox="0 0 150 34" fill="none">
+        <path d="M0 17 H128" stroke="#00E5FF" stroke-width="6"/>
+        <path d="M116 5 L134 17 L116 29" stroke="#00E5FF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
 
-    <div class="beat">
-      <div class="stage">
-        <svg width="240" height="250" viewBox="0 0 240 250" fill="none">
-          <rect x="20" y="0" width="200" height="158" rx="10" fill="#101B2D" stroke="#1E3050" stroke-width="2"/>
+    <div class="item">
+      <div class="art">
+        <svg width="300" height="360" viewBox="0 0 300 360" fill="none">
+          <rect x="1" y="1" width="298" height="358" rx="14" fill="#101B2D" stroke="#1E3050" stroke-width="2"/>
           <g fill="#3E5273">
-            <rect x="44" y="24" width="110" height="11" rx="3"/>
-            <rect x="44" y="48" width="152" height="11" rx="3"/>
-            <rect x="44" y="70" width="128" height="11" rx="3"/>
+            <rect x="36" y="48" width="160" height="16" rx="5"/>
+            <rect x="36" y="82" width="228" height="16" rx="5"/>
+            <rect x="36" y="116" width="190" height="16" rx="5"/>
           </g>
-          <rect x="44" y="98" width="152" height="2" fill="#1E3050"/>
-          <circle cx="58" cy="126" r="14" fill="none" stroke="#00E5FF" stroke-width="3"/>
-          <path d="M51.5 126 L56 132 L65 120.5" stroke="#00E5FF" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-          <text x="82" y="133" font-family="JetBrains Mono, monospace" font-size="19" fill="#00E5FF" letter-spacing="0.04em">signed</text>
-          <path d="M120 158 V 178" stroke="#00E5FF" stroke-width="4"/>
-          <path d="M112 170 L120 182 L128 170" stroke="#00E5FF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-          <g transform="translate(86 186) scale(1.06)">
-            <path d="M32 6 L54 19 L54 45 L32 58 L10 45 L10 19 Z" fill="#101B2D" stroke="url(#hw-edge)" stroke-width="2.4" stroke-linejoin="miter"/>
-            <g shape-rendering="crispEdges">
-              <rect x="29" y="3" width="6" height="6" fill="url(#hw-edge)"/>
-              <rect x="51" y="16" width="6" height="6" fill="url(#hw-edge)"/>
-              <rect x="51" y="42" width="6" height="6" fill="url(#hw-edge)"/>
-              <rect x="29" y="55" width="6" height="6" fill="#FFCA2E"/>
-              <rect x="7" y="42" width="6" height="6" fill="url(#hw-edge)"/>
-              <rect x="7" y="16" width="6" height="6" fill="url(#hw-edge)"/>
-            </g>
-            <g fill="#F2F6FF" shape-rendering="crispEdges">
-              <rect x="24" y="24" width="16" height="4"/><rect x="24" y="28" width="4" height="12"/><rect x="36" y="28" width="4" height="12"/>
-            </g>
-          </g>
+          <rect x="36" y="168" width="228" height="2" fill="#1E3050"/>
+          <circle cx="150" cy="252" r="46" fill="none" stroke="#00E5FF" stroke-width="7"/>
+          <path d="M128 252 L144 270 L174 233" stroke="#00E5FF" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <div class="step"><span class="step__n">03</span><h3 class="step__h">The page signs<br>what you did</h3></div>
-      <p>a signed receipt goes back to your vault, and stays yours</p>
+      <p class="lbl">page signs</p>
     </div>
 
   </div>

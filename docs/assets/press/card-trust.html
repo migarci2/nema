@@ -3,47 +3,31 @@
 <title>nema story card, three trust tiers</title>
 <link rel="stylesheet" href="card.css">
 <style>
-  .card { padding: 56px 80px 60px; }
-  .rows { margin-top: 46px; }
-  .r { display: flex; align-items: center; gap: 36px; padding: 32px 0; border-top: 1px solid #1E3050; }
-  .r:last-of-type { border-bottom: 1px solid #1E3050; }
-  .r__tier { width: 215px; flex: none; font-family: var(--font-mono), monospace; font-size: 34px; color: #F2F6FF; }
-  .r__how { flex: 1 1 auto; font-size: 30px; line-height: 1.4; color: #9FB0CC; }
-  .r__how code { font-family: var(--font-mono), monospace; font-size: 27px; color: #F2F6FF; }
-  .r__bar { width: 160px; flex: none; height: 14px; background: #16233A; border-radius: 2px; overflow: hidden; }
-  .r__bar i { display: block; height: 100%; background: #00E5FF; }
-  .r__w { width: 200px; flex: none; text-align: right; font-size: 29px; color: #F2F6FF; }
-  .r__w em { font-style: normal; color: #5E7095; }
-
-  .note { margin: 34px 0 0; font-size: 28px; line-height: 1.45; color: #5E7095; max-width: 1160px; }
-  .note code { font-family: var(--font-mono), monospace; font-size: 26px; color: #9FB0CC; }
+  .card { padding: 96px 100px; }
+  .r { display: flex; align-items: center; gap: 60px; padding: 46px 0; border-bottom: 1px solid #1E3050; }
+  .r:first-child { border-top: 1px solid #1E3050; }
+  .tier { width: 340px; flex: none; font-family: var(--font-mono), monospace; font-size: 46px; color: #F2F6FF; }
+  .bar { flex: 1 1 auto; height: 22px; background: #16233A; border-radius: 3px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: #00E5FF; }
+  .w { width: 200px; flex: none; text-align: right; font-size: 34px; color: #9FB0CC; }
 </style>
 
 <div class="card">
-  <p class="eyebrow">Trust has three tiers</p>
-  <h1 class="title">Who signed a receipt changes what it is worth</h1>
+  <h1 class="h">What a signature is worth</h1>
 
-  <div class="rows">
-    <div class="r">
-      <span class="r__tier">registered</span>
-      <span class="r__how">a key listed in <code>shared/issuers.json</code></span>
-      <span class="r__bar"><i style="width:100%"></i></span>
-      <span class="r__w">full weight</span>
-    </div>
-    <div class="r">
-      <span class="r__tier">origin</span>
-      <span class="r__how">a key published at <code>/.well-known/nema-issuer.json</code></span>
-      <span class="r__bar"><i style="width:100%"></i></span>
-      <span class="r__w">full weight</span>
-    </div>
-    <div class="r">
-      <span class="r__tier">self</span>
-      <span class="r__how">a key made in the reader's browser, nothing else</span>
-      <span class="r__bar"><i style="width:30%"></i></span>
-      <span class="r__w">capped at 0.3</span>
-    </div>
+  <div class="r">
+    <span class="tier">registered</span>
+    <span class="bar"><i style="width:100%"></i></span>
+    <span class="w">full</span>
   </div>
-
-  <p class="note">A fourth state, <code>pending</code>, is what a receipt gets when no key matches it at all: it is
-  kept and shown, and it moves nothing until a key turns up.</p>
+  <div class="r">
+    <span class="tier">origin</span>
+    <span class="bar"><i style="width:100%"></i></span>
+    <span class="w">full</span>
+  </div>
+  <div class="r">
+    <span class="tier">self</span>
+    <span class="bar"><i style="width:30%"></i></span>
+    <span class="w">capped</span>
+  </div>
 </div>

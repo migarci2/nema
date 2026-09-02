@@ -3,111 +3,42 @@
 <title>nema story card, the consent modal</title>
 <link rel="stylesheet" href="card.css">
 <style>
-  .card { padding: 44px 80px 44px; }
+  .card { padding: 84px 80px; }
+  .modal { border: 1px solid #1E3050; border-radius: 14px; background: #101B2D; }
+  .modal__head { padding: 44px 52px 36px; }
+  .modal__title { font-family: var(--font-display), monospace; font-size: 48px; font-weight: 400; margin: 0; letter-spacing: 0.01em; }
 
-  .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 56px; margin-bottom: 24px; }
-  .head .title { font-size: 44px; white-space: nowrap; }
-  .head .lede { width: 470px; flex: none; max-width: none; font-size: 28px; margin: 0; }
-
-  .modal { border: 1px solid #1E3050; border-radius: 10px; background: #101B2D; }
-  .modal__head { padding: 24px 40px 20px; }
-  .modal__title { font-family: var(--font-display), monospace; font-size: 40px; font-weight: 400; margin: 0; letter-spacing: 0.01em; }
-  .modal__purpose { font-size: 30px; color: #9FB0CC; margin: 12px 0 0; }
-
-  .modal__body { display: flex; gap: 64px; padding: 20px 40px 22px; border-top: 1px solid #1E3050; }
-  .col--shared { width: 800px; flex: none; }
-  .col--not { flex: 1 1 auto; }
-
-  .sub { font-size: 26px; color: #9FB0CC; letter-spacing: 0.06em; margin: 0 0 10px; }
-
-  .row { display: flex; align-items: center; gap: 24px; padding: 10px 0; border-bottom: 1px solid #16233A; }
-  .row:last-child { border-bottom: 0; padding-bottom: 0; }
-  .row__main { flex: 1 1 auto; min-width: 0; }
-  .row__t { font-size: 30px; display: block; }
-  .row__m { font-size: 24px; color: #5E7095; display: block; margin-top: 4px; }
-  .pill { flex: none; display: inline-flex; align-items: center; gap: 12px;
-          font-family: var(--font-mono), monospace; font-size: 26px; padding: 9px 18px; border-radius: 5px; }
-  .pill::before { content: ""; width: 9px; height: 9px; background: currentColor; }
+  .modal__body { padding: 12px 52px 20px; border-top: 1px solid #1E3050; }
+  .r { display: flex; align-items: center; gap: 32px; padding: 26px 0; border-bottom: 1px solid #16233A; }
+  .r:last-child { border-bottom: 0; }
+  .r span:first-child { flex: 1 1 auto; font-size: 38px; }
+  .pill { flex: none; display: inline-flex; align-items: center; gap: 14px;
+          font-family: var(--font-mono), monospace; font-size: 32px; padding: 12px 24px; border-radius: 6px; }
+  .pill::before { content: ""; width: 12px; height: 12px; background: currentColor; }
   .pill--v { color: #00E5FF; background: rgba(0, 229, 255, 0.12); }
   .pill--u { color: #A2CCFF; background: rgba(162, 204, 255, 0.14); }
 
-  .withheld { margin: 0 0 24px; padding: 0; }
-  .withheld li { list-style: none; font-size: 27px; color: #9FB0CC; padding: 5px 0; }
-  .withheld li::before { content: ""; display: inline-block; width: 8px; height: 8px; background: #3E5273; margin: 0 14px 4px 0; }
-
-  .hood { display: flex; align-items: center; gap: 16px; font-size: 27px; color: #9FB0CC; margin: 0; }
-  .hood::before { content: ""; width: 0; height: 0; border-left: 11px solid #5E7095;
-                  border-top: 7px solid transparent; border-bottom: 7px solid transparent; }
-
-  .modal__foot { display: flex; align-items: center; gap: 40px; padding: 18px 40px 22px; border-top: 1px solid #1E3050; }
-  .expiry { font-size: 27px; color: #9FB0CC; margin: 0; }
-  .auto { display: flex; align-items: center; gap: 16px; font-size: 27px; color: #9FB0CC; margin: 12px 0 0; }
-  .box { width: 26px; height: 26px; border: 1px solid #2B3E60; border-radius: 3px; background: #16233A; flex: none; }
-  .decide { display: flex; align-items: center; gap: 28px; margin-left: auto; }
-  .btn { font-size: 29px; font-weight: 500; padding: 13px 32px; border-radius: 5px; }
-  .btn--deny { color: #F2F6FF; border: 1px solid #2B3E60; background: transparent; }
-  .btn--ok { color: #0B1320; background: #00E5FF; font-weight: 600; }
-  .timer { font-family: var(--font-mono), monospace; font-size: 25px; color: #5E7095; }
+  .modal__foot { display: flex; align-items: center; gap: 28px; padding: 36px 52px 44px; border-top: 1px solid #1E3050; }
+  .btn { font-size: 36px; font-weight: 500; padding: 20px 46px; border-radius: 6px; }
+  .btn--deny { color: #F2F6FF; border: 1px solid #2B3E60; }
+  .btn--ok { color: #0B1320; background: #00E5FF; font-weight: 600; margin-left: auto; }
 </style>
 
 <div class="card">
-
-  <div class="head">
-    <div>
-      <p class="eyebrow">Consent you can see</p>
-      <h1 class="title">A site asks one question, and you answer it</h1>
-    </div>
-    <p class="lede">Three status words, bound to one origin, for thirty minutes. Nothing else leaves the vault.</p>
-  </div>
-
   <div class="modal">
     <div class="modal__head">
-      <h2 class="modal__title">Saucier School asks to know</h2>
-      <p class="modal__purpose">Saucier School is asking to skip what you already know.</p>
+      <h1 class="modal__title">Saucier School asks to know</h1>
     </div>
 
     <div class="modal__body">
-      <div class="col--shared">
-        <p class="sub">Shared</p>
-        <div class="row">
-          <span class="row__main"><span class="row__t">Knife skills, apply</span><span class="row__m">how sure your vault is, and nothing else</span></span>
-          <span class="pill pill--v">verified</span>
-        </div>
-        <div class="row">
-          <span class="row__main"><span class="row__t">Heat control, explain</span><span class="row__m">how sure your vault is, and nothing else</span></span>
-          <span class="pill pill--v">verified</span>
-        </div>
-        <div class="row">
-          <span class="row__main"><span class="row__t">Cooking ratios, apply</span><span class="row__m">how sure your vault is, and nothing else</span></span>
-          <span class="pill pill--u">uncertain</span>
-        </div>
-      </div>
-
-      <div class="col--not">
-        <p class="sub">Not shared</p>
-        <ul class="withheld">
-          <li>attempt history</li>
-          <li>exact scores</li>
-          <li>other subjects</li>
-          <li>misconceptions</li>
-          <li>review schedule</li>
-          <li>provider history</li>
-        </ul>
-        <p class="hood">Under the hood</p>
-      </div>
+      <div class="r"><span>Knife skills, apply</span><span class="pill pill--v">verified</span></div>
+      <div class="r"><span>Heat control, explain</span><span class="pill pill--v">verified</span></div>
+      <div class="r"><span>Cooking ratios, apply</span><span class="pill pill--u">uncertain</span></div>
     </div>
 
     <div class="modal__foot">
-      <div>
-        <p class="expiry">They can use this answer for the next 30 minutes</p>
-        <p class="auto"><span class="box"></span>Auto approve this site for 1 hour</p>
-      </div>
-      <div class="decide">
-        <span class="btn btn--deny">Deny</span>
-        <span class="timer">116 s to decide</span>
-        <span class="btn btn--ok">Approve</span>
-      </div>
+      <span class="btn btn--deny">Deny</span>
+      <span class="btn btn--ok">Approve</span>
     </div>
   </div>
-
 </div>
