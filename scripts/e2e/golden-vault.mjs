@@ -81,6 +81,53 @@ try {
   ok(badNeed.status !== 'accepted', 'unknown needId rejected: ' + badNeed.status);
   const goal = parse(await page.evaluate(tool('set_learning_goal', { title: 'Hold a pan sauce through service', concepts: ['nema:pan-sauces'] })));
   ok(goal.status === 'ok' && goal.goalId, 'goal set');
+
+  // A page that installed the one tag: it signs with a key it made itself and
+  // encloses the public half. Nothing listens on 9999, so the well known
+  // lookup fails and the receipt stays at the self tier.
+  const cryptoMod = await import(REPO + '/shared/crypto.js');
+  const selfKey = await cryptoMod.generateKeyPair();
+  const selfOrigin = 'http://localhost:9999';
+  const selfToken = await proto.signToken(proto.buildReceiptPayload({
+    issuer: selfOrigin, keyId: 'self:' + selfOrigin, issuerKey: selfKey.publicJwk, subject: learnerKeyId,
+    activity: { id: 'check', version: '1.0.0', title: 'Two questions before you go' },
+    claims: [{ concept: 'nema:bread-basics', ability: 'apply', evidenceType: 'application', result: 'passed', difficulty: 'intermediate' }],
+    conditions: { attempts: 1, hintsUsed: 0, durationSeconds: 90, grader: 'deterministic', graderVersion: '1' }
+  }), selfKey.privateJwk);
+  const selfStaged = parse(await page.evaluate(tool('stage_evidence_receipt', { token: selfToken })));
+  ok(selfStaged.status === 'accepted' && selfStaged.trust === 'self', 'self signed receipt accepted at the self tier: ' + selfStaged.status + ' ' + selfStaged.trust);
+  ok((selfStaged.changes || []).length > 0 && selfStaged.changes.every(c => ['uncertain', 'fragile'].includes(c.to)), 'self certified evidence moves a band at most to fragile: ' + JSON.stringify(selfStaged.changes || []));
+  const selfLedger = parse(await page.evaluate(tool('get_evidence_ledger', { limit: 1 })));
+  ok(selfLedger.receipts?.[0]?.trust === 'self' && selfLedger.receipts[0].signature === 'verified', 'the ledger row carries the tier: ' + JSON.stringify(selfLedger.receipts?.[0]?.trust));
+  const trustWord = await page.evaluate(`document.querySelector('.v-trust--self')?.textContent || ''`);
+  ok(trustWord === 'self', 'the ledger shows the tier as a word: ' + JSON.stringify(trustWord));
+  // The forgery that matters: a readable receipt, someone else's key enclosed,
+  // the original signature kept. The signature covers the key, so it fails.
+  const decodedSelf = proto.decodeToken(selfToken);
+  const impostorKey = await cryptoMod.generateKeyPair();
+  const forgedSelf = proto.encodeToken({ ...decodedSelf.payload, receiptId: 'rcpt_forged_1', issuerKey: impostorKey.publicJwk }, decodedSelf.signature);
+  const tamperedSelf = parse(await page.evaluate(tool('stage_evidence_receipt', { token: forgedSelf })));
+  ok(tamperedSelf.status === 'rejected' && tamperedSelf.reason === 'bad-signature', 'tampered self signed receipt rejected: ' + tamperedSelf.status + ' ' + tamperedSelf.reason);
+
+  // Hand delivery: the same consent modal, driven from the page, no agent.
+  await page.evaluate(`(() => {
+    document.querySelector('#share-audience').value = ${JSON.stringify(H)};
+    document.querySelector('#share-purpose').value = 'hand-delivered-path';
+    document.querySelector('#share-concepts').value = 'nema:knife-skills:apply, nema:heat-control:explain, nema:ratios:apply';
+    document.querySelector('[data-share-form]').requestSubmit();
+    return true;
+  })()`);
+  await sleep(800);
+  ok(await page.evaluate(`!document.getElementById('consent-modal').hidden`), 'the share form asks for consent in the same modal');
+  await page.evaluate(`document.querySelector('[data-consent-approve]').click(); true`);
+  await sleep(600);
+  const handToken = await page.evaluate(`document.querySelector('[data-share-token]')?.textContent || ''`);
+  const handVerified = await proto.verifyAssertion(handToken, { audience: H, now: new Date().toISOString() });
+  ok(handVerified.ok && handVerified.payload.assertions.length === 3 && handVerified.payload.purpose === 'hand-delivered-path',
+    'the hand delivered token verifies for the Saucier audience: ' + (handVerified.reason || handVerified.payload.assertions.map(a => a.status).join(',')));
+  const handLedger = parse(await page.evaluate(tool('get_disclosure_ledger', {})));
+  ok(handLedger.disclosures?.[0]?.purpose === 'hand-delivered-path', 'the hand delivered share is in the disclosure ledger');
+
   await page.shot('/tmp/nema-e2e-vault.png');
   ok(page.errors.length === 0, 'vault console errors: ' + JSON.stringify(page.errors));
 } finally { await page.close(); }

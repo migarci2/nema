@@ -28,6 +28,7 @@
 
   <nav class="site-nav" aria-label="nema hub pages">
     <a class="site-nav__link" href="/">Hub</a>
+    <a class="site-nav__link" href="/creators.html">For creators</a>
     <a class="site-nav__link" href="/judges.html">Judge guide</a>
     <a class="site-nav__link" href="/protocol.html">Protocol</a>
     <a class="site-nav__link" href="/philosophy.html" aria-current="page">Philosophy</a>
@@ -70,6 +71,25 @@
         </p>
       </blockquote>
 
+      <h2>Everyone teaches on the web</h2>
+      <p>
+        The word "provider" makes it sound like there is a class of companies who teach and a class of people
+        who learn. That is not what the web looks like. Somebody wrote the answer that unblocked you last
+        Tuesday, and it was a blog post, or a forum reply, or a page of notes from a course that ran once in
+        2019. Most of what any of us knows came from people who were not running an education business, who
+        taught something because they knew it and wrote it down, and who will never find out whether it
+        worked.
+      </p>
+      <p>
+        nema is built for those people first. The protocol is small enough that a personal site can implement
+        it with one manifest tag and one script tag, no backend, no account, and no permission from anyone:
+        keep your page, your voice and your design, and a reader who arrives with a vault leaves with a signed
+        note of what they actually did. That is what makes the network worth anything. Two course sites that
+        recognise each other is a demo. A blog, a documentation page, a workshop handout and a course all
+        issuing evidence a reader can carry is a web that teaches better than the sum of its pages, because
+        the parts finally stop forgetting.
+      </p>
+
       <h2>Evidence, not mastery</h2>
       <p>
         A number called "mastery: 78%" is a claim with no author. You cannot check it, you cannot dispute it,
@@ -102,8 +122,9 @@
         or an explicit <span class="mono">record_agent_assessment</span> that is stamped
         <span class="mono">agent-assessed</span>, weighted 0.6, and shown in the ledger with its own badge.
         The agent reads manifests, explains what a site is asking for, carries tokens between origins, and
-        coaches from the vault's <span class="mono">LearningNeed</span> list. The human answers every
-        question and approves every disclosure.
+        works from the vault's <span class="mono">LearningNeed</span> list. It is whichever agent the
+        learner already uses, and nothing here depends on which one: every flow also works with no agent at
+        all, by copying one token. The human answers every question and approves every disclosure.
       </p>
       <p>
         This is not a policy written in a prompt. It is the absence of a tool. Prompts can be argued with.
@@ -186,8 +207,7 @@
             <div class="n-field">
               <label class="n-label" for="open-app-select">Open an app</label>
               <select class="n-select" id="open-app-select" name="app" required
-                      toolparamdescription="Which nema app to open: coach, vault, harness, security or site.">
-                <option value="coach">Coach, the nema agent</option>
+                      toolparamdescription="Which nema app to open: vault, harness, security or site.">
                 <option value="vault">Vault</option>
                 <option value="harness">Saucier School</option>
                 <option value="security">Line Cook Lab</option>

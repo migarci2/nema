@@ -655,3 +655,104 @@ test('with no review overdue, the 5 minute review is the discriminate need', () 
     'discriminate:nema:emulsions'
   ]);
 });
+
+/* ------------------------------------------------------------- weightCap */
+
+/* The trust tiers of contract section 21 arrive here as one optional function.
+ * deriveState knows nothing about signatures or well known documents: it asks
+ * the caller how much each receipt may ever be worth, and the vault answers
+ * with the tier rule. */
+
+function trustReceipt(trust, overrides = {}) {
+  return {
+    receiptId: `rcpt_${trust}`,
+    status: 'verified',
+    trust,
+    payload: {
+      type: 'evidence-receipt',
+      protocol: 'nema/0.1',
+      receiptId: `rcpt_${trust}`,
+      issuer: 'https://maillard.example',
+      keyId: `self:https://maillard.example`,
+      subject: 'lk_fixture',
+      activity: { id: 'check', version: '1.0.0', title: 'Two questions before you go' },
+      claims: [{
+        concept: 'nema:maillard-reaction',
+        ability: 'apply',
+        evidenceType: 'application',
+        result: 'passed',
+        difficulty: 'intermediate'
+      }],
+      conditions: { attempts: 1, hintsUsed: 0, durationSeconds: 120, grader: 'deterministic', graderVersion: '1' },
+      issuedAt: NOW,
+      ...overrides
+    }
+  };
+}
+
+const capSelf = (receipt) => (receipt.trust === 'self' ? WEIGHTS['self-report'] : Infinity);
+
+test('weightCap caps what one receipt may ever be worth', () => {
+  const uncapped = deriveState([trustReceipt('self')], { now: NOW });
+  assert.equal(uncapped['nema:maillard-reaction'].apply.score, 1, 'a deterministic pass is worth 1 on its own');
+  assert.equal(uncapped['nema:maillard-reaction'].apply.band, 'usable');
+
+  const capped = deriveState([trustReceipt('self')], { now: NOW, weightCap: capSelf });
+  const entry = capped['nema:maillard-reaction'].apply;
+  assert.equal(entry.score, WEIGHTS['self-report'], 'the grader says deterministic, the tier says self report');
+  assert.equal(entry.graderWeight, WEIGHTS['self-report']);
+  assert.equal(entry.band, 'uncertain', 'a self signed pass never reaches usable on its own');
+  assert.equal(entry.confidence, 'low');
+
+  // The cap travels down the ladder with the claim, so no lower ability is
+  // left uncapped.
+  for (const ability of ['recognize', 'retrieve', 'explain']) {
+    assert.equal(capped['nema:maillard-reaction'][ability].score, WEIGHTS['self-report']);
+  }
+});
+
+test('weightCap is asked per receipt, so registered evidence is untouched', () => {
+  const receipts = [trustReceipt('self'), trustReceipt('registered')];
+  const capped = deriveState(receipts, { now: NOW, weightCap: capSelf });
+  const entry = capped['nema:maillard-reaction'].apply;
+
+  assert.equal(entry.score, 1.3, 'registered 1 plus self 0.3');
+  assert.equal(entry.graderWeight, 1, 'the strongest grader behind it is still the registered one');
+  assert.equal(entry.band, 'usable');
+  assert.equal(entry.confidence, 'high');
+
+  // Self signed passes still add up, exactly as repeated self reports do: two
+  // of them reach fragile, which a provider reads as uncertain, not verified.
+  const many = deriveState(
+    [0, 1].map((n) => ({ ...trustReceipt('self'), receiptId: `rcpt_self_${n}` })),
+    { now: NOW, weightCap: capSelf }
+  );
+  assert.equal(many['nema:maillard-reaction'].apply.score, 0.6);
+  assert.equal(many['nema:maillard-reaction'].apply.band, 'fragile');
+  assert.equal(toAssertionStatus(many['nema:maillard-reaction'].apply.band), 'uncertain');
+});
+
+test('deriveState without a weightCap behaves exactly as before', () => {
+  assert.deepEqual(deriveState(LEDGER.receipts, { now: NOW, weightCap: undefined }), state);
+  assert.deepEqual(deriveState(LEDGER.receipts, { now: NOW, weightCap: null }), state);
+  assert.deepEqual(deriveState(LEDGER.receipts, { now: NOW, weightCap: () => Infinity }), state);
+  // A cap that answers with nonsense is ignored, never read as zero.
+  assert.deepEqual(deriveState(LEDGER.receipts, { now: NOW, weightCap: () => NaN }), state);
+  assert.deepEqual(deriveState(LEDGER.receipts, { now: NOW, weightCap: () => 'heavy' }), state);
+});
+
+test('a cap of zero silences a receipt without ever inverting it', () => {
+  const silent = deriveState([trustReceipt('self')], { now: NOW, weightCap: () => 0 });
+  assert.equal(silent['nema:maillard-reaction'].apply.score, 0, 'the receipt is on record and worth nothing');
+  assert.equal(silent['nema:maillard-reaction'].apply.band, 'unknown');
+
+  const negative = deriveState([trustReceipt('self')], { now: NOW, weightCap: () => -5 });
+  assert.equal(negative['nema:maillard-reaction'].apply.score, 0, 'a negative cap reads as zero');
+  assert.equal(negative['nema:maillard-reaction'].apply.band, 'unknown', 'it never turns a pass into a failure');
+
+  // A cap at or below the exposure weight is read as exposure grade evidence,
+  // so the band is clamped the same way reading a page is.
+  const exposure = deriveState([trustReceipt('self')], { now: NOW, weightCap: () => WEIGHTS.exposure });
+  assert.equal(exposure['nema:maillard-reaction'].apply.band, 'uncertain');
+  assert.equal(exposure['nema:maillard-reaction'].apply.nextReview, null, 'exposure grade evidence schedules no review');
+});

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nema for creators</title>
+<meta name="description" content="How to install nema on a site you already have: one manifest tag, one script tag, self certified receipts, and two optional upgrades. No backend, no account.">
+<meta name="theme-color" content="#0B1320">
+<meta name="color-scheme" content="dark">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="nema">
+<meta property="og:url" content="https://nema.migarci2.dev/creators.html">
+<meta property="og:title" content="nema for creators">
+<meta property="og:description" content="One manifest tag and one script tag. Keep your site and your voice, and every reader keeps what they learned.">
+<link rel="icon" href="/shared/brand/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/shared/brand/fonts/pixelify-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/shared/brand/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/shared/brand/tokens.css">
+<link rel="stylesheet" href="/shared/brand/brand.css">
+<link rel="stylesheet" href="/app.css">
+<script src="/shared/webmcp-polyfill.js"></script>
+</head>
+<body data-page-title="For creators">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="n-app">
+  <header data-nema-header></header>
+
+  <nav class="site-nav" aria-label="nema hub pages">
+    <a class="site-nav__link" href="/">Hub</a>
+    <a class="site-nav__link" href="/creators.html" aria-current="page">For creators</a>
+    <a class="site-nav__link" href="/judges.html">Judge guide</a>
+    <a class="site-nav__link" href="/protocol.html">Protocol</a>
+    <a class="site-nav__link" href="/philosophy.html">Philosophy</a>
+    <a class="site-nav__link" href="/brand.html">Brand board</a>
+  </nav>
+
+  <main class="n-app__main site-main" id="main">
+
+    <article class="doc">
+      <h1 class="doc__title">How to install nema</h1>
+      <p class="lede">
+        You already teach something on the web: an article, a set of notes, a course. Two tags let a reader
+        keep what they learned with them, and let the next site recognise it. No backend, no account, no
+        change to your design.
+      </p>
+
+      <h2>What you get</h2>
+      <ul class="doc__list">
+        <li>A quiet block on your page. The reader marks the piece read, answers a short check, and receives a signed receipt they can keep.</li>
+        <li>Five WebMCP tools for whatever agent the reader brought: <span class="mono">describe_learning_offer</span>, <span class="mono">personalize_learning_path</span>, <span class="mono">start_activity</span>, <span class="mono">get_attempt_status</span>, <span class="mono">issue_evidence_receipt</span>.</li>
+        <li>A path that shortens. When a reader presents a vault assertion, the parts they can skip are struck through with the reason beside each one.</li>
+        <li>Your fonts, your colours, your words. The block inherits the page it sits in.</li>
+      </ul>
+
+      <h2>The manifest</h2>
+      <pre class="code" data-json>{
+  "protocol": "nema/0.1",
+  "provider": { "name": "Maillard, explained" },
+  "unit": {
+    "id": "maillard-explained",
+    "title": "Why browning tastes like that",
+    "estimatedMinutes": 8
+  },
+  "requirements": [
+    { "concept": "nema:heat-control", "ability": "explain" }
+  ],
+  "activities": [ ... ]
+}</pre>
+      <p>Put that JSON inside <span class="mono">&lt;script type="application/nema+json"&gt;</span>, field by field:</p>
+      <ul class="doc__list">
+        <li><b>protocol</b>. Always <span class="mono">nema/0.1</span>.</li>
+        <li><b>provider.name</b>. What a reader sees. Your origin is filled in for you.</li>
+        <li><b>unit.id</b>. A slug, unique on your site. <b>unit.title</b> is what you call this piece, <b>unit.estimatedMinutes</b> an honest number.</li>
+        <li><b>requirements</b>. What the piece assumes, as concept and ability pairs from <span class="mono">shared/concepts.json</span>. Leave it empty when it assumes nothing.</li>
+        <li><b>activities</b>. What a reader can actually do here.</li>
+      </ul>
+
+      <h2>The activities block</h2>
+      <ul class="doc__list">
+        <li>A <b>lesson</b> renders one "Mark as read" button. Its grader is <span class="mono">exposure</span>, weight 0.1, which is honest: reading is not recall.</li>
+        <li>A <b>quiz</b> renders radio options and a Submit. Each question carries <span class="mono">options</span> and one <span class="mono">answer</span> id, so it grades deterministically in the page.</li>
+        <li><b>outcomes</b> are the concept and ability pairs an activity is evidence for. <b>skipIf</b> is what a reader may skip once they present an assertion.</li>
+      </ul>
+
+      <h2>The script tag</h2>
+      <p class="install__line">&lt;script type="module" src="https://nema.migarci2.dev/nema-provider.js"&gt;&lt;/script&gt;</p>
+      <p>
+        Put it after the manifest. The block renders where you place
+        <span class="mono">&lt;nema-activities&gt;&lt;/nema-activities&gt;</span>, or at the end of your
+        <span class="mono">main</span> or <span class="mono">article</span> if you place nothing.
+      </p>
+
+      <h2>Self certified receipts</h2>
+      <p>
+        The script makes a key pair in the reader's browser on first use and signs every receipt with it. The
+        receipt carries <span class="mono">keyId: "self:&lt;origin&gt;"</span> and the public key, so anyone
+        can verify it. A vault checks the signature, labels the receipt <span class="mono">self</span>, and
+        caps its weight at the self report weight, 0.3, whatever grader you declared. You can vouch for
+        yourself and only for yourself: enough to be useful, too little to be worth faking.
+      </p>
+
+      <h2>Two optional upgrades</h2>
+      <ul class="doc__list">
+        <li>
+          <b>Sign on your server.</b> Add <span class="mono">data-endpoint="/api/receipt"</span> to the script
+          tag and the submission is posted to you, graded again and signed with your own key.
+          <a href="https://github.com/migarci2/nema/blob/main/apps/harness/worker.js" rel="noopener">apps/harness/worker.js</a>
+          in the repository is a working one.
+        </li>
+        <li>
+          <b>Publish your key.</b> Serve <span class="mono">{ "keyId", "jwk" }</span> at
+          <span class="mono">/.well-known/nema-issuer.json</span> with <span class="mono">CORS *</span>. A
+          vault fetches it, matches it against the receipt and promotes that receipt to
+          <span class="mono">origin</span>: full weight, still no partnership with anyone.
+        </li>
+      </ul>
+
+      <h2>What readers see</h2>
+      <p>
+        Under your text, a small block in your own type: a button, a check of two questions, and afterwards a
+        receipt with Copy and a "Send to vault" link. A reader with an agent never touches it, because the
+        agent calls the tools. A reader with no agent uses the buttons, pastes an assertion into the textarea
+        and watches the path shorten the same way. Nothing there looks like nema except a 16 pixel mark and
+        the words "Works with nema".
+      </p>
+
+      <h2>A working example</h2>
+      <p>
+        <a href="https://maillard.migarci2.dev" rel="noopener">maillard.migarci2.dev</a> is one blog post with
+        this install and nothing else. Its source marks the nema part between two comments, so you can copy
+        the whole thing in a minute and change the words.
+      </p>
+    </article>
+
+  </main>
+
+  <footer data-nema-footer></footer>
+</div>
+
+<script type="module" src="/app.js"></script>
+</body>
+</html>

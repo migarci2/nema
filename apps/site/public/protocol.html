@@ -28,6 +28,7 @@
 
   <nav class="site-nav" aria-label="nema hub pages">
     <a class="site-nav__link" href="/">Hub</a>
+    <a class="site-nav__link" href="/creators.html">For creators</a>
     <a class="site-nav__link" href="/judges.html">Judge guide</a>
     <a class="site-nav__link" href="/protocol.html" aria-current="page">Protocol</a>
     <a class="site-nav__link" href="/philosophy.html">Philosophy</a>
@@ -106,19 +107,19 @@
               <td>Line Cook Lab: the unit <span class="mono">service-under-pressure</span>, a deterministic grader, the issuer key <span class="mono">linecook-2026-09</span>.</td>
             </tr>
             <tr>
-              <td><a class="mono" href="https://nema-coach.migarci2.dev" data-app-link="coach">nema-coach.migarci2.dev</a></td>
-              <td>agent</td>
-              <td>nothing durable. Chat on the left, the site under test in an iframe on the right.</td>
+              <td><a class="mono" href="https://maillard.migarci2.dev" rel="noopener">maillard.migarci2.dev</a></td>
+              <td>provider</td>
+              <td>Maillard, explained: one blog post installed with the embed, self certified receipts, no server.</td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <p>
-        Tools are registered with <span class="mono">document.modelContext.registerTool</span> and scoped
-        with <span class="mono">exposedTo</span>, so the vault offers its tools to the coach origin and to
-        nobody else. Every page also loads the Chrome Labs WebMCP polyfill, so the same code path runs in a
-        browser without native support.
+        Tools are registered with <span class="mono">document.modelContext.registerTool</span> on the page
+        that owns the data, so whichever agent the reader brought discovers them there and nowhere else.
+        Every page also loads the Chrome Labs WebMCP polyfill, so the same code path runs in a browser
+        without native support.
       </p>
 
       <h3>The MCP bridge</h3>
@@ -289,7 +290,7 @@ codex  mcp add nema -- node /path/to/nema/packages/nema-mcp/bin.mjs</pre>
 
       <h3><span class="mono">LearningNeed</span>, unsigned, produced by the vault</h3>
       <p>
-        The vault's answer to "what should I do next", with the rubric a coach needs to run the exercise
+        The vault's answer to "what should I do next", with the rubric an agent needs to run the exercise
         without inventing the standard. Kinds: <span class="mono">acquire</span>,
         <span class="mono">retrieve</span>, <span class="mono">apply</span>,
         <span class="mono">transfer</span>, <span class="mono">discriminate</span>,
@@ -336,10 +337,8 @@ await verifyToken(token, publicJwk) -&gt; { ok, payload, reason? }</pre>
         around 1125. The embedded <span class="mono">vaultKey</span> and the
         <span class="mono">contentHash</span> dominate the payload, so size grows slowly with the number of
         claims. That is small enough to travel in an agent's context and large enough that a model should not
-        be asked to retype it, which is why the coach carries tokens by handle
-        (<span class="mono">@t1</span>, <span class="mono">@t2</span>) and why both the vault and the
-        providers render every token in a textarea with a Copy button, so a human can complete the handoff if
-        the agent damages the string.
+        be asked to retype it, which is why the vault and every provider render each token in a textarea with
+        a Copy button, so a human can complete the handoff if the agent damages the string.
       </p>
 
       <h2 id="verify">Verification rules</h2>
@@ -462,7 +461,7 @@ await verifyToken(token, publicJwk) -&gt; { ok, payload, reason? }</pre>
 
       <h3>Vault role</h3>
       <p>
-        Nine imperative tools, exposed to the coach origin only, plus one declarative form
+        Nine imperative tools, plus one declarative form
         (<span class="mono">set_learning_goal_form</span>), so
         <span class="mono">getTools()</span> lists ten. Every result is a JSON object with a
         <span class="mono">status</span> field.
@@ -737,8 +736,7 @@ await verifyToken(token, publicJwk) -&gt; { ok, payload, reason? }</pre>
             <div class="n-field">
               <label class="n-label" for="open-app-select">Open an app</label>
               <select class="n-select" id="open-app-select" name="app" required
-                      toolparamdescription="Which nema app to open: coach, vault, harness, security or site.">
-                <option value="coach">Coach, the nema agent</option>
+                      toolparamdescription="Which nema app to open: vault, harness, security or site.">
                 <option value="vault">Vault</option>
                 <option value="harness">Saucier School</option>
                 <option value="security">Line Cook Lab</option>

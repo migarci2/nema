@@ -1,0 +1,9 @@
+# The one tag install is loaded from other origins (a blog, an article, a course
+# page), so the embed and the shared modules it imports need CORS. Everything
+# here is public static JavaScript.
+/nema-provider.js
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=300
+
+/shared/*
+  Access-Control-Allow-Origin: *

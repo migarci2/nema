@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # nema dev: build, write provider secrets for local runs, then start the five
 # wrangler dev servers on their fixed ports (contract section 1).
-#   site 8780, vault 8781, harness 8782, security 8783, coach 8784
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -77,7 +76,6 @@ start site 8780 9780
 start vault 8781 9781
 start harness 8782 9782
 start security 8783 9783
-start coach 8784 9784
 
 echo
 echo "press ctrl-c to stop all five"

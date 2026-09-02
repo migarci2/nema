@@ -120,6 +120,33 @@
           <div class="n-ledger" data-goal-list></div>
         </section>
 
+        <section class="n-panel n-panel--quiet v-sub" aria-labelledby="p-share">
+          <h3 class="v-sublabel" id="p-share">Share with a site</h3>
+          <p class="v-share__note">Hand a site your bands with no agent in the room. Same request, same approval, a token you copy into the site's box.</p>
+          <form class="stack stack--tight" data-share-form>
+            <div class="n-field">
+              <label class="n-label" for="share-audience">Site origin</label>
+              <input class="n-input mono" id="share-audience" name="audience" type="text" required
+                     placeholder="https://saucier.migarci2.dev">
+            </div>
+            <div class="n-field">
+              <label class="n-label" for="share-purpose">Purpose</label>
+              <input class="n-input mono" id="share-purpose" name="purpose" type="text" required
+                     value="personalize-pan-sauces-path">
+            </div>
+            <div class="n-field">
+              <label class="n-label" for="share-concepts">Concepts, comma separated concept:ability pairs</label>
+              <input class="n-input mono" id="share-concepts" name="concepts" type="text" required
+                     value="nema:knife-skills:apply, nema:heat-control:explain, nema:ratios:apply">
+            </div>
+            <div class="row row--tight">
+              <button class="n-btn n-btn--secondary n-btn--sm" type="submit" data-action="share">Share with a site</button>
+              <span class="n-help" data-share-status role="status" aria-live="polite"></span>
+            </div>
+          </form>
+          <div class="v-result" data-share-result></div>
+        </section>
+
         <section class="n-panel n-panel--quiet v-sub" aria-labelledby="p-inbox">
           <h3 class="v-sublabel" id="p-inbox">Receipt inbox</h3>
           <p class="v-inbox__note" data-inbox-note hidden></p>

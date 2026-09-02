@@ -4,8 +4,10 @@ nema moves claims about a person between origins that do not trust each other,
 with an LLM in the middle. This document lists what can go wrong, what the
 implementation does about it, and what it honestly does not do.
 
-Scope: the protocol (`nema/0.1`) and the five reference apps. Out of scope: the
-security of the browser, the operating system, and the agent runtime itself.
+Scope: the protocol (`nema/0.1`), the reference apps, and the one tag install
+any site can drop into a page. Out of scope: the security of the browser, the
+operating system, and the agent runtime itself, which the learner chooses and
+nema does not control.
 
 ## 1. Assets
 
@@ -14,6 +16,7 @@ security of the browser, the operating system, and the agent runtime itself.
 | Evidence ledger | `localStorage` on the vault origin | a profile of what someone studied and failed |
 | Vault key pair | `localStorage` on the vault origin | anyone can mint assertions as that learner |
 | Issuer private keys | Cloudflare Worker secret `ISSUER_PRIVATE_JWK` | anyone can forge evidence from that provider |
+| A self certified page's key | `localStorage` on that page's origin, in the reader's browser | someone can forge that page's receipts about themselves, at 0.3 weight |
 | Readiness assertions in flight | agent context, provider memory | a snapshot of a few bands, for 30 minutes |
 | Receipts in flight | agent context | a signed claim someone else could stage into their own vault |
 
@@ -71,13 +74,46 @@ can poll forever and learn nothing it can act on.
 
 Someone mints a receipt, or stages the same one twice to inflate a band.
 
-Mitigation. Every receipt is ECDSA P-256 signed by an issuer key listed in
-`shared/issuers.json`, and the vault checks that `issuers[keyId].origin` equals
-`payload.issuer`. Replay is blocked by `receiptId` deduplication, which returns
+Mitigation. Every receipt is ECDSA P-256 signed, and the vault records which
+key vouched for it: a key in `shared/issuers.json` whose origin matches
+(`registered`), a key the issuer publishes at `/.well-known/nema-issuer.json`
+(`origin`), or a key the page carries in the receipt itself (`self`). Replay is
+blocked by `receiptId` deduplication, which returns
 `{ status:'rejected', reason:'duplicate' }` and is one of the ten conformance
 checks. An unknown issuer is not silently dropped: the receipt is stored as
 `pending`, is visible in the evidence ledger with a yellow badge, and changes
 no state.
+
+### T5a. A self certified site inflates its own reader
+
+The one tag install signs receipts with a key it generated in the reader's
+browser. Nothing outside that page vouches for the key, so the page can claim
+whatever it likes about whoever visits it: a `deterministic` grader on a quiz
+with one obvious answer, a hundred receipts, an `apply` claim for a concept it
+never taught.
+
+Mitigation, and the reason the tier exists. A `self` receipt is capped at the
+`self-report` weight, 0.3, in the derivation, whatever grader it declares. 0.3
+lands in the `uncertain` band and needs several independent, decaying claims to
+reach `fragile`; it never reaches `usable` on its own, so it never turns into a
+`verified` status in an assertion. A self certified page can therefore say
+"this reader was here and did this" and be believed exactly as much as the
+reader saying it themselves. It can vouch for itself and for nobody else: the
+`issuer` in the receipt must match the origin that signed it, so it cannot mint
+evidence in another site's name.
+
+Two upgrades exist, and both cost the site something real. Sign on your own
+server with your own key and publish that key at
+`/.well-known/nema-issuer.json`, and the vault promotes the receipts to
+`origin` at full weight, having fetched the key from the origin the receipt
+names. The name and the key are then the site's reputation, which is the only
+thing that could have been worth trusting in the first place.
+
+Residual risk. `origin` trust is exactly as strong as the site's control of its
+own well known path and its DNS. A site that is compromised, or that decides to
+lie, issues full weight receipts about its own readers until the learner deletes
+them. The blast radius is one origin and the readers who chose to visit it,
+which is the same blast radius as believing what that site says on its pages.
 
 ### T6. A stolen assertion is reused elsewhere
 
@@ -106,9 +142,10 @@ not.
    injected instruction achieves is that a modal appears with an implausible
    list of concepts on it, which the learner denies. Every other tool is read
    only or requires a signature nema does not hold.
-2. The coach's system prompt states that tool results are data, that it never
-   requests a disclosure the learner did not ask for, and that it never claims
-   evidence no receipt supports.
+2. The disclosure is described to the human in the vault's own words, not the
+   provider's. The consent modal prints the audience, the purpose and the exact
+   concept and ability list from the request, rendered as text, so an injected
+   instruction shows up as an implausible request rather than as an action.
 
 Not implemented, and worth saying so: WebMCP tool results can carry
 annotations, and a future version of nema should mark every result that echoes
@@ -122,22 +159,25 @@ it did not need. Nothing in nema can prevent that, only limit the damage.
 
 ### T9. A hostile origin calls the tools directly
 
-Mitigation. Tools are registered with `exposedTo: [ORIGINS.coach]`, and the
-coach embeds provider pages in an iframe with `allow="tools <origin>"`. A page
-that is not the coach origin does not see the tools. This depends on the
-browser enforcing the Permissions Policy; see limits.
+Mitigation. WebMCP is per document. Tools live on the page that owns the data,
+so an agent can only reach the vault's tools while the learner has the vault
+open, and a page that embeds the vault in an iframe gets nothing without the
+`allow="tools <origin>"` Permissions Policy the learner's browser enforces. The
+one tag embed registers only the five provider tools of the page it is on; it
+has no path to a vault and never sees one. This depends on the browser; see
+limits.
 
 ### T10. The agent corrupts a long token while carrying it
 
 Not a security threat, a reliability one, and it kills the demo.
 
 Mitigation. Tokens are about 950 to 1150 characters, measured: around 1100 for
-a three requirement assertion, 980 to 1125 for a receipt. The coach keeps a token
-clipboard: any string starting with `nema1.` in a tool result is stored as
-`t1`, `t2`, and replaced with `@t1` in the model-facing result; `@tN` arguments
-are expanded before execution. The model never sees the token body. As a
-fallback every token is rendered in a `<textarea>` with a Copy button, and the
-vault accepts a pasted token through the same code path as the tool.
+a three requirement assertion, 980 to 1125 for a receipt. That is small enough
+to travel in an agent's context and large enough that a model should not be
+asked to retype it, so every token is also rendered in a `<textarea>` with a
+Copy button, and both the vault and every teaching page accept a pasted token
+through the same code path as the tool. A damaged token fails as
+`bad-signature`, visibly, and the human can finish the handoff by hand.
 
 ### T11. Tool registration does not work in the judge's browser
 
@@ -188,17 +228,18 @@ Written plainly, because a judge will find these anyway.
    `urn:nema:seed` and whose name in the ledger is "nema demo seed". It exists
    so a judge sees a populated vault in one click. It is not evidence of
    anything, and the ledger says so on every row.
-5. **The coach is a demo agent.** It is a Worker calling the Anthropic Messages
-   API, or Workers AI as a fallback. It has no memory between sessions and no
-   guarantees. It exists to prove the tools compose. In real use the agent would
-   be ChatGPT desktop or Chrome's own agent, and nema's guarantees must hold for
-   an agent it does not control. That is why they are enforced by tool shape and
-   human consent rather than by the system prompt.
-6. **Cross origin exposure depends on the browser.** `exposedTo` and the
-   `allow="tools <origin>"` Permissions Policy are what stop an arbitrary page
-   from calling vault tools. Under the polyfill, that is not enforced at all:
-   the polyfill ignores registration options. Run the demo in Chrome 149 with
-   `chrome://flags/#enable-webmcp-testing` to see the real boundary.
+5. **The agent is not ours.** nema ships no agent. The reader brings ChatGPT
+   desktop, Chrome's own agent, Claude Code or Codex, and nema's guarantees have
+   to hold for an agent nobody here controls or can audit. That is why they are
+   enforced by tool shape and human consent rather than by a system prompt, and
+   it is why every flow also has a no agent path: the guarantee should not
+   depend on which model is driving.
+6. **Tool exposure is per document.** Tools are registered on the page that
+   owns the data, so an agent reaches the vault's tools only when the learner
+   has the vault open in front of them. That boundary is the browser's, and
+   under the polyfill it is weaker than in Chrome 149 with
+   `chrome://flags/#enable-webmcp-testing`, which is where the real behaviour
+   should be checked.
 7. **Prompt injection is limited, not solved.** No tool result in this build is
    annotated as untrusted content, so nothing tells a runtime to treat echoed
    free text as data. Annotating results is on the list in T8, and even then it
@@ -214,3 +255,14 @@ Written plainly, because a judge will find these anyway.
 10. **Scale is untested.** The derivation is linear in receipts and runs on
     every read. With tens of thousands of receipts that becomes a problem worth
     solving, and it has not been solved here.
+11. **The self tier is a floor, not a filter.** A page can flood a willing
+    reader's vault with `self` receipts. Each is capped at 0.3 and decays, and
+    the ledger names the issuer on every row, but nothing rate limits intake and
+    there is no "ignore this issuer" switch beyond deleting the rows. That
+    switch is the obvious next feature.
+12. **The well known fetch is unauthenticated and uncached.** The vault fetches
+    `/.well-known/nema-issuer.json` over TLS at verification time. It has no
+    pinning, no revocation, and no memory of what that origin published
+    yesterday, so a key swap is invisible. Receipts already verified keep their
+    tier; that is a decision, not an oversight, and it is the weakest part of
+    the `origin` tier.

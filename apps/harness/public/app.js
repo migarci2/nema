@@ -6,7 +6,8 @@
  *
  *   the agent   asks for the offer, presents an assertion the learner approved,
  *               opens an activity, polls the attempt, asks for the receipt
- *   the learner reads, chooses, orders, writes, submits
+ *   the learner reads, chooses, orders, writes, submits, and can present the
+ *               assertion by hand when there is no agent in the room
  *   the kitchen re-grades and signs
  *
  * Nothing in this file lets a tool call produce an answer or a grade.
@@ -27,7 +28,7 @@ import { mountActivityStrip } from '/shared/webmcp.js';
 import { ORIGINS } from '/shared/origins.js';
 import { ACTIVITIES, MANIFEST, grade, personalizePath } from '/content.js';
 import { renderStage, TYPE_LABEL } from '/activities.js';
-import { registerHarnessTools } from '/tools.js';
+import { presentAssertion, registerHarnessTools } from '/tools.js';
 
 /* --------------------------------------------------------------- state -- */
 
@@ -843,7 +844,7 @@ dom.foot.append(resetButton);
 
 renderAll();
 
-registerHarnessTools({
+const controller = {
   ORIGINS,
   MANIFEST,
   ACTIVITIES,
@@ -860,6 +861,72 @@ registerHarnessTools({
   scrollToUnit: () => scrollToPanel(dom.unit),
   scrollToStage: () => scrollToPanel(dom.stagePanel),
   toast
-}).catch((err) => {
+};
+
+registerHarnessTools(controller).catch((err) => {
   console.error('[nema] harness tools failed to register:', err);
 });
+
+/* ------------------------------------------------- paste an assertion -- */
+
+/* The whole flow has to work with no agent at all. The form under the
+ * requirements is a declarative WebMCP tool and a plain form at the same time:
+ * an agent fills it and submits it, a learner pastes a token from their vault
+ * and presses Present. Both end in presentAssertion(), the function the
+ * personalize_learning_path tool runs. */
+const pasteForm = document.querySelector('form[toolname="present_assertion"]');
+const pasteStatus = document.querySelector('[data-assertion-status]');
+
+function sayPasteResult(result) {
+  if (!pasteStatus) return;
+  if (result && result.status === 'personalized') {
+    pasteStatus.textContent = `Verified. ${result.personalMinutes} minutes left of ${result.fullMinutes}.`;
+  } else if (result && result.status === 'rejected') {
+    pasteStatus.textContent = `Rejected: ${result.reason}. Nothing changed.`;
+  } else {
+    pasteStatus.textContent = '';
+  }
+}
+
+if (pasteForm) {
+  pasteForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    /* A tool call a judge cannot see is a tool call they cannot audit, so an
+     * agent submit opens the block it happened in. */
+    const wrapper = pasteForm.closest('details');
+    if (wrapper) wrapper.open = true;
+
+    const token = String(pasteForm.elements.assertionToken.value || '').trim();
+    /* Both runtimes mark an agent submit with agentInvoked before this listener
+     * runs. It is the only honest test: the native SubmitEvent carries
+     * respondWith on every submit, and throws if a human's submit answers. */
+    const byAgent = event.agentInvoked === true;
+
+    const work = (async () => {
+      if (byAgent) {
+        /* Route the agent through the canonical imperative tool so the call is
+         * timed and lands in the tool activity strip under its real name. The
+         * native runtime wants the input as a JSON string; the polyfill takes
+         * either. */
+        try {
+          const tools = await document.modelContext.getTools();
+          const canonical = tools.find((entry) => entry.name === 'personalize_learning_path');
+          if (canonical) {
+            const raw = await document.modelContext.executeTool(
+              canonical,
+              JSON.stringify({ assertionToken: token })
+            );
+            return typeof raw === 'string' ? JSON.parse(raw) : raw;
+          }
+        } catch {
+          /* Fall through: the shared function below is the same code path. */
+        }
+      }
+      return presentAssertion(controller, token);
+    })();
+
+    work.then(sayPasteResult, () => sayPasteResult(null));
+    /* respondWith takes a promise, and both runtimes want it during dispatch. */
+    if (byAgent && typeof event.respondWith === 'function') event.respondWith(work);
+  });
+}

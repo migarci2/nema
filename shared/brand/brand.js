@@ -84,7 +84,6 @@ export const APP_LINKS = [
   { app: 'vault', label: 'Vault' },
   { app: 'harness', label: 'Saucier School' },
   { app: 'security', label: 'Line Cook Lab' },
-  { app: 'coach', label: 'Coach' }
 ];
 
 /** Resolved origin for an app key. Falls back to the current origin. */

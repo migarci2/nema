@@ -24,6 +24,11 @@ import {
   inspectAssertion,
   buildReceiptPayload,
   verifyReceipt,
+  isSelfCertified,
+  matchesPublishedKey,
+  SELF_KEY_PREFIX,
+  ISSUER_WELL_KNOWN_PATH,
+  TRUST_TIERS,
   buildIssuerMap,
   loadIssuers,
   isToken
@@ -693,4 +698,212 @@ test('the full handoff works end to end: assertion out, receipt back', async () 
   assert.equal(staged.ok, true);
   assert.equal(staged.payload.subject, await learnerKeyId(vault.publicJwk, HARNESS));
   assert.equal(staged.payload.claims[0].concept, 'nema:pan-sauces');
+});
+
+// ---------------------------------------------------------------------------
+// trust tiers: self certifying issuers (contract section 21)
+// ---------------------------------------------------------------------------
+
+const BLOG = 'https://maillard.migarci2.dev';
+
+/** A receipt from a page that installed the one tag and signs with its own key. */
+async function selfCertifiedReceipt(overrides = {}) {
+  const key = overrides.key || (await generateKeyPair());
+  const payload = buildReceiptPayload(
+    sampleReceiptInput({
+      issuer: BLOG,
+      keyId: `${SELF_KEY_PREFIX}${BLOG}`,
+      issuerKey: key.publicJwk,
+      receiptId: 'rcpt_self_001',
+      activity: { id: 'check', version: '1.0.0', title: 'Two questions before you go' },
+      claims: [
+        {
+          concept: 'nema:maillard-reaction',
+          ability: 'explain',
+          evidenceType: 'explanation',
+          result: 'passed'
+        }
+      ],
+      ...overrides.payload
+    })
+  );
+  return { key, payload, token: await signToken(payload, key.privateJwk) };
+}
+
+test('the trust tiers are the four the contract names', () => {
+  assert.deepEqual(TRUST_TIERS, ['registered', 'origin', 'self', 'pending']);
+  assert.equal(SELF_KEY_PREFIX, 'self:');
+  assert.equal(ISSUER_WELL_KNOWN_PATH, '/.well-known/nema-issuer.json');
+});
+
+test('a receipt payload can carry the public key that signed it', async () => {
+  const { key, payload } = await selfCertifiedReceipt();
+
+  assert.deepEqual(Object.keys(payload), [
+    'type',
+    'protocol',
+    'receiptId',
+    'issuer',
+    'keyId',
+    'issuerKey',
+    'subject',
+    'activity',
+    'claims',
+    'conditions',
+    'issuedAt'
+  ]);
+  // Only the four public fields travel: a private key can never leak this way.
+  assert.deepEqual(payload.issuerKey, {
+    kty: 'EC',
+    crv: 'P-256',
+    x: key.publicJwk.x,
+    y: key.publicJwk.y
+  });
+  assert.equal(isSelfCertified(payload), true);
+  assert.throws(
+    () => buildReceiptPayload(sampleReceiptInput({ issuerKey: { kty: 'RSA' } })),
+    /issuerKey/
+  );
+});
+
+test('assertShape accepts issuerKey and rejects one that is not a public JWK', async () => {
+  const { payload } = await selfCertifiedReceipt();
+  assert.equal(assertShape(payload, RECEIPT_TYPE), payload);
+
+  // Optional: a registered issuer names a key the vault already holds.
+  const registered = buildReceiptPayload(sampleReceiptInput());
+  assert.equal(registered.issuerKey, undefined);
+  assert.equal(assertShape(registered, RECEIPT_TYPE), registered);
+
+  for (const broken of [{}, { kty: 'EC' }, { kty: 'EC', crv: 'P-256', x: 'x' }, 'a key', 7]) {
+    assert.throws(() => assertShape({ ...payload, issuerKey: broken }, RECEIPT_TYPE), /issuerKey/);
+  }
+  // The private half is not a shape the protocol knows how to refuse, but it is
+  // never produced: the builder copies the four public fields and nothing else.
+  assert.equal(buildReceiptPayload(sampleReceiptInput({
+    issuerKey: { kty: 'EC', crv: 'P-256', x: 'x', y: 'y', d: 'secret' }
+  })).issuerKey.d, undefined);
+});
+
+test('a self certified receipt is accepted at the self tier', async () => {
+  const { token, payload } = await selfCertifiedReceipt();
+  const issuers = { 'saucier-2026-09': { origin: HARNESS, jwk: (await generateKeyPair()).publicJwk } };
+
+  const result = await verifyReceipt(token, issuers, { seenReceiptIds: new Set() });
+  assert.equal(result.ok, true);
+  assert.equal(result.trust, 'self');
+  assert.equal(result.issuer.origin, BLOG);
+  assert.equal(result.issuer.selfCertified, true);
+  assert.deepEqual(result.payload.claims, payload.claims);
+
+  // The duplicate guard still runs, and a duplicate keeps the tier it earned.
+  const again = await verifyReceipt(token, issuers, { seenReceiptIds: ['rcpt_self_001'] });
+  assert.equal(again.ok, false);
+  assert.equal(again.reason, 'duplicate');
+  assert.equal(again.trust, 'self');
+});
+
+test('a registered receipt is unchanged by the self certifying path', async () => {
+  const harness = await generateKeyPair();
+  const issuers = {
+    'saucier-2026-09': { origin: HARNESS, jwk: harness.publicJwk, name: 'Saucier School', id: 'harness' }
+  };
+  const token = await signToken(buildReceiptPayload(sampleReceiptInput()), harness.privateJwk);
+
+  const result = await verifyReceipt(token, issuers, { seenReceiptIds: new Set() });
+  assert.equal(result.ok, true);
+  assert.equal(result.trust, 'registered');
+  assert.equal(result.issuer.name, 'Saucier School');
+  assert.equal(result.payload.issuerKey, undefined);
+});
+
+test('a registered keyId is always checked against the registry, never against a carried key', async () => {
+  const harness = await generateKeyPair();
+  const mallory = await generateKeyPair();
+  const issuers = { 'saucier-2026-09': { origin: HARNESS, jwk: harness.publicJwk } };
+
+  // Mallory signs with her own key and encloses it, hoping the vault will use
+  // the key in the token instead of the one in its registry.
+  const token = await signToken(
+    buildReceiptPayload(sampleReceiptInput({ issuerKey: mallory.publicJwk })),
+    mallory.privateJwk
+  );
+  const result = await verifyReceipt(token, issuers);
+  assert.equal(result.ok, false);
+  assert.equal(result.reason, 'bad-signature');
+  assert.equal(result.trust, 'pending');
+});
+
+test('a tampered self certified receipt is rejected', async () => {
+  const { token } = await selfCertifiedReceipt();
+  const parts = token.split('.');
+  const tampered = `${parts[0]}.${parts[1].slice(0, -4)}AAAA.${parts[2]}`;
+
+  const result = await verifyReceipt(tampered, {}, { seenReceiptIds: new Set() });
+  assert.equal(result.ok, false);
+  assert.notEqual(result.trust, 'self');
+
+  // Swapping in another key does not help: the signature covers the payload
+  // bytes, and the enclosed key is part of them.
+  const stranger = await generateKeyPair();
+  const decoded = decodeToken(token);
+  const swapped = encodeToken({ ...decoded.payload, issuerKey: stranger.publicJwk }, decoded.signature);
+  const result2 = await verifyReceipt(swapped, {}, { seenReceiptIds: new Set() });
+  assert.equal(result2.ok, false);
+  assert.equal(result2.reason, 'bad-signature');
+  assert.equal(result2.trust, 'pending');
+});
+
+test('a self: keyId with no key, and a key with no self: keyId, stay pending', async () => {
+  const key = await generateKeyPair();
+
+  const noKey = await signToken(
+    buildReceiptPayload(sampleReceiptInput({ issuer: BLOG, keyId: `${SELF_KEY_PREFIX}${BLOG}` })),
+    key.privateJwk
+  );
+  const a = await verifyReceipt(noKey, {});
+  assert.equal(a.ok, false);
+  assert.equal(a.reason, 'unknown-issuer');
+  assert.equal(a.trust, 'pending');
+
+  const noPrefix = await signToken(
+    buildReceiptPayload(
+      sampleReceiptInput({ issuer: BLOG, keyId: 'maillard-2026-09', issuerKey: key.publicJwk })
+    ),
+    key.privateJwk
+  );
+  const b = await verifyReceipt(noPrefix, {});
+  assert.equal(b.ok, false);
+  assert.equal(b.reason, 'unknown-issuer');
+  assert.equal(b.trust, 'pending');
+  assert.equal(isSelfCertified(b.payload), false);
+});
+
+test('matchesPublishedKey lifts self to origin only on an exact match', async () => {
+  const { payload, key } = await selfCertifiedReceipt();
+  const published = { keyId: payload.keyId, jwk: { kty: 'EC', crv: 'P-256', x: key.publicJwk.x, y: key.publicJwk.y } };
+
+  assert.equal(matchesPublishedKey(payload, published), true);
+
+  // A different key under the right keyId is the interesting attack: the site
+  // publishes one key, someone else signs with another and claims the name.
+  const other = await generateKeyPair();
+  assert.equal(
+    matchesPublishedKey(payload, { keyId: payload.keyId, jwk: other.publicJwk }),
+    false
+  );
+  assert.equal(matchesPublishedKey(payload, { keyId: 'self:https://elsewhere.example', jwk: published.jwk }), false);
+  assert.equal(matchesPublishedKey(payload, { jwk: published.jwk }), false);
+  assert.equal(matchesPublishedKey(payload, { keyId: payload.keyId }), false);
+  assert.equal(matchesPublishedKey(payload, { keyId: payload.keyId, jwk: { ...published.jwk, crv: 'P-384' } }), false);
+
+  // Every way the fetch can fail arrives here as a falsy document.
+  assert.equal(matchesPublishedKey(payload, null), false);
+  assert.equal(matchesPublishedKey(payload, undefined), false);
+  assert.equal(matchesPublishedKey(payload, 'not json'), false);
+  assert.equal(matchesPublishedKey(payload, []), false);
+
+  // A receipt with no enclosed key can never be lifted, whatever is published.
+  assert.equal(matchesPublishedKey(buildReceiptPayload(sampleReceiptInput()), published), false);
+  assert.equal(matchesPublishedKey(null, published), false);
 });

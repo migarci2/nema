@@ -16,13 +16,13 @@ Three roles, one browser.
 |---|---|---|
 | Vault | the learner's evidence ledger and keys | state summaries, disclosure, receipt intake, learning needs |
 | Provider | courses, activities, graders, an issuer key | a manifest, path personalization, activity control, receipt issuance |
-| Agent | nothing durable | no tools; it calls the tools of the pages it can see |
+| Agent | nothing durable | no tools; it calls the tools of the pages it can see. It is whichever agent the reader already uses, and every flow also works with none |
 
 Five objects move between them. A provider publishes a `LearningManifest` and a
 `ReadinessRequest`. The vault answers with a signed `ReadinessAssertion`. The
 learner does the work in the provider's page and the provider signs an
 `EvidenceReceipt`. The vault takes the receipt, recomputes state, and can emit
-`LearningNeed` objects for a coach to work from.
+`LearningNeed` objects for the learner's own agent to work from.
 
 ```
 provider --LearningManifest--> agent --ReadinessRequest--> vault
@@ -241,6 +241,11 @@ Rules:
 }
 ```
 
+An optional `issuerKey` (a public JWK) may follow `keyId`. A page that signs
+with a key nobody has registered includes it, so the receipt is self
+certifying in the same way an assertion is. The one tag install of section 12
+always does, with `keyId: "self:<origin>"`.
+
 Rules:
 
 - `subject` is the `learnerKeyId` the provider learned from the assertion, so a
@@ -255,8 +260,8 @@ Rules:
 
 ### 3.6 LearningNeed (unsigned, produced by the vault)
 
-The vault's answer to "what should I do next", with the rubric a coach needs to
-run the exercise without inventing the standard.
+The vault's answer to "what should I do next", with the rubric an agent needs
+to run the exercise without inventing the standard.
 
 ```json
 {
@@ -317,9 +322,9 @@ characters: a three requirement `ReadinessAssertion` is around 1100, an
 The embedded `vaultKey` and the `contentHash` dominate the payload, so size
 grows slowly with the number of claims. That is small enough to travel in an
 agent's context and large enough that a model should not be asked to retype it,
-which is why the coach carries tokens by handle (`@t1`, `@t2`) and why both the
-vault and the providers render every token in a `<textarea>` with a Copy button,
-so a human can complete the handoff if the agent damages the string.
+which is why the vault and every provider render each token in a `<textarea>`
+with a Copy button, so a human can complete the handoff by hand if the agent
+damages the string or if there is no agent at all.
 
 ---
 
@@ -356,13 +361,49 @@ ids already in the ledger.
 
 1. `decodeToken` succeeds, else `malformed`.
 2. `payload.type === 'evidence-receipt'`, else `malformed`.
-3. `issuers[payload.keyId]` exists and `issuers[payload.keyId].origin === payload.issuer`,
-   else `unknown-issuer`. The receipt is stored with status `pending` and
-   changes no state. It stays visible in the ledger.
-4. Signature verifies against the issuer JWK, else `bad-signature`. Rejected.
+3. A key is found. First `issuers[payload.keyId]` whose `origin` equals
+   `payload.issuer`, which earns `trust: 'registered'`. Otherwise
+   `payload.issuerKey`, when `payload.keyId` starts with `self:`, which earns
+   `trust: 'self'`. A registered key always wins, so a site cannot claim a
+   registered keyId and hand over a key of its own with it. If neither
+   matches: `unknown-issuer`, `trust: 'pending'`, stored, visible in the
+   ledger, changing no state.
+4. Signature verifies against that key, else `bad-signature` at
+   `trust: 'pending'`. A signature that does not check out earns nothing,
+   whichever key it named.
 5. `payload.receiptId` has not been seen before, else `duplicate`. Rejected.
 
-Only receipts that pass all five become `verified` and feed the derivation.
+The result is `{ ok, payload, issuer, trust, reason? }`. Only receipts that pass
+all five become `verified` and feed the derivation.
+
+`verifyReceipt` does no I/O, so it never returns `origin`. That tier is the
+caller's to award: fetch `https://<issuer>/.well-known/nema-issuer.json` and
+pass it with the payload to `matchesPublishedKey(payload, published)`, which is
+true only when the published `keyId` and `jwk` are exactly the ones that signed.
+The vault does this for every `self` receipt at intake.
+
+### 5.2.1 Trust tiers
+
+A verified signature says who signed, not how much it is worth. The vault
+stores a `trust` field on every receipt and the ledger prints it as a word.
+
+| trust | how it is established | evidence weight |
+|---|---|---|
+| `registered` | `keyId` is in `shared/issuers.json` and its origin matches | full, per the section 2 table |
+| `origin` | `issuerKey` verifies the signature, and `https://<issuer>/.well-known/nema-issuer.json` returns the same keyId and jwk | full |
+| `self` | `issuerKey` verifies the signature, nothing else vouches for it | capped at the `self-report` weight, 0.3, whatever grader the receipt declares |
+| `pending` | no key matched | none |
+
+The cap is applied in the derivation, not at intake: `deriveState` takes an
+optional `weightCap(receipt)` and the vault passes the tier rule. So a self
+certified page can say "this reader answered my quiz" and be believed exactly
+as much as a learner saying it about themselves. It can vouch for itself and
+for nobody else, which is what makes a one tag install safe to accept from a
+stranger.
+
+The `/.well-known/nema-issuer.json` document is `{ "keyId", "jwk" }`, served
+with `Access-Control-Allow-Origin: *`. It is the whole upgrade path from `self`
+to `origin`: no registration, no partnership, no review.
 
 ### 5.3 Trusted issuers
 
@@ -467,8 +508,8 @@ list of bands that moved, and the vault animates exactly those rows.
 
 ## 7. Tool catalog: vault role
 
-Nine imperative tools, registered with `document.modelContext.registerTool` and
-exposed to the coach origin only, plus one declarative form
+Nine imperative tools, registered with `document.modelContext.registerTool` on
+the page that owns the data, plus one declarative form
 (`set_learning_goal_form`). `document.modelContext.getTools()` therefore lists
 ten. Every result is a JSON object with a `status` field.
 
@@ -521,6 +562,22 @@ https://linecook.migarci2.dev) checks prerequisites and unlocks labs.
 | `start_activity` | `{ activityId: string }` | `{ status:'started', activityId, title, type, minutes, whatTheLearnerDoes, note:'The learner completes this in the page. Poll get_attempt_status.' }` |
 | `get_attempt_status` | `{ activityId: string }` | `{ status:'not_started'\|'in_progress'\|'passed'\|'failed', attempts, hintsUsed, durationSeconds, feedback? }` |
 | `issue_evidence_receipt` | `{ activityId: string }` | `{ status:'issued', token, claims, activity, hint:'Take this token to the vault and call stage_evidence_receipt.' }`, or `{ status:'not-passed' }`. Idempotent: a repeat call returns the stored token. |
+
+Every teaching page also exposes one declarative form:
+
+```html
+<form toolname="present_assertion"
+      tooldescription="Present a nema readiness assertion so this page can personalise its path."
+      toolautosubmit>
+  <textarea name="assertionToken" toolparamdescription="Compact assertion token starting with nema1."></textarea>
+</form>
+```
+
+It runs the same verification and personalisation path as
+`personalize_learning_path` and `check_prerequisites`, and returns the same
+result object. It is also the textarea a person pastes into when there is no
+agent in the browser, which is the point: the human route and the agent route
+are the same code.
 
 `rejected` reasons for the assertion tools are exactly the verification reasons:
 `bad-signature`, `wrong-audience`, `expired`, `malformed`.
@@ -588,7 +645,9 @@ browser during the demo.
 
 ## 11. Implementing a provider in 30 minutes
 
-You need a page, a manifest, a grader and one key.
+You need a page, a manifest, a grader and one key. If you have no server, skip
+to section 12: the one tag install does all of this for you, and you write only
+the manifest.
 
 **1. Generate an issuer key (2 minutes).**
 
@@ -620,7 +679,7 @@ await registerTools([
     async execute() { return { status: 'ok', manifest: MANIFEST }; }
   },
   // personalize_learning_path, start_activity, get_attempt_status, issue_evidence_receipt
-], { exposedTo: [ORIGINS.coach] });
+]);
 ```
 
 **4. Verify assertions (5 minutes).**
@@ -663,3 +722,65 @@ Rules you must not break:
 That is the whole integration. A provider that does these five things is
 interoperable with any nema vault, and with any other provider, without a
 partnership, an account or a shared database.
+
+---
+
+## 12. The one tag install
+
+A site with no backend joins with a manifest and a script.
+
+```html
+<script type="application/nema+json">
+{ "protocol": "nema/0.1",
+  "provider": { "name": "Maillard, explained" },
+  "unit": { "id": "maillard-explained", "title": "Why browning tastes like that", "estimatedMinutes": 8 },
+  "requirements": [ { "concept": "nema:heat-control", "ability": "explain" } ],
+  "activities": [
+    { "id": "read", "type": "lesson", "title": "Read the article", "minutes": 6,
+      "outcomes": [ { "concept": "nema:maillard-reaction", "ability": "recognize" } ] },
+    { "id": "check", "type": "quiz", "title": "Two questions before you go", "minutes": 2,
+      "outcomes": [ { "concept": "nema:maillard-reaction", "ability": "explain" } ],
+      "questions": [ { "id": "q1", "prompt": "...", "options": [ { "id": "a", "text": "..." } ], "answer": "a" } ] }
+  ] }
+</script>
+<script type="module" src="https://nema.migarci2.dev/nema-provider.js"></script>
+```
+
+Source: `shared/provider-embed.js`, served from the hub as `/nema-provider.js`.
+
+**What it registers.** The five provider tools of section 8, with the same
+names, schemas and return shapes, plus the declarative `present_assertion`
+form. `provider.origin` and the unit's `contentHash` are filled in from the
+page, so the manifest an agent reads is a complete `LearningManifest`.
+
+**What it renders.** One block where the page puts
+`<nema-activities></nema-activities>`, or at the end of `<main>` or `<article>`
+when that element is absent: the lesson's "Mark as read" button, the quiz, the
+personalised path note once an assertion is presented, and the receipt with a
+Copy button and a "Send to vault" link (`<vault>/#receipt=<token>`). Styles are
+scoped and inherit the host page's fonts and colours. Nothing about the block
+looks like nema except a 16 pixel mark and the words "Works with nema".
+
+**How it grades.** In the page, deterministically, from the `answer` id on each
+question. A `lesson` produces `exposure` evidence, weight 0.1. A `quiz`
+produces `deterministic` evidence, which the trust tier then caps.
+
+**How it signs.** A P-256 key pair generated in the reader's browser on first
+use and kept in `localStorage`. Receipts carry `keyId: "self:<origin>"` and the
+public `issuerKey`, so any vault can verify them without knowing the site.
+
+**Optional attributes on the script tag.**
+
+| attribute | effect |
+|---|---|
+| `data-endpoint="/api/receipt"` | post the submission to the site's own server, same body as section 8; the server's signed receipt replaces the self signed one |
+| `data-vault="https://..."` | the vault origin for the "Send to vault" link; defaults to the nema vault |
+
+**Optional trust upgrade, still with no server.** Publish the same public key
+at `/.well-known/nema-issuer.json` as `{ "keyId", "jwk" }` with CORS `*`. The
+vault fetches it, matches it against the receipt, and treats the issuer as
+`origin` published: full weight, no registration.
+
+The reference install is `apps/blog`, one article at
+https://maillard.migarci2.dev whose source marks the nema part between two
+comments so it can be copied as a template.

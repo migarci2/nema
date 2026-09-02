@@ -11,11 +11,10 @@
 import { ORIGINS } from './origins.js';
 
 /**
- * The origins allowed to call nema tools: the coach for the current host.
- * In dev that resolves to http://localhost:8784, in prod to the coach domain.
- * Apps pass this as `exposedTo` to registerTools.
+ * No cross origin embedder needs these tools any more: agents call them on the
+ * page itself. Kept as an empty list so registerTools keeps one signature.
  */
-export const EXPOSED_TO = [ORIGINS.coach];
+export const EXPOSED_TO = [];
 
 /** Maximum number of tool calls kept in memory for the activity strip. */
 const ACTIVITY_LIMIT = 8;

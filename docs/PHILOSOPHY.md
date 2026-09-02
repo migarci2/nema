@@ -26,6 +26,26 @@ That is the whole shape of the idea.
 > Any website can teach you. Any agent can coach you. Your learning state stays
 > local, portable and yours.
 
+## Everyone teaches on the web
+
+The word "provider" makes it sound like there is a class of companies who teach
+and a class of people who learn. That is not what the web looks like. Somebody
+wrote the answer that unblocked you last Tuesday, and it was a blog post, or a
+forum reply, or a page of notes from a course that ran once in 2019. Most of
+what any of us knows came from people who were not running an education
+business, who taught something because they knew it and wrote it down, and who
+will never find out whether it worked.
+
+nema is built for those people first. The protocol is small enough that a
+personal site can implement it with one manifest tag and one script tag, no
+backend, no account, and no permission from anyone: keep your page, your voice
+and your design, and a reader who arrives with a vault leaves with a signed note
+of what they actually did. That is what makes the network worth anything. Two
+course sites that recognise each other is a demo. A blog, a documentation page,
+a workshop handout and a course all issuing evidence a reader can carry is a
+web that teaches better than the sum of its pages, because the parts finally
+stop forgetting.
+
 ## Evidence, not mastery
 
 A number called "mastery: 78%" is a claim with no author. You cannot check it,
@@ -55,8 +75,10 @@ answer. The only way state moves is a signed receipt from a provider that
 graded work the human did, or an explicit `record_agent_assessment` that is
 stamped `agent-assessed`, weighted 0.6, and shown in the ledger with its own
 badge. The agent reads manifests, explains what a site is asking for, carries
-tokens between origins, and coaches from the vault's `LearningNeed` list. The
-human answers every question and approves every disclosure.
+tokens between origins, and works from the vault's `LearningNeed` list. It is
+whichever agent the learner already uses, and nothing here depends on which one:
+every flow also works with no agent at all, by copying one token. The human
+answers every question and approves every disclosure.
 
 This is not a policy written in a prompt. It is the absence of a tool. Prompts
 can be argued with. Missing functions cannot.

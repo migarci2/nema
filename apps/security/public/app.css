@@ -328,6 +328,25 @@ a:not([class]):hover {
   font-size: var(--fs-13);
 }
 
+/* Hand delivery: one line under the requirements until the learner wants it.
+ * Inside the requirements card already, so it earns no border of its own. */
+.paste__summary {
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+  cursor: pointer;
+  width: max-content;
+}
+.paste__summary:hover { color: var(--ink); }
+.paste__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding-top: var(--sp-3);
+}
+.paste__text { min-height: 72px; font-size: var(--fs-11); }
+.paste__status { font-size: var(--fs-12); color: var(--ink-2); }
+.paste__note { font-size: var(--fs-12); color: var(--ink-2); padding-top: var(--sp-2); }
+
 /* --------------------------------------------------- 5. activity list -- */
 
 .acts { display: flex; flex-direction: column; }

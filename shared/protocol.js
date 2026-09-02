@@ -70,6 +70,7 @@ export const ALLOWED_RECEIPT_KEYS = Object.freeze([
   'receiptId',
   'issuer',
   'keyId',
+  'issuerKey',
   'subject',
   'activity',
   'claims',
@@ -113,12 +114,44 @@ export const ISSUER_NAMES = Object.freeze({
 /** Origin used by the offline seed issuer, which has no website. */
 export const SEED_ORIGIN = 'urn:nema:seed';
 
+/**
+ * How much a vault may believe a receipt, weakest last.
+ *
+ *   registered  the keyId is in the vault's issuer registry
+ *   origin      the embedded issuerKey signed it and the issuer publishes that
+ *               same key at /.well-known/nema-issuer.json
+ *   self        the embedded issuerKey signed it, and nothing else
+ *   pending     no key matches, so the receipt sits in the ledger and moves
+ *               nothing
+ *
+ * `verifyReceipt` decides `registered`, `self` and `pending` on its own. It
+ * never returns `origin`, because that tier needs a network fetch and this
+ * module does no I/O: the caller fetches the well known document and upgrades
+ * `self` to `origin` with `matchesPublishedKey`.
+ */
+export const TRUST_TIERS = Object.freeze(['registered', 'origin', 'self', 'pending']);
+
+/** Key ids of self certifying issuers start with this. Contract section 21. */
+export const SELF_KEY_PREFIX = 'self:';
+
+/** Where an issuer publishes its key to earn the `origin` tier. */
+export const ISSUER_WELL_KNOWN_PATH = '/.well-known/nema-issuer.json';
+
 // ---------------------------------------------------------------------------
 // small helpers
 // ---------------------------------------------------------------------------
 
 function isPlainObject(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** An EC P-256 public JWK, the only key shape the protocol carries. */
+function isPublicJwk(value) {
+  return isPlainObject(value)
+    && value.kty === 'EC'
+    && typeof value.crv === 'string'
+    && typeof value.x === 'string'
+    && typeof value.y === 'string';
 }
 
 function requireString(value, what) {
@@ -264,6 +297,12 @@ export function assertShape(payload, type) {
     if (payload.conditions !== undefined && !isPlainObject(payload.conditions)) {
       throw new Error('conditions must be an object');
     }
+    /* A self certifying receipt carries the public key that signed it. It is
+     * optional: a receipt from a registered issuer names a key the vault
+     * already holds and carries none. */
+    if (payload.issuerKey !== undefined && !isPublicJwk(payload.issuerKey)) {
+      throw new Error('issuerKey must be an EC public JWK with kty, crv, x and y');
+    }
   }
   return payload;
 }
@@ -392,9 +431,9 @@ export async function learnerKeyId(vaultPublicJwk, audience) {
 // ReadinessAssertion
 // ---------------------------------------------------------------------------
 
-function publicJwkFields(jwk) {
+function publicJwkFields(jwk, what = 'vault key') {
   if (!isPlainObject(jwk) || jwk.kty !== 'EC' || typeof jwk.x !== 'string' || typeof jwk.y !== 'string') {
-    throw new Error('vault key must be an EC public JWK with x and y');
+    throw new Error(`${what} must be an EC public JWK with x and y`);
   }
   return { kty: 'EC', crv: jwk.crv || 'P-256', x: jwk.x, y: jwk.y };
 }
@@ -617,7 +656,11 @@ function conditionFields(conditions) {
  *
  * @param {object} input
  * @param {string} input.issuer origin of the issuing provider
- * @param {string} input.keyId key id from shared/issuers.json
+ * @param {string} input.keyId key id from shared/issuers.json, or
+ *   "self:<origin>" for a page that signs with a key it generated itself
+ * @param {object} [input.issuerKey] the public JWK that signs this receipt.
+ *   A self certifying issuer carries it so a vault that has never heard of the
+ *   site can still check the signature and file the receipt as `self`.
  * @param {string} input.subject the audience-scoped learnerKeyId
  * @param {object} input.activity { id, version, title, contentHash? }
  * @param {Array<object>} input.claims
@@ -629,6 +672,7 @@ function conditionFields(conditions) {
 export function buildReceiptPayload({
   issuer,
   keyId,
+  issuerKey,
   subject,
   activity,
   claims,
@@ -647,11 +691,12 @@ export function buildReceiptPayload({
     protocol: PROTOCOL,
     receiptId: receiptId ? requireString(receiptId, 'receiptId') : randomId('rcpt'),
     issuer,
-    keyId,
-    subject,
-    activity: activityFields(activity),
-    claims: claims.map(claimFields)
+    keyId
   };
+  if (issuerKey !== undefined) payload.issuerKey = publicJwkFields(issuerKey, 'issuerKey');
+  payload.subject = subject;
+  payload.activity = activityFields(activity);
+  payload.claims = claims.map(claimFields);
   const normalizedConditions = conditionFields(conditions);
   if (normalizedConditions) payload.conditions = normalizedConditions;
   payload.issuedAt = isoSeconds(now);
@@ -659,16 +704,65 @@ export function buildReceiptPayload({
 }
 
 /**
+ * True when a receipt carries its own signing key: a keyId of the form
+ * "self:<origin>" and the matching public JWK in `issuerKey`. Anyone can mint
+ * one, which is exactly why the vault caps what it is worth.
+ *
+ * @param {object} payload a decoded receipt payload
+ * @returns {boolean}
+ */
+export function isSelfCertified(payload) {
+  return isPlainObject(payload)
+    && typeof payload.keyId === 'string'
+    && payload.keyId.startsWith(SELF_KEY_PREFIX)
+    && isPublicJwk(payload.issuerKey);
+}
+
+/**
+ * Does the issuer publish the very key that signed this receipt?
+ *
+ * Pure, so it runs in the vault, in a test or in a Worker: the caller fetches
+ * `https://<payload.issuer>/.well-known/nema-issuer.json` and passes the parsed
+ * document here. A match lifts a `self` receipt to `origin`, because the site
+ * that owns the domain has vouched for the key. Anything else, a miss, a
+ * timeout, a wrong key or a fetch that never arrived, leaves it at `self`.
+ *
+ * @param {object} payload a decoded receipt payload carrying `issuerKey`
+ * @param {object} published the parsed well known document `{ keyId, jwk }`
+ * @returns {boolean}
+ */
+export function matchesPublishedKey(payload, published) {
+  if (!isPlainObject(payload) || !isPlainObject(published)) return false;
+  const signing = payload.issuerKey;
+  const declared = published.jwk;
+  if (!isPublicJwk(signing) || !isPublicJwk(declared)) return false;
+  if (typeof payload.keyId !== 'string' || payload.keyId !== published.keyId) return false;
+  return signing.kty === declared.kty
+    && signing.crv === declared.crv
+    && signing.x === declared.x
+    && signing.y === declared.y;
+}
+
+/**
  * Vault side verification of a receipt.
  *
- * Checks, in order: token shape, payload shape, a known keyId whose origin
- * matches the claimed issuer, the signature, and the receiptId against the
- * receipts already stored.
+ * Checks, in order: token shape, payload shape, a key to check the signature
+ * with, the signature itself, and the receiptId against the receipts already
+ * stored. Two kinds of key are accepted:
+ *
+ *   registered  `issuerMap[payload.keyId]` whose origin matches the issuer
+ *   self        `payload.issuerKey`, when the keyId starts with "self:"
+ *
+ * A registered key always wins, so a site cannot claim a registered keyId and
+ * hand over its own key with it. `trust` names the tier the receipt earned:
+ * 'registered', 'self', or 'pending' when nothing could check it. The `origin`
+ * tier is the caller's to award, after fetching the issuer's well known
+ * document and passing it to `matchesPublishedKey`.
  *
  * @param {string} token
  * @param {Record<string, {origin: string, jwk: object, name?: string, id?: string}>} issuerMap
  * @param {{ seenReceiptIds?: Set<string>|Array<string> }} [options]
- * @returns {Promise<{ ok: boolean, payload?: object, issuer?: object, reason?: string }>}
+ * @returns {Promise<{ ok: boolean, payload?: object, issuer?: object, trust: string, reason?: string }>}
  *   reasons: 'malformed', 'unknown-issuer', 'bad-signature', 'duplicate'
  */
 export async function verifyReceipt(token, issuerMap, { seenReceiptIds } = {}) {
@@ -677,27 +771,40 @@ export async function verifyReceipt(token, issuerMap, { seenReceiptIds } = {}) {
     decoded = decodeToken(token);
     assertShape(decoded.payload, RECEIPT_TYPE);
   } catch {
-    return { ok: false, reason: 'malformed' };
+    return { ok: false, trust: 'pending', reason: 'malformed' };
   }
   const payload = decoded.payload;
 
-  const issuer = isPlainObject(issuerMap) ? issuerMap[payload.keyId] : undefined;
-  if (!issuer || !issuer.jwk || issuer.origin !== payload.issuer) {
-    return { ok: false, payload, reason: 'unknown-issuer' };
+  const registered = isPlainObject(issuerMap) ? issuerMap[payload.keyId] : undefined;
+  const known = registered && registered.jwk && registered.origin === payload.issuer
+    ? registered
+    : null;
+
+  if (!known && !isSelfCertified(payload)) {
+    return { ok: false, payload, trust: 'pending', reason: 'unknown-issuer' };
   }
 
+  const issuer = known || {
+    origin: payload.issuer,
+    jwk: payload.issuerKey,
+    name: payload.issuer,
+    selfCertified: true
+  };
+  const trust = known ? 'registered' : 'self';
+
   const signatureOk = await verify(issuer.jwk, decoded.payloadString, decoded.signature);
-  if (!signatureOk) return { ok: false, payload, issuer, reason: 'bad-signature' };
+  /* A signature that does not check out earns nothing, whichever key it named. */
+  if (!signatureOk) return { ok: false, payload, issuer, trust: 'pending', reason: 'bad-signature' };
 
   if (seenReceiptIds) {
     const seen =
       typeof seenReceiptIds.has === 'function'
         ? seenReceiptIds.has(payload.receiptId)
         : Array.from(seenReceiptIds).includes(payload.receiptId);
-    if (seen) return { ok: false, payload, issuer, reason: 'duplicate' };
+    if (seen) return { ok: false, payload, issuer, trust, reason: 'duplicate' };
   }
 
-  return { ok: true, payload, issuer };
+  return { ok: true, payload, issuer, trust };
 }
 
 // ---------------------------------------------------------------------------

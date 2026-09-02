@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# nema deploy: build, then deploy the five workers in dependency order.
+# nema deploy: build, then deploy the workers in dependency order.
 #
 # Secrets are set once by hand, they are not automated here:
 #   npx wrangler secret put ISSUER_PRIVATE_JWK --config apps/harness/wrangler.jsonc
 #   npx wrangler secret put ISSUER_PRIVATE_JWK --config apps/security/wrangler.jsonc
-#   npx wrangler secret put ANTHROPIC_API_KEY --config apps/coach/wrangler.jsonc
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -12,7 +11,7 @@ cd "$ROOT"
 
 bash scripts/build.sh
 
-APPS=(site vault harness security coach)
+APPS=(site vault harness security blog)
 
 for app in "${APPS[@]}"; do
   echo

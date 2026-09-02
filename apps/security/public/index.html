@@ -59,6 +59,36 @@
         </h2>
         <ul class="reqs__list" data-hero-requirements></ul>
         <div class="reqs__body" data-prereq-body></div>
+
+        <!-- Hand delivery. No agent needed: the learner carries the token from
+             their vault and pastes it here. The same form is a declarative
+             WebMCP tool, so an agent can present a token the same way. -->
+        <details class="paste" data-paste>
+          <summary class="paste__summary">Paste an assertion</summary>
+          <form class="paste__form"
+                toolname="present_assertion"
+                tooldescription="Present a readiness assertion token from the learner's vault. Runs the same check as check_prerequisites: the prerequisites panel fills in and every activity gains its lock state."
+                toolautosubmit
+                data-assertion-form>
+            <div class="n-field">
+              <label class="n-label" for="assertion-token">Assertion token</label>
+              <textarea class="n-textarea paste__text"
+                        id="assertion-token"
+                        name="assertionToken"
+                        rows="3"
+                        spellcheck="false"
+                        placeholder="nema1.eyJ0eXBlIjoicmVhZGluZXNzLWFzc2VydGlvbiIs..."
+                        toolparamdescription="A nema1 readiness assertion token, minted for this origin by the learner's vault."></textarea>
+            </div>
+            <div class="row row--tight">
+              <button class="n-btn n-btn--secondary n-btn--sm" type="submit">Present</button>
+              <span class="paste__status" data-assertion-status role="status" aria-live="polite"></span>
+            </div>
+          </form>
+          <p class="paste__note">
+            Your vault mints one under "Share with a site". Only the bands in the token are read.
+          </p>
+        </details>
       </section>
     </section>
 

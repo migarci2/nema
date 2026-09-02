@@ -14,18 +14,22 @@ import { ORIGINS, ORIGINS_BY_ENV, isDev } from '/shared/origins.js';
 import { generateKeyPair, randomId, nowIso } from '/shared/crypto.js';
 import {
   DEFAULT_TTL_MINUTES,
+  ISSUER_WELL_KNOWN_PATH,
   SEED_ORIGIN,
   buildAssertionPayload,
   buildIssuerMap,
   buildReadinessRequest,
   buildReceiptPayload,
   inspectAssertion,
+  isSelfCertified,
   learnerKeyId,
+  matchesPublishedKey,
   signToken,
   verifyReceipt
 } from '/shared/protocol.js';
 import {
   ABILITIES,
+  WEIGHTS,
   bandToConfidence,
   computeNeeds,
   deriveState,
@@ -51,6 +55,22 @@ const AUTO_APPROVE_MS = 60 * 60 * 1000;
 
 /** How long the vault waits for the learner before it gives up, in ms. */
 export const CONSENT_TIMEOUT_MS = 120000;
+
+/**
+ * How long the vault waits for an issuer's published key before it settles for
+ * the `self` tier. A trust upgrade is a nicety: it must never hold up a receipt.
+ */
+export const WELL_KNOWN_TIMEOUT_MS = 3000;
+
+/**
+ * The trust rule of contract section 21, as the cap `deriveState` asks for.
+ * A self certified receipt is worth a self report at most, whatever grader the
+ * page that issued it claims to have run. Registered and origin issuers are not
+ * capped: their key is either in the registry or published on their domain.
+ */
+export const trustWeightCap = (entry) => (
+  entry && entry.trust === 'self' ? WEIGHTS['self-report'] : Infinity
+);
 
 const DAY_MS = 86400000;
 
@@ -184,6 +204,15 @@ export function issuerName(payload) {
   if (payload.keyId === 'agent') return 'nema coach agent';
   const known = (issuerMapProd && issuerMapProd[payload.keyId]) || (issuerMapDev && issuerMapDev[payload.keyId]);
   if (known) return known.name;
+  /* A site that installed the one tag has no registered name, so it is known
+   * by the domain it signs from. That is exactly as much as it has earned. */
+  if (isSelfCertified(payload)) {
+    try {
+      return new URL(payload.issuer).host;
+    } catch {
+      return payload.issuer;
+    }
+  }
   return payload.issuer || 'unknown issuer';
 }
 
@@ -235,6 +264,34 @@ export function getVaultPublicJwk() {
 }
 
 /**
+ * Every derivation in the vault goes through here, so the trust cap can never
+ * be forgotten in one code path and applied in another.
+ */
+function deriveFrom(receipts, now) {
+  return deriveState(receipts, { now, weightCap: trustWeightCap });
+}
+
+/**
+ * The trust tier of a stored receipt, for the ledger and the tools.
+ *
+ * Receipts staged before the tiers existed, and vault files imported from an
+ * older build, carry no `trust`. They could only ever have been verified
+ * against the issuer registry, so they read as `registered`. Agent assessed
+ * receipts have no issuer at all: they are labelled as agent evidence instead,
+ * so they get no tier.
+ *
+ * @param {object} entry a stored receipt entry
+ * @returns {'registered'|'origin'|'self'|'pending'|null}
+ */
+export function trustOf(entry) {
+  if (!entry) return null;
+  if (entry.trust) return entry.trust;
+  if (entry.status === 'pending') return 'pending';
+  if (entry.payload && entry.payload.keyId === 'agent') return null;
+  return 'registered';
+}
+
+/**
  * Learner state, recomputed from the ledger. The result is memoized for 15
  * seconds against the current revision so a render pass does not derive the
  * same state six times, and never persisted.
@@ -245,7 +302,7 @@ export function derived() {
     return derivedCache.value;
   }
   const now = new Date(nowMs).toISOString();
-  const state = deriveState(doc.receipts, { now });
+  const state = deriveFrom(doc.receipts, now);
   const value = { now, state, summary: summarize(state, { now }) };
   derivedCache = { revision, at: nowMs, value };
   return value;
@@ -350,6 +407,43 @@ async function verifyAgainstKnownIssuers(token, seen) {
 }
 
 /**
+ * Ask an issuer whether it publishes the key that signed a receipt.
+ *
+ * Three seconds, no credentials, and every failure is the same answer: null.
+ * An issuer that is slow, offline, misconfigured or lying is not a reason to
+ * refuse the receipt, it is a reason to keep it at the `self` tier.
+ */
+async function fetchPublishedKey(origin) {
+  if (typeof origin !== 'string' || !/^https?:\/\//i.test(origin)) return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), WELL_KNOWN_TIMEOUT_MS);
+  try {
+    const response = await fetch(new URL(ISSUER_WELL_KNOWN_PATH, origin), {
+      signal: controller.signal,
+      credentials: 'omit',
+      cache: 'no-store'
+    });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * The one place the `origin` tier is awarded: a self certified receipt whose
+ * issuer publishes that same key at /.well-known/nema-issuer.json is trusted
+ * like a registered one, because the site that owns the domain vouched for it.
+ */
+async function resolveTrust(payload, trust) {
+  if (trust !== 'self') return trust;
+  const published = await fetchPublishedKey(payload.issuer);
+  return matchesPublishedKey(payload, published) ? 'origin' : 'self';
+}
+
+/**
  * The single staging pipeline: decode, verify, diff, record, report.
  * The manual inbox and the `stage_evidence_receipt` tool both call this.
  *
@@ -372,6 +466,7 @@ export async function stageReceipt(token, options = {}) {
       token: raw,
       payload,
       status: 'pending',
+      trust: 'pending',
       receivedAt: nowIso(),
       effect: ['no band moved, the issuer is not in the trusted list'],
       source: options.source || 'manual'
@@ -380,6 +475,7 @@ export async function stageReceipt(token, options = {}) {
     return {
       status: 'pending',
       reason: 'unknown-issuer',
+      trust: 'pending',
       receiptId: payload.receiptId,
       issuer: payload.issuer,
       issuerName: issuerName(payload)
@@ -387,25 +483,33 @@ export async function stageReceipt(token, options = {}) {
   }
 
   if (!result.ok) {
-    return { status: 'rejected', reason: result.reason };
+    return { status: 'rejected', reason: result.reason, trust: 'pending' };
   }
+
+  /* The tier is settled before the state is derived, because the tier is what
+   * decides how much this receipt is allowed to move. */
+  const trust = await resolveTrust(payload, result.trust);
 
   const nowMs = Date.now();
   const now = new Date(nowMs).toISOString();
-  const before = deriveState(doc.receipts, { now });
+  const before = deriveFrom(doc.receipts, now);
   const entry = {
     receiptId: payload.receiptId,
     token: raw,
     payload,
     status: 'verified',
+    trust,
     receivedAt: nowIso(),
     effect: [],
     source: options.source || 'manual'
   };
   doc.receipts.push(entry);
-  const after = deriveState(doc.receipts, { now });
+  const after = deriveFrom(doc.receipts, now);
   const changes = diffStates(before, after);
   entry.effect = effectFor(changes, after, nowMs);
+  if (trust === 'self' && changes.length > 0) {
+    entry.effect.push('capped at the self report weight, the site signed its own key');
+  }
   save({ reason: 'receipt-accepted', receiptId: entry.receiptId, changes });
 
   return {
@@ -413,6 +517,7 @@ export async function stageReceipt(token, options = {}) {
     receiptId: payload.receiptId,
     issuer: payload.issuer,
     issuerName: issuerName(payload),
+    trust,
     activity: payload.activity,
     claims: payload.claims,
     changes,
@@ -428,7 +533,7 @@ export async function loadDemoSeed() {
   const seen = seenReceiptIds();
   const nowMs = Date.now();
   const now = new Date(nowMs).toISOString();
-  const first = deriveState(doc.receipts, { now });
+  const first = deriveFrom(doc.receipts, now);
   let before = first;
 
   let added = 0;
@@ -452,6 +557,10 @@ export async function loadDemoSeed() {
       token,
       payload,
       status: result.ok ? 'verified' : 'pending',
+      /* The seed is signed by the registered demo issuer, so no well known
+       * lookup is worth a round trip here: whatever tier the signature earned
+       * offline is the tier it keeps. */
+      trust: result.ok ? result.trust : 'pending',
       receivedAt: nowIso(),
       effect: ['no band moved, the issuer is not in the trusted list'],
       source: 'seed'
@@ -460,7 +569,7 @@ export async function loadDemoSeed() {
     if (result.ok) {
       /* Each seed receipt gets the same treatment a live one gets: the state is
        * rederived and the row says exactly what that receipt moved. */
-      const step = deriveState(doc.receipts, { now });
+      const step = deriveFrom(doc.receipts, now);
       entry.effect = effectFor(diffStates(before, step), step, nowMs);
       before = step;
       added += 1;
@@ -469,7 +578,7 @@ export async function loadDemoSeed() {
     }
   }
 
-  const after = deriveState(doc.receipts, { now });
+  const after = deriveFrom(doc.receipts, now);
   const changes = diffStates(first, after);
 
   const goalIds = new Set(doc.goals.map((goal) => goal.goalId));
@@ -741,7 +850,7 @@ export async function recordAgentAssessment({ needId, rubricResults, learnerAnsw
 
   const nowMs = Date.now();
   const now = new Date(nowMs).toISOString();
-  const before = deriveState(doc.receipts, { now });
+  const before = deriveFrom(doc.receipts, now);
   const entry = {
     receiptId: payload.receiptId,
     token: null,
@@ -758,7 +867,7 @@ export async function recordAgentAssessment({ needId, rubricResults, learnerAnsw
     note: typeof learnerAnswerSummary === 'string' ? learnerAnswerSummary : ''
   };
   doc.receipts.push(entry);
-  const after = deriveState(doc.receipts, { now });
+  const after = deriveFrom(doc.receipts, now);
   const changes = diffStates(before, after);
   entry.effect = effectFor(changes, after, nowMs);
   save({ reason: 'agent-assessment', receiptId: entry.receiptId, changes });

@@ -7,9 +7,13 @@
  * repaint the same screen.
  *
  * What is deliberately absent: nothing here submits an answer, marks mastery or
- * reads the learner's history. The agent can describe the unit, present an
- * assertion the learner approved, open an activity, poll it and collect the
- * receipt once the learner passed. The work stays with the human.
+ * reads the learner's history. An agent or the learner can describe the unit,
+ * present an assertion the learner approved, open an activity, poll it and
+ * collect the receipt once the learner passed. The work stays with the human.
+ *
+ * The page also carries a declarative `present_assertion` form (index.html,
+ * wired in app.js) for a learner with no agent. It runs presentAssertion, the
+ * same controller function check_prerequisites calls.
  */
 
 import { registerTools, EXPOSED_TO } from '/shared/webmcp.js';
@@ -46,7 +50,7 @@ export async function registerSecurityTools(controller) {
     {
       name: 'check_prerequisites',
       description:
-        'Verify a readiness assertion minted for this origin and unlock the unit against it. The prerequisites panel fills in with the recognised concepts, their status bands and the source, and every activity gains a lock state. Returns the recognised requirements, the unlocked, locked and skippable activities, and which one to do first. The learner approves the disclosure in the vault before the agent can pass a token here.',
+        'Verify a readiness assertion minted for this origin and unlock the unit against it. The prerequisites panel fills in with the recognised concepts, their status bands and the source, and every activity gains a lock state. Returns the recognised requirements, the unlocked, locked and skippable activities, and which one to do first. The learner approves the disclosure in their vault before a token exists, and an agent or the learner can carry it here: the "Paste an assertion" form on the page runs this same check.',
       inputSchema: {
         type: 'object',
         properties: {

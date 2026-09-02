@@ -1,0 +1,115 @@
+/* nema extension: the few rules the side panel adds to the vault's own CSS.
+ *
+ * Everything here is either "this is a 400 px column, not a page" or the
+ * "This page" strip. No new colours, no new type scale: tokens.css and
+ * brand.css still own the look, and the strip is built from the same
+ * components as the panels above and below it.
+ */
+
+/* ------------------------------------------------------- panel width -- */
+
+/* The hub nav would navigate the vault out of the panel, so the header keeps
+ * the wordmark and the line that says where you are. */
+.n-header__nav { display: none; }
+
+.n-app { padding: var(--sp-4); gap: var(--sp-4); }
+.n-app__main { gap: var(--sp-4); }
+.v-main { gap: var(--sp-6); }
+
+/* A 400 px column has no room for a page's worth of air. */
+@media (max-width: 560px) {
+  .v-title { font-size: var(--fs-24); }
+  .n-stats { gap: var(--sp-3); }
+  .n-footer { flex-wrap: wrap; row-gap: var(--sp-2); }
+}
+
+/* --------------------------------------------------- the page strip -- */
+
+.x-origin {
+  font-size: var(--fs-13);
+  color: var(--ink);
+  margin: 0;
+}
+
+.x-state {
+  font-size: var(--fs-13);
+  color: var(--ink-2);
+  margin: 0;
+  max-width: 62ch;
+}
+
+.x-tools {
+  font-size: var(--fs-11);
+  color: var(--ink-3);
+  margin: 0;
+  word-spacing: 0.35em;
+  line-height: var(--lh-snug);
+}
+
+.x-actions { flex-wrap: wrap; gap: var(--sp-2); }
+
+.x-result:empty { display: none; }
+
+.x-line {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-13);
+  color: var(--ink-2);
+}
+.x-line:last-child { margin-bottom: 0; }
+.x-line--strong { color: var(--ink); }
+.x-line--warn { color: var(--band-due-ink); }
+
+.x-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  margin: var(--sp-2) 0;
+}
+
+.x-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding: var(--sp-1) 0;
+  border-top: 1px solid var(--line-soft, var(--line));
+  font-size: var(--fs-12);
+}
+.x-row:first-child { border-top: 0; }
+.x-row--stacked { flex-wrap: wrap; }
+
+.x-row__main { color: var(--ink); flex: 1 1 auto; }
+.x-row__detail {
+  flex: 1 0 100%;
+  color: var(--ink-2);
+  font-size: var(--fs-12);
+}
+
+/* The calls the two buttons made, in the same three columns as the vault's
+ * tool activity strip at the bottom of the page. */
+.x-calls {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: var(--sp-2);
+}
+
+.x-call {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-size: var(--fs-11);
+  color: var(--ink-3);
+}
+
+.x-call__name { color: var(--ink-2); flex: 1 1 auto; }
+.x-call__ms { color: var(--ink-3); }
+.x-call__status { color: var(--ink-3); }
+.x-call[data-status="approved"] .x-call__status,
+.x-call[data-status="personalized"] .x-call__status,
+.x-call[data-status="issued"] .x-call__status,
+.x-call[data-status="checked"] .x-call__status,
+.x-call[data-status="accepted"] .x-call__status,
+.x-call[data-status="ok"] .x-call__status { color: var(--teal); }
+.x-call[data-status="error"] .x-call__status,
+.x-call[data-status="rejected"] .x-call__status,
+.x-call[data-status="denied"] .x-call__status { color: var(--danger); }

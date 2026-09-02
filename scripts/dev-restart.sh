@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 app="${1:?app name}"
-case "$app" in site) port=8780;; vault) port=8781;; harness) port=8782;; security) port=8783;; coach) port=8784;; *) echo "unknown app" >&2; exit 1;; esac
+case "$app" in site) port=8780;; vault) port=8781;; harness) port=8782;; security) port=8783;; blog) port=8785;; *) echo "unknown app" >&2; exit 1;; esac
 inspector=$((port + 450))
 for pid in $(pgrep -f 'wrangler dev' || true); do
   if tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null | grep -q "apps/$app/wrangler.jsonc"; then kill "$pid" 2>/dev/null || true; fi

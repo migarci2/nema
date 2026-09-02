@@ -14,14 +14,12 @@ export const ORIGINS_BY_ENV = {
     vault: 'https://nema-vault.migarci2.dev',
     harness: 'https://saucier.migarci2.dev',
     security: 'https://linecook.migarci2.dev',
-    coach: 'https://nema-coach.migarci2.dev'
   },
   dev: {
     site: 'http://localhost:8780',
     vault: 'http://localhost:8781',
     harness: 'http://localhost:8782',
     security: 'http://localhost:8783',
-    coach: 'http://localhost:8784'
   }
 };
 
@@ -31,7 +29,6 @@ export const DEV_PORTS = {
   vault: 8781,
   harness: 8782,
   security: 8783,
-  coach: 8784
 };
 
 const hostname =

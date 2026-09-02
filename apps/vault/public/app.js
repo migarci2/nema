@@ -7,6 +7,7 @@
  */
 
 import { injectHeader, injectFooter, toast, copyToClipboard, escapeHtml } from '/shared/brand/brand.js';
+import { ORIGINS } from '/shared/origins.js';
 import { mountActivityStrip, isNative } from '/shared/webmcp.js';
 import { ABILITIES, bestBand } from '/shared/inference.js';
 import { decodeToken } from '/shared/protocol.js';
@@ -29,7 +30,8 @@ const PANEL_IDS = {
   disclosures: 'p-disclosures',
   evidence: 'p-evidence',
   goals: 'p-goals',
-  inbox: 'p-inbox'
+  inbox: 'p-inbox',
+  share: 'p-share'
 };
 
 const refs = {};
@@ -37,6 +39,7 @@ let showAllEvidence = false;
 let showAllState = false;
 let consentState = null;
 let consentTimeoutMs = 120000;
+let shareToken = '';
 
 /* --------------------------------------------------------- utilities -- */
 
@@ -351,9 +354,21 @@ function renderDisclosures() {
 /* --------------------------------------------------- evidence ledger -- */
 
 function signaturePill(signature) {
-  if (signature === 'pending') return '<span class="n-pill n-pill--pending">pending</span>';
+  /* Pending is grey, not amber: nothing is wrong with the receipt, the vault
+   * simply has no key for it. The row's yellow edge is what asks for a look. */
+  if (signature === 'pending') return '<span class="n-pill n-pill--unknown">pending</span>';
   if (signature === 'agent') return '<span class="n-pill n-pill--agent">agent assessed</span>';
   return '<span class="n-pill n-pill--durable">verified</span>';
+}
+
+/* The trust tier beside the signature state, one word. Registered and origin
+ * are quiet, self is yellow because it is the tier a stranger can mint. A
+ * pending receipt has no signature the vault could check, so its pill already
+ * says the word and repeating it would say nothing new. */
+function trustWord(trust, signature) {
+  if (!trust || trust === 'pending') return '';
+  if (signature === 'agent') return '';
+  return `<span class="v-trust v-trust--${esc(trust)}">${esc(trust)}</span>`;
 }
 
 function renderEvidence() {
@@ -379,10 +394,10 @@ function renderEvidence() {
           <span class="v-erow__title">${esc(row.activity)}</span>
           <span class="v-erow__meta">${esc(row.issuerName)}</span>
           <span class="v-erow__date">${esc(isoDate(entry && entry.payload ? entry.payload.issuedAt : row.receivedAt))}</span>
-          <span class="v-erow__end">${signaturePill(row.signature)}</span>
+          <span class="v-erow__end">${signaturePill(row.signature)}${trustWord(row.trust, row.signature)}</span>
         </summary>
         <div class="v-erow__body">
-          <span class="v-erow__date">${esc(row.receiptId)}, grader ${esc(row.grader)}</span>
+          <span class="v-erow__date">${esc(row.receiptId)}, grader ${esc(row.grader)}${row.trust ? `, trust ${esc(row.trust)}` : ''}</span>
           <span class="v-claims">${claims}</span>
           ${effect ? `<span class="v-effect">${esc(effect)}</span>` : ''}
         </div>
@@ -581,6 +596,17 @@ function condenseChanges(changes) {
   return [...best.values()].map((entry) => ({ ...entry.change, lower: entry.lower }));
 }
 
+/* What the tier means, in the learner's words, for the receipt just staged. */
+function trustNote(result) {
+  if (result.trust === 'self') {
+    return `<p class="mono dim">self certified: ${esc(result.issuerName)} signed with a key it made itself, so this evidence counts as a self report.</p>`;
+  }
+  if (result.trust === 'origin') {
+    return `<p class="mono dim">origin verified: ${esc(result.issuerName)} publishes this key on its own domain.</p>`;
+  }
+  return '';
+}
+
 function showInboxResult(result) {
   const box = refs.inboxResult;
   if (!result) {
@@ -598,6 +624,7 @@ function showInboxResult(result) {
     box.innerHTML = `
       <div class="v-result__box v-result__box--ok">
         <p><b>Accepted.</b> Signature verified against ${esc(result.issuerName)}, receipt ${esc(result.receiptId)}.</p>
+        ${trustNote(result)}
         <ul class="v-result__list">${changes}</ul>
         ${reviews}
       </div>`;
@@ -667,6 +694,102 @@ function readHashReceipt() {
   refs.stageButton.focus();
 }
 
+/* -------------------------------------------------------------- share -- */
+
+/**
+ * Read the concept box: "nema:knife-skills:apply, heat-control.explain".
+ *
+ * A concept id carries a colon of its own, so the ability is whatever follows
+ * the last colon or dot, and a bare id is read as a nema id. Returns the
+ * requirements, or an error string naming the entry that could not be read.
+ */
+function parseRequirements(raw) {
+  const items = String(raw || '').split(',').map((item) => item.trim()).filter(Boolean);
+  if (items.length === 0) return { error: 'Name at least one concept and ability, such as nema:ratios:apply.' };
+
+  const requirements = [];
+  for (const item of items) {
+    const cut = Math.max(item.lastIndexOf(':'), item.lastIndexOf('.'));
+    const ability = cut > 0 ? item.slice(cut + 1).trim() : '';
+    let concept = cut > 0 ? item.slice(0, cut).trim() : '';
+    if (concept && !concept.includes(':')) concept = `nema:${concept}`;
+    if (!concept || !ability) {
+      return { error: `"${item}" is not a concept and ability pair. Write it as nema:ratios:apply.` };
+    }
+    if (!ABILITIES.includes(ability)) {
+      return { error: `"${ability}" is not an ability. Use one of ${ABILITIES.join(', ')}.` };
+    }
+    requirements.push({ concept, ability });
+  }
+  return { requirements };
+}
+
+function showShareResult(result) {
+  const box = refs.shareResult;
+  if (!result) {
+    box.innerHTML = '';
+    shareToken = '';
+    return;
+  }
+
+  if (result.status === 'approved') {
+    shareToken = result.token;
+    const rest = result.token.slice('nema1.'.length);
+    const shared = result.shared
+      .map((item) => `<span class="v-claim v-claim--${esc(item.status)}">${esc(shortConcept(item.concept))}.${esc(item.ability)} ${esc(item.status)}</span>`)
+      .join('');
+    box.innerHTML = `
+      <div class="n-token">
+        <span class="n-token__head">readiness assertion<button class="n-btn n-btn--sm n-btn--secondary" type="button" data-action="copy-share">Copy</button></span>
+        <p class="n-token__text" data-share-token><b>nema1.</b>${esc(rest)}</p>
+      </div>
+      <p class="v-share__meta"><span class="v-claims">${shared}</span></p>
+      <p class="v-share__meta">Expires ${esc(relTime(result.expiresAt))}. Paste it into the site's "Paste an assertion" box.</p>`;
+    return;
+  }
+
+  shareToken = '';
+  const lines = {
+    denied: 'Denied. Nothing was shared and nothing was signed.',
+    timeout: 'The request timed out. Nothing was shared.'
+  };
+  box.innerHTML = `
+    <div class="v-result__box v-result__box--${result.status === 'denied' ? 'warn' : 'bad'}">
+      <p>${esc(lines[result.status] || result.error || 'That request could not be signed.')}</p>
+    </div>`;
+}
+
+/**
+ * Hand delivery, no agent needed. Exactly the code path
+ * `create_readiness_assertion` takes: the same request, the same consent modal,
+ * the same signature, the same line in the disclosure ledger.
+ */
+async function shareWithSite() {
+  const audience = refs.shareAudience.value.trim();
+  const purpose = refs.sharePurpose.value.trim();
+  const parsed = parseRequirements(refs.shareConcepts.value);
+
+  if (parsed.error) {
+    refs.shareStatus.textContent = parsed.error;
+    showShareResult(null);
+    return;
+  }
+
+  refs.shareStatus.textContent = 'Waiting for your approval.';
+  showShareResult(null);
+  const result = await vault.createAssertion({ audience, purpose, requirements: parsed.requirements });
+  showShareResult(result);
+
+  if (result.status === 'approved') {
+    refs.shareStatus.textContent = `Signed for ${vault.audienceName(audience)}.`;
+    flash('share', 'token signed');
+  } else if (result.status === 'error') {
+    refs.shareStatus.textContent = result.error;
+  } else {
+    refs.shareStatus.textContent = '';
+  }
+}
+
 /* ---------------------------------------------------------- highlight -- */
 
 function flash(panel, note) {
@@ -729,6 +852,12 @@ function collectRefs() {
   refs.goalForm = $('[data-goal-form]');
   refs.goalList = $('[data-goal-list]');
   refs.goalStatus = $('[data-goal-status]');
+  refs.shareForm = $('[data-share-form]');
+  refs.shareAudience = $('#share-audience');
+  refs.sharePurpose = $('#share-purpose');
+  refs.shareConcepts = $('#share-concepts');
+  refs.shareStatus = $('[data-share-status]');
+  refs.shareResult = $('[data-share-result]');
   refs.inboxToken = $('[data-inbox-token]');
   refs.inboxNote = $('[data-inbox-note]');
   refs.inboxResult = $('[data-inbox-result]');
@@ -772,6 +901,10 @@ function wireActions() {
     }
 
     const action = button.getAttribute('data-action');
+    if (action === 'copy-share') {
+      await copyToClipboard(shareToken, button);
+      return;
+    }
     if (action === 'load-demo') {
       button.disabled = true;
       button.textContent = 'Verifying receipts';
@@ -854,6 +987,11 @@ function wireActions() {
     }
   });
 
+  refs.shareForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    shareWithSite();
+  });
+
   refs.needsForm.addEventListener('submit', (event) => {
     event.preventDefault();
     renderNeeds();
@@ -919,6 +1057,10 @@ async function boot() {
   await vault.init();
   consentTimeoutMs = vault.CONSENT_TIMEOUT_MS;
   vault.setConsentHandler(askForConsent);
+
+  /* The share box opens on the provider this vault is demonstrated with, and
+   * on the right host: localhost while developing, the real origin in prod. */
+  refs.shareAudience.value = ORIGINS.harness;
 
   render();
   mountActivityStrip(refs.activity);

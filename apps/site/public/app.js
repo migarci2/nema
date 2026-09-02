@@ -1,7 +1,7 @@
 /* nema hub runtime.
  *
- * Four pages share this module: the hub, the judge guide, the philosophy and
- * the protocol reference. It injects the shared header and footer, resolves
+ * Five pages share this module: the hub, the creator guide, the judge guide,
+ * the philosophy and the protocol reference. It injects the shared header and footer, resolves
  * every cross origin link through /shared/origins.js so the page works on
  * localhost and in production without editing an href, registers the site's
  * WebMCP tools, and keeps the tool activity strip in sync.
@@ -21,12 +21,12 @@ import { registerTools, getActivity, EXPOSED_TO, isNative } from '/shared/webmcp
  * anything the five apps do not do. */
 const TOPICS = {
   overview:
-    'nema is a WebMCP protocol for learning, plus five pages that implement it. '
+    'nema is a WebMCP protocol for learning that anyone who teaches on the web can install with one manifest tag and one script tag. '
     + 'A vault you own holds signed evidence of what you have learned and derives your state from it, per concept and per ability. '
     + 'Websites never read the vault: they ask one question, and the vault answers with the smallest true answer, after you approve it. '
-    + 'In the demo a 68 minute course becomes 27, then 21, and a second website recognises prerequisites it never taught.',
+    + 'In the demo a 68 minute course becomes 27, then 21, a second website recognises prerequisites it never taught, and a blog post issues receipts of its own.',
   protocol:
-    'Five objects move between three roles. A provider publishes a LearningManifest and a ReadinessRequest, the vault answers with a signed ReadinessAssertion, the provider signs an EvidenceReceipt for work the human did, and the vault emits LearningNeed objects for a coach to work from. '
+    'Five objects move between three roles. A provider publishes a LearningManifest and a ReadinessRequest, the vault answers with a signed ReadinessAssertion, the provider signs an EvidenceReceipt for work the human did, and the vault emits LearningNeed objects for the learner\'s own agent to work from. '
     + 'Every signed object travels as one compact token, nema1 followed by the base64url payload and the base64url signature, ECDSA P-256 over the exact transmitted bytes. '
     + 'Verification never re-serializes the payload, so two implementations that disagree about key order still interoperate.',
   privacy:
@@ -37,13 +37,14 @@ const TOPICS = {
     'The vault is a page on an origin the learner controls, storing signed receipts in the browser and nothing on a server. '
     + 'It stores evidence, never state: bands are recomputed from the ledger on every read by pure functions, so everything it shows can be reproduced from the receipts. '
     + 'Evidence is weighted by how it was produced, from 1.0 for a deterministic grader down to 0.1 for mere exposure, and it decays with time. '
-    + 'It registers nine imperative tools and one declarative form, and not one of them can write a band.',
+    + 'It registers nine imperative tools and one declarative form, and not one of them can write a band. '
+    + 'Receipts carry a trust tier: registered, origin published, or self certified and capped at the weight of a self report.',
   providers:
     'A provider keeps its content, its pedagogy, its pricing and its brand. What it publishes is a LearningManifest: what a unit teaches, what it assumes, and what evidence each activity can produce. '
     + 'It verifies one signature from the vault, checks the token was minted for its own origin, and rebuilds the path, striking through what the learner can skip with the reason next to each item. '
-    + 'Implementing one takes a page, a manifest, a grader and one key, and section 11 of the spec walks through it in 30 minutes.',
+    + 'Implementing one takes a page, a manifest, a grader and one key, and a site with no server at all can install the embed instead: one manifest tag, one script tag, self certified receipts.',
   judges:
-    'Start at the coach, load the demo learner in the vault, and follow the seven step golden path in the judge guide. '
+    'Load the demo learner in the vault, then follow the golden path in the judge guide with your own agent or by hand. '
     + 'The moment to watch is the consent modal: a tool call stops, the page asks, and the token does not exist until a person clicks. '
     + 'Then try to break it: tamper with a token, stage the same receipt twice, present an assertion to the wrong audience, or ask the agent to mark something as mastered. '
     + 'Every rejection is shown in the page with its reason, and the forbidden tools are absent from getTools() rather than merely discouraged.'
@@ -187,11 +188,11 @@ if (openForm) {
     if (more) more.open = true;
     const started = performance.now();
     const app = String(openForm.elements.app.value || '').trim();
-    const KNOWN = ['site', 'vault', 'harness', 'security', 'coach'];
+    const KNOWN = ['site', 'vault', 'harness', 'security'];
     const url = KNOWN.includes(app) ? originFor(app) : '';
 
     if (!url) {
-      const result = { status: 'rejected', reason: 'unknown-app', apps: ['site', 'vault', 'harness', 'security', 'coach'] };
+      const result = { status: 'rejected', reason: 'unknown-app', apps: ['site', 'vault', 'harness', 'security'] };
       if (openStatus) openStatus.textContent = `No nema app called "${app}".`;
       recordLocal({ name: 'open_app', args: { app }, result, ms: Math.round(performance.now() - started), status: 'rejected' });
       if (typeof event.respondWith === 'function') event.respondWith(result);

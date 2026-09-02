@@ -82,6 +82,7 @@ export function evidenceRows(limit) {
       ? entry.payload.conditions.grader
       : 'unspecified',
     signature: signatureOf(entry),
+    trust: vault.trustOf(entry),
     receivedAt: entry.receivedAt,
     effect: entry.effect || []
   }));
@@ -210,7 +211,7 @@ export const TOOLS = [
   {
     name: 'stage_evidence_receipt',
     description:
-      'Hand a signed evidence receipt to the vault. The vault checks the issuer against its trusted list, verifies the signature, rejects duplicates, recomputes the learner state and returns the exact bands that moved. An unknown issuer is stored as pending and moves nothing. Adds a row to the evidence ledger on screen.',
+      'Hand a signed evidence receipt to the vault. The vault checks the issuer against its trusted list, verifies the signature, rejects duplicates, recomputes the learner state and returns the exact bands that moved. The result names the trust tier it earned: registered (a key in the trusted list), origin (a key the issuer publishes at /.well-known/nema-issuer.json), self (a key the receipt carries, worth a self report at most) or pending (nothing could check it, so nothing moved). Adds a row to the evidence ledger on screen.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -299,7 +300,7 @@ export const TOOLS = [
   {
     name: 'get_evidence_ledger',
     description:
-      'List the receipts the vault holds, newest first: issuer, activity, claims, grader, signature state and the effect each one had on the learner state. This is the view the learner has of their own ledger, and it is never included in a disclosure. Highlights the evidence ledger on screen.',
+      'List the receipts the vault holds, newest first: issuer, activity, claims, grader, signature state, trust tier and the effect each one had on the learner state. This is the view the learner has of their own ledger, and it is never included in a disclosure. Highlights the evidence ledger on screen.',
     inputSchema: {
       type: 'object',
       properties: {

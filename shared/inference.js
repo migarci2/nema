@@ -36,7 +36,12 @@
  *      value = weight(grader) * resultValue * recency
  *      weight:   deterministic 1, provider-rubric 0.8, agent-assessed 0.6,
  *                self-report 0.3, exposure 0.1 (unknown grader is treated as
- *                exposure, the most conservative reading)
+ *                exposure, the most conservative reading), then capped by the
+ *                optional `weightCap(receipt)`: the grader says how the work
+ *                was judged, the cap says how much the judge can be believed.
+ *                The vault caps self certified receipts at the self-report
+ *                weight, so a page that grades itself deterministically is
+ *                still only worth a learner saying "I can do this".
  *      result:   passed 1, partial 0.5, failed -0.5
  *      recency:  exp(-daysSince / 60), so evidence halves in about 42 days and
  *                never quite reaches zero. Future dates are clamped to today.
@@ -248,6 +253,19 @@ function graderWeight(grader) {
   return typeof weight === 'number' ? weight : WEIGHTS.exposure;
 }
 
+/**
+ * The ceiling one receipt's evidence may reach, from the caller's optional
+ * `weightCap(receipt)`. No function, a non number or NaN means no ceiling.
+ * A negative ceiling is read as zero, so a cap can silence a receipt but never
+ * turn a pass into a penalty.
+ */
+function capFor(weightCap, receipt) {
+  if (typeof weightCap !== 'function') return Infinity;
+  const value = weightCap(receipt);
+  if (typeof value !== 'number' || Number.isNaN(value)) return Infinity;
+  return Math.max(0, value);
+}
+
 /** Abilities a claim contributes to: itself plus every lower ladder rung. */
 function targetAbilities(ability) {
   const index = ABILITY_LADDER.indexOf(ability);
@@ -266,7 +284,10 @@ function abilityOrder(ability) {
  * Derive learner state from the evidence ledger.
  *
  * @param {Array<{receiptId?: string, payload: object, status?: string, receivedAt?: string}>} receipts
- * @param {{ now?: string|number }} [options]
+ * @param {{ now?: string|number, weightCap?: (receipt: object) => number }} [options]
+ *   `weightCap` is asked, per receipt, for the most that receipt's evidence may
+ *   ever be worth. The vault passes the trust tier rule of contract section 21,
+ *   which caps a self certified receipt at the self-report weight.
  * @returns {Object} state: { [concept]: { [ability]: { band, score, confidence,
  *   graderWeight, lastSuccess, stabilityDays, nextReview, reviewDue,
  *   evidenceRefs } } }. Concepts and abilities are sorted, so the object is
@@ -274,6 +295,7 @@ function abilityOrder(ability) {
  */
 export function deriveState(receipts, options = {}) {
   const nowMs = resolveNow(options);
+  const weightCap = options.weightCap;
   const buckets = new Map();
 
   for (const receipt of Array.isArray(receipts) ? receipts : []) {
@@ -287,7 +309,7 @@ export function deriveState(receipts, options = {}) {
     if (!payload || !Array.isArray(payload.claims)) continue;
 
     const grader = payload.conditions ? payload.conditions.grader : undefined;
-    const weight = graderWeight(grader);
+    const weight = Math.min(graderWeight(grader), capFor(weightCap, receipt));
     const issuedMs = toMs(payload.issuedAt) ?? toMs(receipt.receivedAt) ?? nowMs;
     const daysSince = Math.max(0, (nowMs - issuedMs) / DAY_MS);
     const recency = Math.exp(-daysSince / HALF_LIFE_DAYS);

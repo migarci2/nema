@@ -3,11 +3,16 @@
  *
  * Five tools, exactly the ones in contract section 10. What is missing matters
  * as much as what is here: nothing submits an answer, nothing grades, nothing
- * writes to the learner's vault, and nothing returns an answer key. The agent
- * can describe the offer, present an assertion the learner approved, open an
- * activity, poll the attempt and ask for the signed receipt.
+ * writes to the learner's vault, and nothing returns an answer key. An agent or
+ * the learner can describe the offer, present an assertion the learner
+ * approved, open an activity, poll the attempt and ask for the signed receipt.
  *
  * Every tool changes something on screen before it returns.
+ *
+ * `presentAssertion` is exported because the page has a "Paste an assertion"
+ * form for a learner with no agent. The form and the tool run this one
+ * function, so a pasted token and a tool call verify the same way and repaint
+ * the same screen.
  */
 
 import { registerTools, EXPOSED_TO } from '/shared/webmcp.js';
@@ -21,6 +26,62 @@ function activitySchema(description) {
     properties: { activityId: { type: 'string', description } },
     required: ['activityId'],
     additionalProperties: false
+  };
+}
+
+/**
+ * Verify a ReadinessAssertion minted for this origin and rebuild the path.
+ *
+ * The one code path behind `personalize_learning_path` and behind the "Paste an
+ * assertion" form in the page. A rejected token leaves the path exactly as it
+ * was and says why on screen.
+ *
+ * @param {object} app the controller from app.js
+ * @param {string} assertionToken a compact nema1. token
+ */
+export async function presentAssertion(app, assertionToken) {
+  const { MANIFEST } = app;
+
+  if (typeof assertionToken !== 'string' || assertionToken.trim() === '') {
+    app.setBanner('An assertion was presented but it was empty.', 'error');
+    return { status: 'rejected', reason: 'malformed' };
+  }
+
+  const verified = await verifyAssertion(assertionToken.trim(), {
+    audience: location.origin,
+    now: new Date()
+  });
+
+  if (!verified.ok) {
+    app.setBanner(
+      `Readiness assertion rejected: ${verified.reason}. The path is unchanged.`,
+      'error'
+    );
+    app.flashUnit();
+    app.scrollToUnit();
+    return { status: 'rejected', reason: verified.reason };
+  }
+
+  const payload = verified.payload;
+  const result = app.applyPersonalization(payload);
+
+  return {
+    status: 'personalized',
+    learnerKeyId: payload.learnerKeyId,
+    requirements: MANIFEST.requirements.map((requirement) => {
+      const found = payload.assertions.find(
+        (entry) => entry.concept === requirement.concept && entry.ability === requirement.ability
+      );
+      return {
+        concept: requirement.concept,
+        ability: requirement.ability,
+        status: found ? found.status : 'missing'
+      };
+    }),
+    path: result.path,
+    skipped: result.skipped.map((item) => ({ activityId: item.activityId, reason: item.reason })),
+    fullMinutes: result.fullMinutes,
+    personalMinutes: result.personalMinutes
   };
 }
 
@@ -45,7 +106,7 @@ export async function registerHarnessTools(app) {
     {
       name: 'personalize_learning_path',
       description:
-        'Present a ReadinessAssertion the learner approved in their vault and rebuild the path from it. Verifies the signature, the audience and the expiry, then fills the requirement pills, strikes through the activities the learner can skip with the reason for each, and updates the minutes counter on screen. Returns the personalized path. The learner must approve the disclosure in their vault before a token exists.',
+        'Present a ReadinessAssertion the learner approved in their vault and rebuild the path from it. Verifies the signature, the audience and the expiry, then fills the requirement pills, strikes through the activities the learner can skip with the reason for each, and updates the minutes counter on screen. Returns the personalized path. An agent or the learner can carry the token: the same check runs behind the "Paste an assertion" form in the page. The learner must approve the disclosure in their vault before a token exists.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -57,49 +118,7 @@ export async function registerHarnessTools(app) {
         required: ['assertionToken'],
         additionalProperties: false
       },
-      async execute({ assertionToken }) {
-        if (typeof assertionToken !== 'string' || assertionToken.trim() === '') {
-          app.setBanner('An assertion was presented but it was empty.', 'error');
-          return { status: 'rejected', reason: 'malformed' };
-        }
-
-        const verified = await verifyAssertion(assertionToken.trim(), {
-          audience: location.origin,
-          now: new Date()
-        });
-
-        if (!verified.ok) {
-          app.setBanner(
-            `Readiness assertion rejected: ${verified.reason}. The path is unchanged.`,
-            'error'
-          );
-          app.flashUnit();
-          app.scrollToUnit();
-          return { status: 'rejected', reason: verified.reason };
-        }
-
-        const payload = verified.payload;
-        const result = app.applyPersonalization(payload);
-
-        return {
-          status: 'personalized',
-          learnerKeyId: payload.learnerKeyId,
-          requirements: MANIFEST.requirements.map((requirement) => {
-            const found = payload.assertions.find(
-              (entry) => entry.concept === requirement.concept && entry.ability === requirement.ability
-            );
-            return {
-              concept: requirement.concept,
-              ability: requirement.ability,
-              status: found ? found.status : 'missing'
-            };
-          }),
-          path: result.path,
-          skipped: result.skipped.map((item) => ({ activityId: item.activityId, reason: item.reason })),
-          fullMinutes: result.fullMinutes,
-          personalMinutes: result.personalMinutes
-        };
-      }
+      execute: ({ assertionToken }) => presentAssertion(app, assertionToken)
     },
 
     {

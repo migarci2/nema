@@ -1277,4 +1277,69 @@ await registerSecurityTools({
   issueReceipt
 });
 
+/* --------------------------------------------------- paste an assertion -- */
+
+/* The unit has to unlock with no agent in the room. The form under the
+   requirements is a declarative WebMCP tool and a plain form at once: an agent
+   fills it and submits it, a learner pastes the token their vault minted and
+   presses Present. Both end in presentAssertion(), the same function the
+   check_prerequisites tool runs. */
+const pasteForm = document.querySelector('form[toolname="present_assertion"]');
+const pasteStatus = $('[data-assertion-status]');
+
+function sayPasteResult(result) {
+  if (!pasteStatus) return;
+  if (result && result.status === 'checked') {
+    pasteStatus.textContent =
+      `Verified. ${result.unlocked.length} of ${ACTIVITY_ORDER.length} activities unlocked.`;
+  } else if (result && result.status === 'rejected') {
+    pasteStatus.textContent = `Rejected: ${result.reason}. Nothing on this page changed.`;
+  } else {
+    pasteStatus.textContent = '';
+  }
+}
+
+if (pasteForm) {
+  pasteForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    /* A tool call nobody can see is a tool call nobody can audit, so an agent
+       submit opens the block it happened in. */
+    const wrapper = pasteForm.closest('details');
+    if (wrapper) wrapper.open = true;
+
+    const token = String(pasteForm.elements.assertionToken.value || '').trim();
+    /* Both runtimes mark an agent submit with agentInvoked before this listener
+       runs. It is the only honest test: the native SubmitEvent carries
+       respondWith on every submit, and throws if a human's submit answers. */
+    const byAgent = event.agentInvoked === true;
+
+    const work = (async () => {
+      if (byAgent) {
+        /* Send the agent through the canonical imperative tool, so the call is
+           timed and appears in the tool activity strip under its real name. The
+           native runtime wants its input as a JSON string; the polyfill takes
+           either. */
+        try {
+          const tools = await document.modelContext.getTools();
+          const canonical = tools.find((entry) => entry.name === 'check_prerequisites');
+          if (canonical) {
+            const raw = await document.modelContext.executeTool(
+              canonical,
+              JSON.stringify({ assertionToken: token })
+            );
+            return typeof raw === 'string' ? JSON.parse(raw) : raw;
+          }
+        } catch {
+          /* Fall through to the shared function, which is the same code path. */
+        }
+      }
+      return presentAssertion(token);
+    })();
+
+    work.then(sayPasteResult, () => sayPasteResult(null));
+    /* respondWith takes a promise, and both runtimes want it during dispatch. */
+    if (byAgent && typeof event.respondWith === 'function') event.respondWith(work);
+  });
+}
+
 export { describeOffer, presentAssertion, startActivity, attemptStatus, issueReceipt };

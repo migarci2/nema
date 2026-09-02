@@ -8,7 +8,11 @@ with four small shims (a file backed `localStorage`, an event sink for
 `document`, a `fetch` that reads repo files, and module hooks that resolve the
 vault's absolute imports).
 
-The vault is the infrastructure. The agent is a commodity.
+The vault is the infrastructure. The agent is a commodity: nema ships none, and
+this package exists so the one you already run in a terminal can hold the vault
+side while the sites stay in a browser. You ask here for a readiness assertion,
+approve it here, and paste the token into "Paste an assertion" on the site.
+Receipts come back the same way, pasted or carried by the agent.
 
 ## Install
 
@@ -34,7 +38,7 @@ The vault document lives in `~/.nema/vault.json` (override with
 | `get_learner_state` | one row per concept with a band per ability. Bands only, never evidence |
 | `set_learning_goal` | add a goal; goals only re-order needs |
 | `create_readiness_assertion` | ask the learner, then sign an audience bound, 30 minute token with the requested bands |
-| `stage_evidence_receipt` | verify a provider receipt against the issuer list, reject replays, move bands |
+| `stage_evidence_receipt` | verify a receipt, record its trust tier (`registered`, `origin` or `self`), reject replays, move bands |
 | `get_learning_needs` | ordered needs with rubric, for a minute budget |
 | `record_agent_assessment` | store the rubric result of a question the learner answered, as agent evidence |
 | `get_disclosure_ledger` | what left the vault, to whom, until when |
@@ -42,6 +46,11 @@ The vault document lives in `~/.nema/vault.json` (override with
 
 Nothing here writes mastery, answers for the learner, or exports the ledger
 to an agent. Those tools do not exist on purpose.
+
+Receipts from a site that signs with its own browser generated key verify and
+land as `self`, capped at the weight of a self report, 0.3. That is how a page
+with a one tag install and no server takes part without being able to inflate
+anyone: it vouches for itself and for nobody else.
 
 ## Consent outside the browser
 

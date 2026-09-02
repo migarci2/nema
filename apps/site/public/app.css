@@ -248,6 +248,25 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
 .belief:nth-child(2n) { grid-column: 7 / span 5; }
 .belief__text { max-width: 46ch; }
 
+/* ------------------------------- 5b. for people who teach on the web -- */
+
+/* Three claims at the heading role, stacked tighter than a list of
+ * paragraphs, so they read as one short address to a creator and not as three
+ * more sections. No bullets and no box: the install lines under them are the
+ * only thing on the page that has to look like code. */
+.claims {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.claim {
+  font-size: var(--fs-20);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+  color: var(--ink);
+}
+
 /* --------------------------------------------- 6. how it feels -- */
 
 /* Three moments, four columns each, on the same gutter as everything else. */

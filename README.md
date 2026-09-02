@@ -9,22 +9,26 @@
 </p>
 
 <p align="center">
-  Any website can teach you. Any agent can coach you.<br>
-  Your learning state stays local, portable and yours.
+  nema is a protocol anyone who teaches on the web can install in a minute,<br>
+  so the web becomes a better place to learn together.
 </p>
 
 ---
 
 ## What it is
 
-nema is a WebMCP protocol for learning, plus five pages that implement it.
+nema is a WebMCP protocol for learning, plus the pages that implement it.
 
 1. A **vault** you own holds signed evidence of what you have learned and
    derives your state from it, per concept, per ability.
-2. A **provider** publishes what it teaches, what it assumes, and what evidence
-   each activity produces, as tools on its own page.
-3. Your **agent** asks the provider what it needs, asks the vault for a signed,
-   audience-bound answer, and carries the result across origins.
+2. A **site that teaches** publishes what it teaches, what it assumes, and what
+   evidence each activity produces, as tools on its own page. A course site
+   writes that by hand; a blog installs it with one manifest tag and one script
+   tag and needs no backend at all.
+3. Your **agent** is whichever one you already use: ChatGPT desktop, Chrome 149
+   or later, Claude Code or Codex over MCP. It asks the site what it needs, asks
+   the vault for a signed, audience-bound answer, and carries the result across
+   origins. With no agent, the pages carry the same actions as buttons.
 4. **You** approve every disclosure in a modal, and you answer every question.
    No tool can do either for you.
 5. The payoff: a 68 minute course on pan sauces becomes 27, then 21, and a
@@ -36,13 +40,18 @@ nema is a WebMCP protocol for learning, plus five pages that implement it.
 | App | URL | Tools |
 |---|---|---|
 | Site (hub) | https://nema.migarci2.dev | `explain_nema`, `open_app` (declarative) |
-| Coach (the agent) | https://nema-coach.migarci2.dev | none, it calls the others |
 | Vault | https://nema-vault.migarci2.dev | 9 imperative + 1 declarative form (10 in `getTools()`) |
-| Saucier School (provider) | https://saucier.migarci2.dev | 5 |
-| Line Cook Lab (provider) | https://linecook.migarci2.dev | 5 |
+| Saucier School (provider) | https://saucier.migarci2.dev | 5 + `present_assertion` (declarative) |
+| Line Cook Lab (provider) | https://linecook.migarci2.dev | 5 + `present_assertion` (declarative) |
+| Maillard, explained (a blog) | https://maillard.migarci2.dev | the same 5 + `present_assertion`, from the embed, with no server |
+| The embed | https://nema.migarci2.dev/nema-provider.js | source in `shared/provider-embed.js` |
 
-Judges: start with [`docs/JUDGE_GUIDE.md`](docs/JUDGE_GUIDE.md). It is a seven
-step walkthrough with the exact tool names and a list of things to try to break.
+There is no nema agent. The agent is the reader's own, and every flow also works
+with no agent at all.
+
+Judges: start with [`docs/JUDGE_GUIDE.md`](docs/JUDGE_GUIDE.md). It is a three
+step walkthrough, with an agent or by hand, with the exact tool names and a list
+of things to try to break.
 
 ## Bring your own agent
 
@@ -51,10 +60,11 @@ tools reach it over two transports:
 
 | agent | transport | how |
 |---|---|---|
-| ChatGPT desktop, Chrome 149+ with an agent | WebMCP | open https://nema-vault.migarci2.dev, the tools are on the page |
-| The nema coach | WebMCP in an iframe | https://nema-coach.migarci2.dev |
+| ChatGPT desktop | WebMCP | open https://nema-vault.migarci2.dev, the tools are on the page |
+| Chrome 149+ with an agent | WebMCP | `chrome://flags/#enable-webmcp-testing`, then the same URL |
 | Claude Code | MCP over stdio | `claude mcp add nema -- node /path/to/nema/packages/nema-mcp/bin.mjs` (this repo ships a project `.mcp.json`, so opening it in Claude Code is enough) |
 | Codex | MCP over stdio | `codex mcp add nema -- node /path/to/nema/packages/nema-mcp/bin.mjs` |
+| No agent | none | "Share with a site" in the vault, "Paste an assertion" on the site, "Send to vault" on the receipt |
 
 [`packages/nema-mcp`](packages/nema-mcp/README.md) boots the browser vault
 inside Node with four shims and exposes `tools.js` verbatim. Consent goes
@@ -67,40 +77,70 @@ browser one and merges by receipt id.
 Five origins. No shared database, no accounts, no server that sees both sides.
 
 ```
-                        +-------------------------------------------+
-                        |        coach   (the nema agent)           |
-                        |  chat  |  iframe  |  token clipboard @tN  |
-                        +---+-----------------------------+---------+
-                            |                             |
-             tool calls     |                             |    tool calls
-             over WebMCP    |                             |    over WebMCP
-             exposedTo:     |                             |    exposedTo:
-             coach origin   |                             |    coach origin
-                            v                             v
-        +-------------------+--------+     +--------------+-----------------+
-        |  vault      (learner)      |     |  provider  (Saucier School or  |
-        |                            |     |             Line Cook Lab)     |
-        |                            |     |                                |
-        |  evidence ledger (signed)  |     |  LearningManifest              |
-        |  derived bands per ability |     |  activities + graders          |
-        |  disclosure ledger         |     |  issuer key (in the Worker)    |
-        |  consent modal (human)     |     |  answers typed by the human    |
-        +----------------------------+     +--------------------------------+
+            the reader's own agent: ChatGPT desktop, Chrome 149+,
+            Claude Code or Codex over MCP, or nobody at all
+                            |
+                 tool calls over WebMCP, on the page that owns the data
+                            |
+              +-------------+-------------+
+              v                           v
+        +-----+----------------------+  +-+------------------------------+
+        |  vault      (learner)      |  |  a site that teaches           |
+        |                            |  |  Saucier School, Line Cook Lab |
+        |  evidence ledger (signed)  |  |  or any page with the embed    |
+        |  derived bands per ability |  |                                |
+        |  disclosure ledger         |  |  LearningManifest              |
+        |  consent modal (human)     |  |  activities + graders          |
+        |  Share with a site         |  |  issuer key, or a self key     |
+        +----------------------------+  +--------------------------------+
 
-   objects on the wire, all carried by the agent as short strings
+   objects on the wire, carried by the agent, or pasted by the human
 
-     provider  --  LearningManifest ------------------->  agent
-     provider  --  ReadinessRequest -------------------->  vault
-        vault  ==  ReadinessAssertion  (signed, audience bound, 30 min)  ==>  provider
-     provider  ==  EvidenceReceipt     (signed by issuer key)            ==>  vault
-        vault  --  LearningNeed  (rubric attached) ------>  agent  -->  the learner
+     site   --  LearningManifest ------------------->  agent
+     site   --  ReadinessRequest -------------------->  vault
+     vault  ==  ReadinessAssertion  (signed, audience bound, 30 min)  ==>  site
+     site   ==  EvidenceReceipt     (signed by the site's key)        ==>  vault
+     vault  --  LearningNeed  (rubric attached) ------>  agent  -->  the learner
 
      ==  signed compact token:  nema1.<b64url payload>.<b64url signature>
      --  plain JSON tool result
 ```
 
-The vault never sends history. The provider never reads the vault. The agent
-never writes state.
+The vault never sends history. The site never reads the vault. The agent never
+writes state.
+
+## For creators
+
+Any page that teaches something can join. Two tags, no backend, no account:
+
+```html
+<script type="application/nema+json">
+{ "protocol": "nema/0.1",
+  "provider": { "name": "Maillard, explained" },
+  "unit": { "id": "maillard-explained", "title": "Why browning tastes like that", "estimatedMinutes": 8 },
+  "requirements": [ { "concept": "nema:heat-control", "ability": "explain" } ],
+  "activities": [
+    { "id": "read", "type": "lesson", "title": "Read the article", "minutes": 6,
+      "outcomes": [ { "concept": "nema:maillard-reaction", "ability": "recognize" } ] },
+    { "id": "check", "type": "quiz", "title": "Two questions before you go", "minutes": 2,
+      "outcomes": [ { "concept": "nema:maillard-reaction", "ability": "explain" } ],
+      "questions": [ { "id": "q1", "prompt": "...", "options": [ { "id": "a", "text": "..." } ], "answer": "a" } ] }
+  ] }
+</script>
+<script type="module" src="https://nema.migarci2.dev/nema-provider.js"></script>
+```
+
+The script registers the same five provider tools plus the declarative
+`present_assertion` form, renders one quiet block in your own fonts and colours,
+grades the quiz in the page, and signs each receipt with a key it generates in
+the reader's browser. Those receipts are self certified: a vault verifies them,
+labels them `self` and caps their weight at the `self-report` weight, 0.3. Two
+optional upgrades earn full weight: `data-endpoint="/api/receipt"` to sign on
+your own server, or publishing that key at `/.well-known/nema-issuer.json`.
+
+Field by field, with the trust tiers: https://nema.migarci2.dev/creators.html.
+A working example, whose source is the template:
+https://maillard.migarci2.dev.
 
 ## Quick start
 
@@ -124,7 +164,7 @@ fails. If you want the raw runner, use `node --test "test/**/*.test.js"` or
 | vault | http://localhost:8781 |
 | harness (Saucier School) | http://localhost:8782 |
 | security (Line Cook Lab) | http://localhost:8783 |
-| coach | http://localhost:8784 |
+| blog (Maillard, explained) | http://localhost:8784 |
 
 For native WebMCP, open Chrome 149 or later, go to
 `chrome://flags/#enable-webmcp-testing`, set it to Enabled and restart. In
@@ -145,7 +185,7 @@ nema/
     PHILOSOPHY.md      why learning state belongs to the learner
     SPEC.md            protocol 0.1: objects, tokens, verification, inference
     THREAT_MODEL.md    threats, mitigations, and the honest limits of this demo
-    JUDGE_GUIDE.md     seven step walkthrough, what to break, real vs simulated
+    JUDGE_GUIDE.md     three step walkthrough, what to break, real vs simulated
     DEVPOST.md         submission text
     VIDEO_SCRIPT.md    2:55 shot list
   shared/
@@ -154,16 +194,17 @@ nema/
     inference.js       derive bands from receipts, compute learning needs
     webmcp.js          registerTool helper, tool activity events, live indicator
     webmcp-polyfill.js Chrome Labs polyfill (Apache-2.0)
+    provider-embed.js  the one tag install, served as /nema-provider.js
     concepts.json      the nema: concept registry
     issuers.json       trusted issuer public keys
     origins.json       app origins, prod and dev
     brand/             tokens.css, brand.css, self-hosted fonts, wordmark, mark
   apps/
-    site/              the hub and the presentation
+    site/              the hub, the creator guide and the presentation
     vault/             the learner's vault, 9 tools + 1 declarative form
     harness/           provider 1, Saucier School, "Pan Sauces and Emulsions", 5 tools + Worker
     security/          provider 2, Line Cook Lab, "Service Under Pressure", 5 tools + Worker
-    coach/             the agent page, chat + iframe + token clipboard
+    blog/              one article, "Why browning tastes like that", installed with the embed
   scripts/             build.sh, dev.sh, deploy.sh, make-seed.mjs
   test/                crypto, protocol, inference, graders
 ```
@@ -181,8 +222,8 @@ descriptions of nema itself.
 
 ## Two identities on purpose
 
-nema is a hub, a vault and a coach. It is not a course catalogue. So the two
-example providers do not wear nema's brand: they re-theme the shared components
+nema is a hub and a vault. It is not a course catalogue. So the example sites
+do not wear nema's brand: they re-theme the shared components
 in their own `app.css`, render their own header and wordmark, and carry one
 discreet "Works with nema" badge that links back to the hub. Saucier School is
 warm paper and a serif, a well made course site. Line Cook Lab is near black
@@ -234,16 +275,13 @@ await document.modelContext.registerTool({
 });
 ```
 
-Registration goes through `shared/webmcp.js`, which adds `exposedTo`
-scoping, catches errors into `{ error }` results instead of throwing, and
-dispatches a `nema:toolcall` event so every page can show a tool activity strip.
-The declarative form is demonstrated too: the vault exposes
-`<form toolname="set_learning_goal_form">` and the site exposes
-`<form toolname="open_app">`.
-
-The coach embeds provider pages with `allow="tools <origin>"` and discovers
-their tools with `document.modelContext.getTools({ fromOrigins: [origin] })` on
-load and on `toolchange`.
+Registration goes through `shared/webmcp.js`, which catches errors into
+`{ error }` results instead of throwing and dispatches a `nema:toolcall` event
+so every page can show a tool activity strip. The declarative form is
+demonstrated too: the vault exposes `<form toolname="set_learning_goal_form">`,
+the site exposes `<form toolname="open_app">`, and every teaching page exposes
+`<form toolname="present_assertion">`, which is also the textarea a person
+pastes into when no agent is present.
 
 ## Tool catalogs
 
@@ -253,10 +291,10 @@ load and on `toolchange`.
 `get_evidence_ledger`. Plus the declarative form `set_learning_goal_form`, so
 `document.modelContext.getTools()` on the vault returns ten.
 
-**Providers**, 5 tools each. `describe_learning_offer`,
-`personalize_learning_path` (Saucier School) or `check_prerequisites` (Line
-Cook Lab),
-`start_activity`, `get_attempt_status`, `issue_evidence_receipt`.
+**Providers**, 5 tools each, plus the declarative `present_assertion` form.
+`describe_learning_offer`, `personalize_learning_path` (Saucier School) or
+`check_prerequisites` (Line Cook Lab), `start_activity`, `get_attempt_status`,
+`issue_evidence_receipt`. The blog registers the same five from the embed.
 
 **Site**, 1 imperative plus 1 declarative. `explain_nema`, `open_app`.
 
@@ -290,13 +328,18 @@ Verify it yourself: open any nema page and call
   elsewhere fails with `wrong-audience`; late use fails with `expired`.
 - **Per audience identity.** `learnerKeyId` is derived from the vault key and
   the audience, so two providers see different ids for the same learner.
-- **Signed evidence only.** Receipts are ECDSA P-256 signed by an issuer in
-  `shared/issuers.json`, deduplicated by `receiptId`. An unknown issuer lands in
-  the ledger as `pending` and changes nothing, visibly.
+- **Signed evidence only.** Receipts are ECDSA P-256 signed, deduplicated by
+  `receiptId`, and labelled with how much the signature is worth: `registered`
+  for a key in `shared/issuers.json`, `origin` for a key the issuer publishes at
+  `/.well-known/nema-issuer.json`, `self` for a key the page generated itself.
+  A `self` receipt is capped at the `self-report` weight, 0.3, whatever grader
+  it declares, so a site can vouch for itself and only for itself. An unknown
+  issuer lands in the ledger as `pending` and changes nothing, visibly.
 - **Derived state.** Bands are recomputed from the ledger on every read, so
   everything the vault shows can be reproduced from the receipts.
-- **Keys stay put.** Providers sign in the Worker. No issuer private key is ever
-  sent to a browser.
+- **Keys stay put.** Providers with a Worker sign there. No registered issuer
+  private key is ever sent to a browser. The embed's self key never leaves the
+  reader's browser and can only ever say "this page saw this reader do this".
 
 Honest limits, including provider answer keys being visible in devtools and the
 vault key living in `localStorage`, are written up in

@@ -8,3 +8,4 @@ dist/
 .gstack/
 .chrome/
 .dev-logs/
+packages/nema-extension/dist/

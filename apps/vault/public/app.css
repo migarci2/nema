@@ -519,3 +519,27 @@
   font-size: var(--fs-11);
 }
 .v-graph .n-graph__edge--active { stroke-opacity: 0.9; stroke: var(--cyan); }
+
+/* ------------------------------------------------------------- trust -- */
+
+/* The trust tier of a receipt, one word beside the signature state. Quiet for
+ * a registered or origin verified issuer, yellow for `self`, because a self
+ * certified key is one anybody can mint and the vault caps what it is worth.
+ * A pending receipt says so in its grey pill instead: same fact, one word. */
+.v-trust {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  letter-spacing: var(--ls-label);
+  color: var(--ink-label);
+}
+.v-trust--self { color: var(--yellow); }
+
+/* ------------------------------------------------------------- share -- */
+
+.v-share__note,
+.v-share__meta {
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+}
+.v-share__meta { margin-top: var(--sp-2); }
