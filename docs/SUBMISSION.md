@@ -12,7 +12,7 @@ nema
 A learning protocol for the web: any site adds one tag, readers keep signed
 proof of what they learned in a vault they own, and any agent connects the two.
 
-(198 characters)
+(155 characters)
 
 ## Thumbnail
 
