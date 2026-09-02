@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>nema protocol 0.1</title>
-<meta name="description" content="The six objects of nema protocol 0.1, the compact token format, the verification rules and the ten point conformance checklist.">
+<meta name="description" content="The technical reference: five origins, six objects, the compact token format, the verification rules, the derivation, both tool catalogs and the ten point conformance list.">
 <meta name="theme-color" content="#0B1320">
 <meta name="color-scheme" content="dark">
 <meta property="og:type" content="article">
@@ -39,9 +39,10 @@
     <article class="doc doc--wide">
       <h1 class="doc__title">nema protocol 0.1</h1>
       <p>
-        Status: draft, implemented by the five reference apps in this repository. Protocol identifier
-        <span class="mono">nema/0.1</span>. Concept namespace <span class="mono">nema:</span>. Three roles,
-        one browser, six objects, two of them signed.
+        The technical half of nema. Status: draft, implemented by the five reference apps in this repository.
+        Protocol identifier <span class="mono">nema/0.1</span>. Concept namespace
+        <span class="mono">nema:</span>. Three roles, one browser, six objects, two of them signed. The two
+        example providers teach cooking, so nothing in the examples below is about agents.
       </p>
 
       <div class="s-table-wrap">
@@ -58,36 +59,109 @@
       </div>
 
       <p class="doc__toc">
+        <a class="site-nav__link" href="#architecture">Architecture</a>
         <a class="site-nav__link" href="#objects">The six objects</a>
         <a class="site-nav__link" href="#token">Token format</a>
         <a class="site-nav__link" href="#verify">Verification rules</a>
+        <a class="site-nav__link" href="#derivation">Derivation</a>
+        <a class="site-nav__link" href="#tools">Tool catalogs</a>
+        <a class="site-nav__link" href="#story">68, 27, 21</a>
         <a class="site-nav__link" href="#conformance">Conformance</a>
         <a class="site-nav__link" href="#forbidden">Forbidden tools</a>
       </p>
+
+      <h2 id="architecture">Architecture</h2>
+      <p>
+        nema runs as five static pages on five separate origins. There is no shared database, no account
+        system and no server that sees both sides of a handoff. Each page is served by a Cloudflare Worker;
+        the two providers also keep a Worker route at <span class="mono">/api/*</span>, because grading and
+        signing happen on the server and neither the answer key nor the issuer private key may reach the
+        browser.
+      </p>
+
+      <div class="s-table-wrap">
+        <table class="s-table">
+          <thead>
+            <tr><th scope="col">Origin</th><th scope="col">Role</th><th scope="col">What it holds</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a class="mono" href="https://nema.migarci2.dev" data-app-link="site">nema.migarci2.dev</a></td>
+              <td>hub</td>
+              <td>this reference, the judge guide, the philosophy. Two tools of its own.</td>
+            </tr>
+            <tr>
+              <td><a class="mono" href="https://nema-vault.migarci2.dev" data-app-link="vault">nema-vault.migarci2.dev</a></td>
+              <td>vault</td>
+              <td>the learner's receipts, goals and key, in <span class="mono">localStorage</span>. 9 imperative tools plus one declarative form.</td>
+            </tr>
+            <tr>
+              <td><a class="mono" href="https://saucier.migarci2.dev" data-app-link="harness">saucier.migarci2.dev</a></td>
+              <td>provider</td>
+              <td>Saucier School: the unit <span class="mono">pan-sauces-foundations</span>, a deterministic grader, the issuer key <span class="mono">saucier-2026-09</span>.</td>
+            </tr>
+            <tr>
+              <td><a class="mono" href="https://linecook.migarci2.dev" data-app-link="security">linecook.migarci2.dev</a></td>
+              <td>provider</td>
+              <td>Line Cook Lab: the unit <span class="mono">service-under-pressure</span>, a deterministic grader, the issuer key <span class="mono">linecook-2026-09</span>.</td>
+            </tr>
+            <tr>
+              <td><a class="mono" href="https://nema-coach.migarci2.dev" data-app-link="coach">nema-coach.migarci2.dev</a></td>
+              <td>agent</td>
+              <td>nothing durable. Chat on the left, the site under test in an iframe on the right.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Tools are registered with <span class="mono">document.modelContext.registerTool</span> and scoped
+        with <span class="mono">exposedTo</span>, so the vault offers its tools to the coach origin and to
+        nobody else. Every page also loads the Chrome Labs WebMCP polyfill, so the same code path runs in a
+        browser without native support.
+      </p>
+
+      <h3>The MCP bridge</h3>
+      <p>
+        <span class="mono">packages/nema-mcp</span> is the same vault behind a stdio MCP server, for terminal
+        agents. It imports <span class="mono">apps/vault/public/vault.js</span> and the same
+        <span class="mono">TOOLS</span> array rather than reimplementing anything, backs
+        <span class="mono">localStorage</span> with <span class="mono">~/.nema/vault.json</span>, and asks
+        for consent through MCP elicitation. If the client cannot elicit, the tool returns
+        <span class="mono">denied</span> with the command that pre-approves that audience, so the agent still
+        cannot approve on its own. Same nine tools, same names, same schemas, same return shapes: browser
+        agents reach the vault through WebMCP, terminal agents reach it through MCP, and the vault does not
+        know the difference.
+      </p>
+      <pre class="code">claude mcp add nema -- node /path/to/nema/packages/nema-mcp/bin.mjs
+codex  mcp add nema -- node /path/to/nema/packages/nema-mcp/bin.mjs</pre>
 
       <h2 id="objects">The six objects</h2>
 
       <h3><span class="mono">Concept</span>, registry entry, unsigned</h3>
       <p>
-        The shared vocabulary, from <span class="mono">shared/concepts.json</span>. Providers map their own
-        ids onto it with <span class="mono">aliases</span>.
+        The shared vocabulary, from <span class="mono">shared/concepts.json</span>, 34 ids in this build.
+        Providers map their own ids onto it with <span class="mono">aliases</span>, keyed by the app directory
+        that owns them (<span class="mono">harness</span> is Saucier School,
+        <span class="mono">security</span> is Line Cook Lab), so a provider can join the registry without
+        renaming anything of its own.
       </p>
       <pre class="code" data-json>{
-  "id": "nema:agent-evals",
-  "title": "Agent evals",
-  "summary": "Task level evaluation of an agent's end to end behaviour, as opposed to unit tests of its functions.",
-  "prereqs": ["nema:software-testing", "nema:agent-loop"],
-  "confusableWith": ["nema:unit-testing"],
+  "id": "nema:emulsions",
+  "title": "Emulsions",
+  "summary": "Holding fat and water in suspension as droplets, with an emulsifier and a temperature window that keeps them from coalescing.",
+  "prereqs": ["nema:heat-control", "nema:ratios"],
+  "confusableWith": ["nema:reduction"],
   "misconceptions": [
-    { "id": "unit_tests_are_equivalent_to_agent_evals", "text": "If the unit tests pass, the agent works." }
+    { "id": "a_sauce_can_be_boiled_once_it_holds", "text": "Once a butter sauce has come together it is stable, so it can go back to the boil." }
   ],
   "rubric": {
-    "explain": ["names the unit of evaluation", "distinguishes step level from task level"],
-    "apply": ["writes an acceptance check for a task", "covers one failure mode"],
-    "discriminate": ["gives one case where unit tests pass and the agent fails"]
+    "explain": ["names the two phases and which one is dispersed", "names an emulsifier and what it does at the interface", "gives the temperature window a butter emulsion survives, roughly 50 to 60 C"],
+    "apply": ["mounts a sauce that coats the back of a spoon", "keeps the pan off direct heat while the fat goes in", "brings a broken sauce back with a splash of cold liquid and hard whisking"],
+    "discriminate": ["separates an emulsion that thickened from a liquid that merely reduced"]
   },
   "minutes": { "retrieve": 3, "explain": 4, "apply": 6, "discriminate": 4 },
-  "aliases": { "harness": "agent-evaluation", "security": "agent-evals" }
+  "aliases": { "harness": "sauce-emulsion", "security": "emulsified-sauce" }
 }</pre>
 
       <h3><span class="mono">LearningManifest</span>, unsigned, returned by a provider</h3>
@@ -100,29 +174,29 @@
       <pre class="code" data-json>{
   "protocol": "nema/0.1",
   "provider": {
-    "origin": "https://nema-harness.migarci2.dev",
-    "name": "Harness Engineering Lab",
-    "keyId": "harness-2026-09"
+    "origin": "https://saucier.migarci2.dev",
+    "name": "Saucier School",
+    "keyId": "saucier-2026-09"
   },
   "unit": {
-    "id": "agent-evals-foundations",
+    "id": "pan-sauces-foundations",
     "version": "1.0.0",
-    "title": "Designing Agent Evals",
+    "title": "Pan Sauces and Emulsions",
     "estimatedMinutes": 68,
     "language": "en",
     "price": "free"
   },
-  "outcomes": [ { "concept": "nema:agent-evals", "ability": "apply" } ],
-  "requirements": [ { "concept": "nema:software-testing", "ability": "apply" } ],
+  "outcomes": [ { "concept": "nema:pan-sauces", "ability": "apply" } ],
+  "requirements": [ { "concept": "nema:knife-skills", "ability": "apply" } ],
   "activities": [
     {
-      "id": "eval-design-lab",
+      "id": "fix-the-broken-sauce",
       "type": "interactive-lab",
-      "title": "Fix the broken harness",
-      "minutes": 18,
+      "title": "Fix the broken sauce",
+      "minutes": 12,
       "evidenceProduced": "application",
       "grader": "deterministic",
-      "outcomes": [ { "concept": "nema:agent-evals", "ability": "apply" } ],
+      "outcomes": [ { "concept": "nema:pan-sauces", "ability": "apply" } ],
       "skipIf": []
     }
   ]
@@ -141,9 +215,9 @@
       <h3><span class="mono">ReadinessRequest</span>, unsigned, provider to vault, carried by the agent</h3>
       <pre class="code" data-json>{
   "protocol": "nema/0.1",
-  "audience": "https://nema-harness.migarci2.dev",
-  "purpose": "personalize-agent-evals-path",
-  "requirements": [ { "concept": "nema:software-testing", "ability": "apply" } ]
+  "audience": "https://saucier.migarci2.dev",
+  "purpose": "personalize-pan-sauces-path",
+  "requirements": [ { "concept": "nema:knife-skills", "ability": "apply" } ]
 }</pre>
       <p>
         <span class="mono">requestHash = sha256(JSON.stringify(request))</span>, formatted as
@@ -155,13 +229,13 @@
       <pre class="code" data-json>{
   "type": "readiness-assertion",
   "protocol": "nema/0.1",
-  "audience": "https://nema-harness.migarci2.dev",
-  "purpose": "personalize-agent-evals-path",
+  "audience": "https://saucier.migarci2.dev",
+  "purpose": "personalize-pan-sauces-path",
   "requestHash": "sha256:6b1f...",
   "learnerKeyId": "lk_Qm9wS2pMbk4xR3Zq",
   "assertions": [
-    { "concept": "nema:software-testing", "ability": "apply", "status": "verified", "confidence": "high" },
-    { "concept": "nema:json-schema", "ability": "apply", "status": "uncertain", "confidence": "low" }
+    { "concept": "nema:knife-skills", "ability": "apply", "status": "verified", "confidence": "high" },
+    { "concept": "nema:ratios", "ability": "apply", "status": "uncertain", "confidence": "low" }
   ],
   "issuedAt": "2026-09-02T10:00:00Z",
   "expiresAt": "2026-09-02T10:30:00Z",
@@ -179,18 +253,18 @@
   "type": "evidence-receipt",
   "protocol": "nema/0.1",
   "receiptId": "rcpt_8Kd2mQx1PbTa",
-  "issuer": "https://nema-harness.migarci2.dev",
-  "keyId": "harness-2026-09",
+  "issuer": "https://saucier.migarci2.dev",
+  "keyId": "saucier-2026-09",
   "subject": "lk_Qm9wS2pMbk4xR3Zq",
   "activity": {
-    "id": "eval-design-lab",
+    "id": "fix-the-broken-sauce",
     "version": "1.0.0",
-    "title": "Fix the broken harness",
+    "title": "Fix the broken sauce",
     "contentHash": "sha256:9ac3..."
   },
   "claims": [
     {
-      "concept": "nema:agent-evals",
+      "concept": "nema:pan-sauces",
       "ability": "apply",
       "evidenceType": "application",
       "result": "passed",
@@ -223,18 +297,18 @@
       </p>
       <pre class="code" data-json>{
   "needId": "need_7fQ2xzLb",
-  "concept": "nema:agent-evals",
+  "concept": "nema:maillard-reaction",
   "ability": "discriminate",
   "kind": "discriminate",
-  "reason": ["application_is_strong", "no_discrimination_evidence", "active_goal_depends_on_this_concept"],
-  "urgency": 0.87,
+  "reason": ["application_is_strong", "no_discrimination_evidence"],
+  "urgency": 0.65,
   "minutes": 4,
-  "confusableWith": "nema:unit-testing",
-  "exerciseHint": "compare-and-contrast with one concrete failure case",
+  "confusableWith": "nema:caramelization",
+  "exerciseHint": "compare-and-contrast with one concrete case from the pass",
   "rubric": [
-    "distinguishes deterministic function checks from task level agent evaluation",
-    "mentions end to end behaviour",
-    "gives one example where unit tests pass but the agent fails"
+    "separates the browning of amino acids with reducing sugars from the browning of sugar alone",
+    "names the rough onset of each, about 140 C for Maillard, about 160 to 170 C for table sugar",
+    "gives one dish where both run at once and says which one is doing the work"
   ],
   "constraints": { "maxHints": 1, "doNotRevealAnswerBeforeSubmission": true }
 }</pre>
@@ -246,7 +320,7 @@
       </p>
       <pre class="code">nema1.&lt;b64url(payloadJson)&gt;.&lt;b64url(signature)&gt;</pre>
       <ul class="check">
-        <li><span class="mono">payloadJson</span> is the exact UTF-8 JSON produced by the builder, keys in the order this spec lists them.</li>
+        <li><span class="mono">payloadJson</span> is the exact UTF-8 JSON produced by the builder, keys in the order this reference lists them.</li>
         <li>The signature is ECDSA on P-256 with SHA-256, raw <span class="mono">r || s</span>, over the UTF-8 bytes of that exact payload string.</li>
         <li>Verification never re-serializes. It verifies the decoded payload string as transmitted, then parses it. Two implementations that disagree about key order still interoperate.</li>
         <li><span class="mono">b64url</span> is base64url without padding.</li>
@@ -285,9 +359,11 @@ await verifyToken(token, publicJwk) -&gt; { ok, payload, reason? }</pre>
       <p>
         Nothing else is trusted, and a provider must not treat a missing concept as a failure. What a
         provider may keep: the latest assertion payload, as its own session state, so the page can redraw the
-        personalized path on reload. What a provider must not do: forward the token to anyone, use the
-        payload after <span class="mono">expiresAt</span>, or present it to another audience as a credential.
-        It is a statement addressed to one origin at one moment, not a bearer token for the learner.
+        personalized path on reload. The reference providers store it in
+        <span class="mono">localStorage</span> under <span class="mono">nema.&lt;app&gt;.v1</span>. What a
+        provider must not do: forward the token to anyone, use the payload after
+        <span class="mono">expiresAt</span>, or present it to another audience as a credential. It is a
+        statement addressed to one origin at one moment, not a bearer token for the learner.
       </p>
 
       <h3>A vault verifying an EvidenceReceipt</h3>
@@ -303,7 +379,279 @@ await verifyToken(token, publicJwk) -&gt; { ok, payload, reason? }</pre>
         <li>Signature verifies against the issuer JWK, else <span class="mono">bad-signature</span>. Rejected.</li>
         <li><span class="mono">payload.receiptId</span> has not been seen before, else <span class="mono">duplicate</span>. Rejected.</li>
       </ul>
-      <p>Only receipts that pass all five become <span class="mono">verified</span> and feed the derivation.</p>
+      <p>
+        Only receipts that pass all five become <span class="mono">verified</span> and feed the derivation.
+        <span class="mono">shared/issuers.json</span> maps a short name to
+        <span class="mono">{ kid, jwk }</span>; the <span class="mono">seed</span> issuer maps to origin
+        <span class="mono">urn:nema:seed</span> and the name "nema demo seed", so demo evidence is labelled as
+        such in the ledger and never pretends to come from a real provider.
+      </p>
+
+      <h2 id="derivation">Derivation</h2>
+      <p>
+        The vault stores evidence, never state. Pure functions in
+        <span class="mono">shared/inference.js</span> recompute every band from the ledger on each read, so
+        the same receipts always produce the same bands and any observer can reproduce them.
+      </p>
+
+      <h3>Weights</h3>
+      <p>
+        The vault owns these numbers. Providers declare which grader produced a claim; they do not declare
+        how much it counts.
+      </p>
+      <div class="s-table-wrap">
+        <table class="s-table">
+          <thead>
+            <tr><th scope="col">Grader</th><th scope="col">Weight</th><th scope="col">Meaning</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="mono">deterministic</td><td>1.0</td><td>machine checkable answer key</td></tr>
+            <tr><td class="mono">provider-rubric</td><td>0.8</td><td>provider rubric applied to free text</td></tr>
+            <tr><td class="mono">agent-assessed</td><td>0.6</td><td>an agent judged the answer against a vault rubric</td></tr>
+            <tr><td class="mono">self-report</td><td>0.3</td><td>the learner says so</td></tr>
+            <tr><td class="mono">exposure</td><td>0.1</td><td>the learner read or watched the material</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Score and band</h3>
+      <ul class="check">
+        <li>A claim contributes to its own ability and to every lower ability on the ladder <span class="mono">recognize &lt; retrieve &lt; explain &lt; apply &lt; transfer</span>. <span class="mono">discriminate</span> is a side ability and its claims contribute only to <span class="mono">discriminate</span>.</li>
+        <li><span class="mono">resultValue</span>: passed 1, partial 0.5, failed -0.5. <span class="mono">recency = exp(-daysSince / 60)</span>. <span class="mono">value = weight(grader) * resultValue * recency</span>, and <span class="mono">score</span> is their sum.</li>
+        <li>Bands: <span class="mono">durable</span> at 1.6, <span class="mono">usable</span> at 0.9, <span class="mono">fragile</span> at 0.4, <span class="mono">uncertain</span> above 0, otherwise <span class="mono">unknown</span>.</li>
+        <li>If the best grader weight for an ability is <span class="mono">exposure</span>, the band is capped at <span class="mono">uncertain</span>, and exposure evidence never counts as a pass, so it never schedules or postpones a review.</li>
+        <li>Memory: <span class="mono">stabilityDays = min(60, 3 * 2 ** (passes - 1))</span>, <span class="mono">nextReview = lastSuccess + stabilityDays</span>, and a failed claim after a success resets stability to 3 days.</li>
+      </ul>
+      <p>
+        A provider never sees a score. It sees the assertion status:
+        <span class="mono">durable</span> and <span class="mono">usable</span> report as
+        <span class="mono">verified</span>, <span class="mono">fragile</span> and
+        <span class="mono">uncertain</span> report as <span class="mono">uncertain</span>, and
+        <span class="mono">unknown</span> reports as <span class="mono">missing</span>.
+      </p>
+
+      <h3>Needs</h3>
+      <p>
+        <span class="mono">computeNeeds(state, { concepts, goals, misconceptions, now, budgetMinutes })</span>.
+      </p>
+      <div class="s-table-wrap">
+        <table class="s-table">
+          <thead>
+            <tr><th scope="col">Kind</th><th scope="col">Trigger</th><th scope="col">Urgency</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="mono">retrieve</td><td>a review is due at or above <span class="mono">retrieve</span></td><td>0.6 to 1, by how overdue</td></tr>
+            <tr><td class="mono">apply</td><td><span class="mono">explain</span> is usable or better and <span class="mono">apply</span> is fragile or worse</td><td>0.7</td></tr>
+            <tr><td class="mono">discriminate</td><td>the concept has a <span class="mono">confusableWith</span> pair, is applied or explained well, and has no discrimination evidence</td><td>0.65</td></tr>
+            <tr><td class="mono">acquire</td><td>a goal lists the concept, or a prereq of one, and every ability is unknown</td><td>0.5</td></tr>
+            <tr><td class="mono">repair_misconception</td><td>the vault has a recorded misconception for the concept</td><td>0.8</td></tr>
+            <tr><td class="mono">reassess</td><td>evidence exists but the best grader weight is below 0.6</td><td>0.45</td></tr>
+            <tr><td class="mono">transfer</td><td><span class="mono">apply</span> is durable and <span class="mono">transfer</span> is unknown</td><td>0.35</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <span class="mono">priority = urgency * goalRelevance / max(2, minutes)</span>, where
+        <span class="mono">goalRelevance</span> is 1.5 inside an active goal, 1.2 for a prereq of one, else
+        1. With a <span class="mono">budgetMinutes</span> the needs are taken greedily in priority order
+        until the budget is full, which is why a five minute review can return a
+        <span class="mono">discriminate</span> need rather than the concept you know least.
+      </p>
+
+      <h2 id="tools">Tool catalogs</h2>
+
+      <h3>Vault role</h3>
+      <p>
+        Nine imperative tools, exposed to the coach origin only, plus one declarative form
+        (<span class="mono">set_learning_goal_form</span>), so
+        <span class="mono">getTools()</span> lists ten. Every result is a JSON object with a
+        <span class="mono">status</span> field.
+      </p>
+      <div class="s-table-wrap">
+        <table class="s-table s-table--tools">
+          <thead>
+            <tr><th scope="col">Tool</th><th scope="col">Input</th><th scope="col">Returns</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">get_vault_summary</td>
+              <td class="mono">{}</td>
+              <td class="mono">{ status:'ok', concepts, durable, usable, fragile, uncertain, reviewsDue, goals, receipts, pendingReceipts, disclosures }</td>
+            </tr>
+            <tr>
+              <td class="mono">get_learner_state</td>
+              <td class="mono">{ concepts?: string[] }</td>
+              <td class="mono">{ status:'ok', state:[{ concept, title, bands, nextReview, reviewDue }] }</td>
+            </tr>
+            <tr>
+              <td class="mono">set_learning_goal</td>
+              <td class="mono">{ title, concepts: string[] }</td>
+              <td class="mono">{ status:'ok', goalId }</td>
+            </tr>
+            <tr>
+              <td class="mono">create_readiness_assertion</td>
+              <td class="mono">{ audience, purpose, requirements:[{concept, ability}] }</td>
+              <td class="mono">{ status:'approved', token, expiresAt, shared, withheld }</td>
+            </tr>
+            <tr>
+              <td class="mono">stage_evidence_receipt</td>
+              <td class="mono">{ token }</td>
+              <td class="mono">{ status:'accepted', receiptId, issuer, issuerName, activity, claims, changes, reviewsScheduled }</td>
+            </tr>
+            <tr>
+              <td class="mono">get_learning_needs</td>
+              <td class="mono">{ budgetMinutes?: number }</td>
+              <td class="mono">{ status:'ok', budgetMinutes, needs: LearningNeed[] }</td>
+            </tr>
+            <tr>
+              <td class="mono">record_agent_assessment</td>
+              <td class="mono">{ needId, rubricResults:[{ criterion, met }], learnerAnswerSummary }</td>
+              <td class="mono">{ status:'accepted', receiptId, result, changes }</td>
+            </tr>
+            <tr>
+              <td class="mono">get_disclosure_ledger</td>
+              <td class="mono">{}</td>
+              <td class="mono">{ status:'ok', disclosures:[{ audience, purpose, requestHash, sharedAt, expiresAt, shared, withheld }] }</td>
+            </tr>
+            <tr>
+              <td class="mono">get_evidence_ledger</td>
+              <td class="mono">{ limit?: number }</td>
+              <td class="mono">{ status:'ok', receipts:[{ receiptId, issuerName, activity, claims, grader, signature, receivedAt, effect }] }</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="check">
+        <li><span class="mono">get_learner_state</span> returns bands. Never scores, never receipts, never dates of study. Its description says so, because the agent reads descriptions.</li>
+        <li><span class="mono">create_readiness_assertion</span> opens the consent modal and blocks until the human decides. It returns <span class="mono">{ status:'denied' }</span> on Deny and <span class="mono">{ status:'timeout' }</span> after 120 seconds. There is no auto approve by default; the modal offers one hour for one provider as an explicit choice.</li>
+        <li><span class="mono">stage_evidence_receipt</span> returns <span class="mono">pending</span> with reason <span class="mono">unknown-issuer</span>, or <span class="mono">rejected</span> with reason <span class="mono">bad-signature</span>, <span class="mono">duplicate</span> or <span class="mono">malformed</span>.</li>
+        <li><span class="mono">record_agent_assessment</span> writes a receipt with <span class="mono">grader: 'agent-assessed'</span>, weight 0.6, no signature, reported as <span class="mono">signature: 'agent'</span> and rendered with the "agent assessed" badge. It rejects a <span class="mono">needId</span> the vault did not issue, so an agent cannot invent an assessment for an exercise that never happened.</li>
+      </ul>
+
+      <h3>Provider role</h3>
+      <p>
+        Both demo providers implement the same five tools, with one difference in the second one. Saucier
+        School personalizes a path; Line Cook Lab checks prerequisites and unlocks labs.
+      </p>
+      <div class="s-table-wrap">
+        <table class="s-table s-table--tools">
+          <thead>
+            <tr><th scope="col">Tool</th><th scope="col">Input</th><th scope="col">Returns</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">describe_learning_offer</td>
+              <td class="mono">{}</td>
+              <td class="mono">{ status:'ok', manifest }</td>
+            </tr>
+            <tr>
+              <td class="mono">personalize_learning_path</td>
+              <td class="mono">{ assertionToken }</td>
+              <td class="mono">{ status:'personalized', learnerKeyId, requirements, path, skipped, fullMinutes, personalMinutes }</td>
+            </tr>
+            <tr>
+              <td class="mono">check_prerequisites</td>
+              <td class="mono">{ assertionToken }</td>
+              <td class="mono">{ status:'checked', recognized, unlocked, locked, recommendedFirst, skippable }</td>
+            </tr>
+            <tr>
+              <td class="mono">start_activity</td>
+              <td class="mono">{ activityId }</td>
+              <td class="mono">{ status:'started', activityId, title, type, minutes, whatTheLearnerDoes, note }</td>
+            </tr>
+            <tr>
+              <td class="mono">get_attempt_status</td>
+              <td class="mono">{ activityId }</td>
+              <td class="mono">{ status:'not_started'|'in_progress'|'passed'|'failed', attempts, hintsUsed, durationSeconds, feedback? }</td>
+            </tr>
+            <tr>
+              <td class="mono">issue_evidence_receipt</td>
+              <td class="mono">{ activityId }</td>
+              <td class="mono">{ status:'issued', token, claims, activity, hint }, or { status:'not-passed' }</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Rejection reasons for the assertion tools are exactly the verification reasons:
+        <span class="mono">bad-signature</span>, <span class="mono">wrong-audience</span>,
+        <span class="mono">expired</span>, <span class="mono">malformed</span>. Signing happens server side:
+        <span class="mono">POST /api/receipt</span> re-grades the submission with the same grader the browser
+        used, returns <span class="mono">422 { status:'not-passed' }</span> if it does not pass, and
+        otherwise signs with <span class="mono">env.ISSUER_PRIVATE_JWK</span>.
+        <span class="mono">GET /api/manifest</span> returns the manifest for anyone with curl.
+      </p>
+
+      <h2 id="story">68, 27, 21</h2>
+      <p>
+        The demo learner has knife skills and heat control evidenced, and only weak evidence about ratios.
+        Saucier School offers 68 minutes. After one approved disclosure it offers 27, and after the learner
+        passes the six minute ratios diagnostic it offers 21. Nothing is ever added to the path: everything
+        that survives was already inside the 68 minute offer.
+      </p>
+
+      <figure class="figure">
+        <svg viewBox="0 0 720 230" role="img" aria-labelledby="fg-title fg-desc">
+          <title id="fg-title">The Saucier School unit shrinking from 68 minutes to 27 and then to 21</title>
+          <desc id="fg-desc">Three bars. The first is the full 68 minute offer. The second is 27 minutes, after three lessons are struck through on the strength of one approved disclosure. The third is 21 minutes, after the ratios diagnostic is passed and drops out.</desc>
+
+          <g>
+            <text class="fg-num" x="100" y="40" text-anchor="end">68</text>
+            <rect class="fg-bar" x="120" y="20" width="560" height="28" rx="2"/>
+            <text class="fg-text fg-text--ink" x="132" y="39">the whole unit, seven activities</text>
+            <text class="fg-text" x="120" y="66">what the site offers anyone who arrives</text>
+          </g>
+
+          <g>
+            <text class="fg-num" x="100" y="118" text-anchor="end">27</text>
+            <rect class="fg-bar" x="120" y="98" width="222" height="28" rx="2"/>
+            <rect class="fg-bar fg-bar--cut" x="342" y="98" width="338" height="28" rx="2" stroke-dasharray="3 4"/>
+            <text class="fg-text fg-text--ink" x="132" y="117">four activities</text>
+            <text class="fg-text" x="354" y="117">41 minutes struck through, with reasons</text>
+            <text class="fg-text" x="120" y="144">after one approved disclosure</text>
+          </g>
+
+          <g>
+            <text class="fg-num fg-num--now" x="100" y="196" text-anchor="end">21</text>
+            <rect class="fg-bar fg-bar--now" x="120" y="176" width="173" height="28" rx="2"/>
+            <rect class="fg-bar fg-bar--cut" x="293" y="176" width="387" height="28" rx="2" stroke-dasharray="3 4"/>
+            <text class="fg-text fg-text--ink" x="132" y="195">three activities</text>
+            <text class="fg-text" x="305" y="195">the diagnostic passed, so it drops out</text>
+            <text class="fg-text" x="120" y="222">after one signed receipt comes home</text>
+          </g>
+        </svg>
+        <figcaption>
+          Minutes, to scale. The bars shrink because activities are removed, never because anything was
+          hidden.
+        </figcaption>
+      </figure>
+
+      <div class="s-table-wrap">
+        <table class="s-table">
+          <thead>
+            <tr><th scope="col">Struck through</th><th scope="col">Minutes</th><th scope="col">Reason shown in the page</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="mono">heat-control-primer</td><td>12</td><td>skipped: heat-control explain verified</td></tr>
+            <tr><td class="mono">knife-skills-refresher</td><td>15</td><td>skipped: knife-skills apply verified</td></tr>
+            <tr><td class="mono">ratios-primer</td><td>14</td><td>skipped: ratios apply uncertain, diagnostic instead</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <span class="mono">ratios-diagnostic</span> survives the first cut because its
+        <span class="mono">onlyIf</span> matches <span class="mono">ratios.apply</span> at exactly
+        <span class="mono">uncertain</span>, which is what <span class="mono">onlyIf</span> is for. A cook
+        with no evidence about ratios at all would keep the 14 minute primer instead and drop the diagnostic.
+        Once the diagnostic is passed and its receipt is staged, <span class="mono">ratios.apply</span> moves
+        to <span class="mono">verified</span>, the <span class="mono">onlyIf</span> no longer matches, and 27
+        becomes 21.
+      </p>
+      <p>
+        Line Cook Lab is the other half of the claim. It has never spoken to Saucier School. It verifies one
+        signature from the vault, checks the token was minted for its own origin, reads three bands, and
+        unlocks its labs with the label "Prerequisite recognised from another provider".
+      </p>
 
       <h2 id="conformance">Conformance</h2>
       <p>
@@ -317,7 +665,7 @@ await verifyToken(token, publicJwk) -&gt; { ok, payload, reason? }</pre>
         <li><strong>Unknown issuer.</strong> A receipt signed by a key that is not in <span class="mono">issuers.json</span> returns <span class="mono">{ status: 'pending', reason: 'unknown-issuer' }</span>, is visible in the ledger, and changes no band.</li>
         <li><strong>Replay.</strong> Staging the same <span class="mono">receiptId</span> twice returns <span class="mono">{ status: 'rejected', reason: 'duplicate' }</span> and changes no band.</li>
         <li><strong>Minimal disclosure.</strong> For any request, the assertion payload contains only the fixed key set above, and <span class="mono">assertions</span> contains only concepts present in the request.</li>
-        <li><strong>Derivation.</strong> The seeded ledger produces the documented bands. Adding a passing <span class="mono">json-schema.apply</span> receipt moves that band from <span class="mono">uncertain</span> to <span class="mono">usable</span>, and the vault shows the change.</li>
+        <li><strong>Derivation.</strong> The seeded ledger produces the documented bands. Adding a passing <span class="mono">ratios.apply</span> receipt moves that band from <span class="mono">uncertain</span> to <span class="mono">usable</span>, and the vault shows the change.</li>
         <li><strong>Human gate.</strong> <span class="mono">create_readiness_assertion</span> returns no token until a human clicks Approve. Denying returns <span class="mono">{ status: 'denied' }</span> and writes nothing.</li>
         <li><strong>No answer path.</strong> <span class="mono">document.modelContext.getTools()</span> on a provider page contains no tool that accepts an answer, and <span class="mono">issue_evidence_receipt</span> returns <span class="mono">{ status: 'not-passed' }</span> until the grader has passed the activity.</li>
         <li><strong>Visible effect.</strong> Every tool call changes something on screen and appears in the page's tool activity strip with its name and duration.</li>
@@ -348,9 +696,9 @@ await verifyToken(token, publicJwk) -&gt; { ok, payload, reason? }</pre>
         <p class="callout__title">The full spec</p>
         <p>
           This page is the readable half. The normative document is
-          <span class="mono">docs/SPEC.md</span> in the repository, which also carries the vocabulary, the
-          inference rules with their exact thresholds, the two tool catalogs, and section 11, "Implementing a
-          provider in 30 minutes".
+          <span class="mono">docs/SPEC.md</span> in the repository, which also carries the full vocabulary,
+          every inference threshold, both tool catalogs with their descriptions, and section 11,
+          "Implementing a provider in 30 minutes": a page, a manifest, a grader and one key.
         </p>
         <p class="row">
           <a class="n-btn n-btn--primary" href="https://github.com/migarci2/nema" rel="noopener">Repository on GitHub, MIT</a>

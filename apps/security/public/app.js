@@ -27,7 +27,11 @@ import {
 } from '/content.js';
 import { verifyAssertion } from '/shared/protocol.js';
 import { ORIGINS } from '/shared/origins.js';
-import { injectHeader, injectFooter, toast, copyToClipboard } from '/shared/brand/brand.js';
+/* Line Cook Lab renders its own header and footer (index.html), so the shared
+   injectHeader and injectFooter are deliberately not imported: this site is not
+   nema and must not wear the nema chrome. What it does borrow is the hex mark
+   for the "Works with nema" badge and the tools indicator behaviour. */
+import { markSvg, mountToolsIndicator, toast, copyToClipboard } from '/shared/brand/brand.js';
 import { mountActivityStrip } from '/shared/webmcp.js';
 
 const STORAGE_KEY = 'nema.security.v1';
@@ -274,8 +278,8 @@ function renderPrereq() {
   meta.textContent = '';
 
   if (!state.assertion) {
-    hint.textContent = 'no assertion presented';
-    body.append(el('p', 'reqs__sentence', 'Waiting for a readiness assertion signed for this origin.'));
+    hint.textContent = 'no assertion on file';
+    body.append(el('p', 'reqs__sentence', 'No readiness assertion on file for this origin.'));
     if (assertionNote) body.append(el('p', 'prereq-alert', assertionNote));
     return;
   }
@@ -408,9 +412,9 @@ function renderStage() {
   stagedActivityId = activity ? activityId : null;
 
   if (!activity) {
-    hint.textContent = 'nothing open';
+    hint.textContent = 'stage clear';
     body.append(
-      el('p', 'empty', 'Start an activity above, or ask the agent to call start_activity.')
+      el('p', 'empty', 'Nothing on the stage. Open an activity above, or let the agent call start_activity.')
     );
     return;
   }
@@ -599,6 +603,31 @@ function splitVerdict(detail) {
   return { verdict: match[0].trim(), body: text.slice(match[0].length) };
 }
 
+/* content.js writes a trace label as "<station>, <clock time>", and nothing
+   else. The rail wants the time on its own, in mono, the way a ticket printer
+   stamps it; the station stays the title of the row. A label that ever stops
+   matching keeps its whole string as the station and prints no time. */
+const RAIL_TIME = /^(.*),\s*(\d{1,2}:\d{2})$/;
+
+function splitLabel(label) {
+  const text = String(label || '');
+  const match = RAIL_TIME.exec(text);
+  if (!match) return { station: text, time: '' };
+  return { station: match[1], time: match[2] };
+}
+
+/* The same idea for an incident evidence line, which sometimes opens with the
+   clock time and sometimes does not. A line without one keeps the column empty
+   so every sentence still starts on the same edge. */
+const LEAD_TIME = /^(\d{1,2}:\d{2})\s+/;
+
+function splitLeadTime(line) {
+  const text = String(line || '');
+  const match = LEAD_TIME.exec(text);
+  if (!match) return { time: '', rest: text };
+  return { time: match[1], rest: text.slice(match[0].length) };
+}
+
 function renderAuditLab(body, activity) {
   const attempt = attemptFor(activity.id);
   const graded = attempt.result !== null;
@@ -628,16 +657,19 @@ function renderAuditLab(body, activity) {
     const markable = entry.actor === 'cook';
     if (graded && markable) item.dataset.mark = entry.untrusted ? 'unsafe' : 'safe';
 
+    const { station, time } = splitLabel(entry.label);
+
     const rail = el('span', 'trace__rail');
-    rail.append(el('span', 'trace__step mono', String(entry.step)));
+    if (time) rail.append(el('span', 'trace__time', time));
+    rail.append(el('span', 'trace__step', String(entry.step).padStart(2, '0')));
     item.append(rail);
 
     const main = el('div', 'trace__main');
     const head = el('div', 'trace__head');
-    head.append(el('span', `trace__actor trace__actor--${entry.actor}`, sentenceCase(entry.actor)));
-    head.append(el('span', 'trace__label', entry.label));
+    head.append(el('span', 'trace__label', station));
+    head.append(el('span', `trace__actor trace__actor--${entry.actor}`, entry.actor));
     main.append(head);
-    main.append(el('p', 'trace__source', `Source: ${entry.source}`));
+    main.append(el('p', 'trace__source', entry.source));
 
     const content = el('pre', 'trace__content');
     content.textContent = entry.content;
@@ -669,7 +701,7 @@ function renderAuditLab(body, activity) {
   form.append(traceSet);
 
   const mitSet = el('fieldset', 'lab__set');
-  mitSet.append(el('legend', 'lab__legend', 'Choose the fixes you would put in place tomorrow.'));
+  mitSet.append(el('legend', 'lab__legend', 'Pick the fixes you would put on the line tomorrow.'));
   const mitigations = el('div', 'mits');
   for (const mitigation of activity.mitigations) {
     const card = el('label', 'mit');
@@ -711,7 +743,7 @@ function renderAuditLab(body, activity) {
     retry.addEventListener('click', () => resetAttempt(activity.id));
     actions.append(retry);
   } else {
-    actions.append(el('span', 'dim', 'Graded here. No tool can answer for you.'));
+    actions.append(el('span', 'dim', 'Graded on this page. No tool can answer for you.'));
   }
   form.append(actions);
 
@@ -754,8 +786,14 @@ function renderTriageLab(body, activity) {
 
     const evidence = el('div', 'incident__evidence');
     for (const line of incident.evidence) {
-      const row = el('pre', 'incident__line');
-      row.textContent = line;
+      /* Some evidence lines open with the clock time the kitchen logged. That
+         time moves into a column of its own, in mono, so four incidents read
+         as one log instead of four paragraphs. The sentence keeps its exact
+         text and its author's line breaks. */
+      const { time, rest } = splitLeadTime(line);
+      const row = el('div', 'incident__line');
+      row.append(el('span', 'incident__at', time));
+      row.append(el('p', 'incident__text', rest));
       evidence.append(row);
     }
     card.append(evidence);
@@ -794,7 +832,7 @@ function renderTriageLab(body, activity) {
     retry.addEventListener('click', () => resetAttempt(activity.id));
     actions.append(retry);
   } else {
-    actions.append(el('span', 'dim', 'One action per incident. Over reacting counts against you.'));
+    actions.append(el('span', 'dim', 'One call per incident. Over reacting counts against you.'));
   }
   form.append(actions);
 
@@ -821,7 +859,7 @@ function renderReceipt() {
   const entries = Object.entries(state.receipts);
   if (entries.length === 0) {
     hint.textContent = 'none issued yet';
-    body.append(el('p', 'empty', 'Pass a lab and a signed receipt appears here, yours to take to the vault.'));
+    body.append(el('p', 'empty', 'Pass a lab and the signed receipt lands here, yours to carry to the vault.'));
     return;
   }
 
@@ -957,7 +995,7 @@ function resetAttempt(activityId) {
   stagedActivityId = null;
   save();
   renderAll();
-  announce('Attempt cleared. The trace is editable again.');
+  announce('Attempt cleared. The service log is editable again.');
 }
 
 /**
@@ -1206,8 +1244,10 @@ function describeOffer() {
 
 /* --------------------------------------------------------------- startup -- */
 
-injectHeader({ app: 'security', title: 'Line Cook Lab' });
-injectFooter({ note: 'Line Cook Lab. Deterministic grading, signed receipts, no account.' });
+/* The nema hex mark, 16 px, in the header badge and the footer badge. Each copy
+   gets its own gradient id, so hiding one never blanks the other. */
+for (const slot of document.querySelectorAll('[data-nema-mark]')) slot.innerHTML = markSvg();
+mountToolsIndicator($('[data-tools-indicator]'));
 mountActivityStrip($('[data-activity-strip]'));
 
 /* The unit names itself from the manifest, so the heading can never drift from

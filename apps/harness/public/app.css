@@ -1,28 +1,304 @@
-/* nema harness lab: app specific layout and widgets.
+/* Saucier School: the school's own skin.
  *
- * Everything shared lives in /shared/brand/tokens.css and brand.css. This file
- * only adds what a provider page needs and nothing else has: the unit hero,
- * the activity stage (option cards, check cards, stage ordering, rubric) and
- * the receipt layout. Every value comes from a token.
+ * This site is not nema. It loads the nema component layer because the
+ * components are useful (panels, pills, path rows, token box), then re-maps
+ * every colour token in the :root block below so those components read as a
+ * warm paper course site instead of a dark protocol console. Nothing in
+ * /shared is edited: the override is the whole mechanism.
  *
- * House rules for this page: sentence case labels in Inter, mono only for ids,
- * tokens, code and numbers, hairlines instead of boxes, and air between
- * sections rather than borders around them.
+ * Palette: paper ground, ink text, one amber accent, a system serif for the
+ * titles and Inter for everything you actually read.
+ *
+ * House rules for this page: sentence case labels, mono only for ids and
+ * tokens, hairlines instead of boxes, and air between sections rather than
+ * borders around them.
  */
+
+/* ------------------------------------------------- the school's palette -- */
+
+:root {
+  color-scheme: light;
+
+  /* Ground and structure. --navy is the page, --navy-2 the cards, --navy-3
+   * the raised or hovered surface. The names stay, the colours do not. */
+  --navy: #F6F1E7;
+  --navy-2: #FFFDF8;
+  --navy-3: #F1EADB;
+  --line: #E4DBCB;
+
+  /* Ink. --ink-3 is for graphics only (dots, rules, strikethroughs) and
+   * clears 3:1; every label that carries meaning reads at --ink-2, 5.31:1. */
+  --ink: #1F1B16;
+  --ink-2: #6B6257;
+  --ink-3: #8C8070;
+  --ink-label: var(--ink-2);
+
+  /* The one accent. --amber is the brand orange and is used as a fill, a
+   * border and a ground, never as small text: it is 2.90:1 on paper.
+   * --amber-deep (3.98:1) carries the focus ring, which has to clear 3:1
+   * against the paper. --amber-ink (5.32:1) is the amber you can read. */
+  --amber: #D8741B;
+  --amber-deep: #B85F10;
+  --amber-ink: #9C4E0A;
+
+  /* The component layer reaches for --cyan wherever it means "the accent". */
+  --cyan: var(--amber);
+
+  /* The rest of the nema hues, re-cut for paper. Contrast on the paper
+   * ground: teal 6.45, blue 6.50, sky 5.76, ochre 5.90, brick 6.26. */
+  --teal: #2A6233;
+  --blue: #2B559A;
+  --sky: #4E5F79;
+  --yellow: #7A5606;
+  --danger: #A52C21;
+
+  /* Prose links are amber, underlined, per the school's own style sheet. */
+  --blue-ink: var(--amber-ink);
+
+  /* Translucent derivations. On a light ground a tint needs less alpha than
+   * it does on navy, so every band ground sits at 10 percent and the text on
+   * it still clears AA (durable 5.73, usable 5.59, fragile 5.60,
+   * uncertain 5.02, unknown 5.30, due 5.16, danger 5.34). */
+  --cyan-60: rgba(216, 116, 27, 0.60);
+  --cyan-24: rgba(216, 116, 27, 0.34);
+  --cyan-12: rgba(216, 116, 27, 0.12);
+  --teal-14: rgba(42, 98, 51, 0.10);
+  --blue-14: rgba(43, 85, 154, 0.10);
+  --blue-40: rgba(156, 78, 10, 0.38);
+  --sky-14: rgba(78, 95, 121, 0.10);
+  --yellow-14: rgba(122, 86, 6, 0.10);
+  --danger-14: rgba(165, 44, 33, 0.10);
+  --ink-08: rgba(99, 89, 78, 0.10);
+  --shade-40: rgba(63, 52, 36, 0.16);
+  --shade-72: rgba(40, 32, 22, 0.42);
+
+  /* The six bands plus danger keep their meaning and change their colour. */
+  --band-durable: #12604F;
+  --band-durable-ink: #12604F;
+  --band-durable-bg: rgba(18, 96, 79, 0.10);
+  --band-usable: #2A6233;
+  --band-usable-ink: #2A6233;
+  --band-usable-bg: rgba(42, 98, 51, 0.10);
+  --band-fragile: #2B559A;
+  --band-fragile-ink: #2B559A;
+  --band-fragile-bg: rgba(43, 85, 154, 0.10);
+  --band-uncertain: #4E5F79;
+  --band-uncertain-ink: #4E5F79;
+  --band-uncertain-bg: rgba(78, 95, 121, 0.10);
+  --band-unknown: #63594E;
+  --band-unknown-ink: #63594E;
+  --band-unknown-bg: rgba(99, 89, 78, 0.10);
+  --band-due: #7A5606;
+  --band-due-ink: #7A5606;
+  --band-due-bg: rgba(122, 86, 6, 0.10);
+  --band-danger: #A52C21;
+  --band-danger-ink: #A52C21;
+  --band-danger-bg: rgba(165, 44, 33, 0.10);
+
+  /* Type. A system serif for the titles and the wordmark, Inter to read. */
+  --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua',
+    Georgia, 'Noto Serif', 'Liberation Serif', serif;
+
+  /* Focus: the deep amber, so the ring clears 3:1 on paper and on a card. */
+  --focus-ring: 2px solid var(--amber-deep);
+  --focus-offset: 2px;
+  --focus-hairline: 0 0 0 1px rgba(184, 95, 16, 0.28);
+
+  /* A course site reads better in a narrower column with more room round it. */
+  --app-max: 1060px;
+  --panel-pad: var(--sp-6);
+}
+
+/* A phone gives the words the width instead of the margin. */
+@media (max-width: 720px) {
+  :root { --panel-pad: var(--sp-4); }
+  .n-app { padding-left: var(--sp-4); padding-right: var(--sp-4); }
+}
+
+/* ----------------------------------------------- the components, on paper -- */
+
+/* Cards, not cut outs: on paper a panel is a slightly lighter sheet. */
+.n-panel {
+  background: var(--navy-2);
+  border-color: var(--line);
+}
+
+/* Panel titles take the serif, the same voice as the unit title. */
+.n-panel__label {
+  font-family: var(--font-display);
+  font-size: var(--fs-20);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+  letter-spacing: 0;
+}
+
+/* Amber fill, ink label: 5.25:1. White on this amber would be 3.26 and fail. */
+.n-btn--primary {
+  --btn-bg: var(--amber);
+  --btn-fg: #1F1B16;
+  --btn-bd: var(--amber);
+}
+.n-btn--primary:hover { --btn-bg: #E4832C; --btn-bd: #E4832C; }
+.n-btn:hover { --btn-bd: var(--amber-deep); }
+
+.skip-link { background: var(--ink); color: var(--navy-2); }
+
+/* An uppercase mono micro label has no place on a course site. */
+.n-label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-2);
+}
+
+/* Fields read as a shallow inset on the card. */
+.n-input,
+.n-select,
+.n-textarea { background: var(--navy); }
+.n-input:hover,
+.n-select:hover,
+.n-textarea:hover { border-color: var(--amber-deep); }
+
+.n-pill { border-color: color-mix(in srgb, var(--pill) 28%, transparent); }
+
+/* .accent means "the accent colour" in the component layer. The brand amber is
+ * 2.90:1 on paper, so anything that carries a word reads at --amber-ink. */
+.accent { color: var(--amber-ink); }
+/* A round dot reads warmer than the protocol square. */
+.n-pill::before { border-radius: 50%; }
+
+/* The strip's empty row comes from /shared/webmcp.js. It reads as a sentence
+ * here, not as a prompt. */
+.activity-row-empty { font-family: var(--font-ui); font-size: var(--fs-13); }
+.activity-row::before { border-radius: 50%; }
+
+/* ----------------------------------------------------- header and footer -- */
+
+.ss-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.ss-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  border-bottom: 0;
+  color: var(--ink);
+}
+.ss-brand:hover { color: var(--ink); border-bottom: 0; }
+.ss-brand__square {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  background: var(--amber);
+  border-radius: 2px;
+}
+.ss-brand__name {
+  font-family: var(--font-display);
+  font-size: var(--fs-20);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+.ss-header__end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-4);
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+/* The tools count, in the school's own voice: no pill shouting in mono. */
+.ss-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 3px var(--sp-3);
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+  background: var(--navy-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-round);
+  white-space: nowrap;
+  transition: color var(--dur-2) var(--ease-out), border-color var(--dur-2) var(--ease-out);
+}
+.ss-tools__dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--ink-3);
+  transition: background-color var(--dur-2) var(--ease-out);
+}
+.ss-tools[data-live='true'] { border-color: var(--cyan-24); }
+.ss-tools[data-live='true'] .ss-tools__dot { background: var(--amber); }
+.ss-tools [data-tools-count] { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* One discreet partner badge: the nema mark on its own chip, then the words. */
+.ss-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+  border-bottom: 0;
+  white-space: nowrap;
+  transition: color var(--dur-1) var(--ease-out);
+}
+.ss-badge:hover { color: var(--ink); border-bottom: 0; }
+.ss-badge__mark {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: var(--r-2);
+  background: #101B2D;
+}
+.ss-badge__mark svg { width: 16px; height: 16px; display: block; }
+
+.ss-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-4);
+  flex-wrap: wrap;
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+}
+.ss-footer__line { margin: 0; }
+.ss-footer .ss-badge { margin-left: auto; }
+
+/* Wrapped onto a second line, the pair reads from the left like everything
+ * else on the page, not pinned to the right edge of a phone. */
+@media (max-width: 560px) {
+  .ss-header__end { margin-left: 0; justify-content: flex-start; gap: var(--sp-3); }
+  .ss-footer .ss-badge { margin-left: 0; }
+}
 
 /* ------------------------------------------------------------ layout -- */
 
 /* Sections breathe; the panels inside a row sit closer together. */
+.n-app { gap: var(--sp-6); }
 .n-app__main { gap: var(--sp-7); }
 .lab-grid { align-items: start; gap: var(--sp-5); }
 
 /* A small label over a group. Sentence case, never uppercase. */
 .lab-cap {
-  font-size: var(--fs-12);
-  font-weight: 500;
-  color: var(--ink-2);
+  font-size: var(--fs-13);
+  font-weight: 600;
+  color: var(--ink);
 }
-.lab-cap.mono { font-family: var(--font-mono); }
 
 /* One calm sentence: the empty states, the totals, the notes under a list. */
 .lab-line {
@@ -66,11 +342,17 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--sp-1);
-  padding-left: var(--sp-3);
-  border-left: 1px solid var(--line-soft);
+  padding-left: var(--sp-4);
+  border-left: 2px solid var(--amber);
   max-width: 52ch;
 }
-.lab-next__title { font-size: var(--fs-16); font-weight: 600; color: var(--ink); }
+.lab-next__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-20);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+  color: var(--ink);
+}
 .lab-next__meta { font-size: var(--fs-12); color: var(--ink-2); }
 .lab-next .n-btn { margin-top: var(--sp-3); }
 
@@ -91,13 +373,15 @@
 
 .unit__title {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 600;
   font-size: var(--fs-44);
   line-height: var(--lh-tight);
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
 
 .unit__lead {
-  max-width: 52ch;
+  max-width: 46ch;
   font-size: var(--fs-16);
   line-height: var(--lh-snug);
   color: var(--ink-2);
@@ -109,7 +393,7 @@
 .unit__banner {
   display: block;
   padding-left: var(--sp-3);
-  border-left: 2px solid var(--cyan);
+  border-left: 2px solid var(--amber);
   font-size: var(--fs-13);
   line-height: var(--lh-snug);
   color: var(--ink);
@@ -126,7 +410,7 @@
   gap: var(--sp-3);
   justify-content: space-between;
   padding: var(--sp-2) 0;
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid var(--line);
 }
 .lab-req:first-child { border-top: 0; }
 .lab-req__id { font-size: var(--fs-12); color: var(--ink); overflow-wrap: anywhere; }
@@ -147,7 +431,7 @@ button.n-path__row {
   align-items: baseline;
   background: transparent;
   border: 0;
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid var(--line);
   border-radius: 0;
   font: inherit;
   color: inherit;
@@ -159,8 +443,11 @@ button.n-path__row {
 button.n-path__row:first-child { border-top: 0; }
 button.n-path__row:hover { background: var(--navy-3); }
 button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
+.n-path__row--current { box-shadow: inset 2px 0 0 var(--amber); }
 .lab-path .n-path__index { color: var(--ink-3); }
+.lab-path .n-path__title { font-size: var(--fs-14); }
 .lab-path .n-path__reason { font-family: var(--font-ui); font-size: var(--fs-12); }
+.lab-path .n-path__minutes { font-family: var(--font-ui); color: var(--ink-2); }
 .lab-path__pill { align-self: flex-start; margin-top: 2px; }
 
 /* brand.css wraps a path row on a narrow screen, which strands the number on
@@ -171,28 +458,33 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
   .lab-path .n-path__minutes { text-align: right; }
 }
 
+/* A skipped row is still a button: the learner can open anything on the offer.
+ * On paper it says so by going quiet and struck through, never by fading out,
+ * so every word on it still clears AA. */
+.lab-path .n-path__row--skipped { opacity: 1; }
+.lab-path .n-path__row--skipped .n-path__title,
+.lab-path .n-path__row--skipped .n-path__minutes { color: var(--ink-2); }
+
 /* The personalization beat: the rows that just left the path strike through
  * one after the other instead of all at once, so a viewer can read the reason
  * beside each one. The delay is set per row in app.js as --strike-delay.
  * Both the duration and the delay collapse under prefers-reduced-motion, and
- * the end state is the same either way: struck through and dimmed. */
-@keyframes lab-skip-dim {
-  from { opacity: 1; }
-  to { opacity: 0.55; }
+ * the end state is the same either way: struck through and quiet. */
+@keyframes lab-skip-quiet {
+  from { color: var(--ink); }
+  to { color: var(--ink-2); }
 }
 @keyframes lab-skip-strike {
   from { text-decoration-color: transparent; }
   to { text-decoration-color: var(--ink-3); }
 }
-.lab-path__row--striking {
-  animation: lab-skip-dim var(--dur-3) var(--ease-out) var(--strike-delay, 0ms) both;
-}
 .lab-path__row--striking .n-path__title,
 .lab-path__row--striking .n-path__minutes {
-  animation: lab-skip-strike var(--dur-3) var(--ease-out) var(--strike-delay, 0ms) both;
+  animation:
+    lab-skip-strike var(--dur-3) var(--ease-out) var(--strike-delay, 0ms) both,
+    lab-skip-quiet var(--dur-3) var(--ease-out) var(--strike-delay, 0ms) both;
 }
 @media (prefers-reduced-motion: reduce) {
-  .lab-path__row--striking,
   .lab-path__row--striking .n-path__title,
   .lab-path__row--striking .n-path__minutes { animation-delay: 0ms; }
 }
@@ -202,9 +494,10 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
 .stage__head { display: flex; flex-direction: column; gap: var(--sp-1); }
 .stage__title {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 600;
   font-size: var(--fs-24);
   line-height: var(--lh-tight);
+  color: var(--ink);
 }
 .stage__title:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
 .stage__meta { font-size: var(--fs-12); color: var(--ink-2); }
@@ -213,8 +506,8 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
 .stage__agent {
   font-family: var(--font-ui);
   font-size: var(--fs-12);
-  color: var(--cyan);
-  border-left: 2px solid var(--cyan);
+  color: var(--amber-ink);
+  border-left: 2px solid var(--amber);
   padding-left: var(--sp-3);
 }
 
@@ -242,7 +535,7 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
 .stage__hint-index {
   flex: none;
   font-size: var(--fs-12);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--yellow);
 }
 .stage__hint-btn { align-self: flex-start; }
@@ -263,6 +556,7 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
 .lesson { display: flex; flex-direction: column; gap: var(--sp-5); }
 .lesson__section { display: flex; flex-direction: column; gap: var(--sp-2); }
 .lesson__heading {
+  font-family: var(--font-display);
   font-size: var(--fs-16);
   font-weight: 600;
   color: var(--ink);
@@ -272,8 +566,8 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  padding-left: var(--sp-3);
-  border-left: 1px solid var(--line-soft);
+  padding-left: var(--sp-4);
+  border-left: 2px solid var(--line);
 }
 
 /* -------------------------------------------------------------- prose -- */
@@ -302,48 +596,123 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
   padding: 1px 4px;
   border-radius: var(--r-1);
 }
-.prose pre,
-.code-panel {
+
+.prose pre {
   margin: 0;
-  background: #070C15;
-  border: 1px solid var(--line-soft);
+  background: var(--navy);
+  border: 1px solid var(--line);
   border-radius: var(--r-2);
-  padding: var(--sp-3);
-  overflow-x: auto;
+  padding: var(--sp-4);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   font-family: var(--font-mono);
   font-size: var(--fs-12);
   line-height: 1.7;
   color: var(--ink-2);
 }
-.code-panel code { color: var(--ink-2); }
 .prose--tight { max-width: none; }
 
-/* JetBrains Mono ligatures turn "--task" into a long dash and "->" into an
- * arrow. Console text is quoted shell output, so it has to read exactly as it
- * was typed, and nema copy never uses a long dash. Ligatures off everywhere
- * code is shown. */
-.n-console,
-.code-panel,
+/* JetBrains Mono ligatures turn two hyphens into a long dash and "->" into an
+ * arrow. Quoted text has to read exactly as it was typed, and no copy on this
+ * site uses a long dash. Ligatures off everywhere an id is shown. */
+.mono,
 .prose pre,
 .prose code {
   font-variant-ligatures: none;
   font-feature-settings: 'liga' 0, 'calt' 0;
 }
 
-/* Console output is quoted text, not a terminal: it wraps at the panel edge
- * rather than hiding the end of a line behind an inner scrollbar. */
-.n-console { overflow-x: visible; border-color: var(--line-soft); }
-.n-console__title {
-  font-family: var(--font-ui);
-  font-size: var(--fs-12);
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--ink-2);
-  border-bottom-color: var(--line-soft);
+/* -------------------------------------------------------- method card -- */
+
+/* The method the commis worked from. A card off the wall of a kitchen: a row
+ * per heading, the steps underneath. */
+.method {
+  background: var(--navy);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  padding: var(--sp-4);
 }
-.n-console__line {
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
+.method__list {
+  display: grid;
+  grid-template-columns: minmax(9ch, max-content) minmax(0, 1fr);
+  gap: var(--sp-2) var(--sp-4);
+  margin: 0;
+  align-items: baseline;
+}
+.method__key {
+  font-size: var(--fs-12);
+  font-weight: 600;
+  color: var(--ink);
+}
+.method__value {
+  margin: 0;
+  font-size: var(--fs-13);
+  line-height: var(--lh-snug);
+  color: var(--ink-2);
+}
+.method__steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  list-style: disc;
+  padding-left: 1.15em;
+}
+.method__steps li::marker { color: var(--ink-3); }
+@media (max-width: 520px) {
+  .method__list { grid-template-columns: minmax(0, 1fr); gap: var(--sp-1); }
+  .method__value { margin-bottom: var(--sp-2); }
+}
+
+/* ------------------------------------------------------- tasting notes -- */
+
+/* What the sauce did, written down the way a kitchen writes it: a time, what
+ * was looked at, what was found. Not a console. */
+.notes {
+  margin: 0;
+  background: var(--navy);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  padding: var(--sp-4);
+}
+.notes__title {
+  font-size: var(--fs-13);
+  font-weight: 600;
+  color: var(--ink);
+  padding-bottom: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--line);
+}
+.notes__list { display: flex; flex-direction: column; gap: var(--sp-2); }
+.notes__row {
+  display: grid;
+  grid-template-columns: 5ch 8ch minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: baseline;
+  font-size: var(--fs-13);
+  line-height: var(--lh-snug);
+  color: var(--ink-2);
+}
+.notes__time {
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  color: var(--ink-label);
+  font-variant-numeric: tabular-nums;
+}
+.notes__tag {
+  font-size: var(--fs-12);
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.notes__text { color: var(--ink-2); overflow-wrap: anywhere; }
+.notes__row--good .notes__tag { color: var(--teal); }
+.notes__row--good .notes__text { color: var(--ink); }
+.notes__row--bad .notes__tag { color: var(--danger); }
+.notes__row--bad .notes__text { color: var(--ink); }
+@media (max-width: 520px) {
+  .notes__list { gap: var(--sp-3); }
+  .notes__row { grid-template-columns: 5ch minmax(0, 1fr); gap: 2px var(--sp-3); }
+  .notes__tag { grid-column: 2; }
+  .notes__text { grid-column: 2; }
 }
 
 /* ------------------------------------------------------- option cards -- */
@@ -355,9 +724,9 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
   padding: 0;
   min-width: 0;
 }
-/* One column, always. The four schemas are 76 character lines and the
- * constraint that decides the answer sits at the end of one of them, so a two
- * column grid would put the answer off screen. */
+/* One column, always. Each build is a paragraph of method and the detail that
+ * decides the answer sits at the end of it, so a two column grid would put
+ * the answer off screen. */
 .opts {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -375,25 +744,25 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
   display: flex;
   align-items: flex-start;
   gap: var(--sp-3);
-  padding: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
   background: var(--navy);
-  border: 1px solid var(--line-soft);
+  border: 1px solid var(--line);
   border-radius: var(--r-2);
   cursor: pointer;
   transition: border-color var(--dur-1) var(--ease-out), background var(--dur-1) var(--ease-out);
 }
 .opt:hover,
-.check:hover { border-color: var(--cyan-24); background: var(--navy-3); }
+.check:hover { border-color: var(--amber-deep); }
 .opt--selected,
-.check--selected { border-color: var(--cyan); background: var(--navy-3); }
+.check--selected { border-color: var(--amber); background: var(--cyan-12); }
 
 .opt__input,
 .check__input {
-  accent-color: var(--cyan);
+  accent-color: var(--amber-deep);
   width: 16px;
   height: 16px;
   flex: none;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 .opt__body,
 .check__body {
@@ -403,7 +772,7 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
   min-width: 0;
   flex: 1 1 auto;
 }
-.opt__id { font-size: var(--fs-12); font-weight: 500; color: var(--ink-2); }
+.opt__id { font-size: var(--fs-12); font-weight: 600; color: var(--ink); }
 /* A pill in a column body keeps its own width instead of stretching. */
 .opt__body > .n-pill,
 .check__body > .n-pill { align-self: flex-start; }
@@ -414,7 +783,7 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
   color: var(--ink-2);
 }
 .opt__why { color: var(--sky); }
-.check__label { font-size: var(--fs-14); color: var(--ink); font-weight: 500; }
+.check__label { font-size: var(--fs-14); color: var(--ink); font-weight: 600; }
 
 /* ------------------------------------------------------ stage ordering -- */
 
@@ -425,32 +794,38 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
   gap: var(--sp-3);
   padding: var(--sp-2) var(--sp-3);
   background: var(--navy);
-  border: 1px solid var(--line-soft);
+  border: 1px solid var(--line);
   border-radius: var(--r-2);
 }
 .order__index {
   flex: none;
   width: 2ch;
-  font-size: var(--fs-16);
-  color: var(--cyan);
+  font-family: var(--font-display);
+  font-size: var(--fs-20);
+  font-weight: 600;
+  color: var(--amber-ink);
 }
 .order__main { display: flex; flex-direction: column; gap: 2px; flex: 1 1 auto; min-width: 0; }
 .order__label { font-size: var(--fs-14); color: var(--ink); }
-.order__id { font-size: var(--fs-11); color: var(--ink-label); }
 .order__controls { flex: none; }
 
 /* ------------------------------------------------------- free recall -- */
 
-.recall__text { min-height: 180px; font-size: var(--fs-14); }
+.recall__text {
+  min-height: 180px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  line-height: var(--lh-body);
+}
 .recall__count[data-short='true'] { color: var(--yellow); }
-.recall__count { font-family: var(--font-mono); }
+.recall__count { font-variant-numeric: tabular-nums; }
 
 .rubric__row {
   display: flex;
   align-items: baseline;
   gap: var(--sp-3);
   padding: var(--sp-2) 0;
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid var(--line);
 }
 .rubric__row:first-of-type { border-top: 0; }
 .rubric__text { font-size: var(--fs-13); color: var(--ink-2); }
@@ -468,15 +843,23 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
   .receipt { grid-template-columns: minmax(0, 1fr); }
 }
 
-.n-token { border-color: var(--line-soft); }
+/* The token box is the one place a signature is shown verbatim. On paper it
+ * is a slip in the receipt, not a code block. */
+.n-token {
+  background: var(--navy);
+  border-color: var(--line);
+  padding: var(--sp-4);
+}
 .n-token__head {
   font-family: var(--font-ui);
-  font-size: var(--fs-12);
-  font-weight: 500;
+  font-size: var(--fs-13);
+  font-weight: 600;
   letter-spacing: 0;
   text-transform: none;
-  color: var(--ink-2);
+  color: var(--ink);
 }
+.n-token__text { color: var(--ink-2); }
+.n-token__text b { color: var(--amber-ink); font-weight: 600; }
 
 .lab-claims { display: flex; flex-direction: column; }
 .lab-claim {
@@ -485,7 +868,7 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
   flex-wrap: wrap;
   gap: var(--sp-2) var(--sp-3);
   padding: var(--sp-2) 0;
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid var(--line);
 }
 .lab-claim:first-child { border-top: 0; }
 .lab-claim__id { font-size: var(--fs-12); color: var(--ink); overflow-wrap: anywhere; }
@@ -514,16 +897,18 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
 /* The strip is evidence, not a panel: a label and a few mono rows under the
  * page, framed by space rather than by a border. */
 .lab-strip { display: flex; flex-direction: column; gap: var(--sp-2); }
-.lab-strip__label { font-size: var(--fs-12); font-weight: 500; color: var(--ink-2); }
+.lab-strip__label { font-size: var(--fs-13); font-weight: 600; color: var(--ink); }
 .lab-strip .activity-strip {
   border: 0;
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid var(--line);
   border-radius: 0;
   background: transparent;
+  opacity: 1;
   max-height: 148px;
 }
-.lab-strip .activity-row { border-top-color: var(--line-soft); }
+.lab-strip .activity-row { border-top-color: var(--line); color: var(--ink-2); }
 .lab-strip .activity-row:first-child { border-top: 0; }
+.lab-strip .activity-name { color: var(--ink); }
 
 /* ---------------------------------------------------------- more, foot -- */
 
@@ -551,21 +936,24 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
   padding: 0;
   font: inherit;
   font-size: var(--fs-12);
-  color: var(--ink-3);
+  color: var(--ink-2);
   cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 3px;
 }
-.lab-reset:hover { color: var(--ink-2); }
+.lab-reset:hover { color: var(--ink); text-decoration-color: var(--ink-3); }
 .lab-reset:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
 
 /* -------------------------------------------------------------- flash -- */
 
-/* A tool call has to be visible. The panel it touched draws a cyan ring for
+/* A tool call has to be visible. The panel it touched draws an amber ring for
  * one beat. Under prefers-reduced-motion the ring is still drawn, and still
  * removed by the same timer in app.js, it simply does not fade: a reduced
  * motion user gets the same information without the pulse. */
 @keyframes lab-flash {
-  0% { box-shadow: 0 0 0 1px var(--cyan); }
-  70% { box-shadow: 0 0 0 1px var(--cyan-24); }
+  0% { box-shadow: 0 0 0 2px var(--amber); }
+  70% { box-shadow: 0 0 0 2px var(--cyan-24); }
   100% { box-shadow: none; }
 }
 .n-panel.is-flashing,
@@ -576,6 +964,6 @@ button.n-path__row.n-path__row--current { padding-left: var(--sp-3); }
   .n-panel.is-flashing,
   .lab-hero.is-flashing {
     animation: none;
-    box-shadow: 0 0 0 1px var(--cyan-24);
+    box-shadow: 0 0 0 2px var(--cyan-24);
   }
 }

@@ -1,5 +1,5 @@
 /**
- * nema harness lab: the activity stage.
+ * Saucier School: the activity stage.
  *
  * One renderer per activity type from content.js. Everything here is pure DOM
  * construction plus event wiring: no storage, no grading, no network. The page
@@ -56,26 +56,83 @@ const TYPE_LABEL = {
   'free-recall': 'free recall'
 };
 
+/* A line of tasting notes is written the way a kitchen writes it:
+ * "19:44 [taste] greasy film across the lip first". Anything that does not
+ * match falls back to one plain sentence with no time and no tag. */
+const NOTE_LINE = /^(\d{1,2}:\d{2})\s+\[([a-z]+)\]\s+(.*)$/i;
+
+/* Two tags carry a verdict, so they are allowed a colour. The rest are the
+ * neutral acts of cooking: look, taste, spoon, pan. */
+const NOTE_TONE = { pass: 'good', chef: 'bad' };
+
 /**
- * Classify a scripted console line. The lab consoles are written text, not a
- * real run, and the judge guide says so; the classes only colour them.
+ * The tasting notes card. These lines are written text, not a real service,
+ * and the judge guide says so; the tone classes only colour the two tags that
+ * carry a verdict.
  */
-function consoleLineClass(line) {
-  if (line.startsWith('$ ')) return 'cmd';
-  if (/\[FAIL\]|-> 500|Internal Server Error/.test(line)) return 'fail';
-  if (/\[PASS\]|passed/.test(line)) return 'ok';
-  return 'out';
+function notesBlock(title, lines) {
+  const box = el('figure', 'notes');
+  box.append(el('figcaption', 'notes__title', title));
+  const list = el('ol', 'notes__list');
+  for (const line of lines) {
+    const parts = NOTE_LINE.exec(line);
+    const row = el('li', 'notes__row');
+    if (!parts) {
+      row.append(el('span', 'notes__text', line));
+      row.style.gridTemplateColumns = 'minmax(0, 1fr)';
+      list.append(row);
+      continue;
+    }
+    const [, time, tag, text] = parts;
+    const tone = NOTE_TONE[tag.toLowerCase()];
+    if (tone) row.classList.add(`notes__row--${tone}`);
+    row.append(el('span', 'notes__time', time));
+    row.append(el('span', 'notes__tag', tag.toLowerCase()));
+    row.append(el('span', 'notes__text', text));
+    list.append(row);
+  }
+  box.append(list);
+  return box;
 }
 
-function consoleBlock(title, lines) {
-  const box = el('div', 'n-console');
-  box.append(el('p', 'n-console__title', title));
-  for (const line of lines) {
-    const kind = consoleLineClass(line);
-    const text = kind === 'cmd' ? line.slice(2) : line;
-    box.append(el('p', `n-console__line n-console__line--${kind}`, text));
+/** "fatLeftInPan" reads as "Fat left in pan" on a card a cook can use. */
+function humanKey(key) {
+  const words = String(key).replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/**
+ * The method card the commis worked from, written out the way a kitchen
+ * writes one: a row per heading, the steps as a list. The same object a
+ * console would have printed as JSON, read as a card instead.
+ */
+function methodCard(json) {
+  const card = el('div', 'method');
+  const list = el('dl', 'method__list');
+  for (const [key, value] of Object.entries(json)) {
+    list.append(el('dt', 'method__key', humanKey(key)));
+    if (Array.isArray(value)) {
+      const dd = el('dd', 'method__value');
+      const steps = el('ul', 'method__steps');
+      for (const step of value) steps.append(el('li', null, step));
+      dd.append(steps);
+      list.append(dd);
+    } else if (value && typeof value === 'object') {
+      list.append(
+        el(
+          'dd',
+          'method__value',
+          Object.entries(value)
+            .map(([k, v]) => `${humanKey(k).toLowerCase()}, ${v}`)
+            .join('. ')
+        )
+      );
+    } else {
+      list.append(el('dd', 'method__value', String(value)));
+    }
   }
-  return box;
+  card.append(list);
+  return card;
 }
 
 function head(activity) {
@@ -88,8 +145,8 @@ function head(activity) {
     el(
       'p',
       'stage__meta',
-      `${TYPE_LABEL[activity.type] || activity.type}, ${activity.minutes} min, ` +
-        `${activity.evidenceProduced} evidence, graded ${activity.grader}`
+      `${TYPE_LABEL[activity.type] || activity.type}, ${activity.minutes} min. ` +
+        `Produces ${activity.evidenceProduced} evidence, graded ${activity.grader}.`
     )
   );
   return wrap;
@@ -120,7 +177,7 @@ function hintsBlock(activity, attempt, handlers) {
       )
     );
   } else {
-    wrap.append(el('p', 'lab-note', 'Every hint is open. Hints never change the grade, your vault sees how many you used.'));
+    wrap.append(el('p', 'lab-note', 'Every hint is open. Hints never change the grade, and your vault sees how many you used.'));
   }
   return wrap;
 }
@@ -223,7 +280,7 @@ function renderLesson(activity, attempt, handlers) {
     el(
       'p',
       'lab-note',
-      'Marking this read produces exposure evidence, weight 0.1 in your vault. Reading is not mastery.'
+      'Marking this read records exposure evidence, weight 0.1 in your vault. Reading is not cooking.'
     )
   );
 
@@ -269,7 +326,7 @@ function renderDiagnostic(activity, attempt, handlers) {
 
     const body = el('div', 'opt__body');
     const letter = option.id.split('-').pop().toUpperCase();
-    body.append(el('span', 'opt__id', `Schema ${letter}`));
+    body.append(el('span', 'opt__id', `Build ${letter}`));
     body.append(html('div', 'prose prose--tight', option.html));
 
     const isKey = option.id === content.answerKey;
@@ -318,20 +375,18 @@ function renderLab(activity, attempt, handlers) {
   frag.append(head(activity));
   frag.append(html('div', 'prose', content.scenario.html));
 
-  frag.append(consoleBlock('Run 1, as it stands', content.beforeRun));
+  frag.append(notesBlock('Tasting notes, as it came to the pass', content.beforeRun));
 
   const harness = el('div', 'stack stack--tight');
-  harness.append(el('span', 'lab-cap mono', 'method.json'));
-  const pre = el('pre', 'code-panel');
-  pre.append(el('code', null, JSON.stringify(content.brokenHarness.json, null, 2)));
-  harness.append(pre);
+  harness.append(el('span', 'lab-cap', 'The method card, as the commis cooked it'));
+  harness.append(methodCard(content.brokenHarness.json));
   frag.append(harness);
 
   /* Checks -------------------------------------------------------------- */
   const checksField = el('fieldset', 'checks');
-  checksField.append(el('legend', 'lab-cap', 'Checks to add'));
+  checksField.append(el('legend', 'lab-cap', 'Steps for the remake'));
   checksField.append(
-    el('p', 'lab-note', 'Three of these close the gap the incident opened. Two would break it again. The rest are free either way.')
+    el('p', 'lab-note', 'Three of these make the sauce. Two would break it again. The rest are free either way.')
   );
 
   for (const check of content.checks) {
@@ -372,9 +427,9 @@ function renderLab(activity, attempt, handlers) {
 
   /* Stage order --------------------------------------------------------- */
   const orderWrap = el('div', 'stack stack--tight');
-  orderWrap.append(el('span', 'lab-cap', 'Stage order'));
+  orderWrap.append(el('span', 'lab-cap', 'The three stages, in order'));
   orderWrap.append(
-    el('p', 'lab-note', 'Move the three stages into the order they should run.')
+    el('p', 'lab-note', 'Put the three stages in the order they happen in the pan.')
   );
 
   const list = el('ol', 'order');
@@ -387,7 +442,6 @@ function renderLab(activity, attempt, handlers) {
       row.append(el('span', 'order__index mono', String(index + 1)));
       const main = el('div', 'order__main');
       main.append(el('span', 'order__label', labelOf(id)));
-      main.append(el('span', 'order__id mono', id));
       row.append(main);
 
       const controls = el('div', 'row row--tight order__controls');
@@ -441,24 +495,24 @@ function renderLab(activity, attempt, handlers) {
    * where the agent repairs its own work; a partial gets the run it actually
    * described, which decides before the feedback reaches the agent. */
   if (attempt.result === 'passed') {
-    frag.append(consoleBlock('Run 2, with your checks and your order', content.afterRun));
+    frag.append(notesBlock('Tasting notes, after your remake', content.afterRun));
   } else if (attempt.result === 'partial') {
     frag.append(
-      consoleBlock('Run 2, in the order you submitted', partialRunLines(content, attempt))
+      notesBlock('Tasting notes, in the order you sent it', partialRunLines(content, attempt))
     );
   } else {
     frag.append(
-      el('p', 'lab-note', 'The second run appears here once the remake works.')
+      el('p', 'lab-note', 'The second tasting appears here once the remake works.')
     );
   }
   return frag;
 }
 
 /**
- * A partial grade on the lab means one thing only: the three checks are right
- * and the stages are not in a workable order. The lines below are composed
- * from the order the learner submitted, so the console says what the grader
- * says instead of showing a run that succeeded.
+ * A partial grade on the lab means one thing only: the three steps are right
+ * and the stages are not in a workable order. The notes below are composed
+ * from the order the learner sent, so the second tasting says what the grader
+ * says instead of describing a sauce that came together.
  */
 function partialRunLines(content, attempt) {
   const stages = content.stages;
@@ -467,25 +521,28 @@ function partialRunLines(content, attempt) {
     attempt.submission && Array.isArray(attempt.submission.stageOrder)
       ? attempt.submission.stageOrder
       : stages.map((stage) => stage.id);
-  const gate = submitted.indexOf('acceptance-gate');
-  const loop = submitted.indexOf('self-correction-loop');
-  const taskEval = submitted.indexOf('task-eval-stage');
+  const at = (id) => submitted.indexOf(id);
 
   let verdict;
-  if (gate < loop) {
-    verdict = `[harness] acceptance gate: decided at position ${gate + 1}, before the self-correction loop ran [FAIL]`;
-  } else if (gate < taskEval) {
-    verdict = `[harness] acceptance gate: decided at position ${gate + 1}, before the task eval reported [FAIL]`;
+  if (at('mount') < at('reduce')) {
+    verdict =
+      `19:56 [taste] the butter went in at step ${at('mount') + 1}, into a sauce that was ` +
+      'still thin. To thicken it you boil it, and the boil splits it again';
+  } else if (at('reduce') < at('deglaze')) {
+    verdict =
+      `19:56 [taste] the reduction ran at step ${at('reduce') + 1}, before the fond was ` +
+      'lifted. It tastes of raw wine and there is no body behind it';
   } else {
-    verdict = `[harness] self-correction loop: ran at position ${loop + 1}, before the task eval produced anything to correct [FAIL]`;
+    verdict =
+      `19:56 [taste] deglazing at step ${at('deglaze') + 1} washes the pan after the work ` +
+      'is done. The brown welded to the base never reaches the sauce';
   }
 
   return [
-    '$ harness run --task "make copies default to 1 and reject copies: 0"',
-    '[harness] checks wired in: task eval, scope check on the diff, migration state',
-    `[harness] stage order as submitted: ${submitted.map(labelOf).join(' then ')}`,
+    '19:52 [pan] the three steps are right: fat poured off, cold butter waiting',
+    `19:53 [pan] stages run in the order you sent, ${submitted.map(labelOf).join(', then ')}`,
     verdict,
-    '[harness] run 2 ends where run 1 ended: the agent never saw the failure it caused'
+    '19:57 [chef] the remake ends where the first one ended, two layers in the pan'
   ];
 }
 
@@ -507,7 +564,7 @@ function renderFreeRecall(activity, attempt, handlers) {
   textarea.id = 'recall-text';
   textarea.rows = 8;
   textarea.value = draft.text || '';
-  textarea.placeholder = 'Write it the way you would say it to a teammate at a whiteboard.';
+  textarea.placeholder = 'Write it the way you would explain it to a commis at the pass.';
   const count = el('p', 'n-help recall__count');
   count.setAttribute('role', 'status');
   count.setAttribute('aria-live', 'polite');
@@ -557,7 +614,7 @@ function renderFreeRecall(activity, attempt, handlers) {
       rubric.append(row);
     }
     rubric.append(
-      el('p', 'lab-note', 'Graded by keyword rubric on the server, grader provider-rubric, weight 0.8 in your vault.')
+      el('p', 'lab-note', 'Graded by a keyword rubric in our kitchen, grader provider-rubric, weight 0.8 in your vault.')
     );
   }
   frag.append(rubric);

@@ -1,22 +1,26 @@
 /**
- * nema harness lab: the page.
+ * Saucier School: the page.
  *
  * Owns the learner state for this origin, renders the four panels and hands a
- * small API to tools.js. The division of labour is the whole point of nema:
+ * small API to tools.js. The division of labour is the whole point:
  *
  *   the agent   asks for the offer, presents an assertion the learner approved,
  *               opens an activity, polls the attempt, asks for the receipt
  *   the learner reads, chooses, orders, writes, submits
- *   the worker  re-grades and signs
+ *   the kitchen re-grades and signs
  *
  * Nothing in this file lets a tool call produce an answer or a grade.
+ *
+ * The school renders its own header and footer, in its own identity. It still
+ * borrows two runtime helpers from the nema brand module, the mark for the
+ * partner badge and the tools counter, and nothing else.
  */
 
 import {
   copyToClipboard,
   escapeHtml,
-  injectFooter,
-  injectHeader,
+  markSvg,
+  mountToolsIndicator,
   toast
 } from '/shared/brand/brand.js';
 import { mountActivityStrip } from '/shared/webmcp.js';
@@ -173,6 +177,25 @@ function countTo(node, from, to, ms = 700) {
   requestAnimationFrame(step);
 }
 
+/* A course site names a skill the way a cook would, not the way the registry
+ * does. The exact concept id stays on the row as a title, and in the ids line
+ * under "More about this unit", so nothing is hidden. */
+const ABILITY_PHRASE = {
+  apply: 'hands on',
+  explain: 'in your own words',
+  discriminate: 'told apart',
+  transfer: 'in a new kitchen'
+};
+
+function conceptLabel(concept) {
+  const name = String(concept).replace(/^nema:/, '').replace(/-/g, ' ');
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+function requirementLabel(concept, ability) {
+  return `${conceptLabel(concept)}, ${ABILITY_PHRASE[ability] || ability}`;
+}
+
 function pillClassFor(status) {
   if (status === 'verified') return 'n-pill--durable';
   if (status === 'uncertain') return 'n-pill--uncertain';
@@ -218,7 +241,7 @@ function renderUnit({ countMinutesFrom = null } = {}) {
   dom.unitProvider.textContent = MANIFEST.provider.name;
   dom.unitMeta.textContent =
     `${MANIFEST.activities.length} activities, ${FULL_MINUTES} minutes, ` +
-    `${MANIFEST.unit.price}, graded on this origin`;
+    `${MANIFEST.unit.price}. Every grade is decided here, in the kitchen.`;
   dom.unitIds.textContent =
     `${MANIFEST.unit.id} ${MANIFEST.unit.version} / issuer ${MANIFEST.provider.keyId}`;
   dom.outcomes.textContent = MANIFEST.outcomes
@@ -230,7 +253,7 @@ function renderUnit({ countMinutesFrom = null } = {}) {
    * minutes count down in place. */
   dom.reqLine.textContent = '';
   if (state.path) {
-    dom.reqLine.append(document.createTextNode('Personalised from your vault: '));
+    dom.reqLine.append(document.createTextNode('Read from your vault: '));
     dom.reqLine.append(el('span', 'num', FULL_MINUTES));
     dom.reqLine.append(document.createTextNode(' minutes became '));
     const minutes = el('b', 'num accent', state.path.personalMinutes);
@@ -239,13 +262,15 @@ function renderUnit({ countMinutesFrom = null } = {}) {
     dom.reqLine.append(document.createTextNode('.'));
   } else {
     dom.reqLine.textContent =
-      'What this unit assumes you know. Unchecked until your vault sends an assertion.';
+      'What this unit assumes you can already do. Nothing is checked until your vault says so.';
   }
 
   dom.requirements.textContent = '';
   for (const row of requirementRows()) {
     const line = el('div', 'lab-req');
-    line.append(el('span', 'lab-req__id mono', `${row.concept}.${row.ability}`));
+    const name = el('span', 'lab-req__id', requirementLabel(row.concept, row.ability));
+    name.title = `${row.concept}.${row.ability}`;
+    line.append(name);
     const pill = el(
       'span',
       `n-pill ${pillClassFor(row.status)}`,
@@ -351,10 +376,10 @@ function renderPath() {
     dom.pathHint.textContent = 'personal path';
     dom.pathNote.textContent =
       `Your path: ${state.path.personalMinutes} of ${FULL_MINUTES} minutes, ` +
-      `from an assertion valid until ${shortTime(state.assertion.payload.expiresAt)}.`;
+      `from an assertion your vault signed until ${shortTime(state.assertion.payload.expiresAt)}.`;
   } else {
     dom.pathHint.textContent = 'full offer';
-    dom.pathNote.textContent = `The full offer: ${FULL_MINUTES} minutes, nothing assumed about you yet.`;
+    dom.pathNote.textContent = `The whole unit: ${FULL_MINUTES} minutes, nothing assumed about you yet.`;
   }
 }
 
@@ -384,7 +409,7 @@ function renderStagePanel(focusTarget = null) {
     dom.stageHint.textContent = 'nothing open';
     const empty = el('div', 'lab-empty');
     empty.append(
-      el('p', 'lab-line', 'Nothing open. Pick a row in the path, or let your agent call start_activity.')
+      el('p', 'lab-line', 'Nothing open. Pick a step from the path to begin.')
     );
 
     const next = nextActivity();
@@ -480,7 +505,7 @@ function renderReceipt() {
       el(
         'p',
         'lab-line',
-        'A receipt appears here once you pass an activity and the provider signs it.'
+        'Pass the lab and Saucier School signs a receipt you own.'
       )
     );
     return;
@@ -517,9 +542,9 @@ function renderReceipt() {
   /* Left: the token itself, and the one link that matters. */
   const left = el('div', 'stack');
   const box = el('div', 'n-token');
-  const boxHead = el('span', 'n-token__head', 'Signed token');
+  const boxHead = el('span', 'n-token__head', 'Signed receipt');
   boxHead.append(el('span', 'n-pill n-pill--durable', 'signed'));
-  const copy = el('button', 'n-btn n-btn--sm n-btn--mono', 'Copy');
+  const copy = el('button', 'n-btn n-btn--sm', 'Copy');
   copy.type = 'button';
   copy.addEventListener('click', () => copyToClipboard(token, copy));
   boxHead.append(copy);
@@ -534,13 +559,13 @@ function renderReceipt() {
   send.href = `${ORIGINS.vault}/#receipt=${token}`;
   send.rel = 'noopener';
   actions.append(send);
-  actions.append(el('span', 'lab-line', 'Your vault verifies the signature before it stages anything.'));
+  actions.append(el('span', 'lab-line', 'Your vault checks our signature before it keeps anything.'));
   left.append(actions);
   wrap.append(left);
 
   /* Right: what the token says, decoded. */
   const right = el('div', 'stack stack--tight');
-  right.append(el('span', 'lab-cap', 'Decoded claims'));
+  right.append(el('span', 'lab-cap', 'What it says'));
 
   const claims = el('div', 'lab-claims');
   for (const claim of payload.claims) {
@@ -648,12 +673,12 @@ function submitAttempt(activityId, submission) {
   if (attempt.status === 'passed') {
     toast(
       graded.result === 'partial'
-        ? 'Partial pass. A receipt can still be issued, and it will say partial.'
-        : 'Passed. The provider can sign a receipt for this.',
+        ? 'Partial pass. We can still sign a receipt, and it will say partial.'
+        : 'Passed. We can sign a receipt for this.',
       'ok'
     );
   } else {
-    toast('Not passed yet. Read the feedback and try again.', 'warn');
+    toast('Not passed yet. Read the notes and try it again.', 'warn');
   }
   return attempt;
 }
@@ -738,7 +763,7 @@ async function requestReceipt(activityId) {
   renderStagePanel();
   flash(dom.receiptPanel);
   scrollToPanel(dom.receiptPanel);
-  toast(`Receipt signed by ${MANIFEST.provider.name}. Take it to your vault.`, 'ok');
+  toast(`Signed by ${MANIFEST.provider.name}. Take it to your vault.`, 'ok');
   return { status: 'issued', token: body.token, payload: body.payload, repeat: false };
 }
 
@@ -797,16 +822,20 @@ function resetLab() {
   saveState();
   setBanner('');
   renderAll();
-  toast('Lab state cleared on this device. The vault is untouched.', 'ok');
+  toast('Your progress on this site is cleared. Your vault is untouched.', 'ok');
 }
 
 /* ----------------------------------------------------------------- boot -- */
 
-injectHeader({ app: 'harness', title: MANIFEST.provider.name });
-injectFooter({ note: 'Provider. Signs evidence receipts, never writes to your vault.' });
+/* The badge is the school's, the mark inside it is nema's. It is drawn from
+ * the brand module so the partner mark can never drift from the real one. */
+for (const slot of document.querySelectorAll('[data-nema-mark]')) {
+  slot.innerHTML = markSvg();
+}
+mountToolsIndicator(document.querySelector('[data-tools-indicator]'));
 mountActivityStrip(dom.strip);
 
-const resetButton = el('button', 'lab-reset', 'Reset lab state');
+const resetButton = el('button', 'lab-reset', 'Clear my progress on this site');
 resetButton.type = 'button';
 resetButton.title = 'Clears the attempts, the assertion and the receipts stored for this origin.';
 resetButton.addEventListener('click', resetLab);

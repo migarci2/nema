@@ -39,7 +39,7 @@ export async function registerSecurityTools(controller) {
     {
       name: 'describe_learning_offer',
       description:
-        'Return the learning manifest for the unit "Feedback Loop Attack Surface": activities, outcomes, requirements and minutes. The page notes on screen that the manifest was handed to the agent. Read only, nothing is stored.',
+        'Return the learning manifest for the unit "Service Under Pressure": activities, outcomes, requirements and minutes. The page notes on screen that the manifest was handed to the agent. Read only, nothing is stored.',
       inputSchema: NO_INPUT,
       execute: () => controller.describeOffer()
     },

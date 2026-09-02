@@ -3,10 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>nema saucier school</title>
-<meta name="description" content="Saucier School: Pan Sauces and Emulsions. A nema provider that personalizes its path from a signed readiness assertion and issues signed evidence receipts.">
-<link rel="icon" href="/shared/brand/favicon.svg" type="image/svg+xml">
-<link rel="preload" href="/shared/brand/fonts/pixelify-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<title>Saucier School</title>
+<meta name="description" content="Saucier School: Pan Sauces and Emulsions. A short kitchen unit that skips what you can already do and signs a receipt you own when you pass.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23F6F1E7'/%3E%3Crect x='9' y='9' width='14' height='14' rx='2' fill='%23D8741B'/%3E%3C/svg%3E" type="image/svg+xml">
 <link rel="preload" href="/shared/brand/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/shared/brand/fonts/jetbrains-mono-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/shared/brand/tokens.css">
@@ -18,7 +17,24 @@
 <a class="skip-link" href="#main">Skip to the unit</a>
 
 <div class="n-app">
-  <header data-nema-header></header>
+
+  <!-- the school's own header: wordmark, tools count, one partner badge ---- -->
+  <header class="ss-header">
+    <a class="ss-brand" href="/" aria-label="Saucier School, home">
+      <span class="ss-brand__square" aria-hidden="true"></span>
+      <span class="ss-brand__name">Saucier School</span>
+    </a>
+    <div class="ss-header__end">
+      <span class="ss-tools" data-tools-indicator data-live="false" role="status" aria-live="polite">
+        <span class="ss-tools__dot" aria-hidden="true"></span>
+        <span><span data-tools-count>0</span> tools on this page</span>
+      </span>
+      <a class="ss-badge" href="https://nema.migarci2.dev" rel="noopener">
+        <span class="ss-badge__mark" data-nema-mark aria-hidden="true"></span>
+        Works with nema
+      </a>
+    </div>
+  </header>
 
   <main class="n-app__main" id="main">
 
@@ -44,7 +60,7 @@
       <!-- path ---------------------------------------------------------- -->
       <section class="n-panel c-5" id="path" aria-labelledby="path-label">
         <h2 class="n-panel__label" id="path-label">
-          Path
+          Your path
           <span class="n-panel__hint" data-path-hint>full offer</span>
         </h2>
         <div class="n-panel__body">
@@ -56,7 +72,7 @@
       <!-- activity ------------------------------------------------------ -->
       <section class="n-panel c-7" id="stage" aria-labelledby="stage-label">
         <h2 class="n-panel__label" id="stage-label">
-          Activity
+          At the stove
           <span class="n-panel__hint" data-stage-hint>nothing open</span>
         </h2>
         <div class="n-panel__body" data-stage></div>
@@ -65,7 +81,7 @@
       <!-- receipt ------------------------------------------------------- -->
       <section class="n-panel c-12" id="receipt" aria-labelledby="receipt-label">
         <h2 class="n-panel__label" id="receipt-label">
-          Evidence receipt
+          Your receipt
           <span class="n-panel__hint" data-receipt-hint>nothing issued yet</span>
         </h2>
         <div class="n-panel__body" data-receipt></div>
@@ -81,12 +97,12 @@
 
     <div class="lab-tail">
       <details class="lab-more">
-        <summary class="lab-more__summary">More</summary>
+        <summary class="lab-more__summary">More about this unit</summary>
         <div class="lab-more__body">
           <p class="lab-line">A receipt from this unit can claim these.</p>
           <p class="lab-ids mono" data-outcomes></p>
           <p class="lab-line">
-            Offered by <span data-unit-provider>Saucier School</span>.
+            Taught and graded by <span data-unit-provider>Saucier School</span>.
             No tool on this page submits an answer, grades one, or writes to your vault.
           </p>
           <p class="lab-ids mono" data-unit-ids></p>
@@ -96,7 +112,13 @@
     </div>
   </main>
 
-  <footer data-nema-footer></footer>
+  <footer class="ss-footer">
+    <p class="ss-footer__line">Saucier School, an example course site.</p>
+    <a class="ss-badge" href="https://nema.migarci2.dev" rel="noopener">
+      <span class="ss-badge__mark" data-nema-mark aria-hidden="true"></span>
+      Works with nema
+    </a>
+  </footer>
 </div>
 
 <script type="module" src="/app.js"></script>

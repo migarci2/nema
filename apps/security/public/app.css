@@ -1,26 +1,226 @@
-/* Line Cook Lab, app specific layout and widgets.
+/* Line Cook Lab: identity and app specific layout.
  *
- * Everything shared (buttons, pills, ledger, token box, activity strip) comes
- * from /shared/brand/brand.css. This file only adds what this provider needs:
- * the unit hero with its requirement rows, the activity list, the service log
- * timeline, the fix list, the incident cards and the receipt block.
+ * This site is not nema. It loads the shared components because they are
+ * convenient (buttons, pills, ledger, token box, activity strip) and then
+ * re-maps every colour and type token in the :root block below, so the same
+ * components come out as an ops tool: near black ground, off white ink, one
+ * signal green for ok and unlocked, one coral for locked and danger, titles in
+ * JetBrains Mono and body in Inter.
  *
- * Minimal pass: sections are separated by space, not by borders. Labels are
- * sentence case Inter; monospace is kept for ids, tokens, code and numbers.
+ * Nothing in /shared is edited. Everything here is either a token override or
+ * a widget this provider alone needs.
  *
- *   1  page rhythm and hero
- *   2  requirements
- *   3  activity list
- *   4  stage
- *   5  lesson
- *   6  service log timeline
- *   7  fixes
- *   8  incidents
- *   9  hints, feedback, receipt
- *  10  tool activity strip, more
+ *   0  identity tokens
+ *   1  site chrome: header, wordmark, badge, footer
+ *   2  shared components, re-tuned for this ground
+ *   3  page rhythm and hero
+ *   4  requirements
+ *   5  activity list
+ *   6  stage
+ *   7  lesson
+ *   8  service log: the ticket rail
+ *   9  fixes
+ *  10  incidents
+ *  11  hints, feedback, receipt
+ *  12  tool activity, more
  */
 
-/* --------------------------------------------- 1. page rhythm and hero -- */
+/* --------------------------------------------------- 0. identity tokens -- */
+
+/* Contrast on the near black ground (#0E0F12) and the panel (#15171C),
+ * WCAG 2.1, measured:
+ *   --ink      15.37 / 14.38      --ink-2    6.63 / 6.21
+ *   --cyan     11.00 / 10.29      --teal     9.97 / 9.33
+ *   --danger    6.56 / 6.13       --sky     10.72 / 10.03
+ *   --yellow   11.77 / 11.01      --blue-ink 9.04 / 8.45
+ *   --navy on --cyan (primary button) 11.00
+ * Every band pill, its own ink over its own tint, clears AA as well:
+ *   durable 8.51, usable 7.88, fragile 7.58, uncertain 8.27, unknown 5.64,
+ *   due 8.98, danger 5.52.
+ *   --ink-3 (3.92 on the ground) never carries text. It draws hairline glyphs,
+ *   rail ticks and dots, which need 3:1 under WCAG 1.4.11. */
+
+:root {
+  color-scheme: dark;
+
+  /* Ground and structure */
+  --navy: #0E0F12;
+  --navy-2: #15171C;
+  --navy-3: #1C1F26;
+  --line: #262A33;
+
+  /* State and accent. Green means ok and unlocked, coral means locked and
+   * dangerous. The other four exist only to keep the shared band vocabulary
+   * legible on this ground. */
+  --cyan: #4ADE80;
+  --teal: #34D399;
+  --blue: #5B8CFF;
+  --sky: #A9C4E8;
+  --yellow: #F5C451;
+  --danger: #F26D6D;
+
+  /* Text */
+  --ink: #E8E6E1;
+  --ink-2: #9A9890;
+  --ink-3: #6F6E69;
+  --blue-ink: #8FB1FF;
+  --ink-label: var(--ink-2);
+
+  /* Translucent derivations. Same names, this palette. */
+  --cyan-60: rgba(74, 222, 128, 0.60);
+  --cyan-24: rgba(74, 222, 128, 0.24);
+  --cyan-12: rgba(74, 222, 128, 0.14);
+  --teal-14: rgba(52, 211, 153, 0.14);
+  --blue-14: rgba(91, 140, 255, 0.14);
+  --blue-40: rgba(91, 140, 255, 0.40);
+  --sky-14: rgba(169, 196, 232, 0.14);
+  --yellow-14: rgba(245, 196, 81, 0.14);
+  --danger-14: rgba(242, 109, 109, 0.14);
+  --ink-08: rgba(232, 230, 225, 0.08);
+  --shade-40: rgba(0, 0, 0, 0.55);
+  --shade-72: rgba(0, 0, 0, 0.78);
+
+  /* Type. Titles are set in the mono face, sentence case, never uppercase. */
+  --font-display: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+}
+
+/* The shared minimal pass pins .n-app to 1080. This unit is denser than the
+   hub, so it reads better a little narrower. */
+.n-app { max-width: 1020px; }
+
+body {
+  background: var(--navy);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Cyan was the shared link colour. Here a link is green, like everything else
+   that is live. Written with one class free selector so it beats the :where()
+   rule in brand.css without touching component links. */
+a:not([class]) {
+  color: var(--cyan);
+  border-bottom-color: var(--cyan-24);
+}
+a:not([class]):hover {
+  color: var(--ink);
+  border-bottom-color: var(--cyan);
+}
+
+/* ------------------------------------------------------- 1. site chrome -- */
+
+.lc-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-4);
+  flex-wrap: wrap;
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.lc-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  border-bottom: 0;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--fs-16);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.lc-mark:hover { color: var(--ink); }
+/* A terminal caret: a solid green block sitting on the baseline of the text. */
+.lc-mark__caret {
+  width: 8px;
+  height: 16px;
+  flex: none;
+  background: var(--cyan);
+  border-radius: 1px;
+}
+.lc-mark:hover .lc-mark__caret { background: #6EE7A0; }
+
+.lc-head__end {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+/* The one place nema is named on this site: a badge, not a brand. */
+.lc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 3px var(--sp-3) 3px var(--sp-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-round);
+  border-bottom: 1px solid var(--line);
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.lc-badge:hover { color: var(--ink); border-color: var(--ink-3); }
+.lc-badge__mark { width: 16px; height: 16px; flex: none; }
+.lc-badge__mark svg { width: 100%; height: 100%; }
+
+.lc-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-4);
+  flex-wrap: wrap;
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+}
+.lc-foot .lc-badge { margin-left: auto; }
+
+/* ------------------------------------------- 2. shared components, tuned -- */
+
+/* Section titles: the mono face, sentence case, no tracking games. */
+.n-panel__label,
+.strip__head,
+.reqs__title {
+  font-family: var(--font-mono);
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+.n-panel__label {
+  font-size: var(--fs-16);
+  font-weight: 500;
+  color: var(--ink);
+}
+
+/* Pills read as terse status tokens here: mono, lower case, no dot. */
+.n-pill {
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  border-radius: var(--r-1);
+  padding: 1px var(--sp-2);
+  min-height: 19px;
+}
+
+/* brand.css hard codes a cyan hover on the primary button. */
+.n-btn--primary:hover { --btn-bg: #6EE7A0; --btn-bd: #6EE7A0; }
+.n-btn--sm { font-family: var(--font-mono); font-size: var(--fs-11); letter-spacing: 0; }
+
+/* The tools count is a reading of the machine, so it stays in mono. Lower
+   case: rule 2 of the minimal pass bans uppercase micro labels. */
+.n-tools {
+  font-size: var(--fs-11);
+  letter-spacing: 0;
+  text-transform: none;
+  background: transparent;
+  border-radius: var(--r-round);
+}
+.n-tools__dot { border-radius: 50%; }
+
+/* ---------------------------------------------- 3. page rhythm and hero -- */
 
 .n-app__main { gap: var(--sp-7); }
 
@@ -28,9 +228,10 @@
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 324px;
   gap: var(--sp-6);
   align-items: start;
+  padding-top: var(--sp-3);
 }
 @media (max-width: 900px) {
   .hero { grid-template-columns: minmax(0, 1fr); gap: var(--sp-5); }
@@ -38,10 +239,17 @@
 
 .hero__lead { display: flex; flex-direction: column; gap: var(--sp-3); }
 
+.hero__kicker {
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  color: var(--cyan);
+}
+
 .hero__title {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 500;
   font-size: var(--fs-44);
+  letter-spacing: -0.045em;
   line-height: var(--lh-tight);
   color: var(--ink);
 }
@@ -49,24 +257,26 @@
   .hero__title { font-size: var(--fs-32); }
 }
 
-.hero__blurb { max-width: 68ch; color: var(--ink-2); }
+.hero__blurb { max-width: 62ch; color: var(--ink-2); }
 
 .hero__facts {
-  font-size: var(--fs-13);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
   color: var(--ink-2);
   font-variant-numeric: tabular-nums;
 }
 .hero__facts b { color: var(--ink); font-weight: 500; }
 
-.hero__note { font-size: var(--fs-13); color: var(--cyan); }
+.hero__note { font-family: var(--font-mono); font-size: var(--fs-12); color: var(--cyan); }
 
-/* --------------------------------------------------- 2. requirements -- */
+/* ---------------------------------------------------- 4. requirements -- */
 
 .reqs {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
-  border: 1px solid var(--line-soft);
+  background: var(--navy-2);
+  border: 1px solid var(--line);
   border-radius: var(--r-2);
   padding: var(--sp-4);
 }
@@ -74,7 +284,7 @@
 .reqs__title {
   font-size: var(--fs-13);
   font-weight: 500;
-  color: var(--ink-2);
+  color: var(--ink);
 }
 
 .reqs__list { display: flex; flex-direction: column; gap: var(--sp-2); }
@@ -89,10 +299,11 @@
   flex: 1 1 auto;
   min-width: 0;
   font-family: var(--font-mono);
+  font-size: var(--fs-11);
   color: var(--ink);
   overflow-wrap: anywhere;
 }
-.reqs__status { flex: none; color: var(--ink-2); }
+.reqs__status { flex: none; font-family: var(--font-mono); font-size: var(--fs-11); color: var(--ink-2); }
 
 .dot {
   flex: none;
@@ -104,7 +315,7 @@
 .dot--verified { background: var(--cyan); }
 .dot--uncertain { background: var(--sky); }
 .dot--missing { background: var(--ink-3); }
-.dot--locked { background: var(--yellow); }
+.dot--locked { background: var(--danger); }
 
 .reqs__body { display: flex; flex-direction: column; gap: var(--sp-2); }
 .reqs__sentence { font-size: var(--fs-13); color: var(--ink-2); }
@@ -117,7 +328,7 @@
   font-size: var(--fs-13);
 }
 
-/* --------------------------------------------------- 3. activity list -- */
+/* --------------------------------------------------- 5. activity list -- */
 
 .acts { display: flex; flex-direction: column; }
 
@@ -136,6 +347,7 @@
 .act__index {
   flex: none;
   width: 2ch;
+  font-family: var(--font-mono);
   color: var(--ink-3);
   font-size: var(--fs-12);
   font-variant-numeric: tabular-nums;
@@ -150,14 +362,20 @@
 .act__reason { font-size: var(--fs-12); color: var(--ink-2); max-width: 68ch; }
 
 .act__end { flex: none; display: flex; align-items: center; gap: var(--sp-3); }
-.act__minutes { font-size: var(--fs-12); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.act__minutes {
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
 
 .act__lock {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
+  font-family: var(--font-mono);
   font-size: var(--fs-12);
-  color: var(--yellow);
+  color: var(--danger);
 }
 
 @media (max-width: 520px) {
@@ -165,18 +383,19 @@
   .act__end { width: 100%; justify-content: flex-start; padding-left: calc(2ch + var(--sp-3)); }
 }
 
-/* --------------------------------------------------------- 4. stage -- */
+/* --------------------------------------------------------- 6. stage -- */
 
 .stage__head { display: flex; flex-direction: column; gap: var(--sp-2); }
 .stage__title {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 500;
   font-size: var(--fs-24);
+  letter-spacing: -0.03em;
   line-height: var(--lh-tight);
   color: var(--ink);
 }
 .stage__title:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
-.stage__facts { font-size: var(--fs-12); color: var(--ink-3); }
+.stage__facts { font-family: var(--font-mono); font-size: var(--fs-12); color: var(--ink-2); }
 
 /* The stage stacks a heading, a briefing, a form and the grade. They are
    separate moments, so space keeps them apart instead of rules. */
@@ -188,20 +407,26 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
-  border-left: 2px solid var(--yellow);
+  border-left: 2px solid var(--danger);
   padding-left: var(--sp-4);
 }
 .lockbox__title { color: var(--ink); font-weight: 500; }
 .lockbox__list { display: flex; flex-direction: column; gap: var(--sp-1); font-size: var(--fs-12); }
-.lockbox__list code { color: var(--ink); }
+.lockbox__list code { font-family: var(--font-mono); color: var(--ink); }
 .lockbox__note { font-size: var(--fs-13); color: var(--ink-2); max-width: 68ch; }
 
-/* ------------------------------------------------------------ 5. lesson -- */
+/* ------------------------------------------------------------ 7. lesson -- */
 
 .lesson { display: flex; flex-direction: column; gap: var(--sp-5); max-width: 68ch; }
 .lesson__intro { font-size: var(--fs-16); color: var(--ink); line-height: var(--lh-body); }
 .lesson__section { display: flex; flex-direction: column; gap: var(--sp-2); }
-.lesson__heading { font-size: var(--fs-14); font-weight: 600; color: var(--ink); }
+.lesson__heading {
+  font-family: var(--font-mono);
+  font-size: var(--fs-13);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
 .lesson__prose { display: flex; flex-direction: column; gap: var(--sp-3); color: var(--ink-2); }
 .lesson__prose p { margin: 0; }
 .lesson__prose code {
@@ -219,9 +444,9 @@
   font-size: var(--fs-13);
   color: var(--ink-2);
 }
-.lesson__points-list li { padding-left: var(--sp-3); border-left: 1px solid var(--line-soft); }
+.lesson__points-list li { padding-left: var(--sp-3); border-left: 1px solid var(--line); }
 
-/* ---------------------------------------------- 6. service log timeline -- */
+/* ------------------------------------------- 8. service log: ticket rail -- */
 
 .scenario { display: flex; flex-direction: column; gap: var(--sp-3); max-width: 68ch; color: var(--ink-2); }
 .scenario p { margin: 0; }
@@ -237,32 +462,43 @@
   color: var(--ink);
 }
 
-.trace { display: flex; flex-direction: column; gap: var(--sp-3); }
+.trace { display: flex; flex-direction: column; }
 
 .trace__item { display: flex; gap: var(--sp-3); min-width: 0; }
 
-.trace__rail { flex: none; width: 26px; display: flex; flex-direction: column; align-items: center; gap: var(--sp-1); }
+/* The rail is the ticket rail of a kitchen printer: the clock time in mono,
+   the step index under it, and one hairline running the length of service. */
+.trace__rail {
+  flex: none;
+  width: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding-top: 1px;
+}
 .trace__rail::after {
   content: '';
   flex: 1 1 auto;
   width: 1px;
-  background: var(--line-soft);
+  margin-right: 9px;
+  margin-top: var(--sp-2);
+  background: var(--line);
 }
 .trace__item:last-child .trace__rail::after { background: transparent; }
 
-/* Ungraded the number sits on the rail with nothing drawn around it: ten boxed
-   digits are ten borders that say nothing. The box appears with the grade, in
-   the band the step earned. */
-.trace__step {
-  width: 22px;
-  height: 22px;
-  display: grid;
-  place-items: center;
-  font-size: var(--fs-10);
-  color: var(--ink-3);
-  border: 1px solid transparent;
-  border-radius: var(--r-1);
+.trace__time {
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
   font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+  letter-spacing: -0.02em;
+}
+.trace__step {
+  font-family: var(--font-mono);
+  font-size: var(--fs-10);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
 }
 
 .trace__main {
@@ -271,22 +507,20 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  padding-bottom: var(--sp-3);
-  max-width: 80ch;
+  padding-bottom: var(--sp-5);
+  max-width: 78ch;
 }
 
 .trace__head { display: flex; align-items: baseline; gap: var(--sp-2); flex-wrap: wrap; }
 
-.trace__actor { font-size: var(--fs-12); color: var(--ink-3); }
-.trace__actor--cook { color: var(--ink); }
-
-.trace__label {
+.trace__label { font-size: var(--fs-13); font-weight: 500; color: var(--ink); }
+.trace__actor {
   font-family: var(--font-mono);
-  font-size: var(--fs-12);
+  font-size: var(--fs-11);
   color: var(--ink-2);
-  overflow-wrap: anywhere;
 }
-.trace__source { font-size: var(--fs-12); color: var(--ink-3); }
+.trace__actor--cook { color: var(--cyan); }
+.trace__source { font-size: var(--fs-12); color: var(--ink-2); }
 
 .trace__content {
   margin: 0;
@@ -294,11 +528,11 @@
   overflow-wrap: anywhere;
   font-family: var(--font-mono);
   font-size: var(--fs-12);
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--ink-2);
   background: var(--navy-2);
   border-radius: var(--r-1);
-  padding: var(--sp-2) var(--sp-3);
+  padding: var(--sp-3);
   max-height: 260px;
   overflow: auto;
 }
@@ -309,11 +543,15 @@
 /* The verdict reads as one line: band word, then the sentence beside it. */
 .trace__why { flex: 1 1 24ch; min-width: 0; font-size: var(--fs-12); color: var(--ink-2); }
 
-.trace__item[data-mark='unsafe'] .trace__step { border-color: var(--danger); color: var(--danger); }
+/* Graded, the rail stamps the step: coral for a step that broke a rule, green
+   for one that held. The pass mark is on the rail, the reason is in the row. */
+.trace__item[data-mark='unsafe'] .trace__time,
+.trace__item[data-mark='unsafe'] .trace__step { color: var(--danger); }
 .trace__item[data-mark='unsafe'] .trace__content { box-shadow: inset 2px 0 0 var(--danger); }
-.trace__item[data-mark='safe'] .trace__step { border-color: var(--teal); color: var(--teal); }
+.trace__item[data-mark='safe'] .trace__time,
+.trace__item[data-mark='safe'] .trace__step { color: var(--teal); }
 
-/* ------------------------------------------------------------- 7. fixes -- */
+/* ------------------------------------------------------------- 9. fixes -- */
 
 .mits { display: flex; flex-direction: column; gap: var(--sp-1); max-width: 68ch; }
 
@@ -336,11 +574,11 @@
 
 /* A kind only exists once the attempt is graded, and then the fix carries a
    hairline in its band instead of a box. */
-.mit[data-kind] { border-left: 2px solid var(--line-soft); padding-left: var(--sp-3); border-radius: 0; }
+.mit[data-kind] { border-left: 2px solid var(--line); padding-left: var(--sp-3); border-radius: 0; }
 .mit[data-kind='effective'] { border-left-color: var(--teal); }
 .mit[data-kind='harmful'] { border-left-color: var(--danger); }
 
-/* --------------------------------------------------------- 8. incidents -- */
+/* -------------------------------------------------------- 10. incidents -- */
 
 .incidents { display: flex; flex-direction: column; gap: var(--sp-5); }
 
@@ -352,21 +590,33 @@
   flex-direction: column;
   gap: var(--sp-3);
   min-width: 0;
-  border-left: 2px solid var(--line-soft);
+  border-left: 2px solid var(--line);
   padding-left: var(--sp-4);
 }
 /* A legend is lifted out of the fieldset's flex flow, so the gap above the
    evidence has to be its own margin. */
 .incident__legend { padding: 0; display: flex; flex-direction: column; gap: 2px; margin-bottom: var(--sp-3); }
-.incident__index { font-size: var(--fs-12); color: var(--ink-3); }
+.incident__index { font-family: var(--font-mono); font-size: var(--fs-11); color: var(--ink-2); }
 .incident__summary { font-size: var(--fs-14); color: var(--ink); font-weight: 500; }
 
-.incident__evidence { display: flex; flex-direction: column; gap: var(--sp-1); }
-/* Evidence lines are sentences with clock times and temperatures in them, not
-   code, so they are set in the UI face with tabular figures. The line breaks
-   are still the author's: one line per line, pre-wrap, textContent. */
-.incident__line {
+.incident__evidence { display: flex; flex-direction: column; gap: var(--sp-2); }
+/* Evidence reads as log lines: the clock time in mono in a column of its own,
+   the sentence beside it in the UI face. A line with no time keeps the column
+   empty so every sentence starts on the same edge. The line breaks are still
+   the author's: one line per line, pre-wrap, textContent. */
+.incident__line { display: flex; gap: var(--sp-3); min-width: 0; max-width: 74ch; }
+.incident__at {
+  flex: none;
+  width: 5ch;
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--lh-body);
+  color: var(--ink-2);
+}
+.incident__text {
   margin: 0;
+  min-width: 0;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   font-family: var(--font-ui);
@@ -374,7 +624,6 @@
   font-variant-numeric: tabular-nums;
   line-height: var(--lh-body);
   color: var(--ink-2);
-  max-width: 68ch;
 }
 
 .incident__options { display: flex; flex-direction: column; gap: var(--sp-1); }
@@ -389,7 +638,7 @@
   cursor: pointer;
   transition: border-color var(--dur-1) var(--ease-out), background var(--dur-1) var(--ease-out);
 }
-.option:hover { border-color: var(--line-soft); background: var(--navy-2); }
+.option:hover { border-color: var(--line); background: var(--navy-2); }
 .option:focus-within { border-color: var(--cyan); }
 .option input { accent-color: var(--cyan); width: 16px; height: 16px; flex: none; margin-top: 2px; }
 .option__label { flex: 1 1 auto; min-width: 0; font-size: var(--fs-13); color: var(--ink-2); }
@@ -399,7 +648,7 @@
 
 .incident__rationale { font-size: var(--fs-13); color: var(--ink-2); max-width: 68ch; }
 
-/* --------------------------------------- 9. hints, feedback and receipt -- */
+/* -------------------------------------- 11. hints, feedback and receipt -- */
 
 .hints { display: flex; flex-direction: column; gap: var(--sp-2); align-items: flex-start; font-size: var(--fs-12); }
 /* The lists sit in flex columns with align-items: flex-start, so they size to
@@ -420,14 +669,14 @@
 .feedback__item {
   font-size: var(--fs-13);
   color: var(--ink-2);
-  border-left: 2px solid var(--line-soft);
+  border-left: 2px solid var(--line);
   padding-left: var(--sp-3);
   max-width: 68ch;
   overflow-wrap: anywhere;
 }
 
 .receipt { display: flex; flex-direction: column; gap: var(--sp-3); }
-.receipt + .receipt { border-top: 1px solid var(--line-soft); padding-top: var(--sp-5); }
+.receipt + .receipt { border-top: 1px solid var(--line); padding-top: var(--sp-5); }
 .receipt__note { font-size: var(--fs-12); color: var(--ink-2); }
 
 .meta {
@@ -437,13 +686,14 @@
   font-size: var(--fs-12);
   margin: 0;
 }
-.meta dt { color: var(--ink-3); }
+.meta dt { color: var(--ink-2); }
 .meta dd { margin: 0; color: var(--ink); font-family: var(--font-mono); overflow-wrap: anywhere; }
 
-/* Rule 2 of the minimal pass: no uppercase mono micro labels in the body. The
-   shared token box heads its panel that way, so it is overridden here. */
+/* Rule 2 of the minimal pass: no uppercase mono micro labels. The shared token
+   box heads its panel that way, so it is set back to sentence case here. */
+.n-token { background: var(--navy-2); }
 .n-token__head {
-  font-family: var(--font-ui);
+  font-family: var(--font-mono);
   font-size: var(--fs-12);
   letter-spacing: 0;
   text-transform: none;
@@ -451,11 +701,11 @@
 }
 .n-token__head code { font-family: var(--font-mono); color: var(--ink); }
 
-/* ----------------------------------------- 10. tool activity, and more -- */
+/* ---------------------------------------- 12. tool activity, and more -- */
 
 .sec--strip { gap: var(--sp-2); }
 
-.strip__head { font-size: var(--fs-12); color: var(--ink-3); }
+.strip__head { font-size: var(--fs-12); color: var(--ink-2); }
 
 /* Rule 7 of the minimal pass: a quiet strip under the content, not a panel. */
 .activity-strip {
@@ -463,7 +713,8 @@
   background: transparent;
   border-radius: 0;
 }
-.activity-row { border-top-color: var(--line-soft); padding-left: 0; padding-right: 0; }
+.activity-row { border-top-color: var(--line); padding-left: 0; padding-right: 0; }
+.activity-row::before { border-radius: 50%; }
 
 .more { font-size: var(--fs-13); }
 .more__summary {
@@ -482,14 +733,14 @@
 }
 .more__origin {
   font-size: var(--fs-12);
-  color: var(--ink-3);
+  color: var(--ink-2);
   display: flex;
   flex-direction: column;
   gap: 2px;
   overflow-wrap: anywhere;
 }
 .more__origin span { font-family: var(--font-mono); }
-.more__link { color: var(--blue-ink); align-self: flex-start; font-family: var(--font-mono); }
+.more__link { color: var(--cyan); align-self: flex-start; font-family: var(--font-mono); }
 .more__link:hover { color: var(--ink); }
 
 .text-action {
@@ -504,12 +755,21 @@
 }
 .text-action:hover { color: var(--ink); border-bottom-color: var(--ink-3); }
 
+@media (max-width: 560px) {
+  /* Wrapped onto its own row, the header end reads better on the wordmark's
+     edge than pushed against the far side of a narrow screen. */
+  .lc-head__end { margin-left: 0; }
+}
+
 @media (max-width: 520px) {
   .meta { grid-template-columns: minmax(0, 1fr); }
   .meta dt { padding-top: var(--sp-2); }
 
-  /* On a phone the injected sentence is the whole point of the trace, and a
-     nested scrollbar hides it. Let every entry run to full height and scroll
-     the page instead. */
+  .trace__rail { width: 44px; }
+  .trace__rail::after { margin-right: 5px; }
+
+  /* On a phone the log entry is the whole point of the trace, and a nested
+     scrollbar hides it. Let every entry run to full height and scroll the page
+     instead. */
   .trace__content { max-height: none; overflow: visible; }
 }
