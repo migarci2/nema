@@ -419,6 +419,8 @@ try {
   // The blog: the same two buttons, from a one tag install on another origin.
   // -------------------------------------------------------------------------
   const { page: post } = await browser.newPage(`${B}/`);
+  /* localStorage is only reachable once the blog document itself is up. */
+  await post.waitFor(`location.origin === ${JSON.stringify(new URL(B).origin)} && document.readyState === 'complete'`, 15000);
   await post.evaluate('localStorage.clear(); true');
   await post.goto(`${B}/`, 3000);
   await post.waitForTools();
@@ -498,7 +500,9 @@ try {
     JSON.stringify({ protocol: 'nema/0.1', audience: H, purpose: 'steal', requirements: [{ concept: 'nema:ratios', ability: 'apply' }] })
   ).toString('base64url')}&return=${encodeURIComponent(B)}`;
   const { page: thief } = await browser.newPage(forged);
-  await sleep(1200);
+  /* Production redirects /connect.html to /connect first, so the title is read
+   * once the page has moved past its initial heading. */
+  await thief.waitFor(`document.querySelector('[data-connect-title]')?.textContent !== 'Connect your vault'`, 10000);
   const refusal = await thief.evaluate(
     `document.querySelector('[data-connect-title]').textContent`
   );
