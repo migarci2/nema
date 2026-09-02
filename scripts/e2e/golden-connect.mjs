@@ -154,6 +154,11 @@ async function launchBrowser() {
       async waitForTools(min = 1, maxMs = 15000) {
         return this.waitFor(`document.modelContext.getTools().then(t => t.length >= ${min})`, maxMs);
       },
+      /* The vault registers its tools in more than one batch, so a page that
+       * only waited for the first one can find the ledger tool missing. */
+      async waitForTool(name, maxMs = 15000) {
+        return this.waitFor(`document.modelContext.getTools().then(t => t.some(x => x.name === ${JSON.stringify(name)}))`, maxMs);
+      },
       async shot(path) {
         const shot = await send(
           'Page.captureScreenshot',
@@ -395,7 +400,7 @@ try {
   /* And the receipt really is in the vault, read from a window neither the
    * course nor the popup ever touched. */
   const { page: ledger } = await browser.newPage(`${V}/`);
-  await ledger.waitForTools();
+  await ledger.waitForTool('get_evidence_ledger');
   const evidence = parse(await ledger.evaluate(tool('get_evidence_ledger', { limit: 3 })));
   const fromCourse = (evidence.receipts || []).find((row) => row.activity === DIAGNOSTIC.title);
   ok(
@@ -473,9 +478,9 @@ try {
   ok(post.errors.length === 0, 'blog console errors: ' + JSON.stringify(post.errors));
 
   const { page: ledger2 } = await browser.newPage(`${V}/`);
-  await ledger2.waitForTools();
+  await ledger2.waitForTool('get_evidence_ledger');
   const evidence2 = parse(await ledger2.evaluate(tool('get_evidence_ledger', { limit: 4 })));
-  const fromBlog = (evidence2.receipts || []).find((row) => row.issuerName && row.issuerName.includes(':8785'));
+  const fromBlog = (evidence2.receipts || []).find((row) => row.issuerName && row.issuerName.includes(new URL(B).host));
   ok(
     Boolean(fromBlog),
     'the blog receipt is in the ledger: ' + JSON.stringify(evidence2.receipts?.map((r) => r.issuerName))

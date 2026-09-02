@@ -303,7 +303,7 @@ try {
      and the learner id are behind the panel's one closed block. */
   ok(modal.includes('to skip what you already know') && !/nema:|lk_|personalize-/.test(modal),
     `Share in the page's bar opens the vault's own consent modal: ${modal}`);
-  ok(modalUnder.includes('localhost:8782') && modalUnder.includes('personalize-pan-sauces-foundations') && modalUnder.includes('lk_'),
+  ok(modalUnder.includes(new URL(SAUCIER).host) && modalUnder.includes('personalize-pan-sauces-foundations') && modalUnder.includes('lk_'),
     `and the machine words are under the hood: ${modalUnder.slice(0, 120)}`);
   const remember = await panel.evaluate(`(() => { const el = document.querySelector('.x-remember');
     return el && !el.hidden ? el.textContent.trim() : ''; })()`);
