@@ -167,6 +167,18 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
 
 .lp-hero { gap: clamp(40px, 4.4vw, 64px); }
 
+/* Two columns from 1000px: the copy on the left, the product on the right,
+ * small enough that the thesis stays the loudest thing on the screen. */
+@media (min-width: 1000px) {
+  .lp-hero.lp-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    align-items: center;
+    column-gap: clamp(40px, 5vw, 80px);
+  }
+  .lp-shot { justify-self: end; width: 100%; max-width: 520px; }
+}
+
 .lp-hero__copy {
   display: flex;
   flex-direction: column;
@@ -184,7 +196,7 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
   display: flex;
   flex-direction: column;
   margin-top: var(--sp-4);
-  font-size: clamp(30px, 4.2vw, 46px);
+  font-size: clamp(30px, 3.3vw, 42px);
   font-weight: 600;
   line-height: 1.14;
   letter-spacing: -0.025em;
