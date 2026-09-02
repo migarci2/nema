@@ -9,3 +9,4 @@ dist/
 .chrome/
 .dev-logs/
 packages/nema-extension/dist/
+guion.txt

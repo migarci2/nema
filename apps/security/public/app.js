@@ -470,7 +470,7 @@ function renderPath() {
     if (attempt && (attempt.status === 'passed' || attempt.status === 'failed')) {
       head.append(pill(attempt.result, attempt.result === 'failed' ? 'danger' : 'usable'));
     } else if (skippable) {
-      head.append(pill('already covered', 'usable'));
+      head.append(pill('done via nema', 'usable'));
     } else if (prereq.recommendedFirst === activityId) {
       head.append(pill('recommended', 'durable'));
     }
@@ -489,7 +489,7 @@ function renderPath() {
       lock.append(dot('locked'), el('span', null, 'Locked'));
       end.append(lock);
     } else {
-      const button = el('button', 'n-btn n-btn--sm', skippable ? 'Open anyway' : 'Start');
+      const button = el('button', 'n-btn n-btn--sm', skippable ? 'Review' : 'Start');
       button.type = 'button';
       button.addEventListener('click', () => {
         startActivity(activityId);

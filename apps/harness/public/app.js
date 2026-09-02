@@ -493,6 +493,8 @@ function renderPath() {
       main.append(el('span', 'n-pill n-pill--usable n-pill--nodot lab-path__pill', 'passed'));
     } else if (attempt.status === 'failed') {
       main.append(el('span', 'n-pill n-pill--danger n-pill--nodot lab-path__pill', 'retry'));
+    } else if (entry.skipped && entry.activity.type === 'lesson') {
+      main.append(el('span', 'n-pill n-pill--usable n-pill--nodot lab-path__pill', 'done via nema'));
     }
 
     row.addEventListener('click', () => openActivity(entry.activity.id, { source: 'learner' }));

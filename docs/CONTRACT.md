@@ -844,11 +844,11 @@ Requirements: `nema:knife-skills.apply`, `nema:heat-control.explain`,
 `nema:ratios.apply`. Outcomes: `nema:pan-sauces.apply`,
 `nema:pan-sauces.explain`, `nema:emulsions.discriminate`, `nema:ratios.apply`.
 
-1. `heat-control-primer` lesson 12 min, skipIf heat-control.explain verified
+1. `heat-control-primer` lesson 12 min, skipIf heat-control.recognize uncertain
 2. `knife-skills-refresher` lesson 15 min, skipIf knife-skills.apply verified
 3. `ratios-diagnostic` diagnostic 6 min, onlyIf ratios.apply uncertain; one question: which of four written ratios gives a vinaigrette that holds (3 parts oil to 1 part acid with a spoon of mustard as emulsifier); distractors: 1:1, 3:1 with no emulsifier whisked cold, 1:3. Outcome ratios.apply
 4. `ratios-primer` lesson 14 min, skipIf ratios.apply verified or uncertain
-5. `pan-sauce-anatomy` lesson 4 min, always
+5. `pan-sauce-anatomy` lesson 4 min, skipIf pan-sauces.recognize uncertain
 6. `fix-the-broken-sauce` interactive-lab 12 min, always. Scenario: a pan sauce that split and tastes flat during a dinner for six. Before console: tasting notes (greasy film, broken, flat, too thin). Checks (8): required 3 (deglaze the fond with wine or stock, reduce by half before mounting, mount with cold butter off the heat), harmful 2 (bring it back to a rolling boil after mounting, add the butter to the dry ripping hot pan), neutral 3. Stages to order: deglaze, reduce, mount. After console: glossy, coats the spoon, seasoned, holds on the pass. Outcomes pan-sauces.apply (application), emulsions.discriminate (discrimination)
 7. `explain-without-the-recipe` free-recall 5 min, optional, provider-rubric with keywords (emulsion or emulsify, fat and water or droplets, emulsifier or mustard or butter proteins, temperature or heat). Outcome pan-sauces.explain
 
@@ -856,20 +856,23 @@ Personal path with the seed (heat-control verified, knife-skills verified,
 ratios uncertain): 3 + 5 + 6 + 7 = 27. After the diagnostic (ratios
 verified): 5 + 6 + 7 = 21.
 
-### Line Cook Lab, unit `service-under-pressure`, "Service Under Pressure", 42 min
+### Line Cook Lab, unit `service-under-pressure`, "Service Under Pressure", 54 min
 
 Requirements: `nema:mise-en-place.explain`, `nema:emulsions.explain`,
 `nema:food-safety.apply`.
 
 1. `mise-en-place-intro` lesson 7 min, skipIf mise-en-place.explain verified
 2. `food-safety-intro` lesson 9 min, skipIf food-safety.apply verified
-3. `service-log-audit` interactive-lab 12 min, unlock emulsions.explain at least uncertain. A service log of about 10 steps (tickets, prep, plating); exactly 3 steps are unsafe (raw chicken board reused for salad, a hollandaise held at room temperature for two hours, a nut allergy ticket plated with the shared spoon). Fixes: 3 effective (separate colour coded boards, hold emulsified sauces above 63 C or remake every hour, dedicated allergen station and utensils), 2 harmful (rinse the chicken, keep the sauce going by boiling it), 2 neutral. Outcomes food-safety.apply (application), cross-contamination.discriminate (discrimination)
-4. `incident-triage` interactive-lab 14 min, unlock emulsions.explain at least uncertain AND food-safety.apply verified AND mise-en-place.explain verified. Four incidents (a beurre blanc split mid service; chicken probes at 60 C; an allergen ticket may have touched shellfish; the walk in reads 8 C since morning) with four actions each (rescue and continue; cook further and re-probe; stop, tell the chef, remake; discard and log). Outcomes service-timing.apply, temperature-control.apply
+3. `heat-control-on-the-line` lesson 6 min, skipIf heat-control.recognize uncertain
+4. `pan-sauces-during-service` lesson 6 min, skipIf pan-sauces.recognize uncertain
+5. `service-log-audit` interactive-lab 12 min, unlock emulsions.explain at least uncertain. A service log of about 10 steps (tickets, prep, plating); exactly 3 steps are unsafe (raw chicken board reused for salad, a hollandaise held at room temperature for two hours, a nut allergy ticket plated with the shared spoon). Fixes: 3 effective (separate colour coded boards, hold emulsified sauces above 63 C or remake every hour, dedicated allergen station and utensils), 2 harmful (rinse the chicken, keep the sauce going by boiling it), 2 neutral. Outcomes food-safety.apply (application), cross-contamination.discriminate (discrimination)
+6. `incident-triage` interactive-lab 14 min, unlock emulsions.explain at least uncertain AND food-safety.apply verified AND mise-en-place.explain verified. Four incidents (a beurre blanc split mid service; chicken probes at 60 C; an allergen ticket may have touched shellfish; the walk in reads 8 C since morning) with four actions each (rescue and continue; cook further and re-probe; stop, tell the chef, remake; discard and log). Outcomes service-timing.apply, temperature-control.apply
 
-Story: with the Saucier receipt in the vault, emulsions is uncertain (fragile),
-mise-en-place and food-safety are verified, so both intros are skippable and
-the incident triage lab unlocks with "Prerequisite recognised from another
-provider".
+Story: with the Saucier receipts in the vault, heat control and pan sauces make
+the two shared lessons `done via nema`. Mise-en-place and food-safety are also
+verified, so four lessons are done without repetition. When emulsions reaches
+uncertain, the incident triage lab unlocks with "Prerequisite recognised from
+another provider".
 
 ### Seed learner
 
