@@ -41,13 +41,29 @@
     <!-- unit: title, one sentence, one line of facts, the requirements ---- -->
     <section class="lab-hero" id="unit" aria-labelledby="unit-title">
       <div class="lab-hero__intro">
+        <p class="unit__eyebrow">A hands-on mini course</p>
         <h1 class="unit__title" id="unit-title" data-unit-title>Pan Sauces and Emulsions</h1>
         <p class="unit__lead">
           Build a pan sauce that holds, from the fond in the pan to an emulsion that
           survives the plate.
         </p>
         <p class="unit__meta" data-unit-meta></p>
+        <div class="unit__actions">
+          <a class="n-btn n-btn--primary unit__start" href="#path" data-start-course><span data-start-label>Start cooking</span> <span aria-hidden="true">→</span></a>
+          <span class="unit__nudge">Seven small steps. One delicious skill.</span>
+        </div>
         <p class="unit__banner" data-banner role="status" aria-live="polite" hidden></p>
+      </div>
+      <div class="unit-art" aria-hidden="true">
+        <span class="unit-art__spark unit-art__spark--one">✦</span>
+        <span class="unit-art__spark unit-art__spark--two">✦</span>
+        <div class="unit-art__plate">
+          <span class="unit-art__leaf unit-art__leaf--one"></span>
+          <span class="unit-art__leaf unit-art__leaf--two"></span>
+          <span class="unit-art__eye unit-art__eye--left"></span>
+          <span class="unit-art__eye unit-art__eye--right"></span>
+          <span class="unit-art__smile"></span>
+        </div>
       </div>
       <div class="lab-hero__reqs">
         <p class="lab-line" data-req-line></p>
@@ -111,6 +127,28 @@
       <div class="lab-foot" data-lab-foot></div>
     </div>
   </main>
+
+  <section class="course-switch" aria-labelledby="other-course-title">
+    <div class="course-switch__copy">
+      <p class="course-switch__eyebrow">Keep cooking</p>
+      <h2 class="course-switch__title" id="other-course-title">Check out our other course!</h2>
+      <p class="course-switch__text">Take your skills onto the line and make decisions under pressure.</p>
+    </div>
+    <a class="course-switch__card course-switch__card--line" href="https://linecook.migarci2.dev/" data-other-course>
+      <span class="course-preview course-preview--line" role="img" aria-label="Preview of the mint and coral Line Cook Lab course">
+        <span class="course-preview__chrome"><i></i><i></i><i></i></span>
+        <span class="course-preview__label">Kitchen unit</span>
+        <span class="course-preview__name">Service<br>Under Pressure</span>
+        <span class="course-preview__cloche"><i></i></span>
+      </span>
+      <span class="course-switch__body">
+        <span class="course-switch__tag">Next course</span>
+        <strong>Line Cook Lab</strong>
+        <span>Food safety and live-service decisions.</span>
+        <span class="course-switch__action">Visit course <b aria-hidden="true">→</b></span>
+      </span>
+    </a>
+  </section>
 
   <footer class="ss-footer">
     <p class="ss-footer__line">Saucier School, an example course site.</p>

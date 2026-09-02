@@ -105,6 +105,8 @@ const dom = {
   unitTitle: document.querySelector('[data-unit-title]'),
   unitProvider: document.querySelector('[data-unit-provider]'),
   unitMeta: document.querySelector('[data-unit-meta]'),
+  startCourse: document.querySelector('[data-start-course]'),
+  startLabel: document.querySelector('[data-start-label]'),
   unitIds: document.querySelector('[data-unit-ids]'),
   outcomes: document.querySelector('[data-outcomes]'),
   reqLine: document.querySelector('[data-req-line]'),
@@ -242,6 +244,7 @@ function renderUnit({ countMinutesFrom = null } = {}) {
   dom.unitMeta.textContent =
     `${MANIFEST.activities.length} activities, ${FULL_MINUTES} minutes, ` +
     `${MANIFEST.unit.price}. Every grade is decided here, in the kitchen.`;
+  dom.startLabel.textContent = state.openActivityId ? 'Continue cooking' : 'Start cooking';
   dom.unitIds.textContent =
     `${MANIFEST.unit.id} ${MANIFEST.unit.version} / issuer ${MANIFEST.provider.keyId}`;
   dom.outcomes.textContent = MANIFEST.outcomes
@@ -623,6 +626,7 @@ function openActivity(activityId, { source = 'learner' } = {}) {
   if (!activity) return null;
 
   state.openActivityId = activityId;
+  dom.startLabel.textContent = 'Continue cooking';
   const attempt = attemptFor(activityId);
   if (attempt.status === 'not_started') {
     writeAttempt(activityId, { status: 'in_progress', startedAt: Date.now() });
@@ -842,6 +846,11 @@ resetButton.addEventListener('click', resetLab);
 dom.foot.append(resetButton);
 
 renderAll();
+document.querySelector('[data-other-course]').href = `${ORIGINS.security}/`;
+dom.startCourse.addEventListener('click', (event) => {
+  event.preventDefault();
+  openActivity((nextActivity() || ACTIVITY_LIST[0]).id, { source: 'learner' });
+});
 
 registerHarnessTools({
   ORIGINS,
