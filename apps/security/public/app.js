@@ -261,6 +261,9 @@ function renderHero() {
   const note = $('[data-hero-note]');
   note.textContent = offerNote;
   note.hidden = offerNote === '';
+
+  const startLabel = $('[data-start-label]');
+  if (startLabel) startLabel.textContent = state.currentActivityId ? 'Resume service' : 'Begin service';
 }
 
 /* --------------------------------------------------------- prerequisites -- */
@@ -1257,6 +1260,14 @@ if (heroTitle) heroTitle.textContent = MANIFEST.unit.title;
 
 const resetButton = $('[data-action="reset"]');
 if (resetButton) resetButton.addEventListener('click', resetUnit);
+document.querySelector('[data-other-course]').href = `${ORIGINS.harness}/`;
+
+const startButton = $('[data-start-course]');
+if (startButton) {
+  startButton.addEventListener('click', () => {
+    startActivity(prereq.recommendedFirst || prereq.unlocked[0] || ACTIVITY_ORDER[0]);
+  });
+}
 
 renderAll();
 

@@ -49,7 +49,25 @@
           on four incidents during a live pass.
         </p>
         <p class="hero__facts" data-hero-stats></p>
+        <div class="hero__actions">
+          <button class="n-btn n-btn--primary hero__start" type="button" data-start-course>
+            <span data-start-label>Begin service</span><span aria-hidden="true">→</span>
+          </button>
+          <span class="hero__nudge">Short drills. Real kitchen decisions.</span>
+        </div>
         <p class="hero__note" data-hero-note hidden></p>
+      </div>
+
+      <div class="hero-art" aria-hidden="true">
+        <span class="hero-art__ping hero-art__ping--one">✦</span>
+        <span class="hero-art__ping hero-art__ping--two">✦</span>
+        <div class="hero-art__cloche">
+          <span class="hero-art__handle"></span>
+          <span class="hero-art__eye hero-art__eye--left"></span>
+          <span class="hero-art__eye hero-art__eye--right"></span>
+          <span class="hero-art__smile"></span>
+        </div>
+        <span class="hero-art__tray"></span>
       </div>
 
       <section class="reqs" aria-labelledby="reqs-title">
@@ -132,6 +150,28 @@
     </details>
 
   </main>
+
+  <section class="course-switch" aria-labelledby="other-course-title">
+    <div class="course-switch__copy">
+      <p class="course-switch__eyebrow">Keep learning</p>
+      <h2 class="course-switch__title" id="other-course-title">Check out our other course!</h2>
+      <p class="course-switch__text">Step away from the rush and master the sauce behind the service.</p>
+    </div>
+    <a class="course-switch__card course-switch__card--saucier" href="https://saucier.migarci2.dev/" data-other-course>
+      <span class="course-preview course-preview--saucier" role="img" aria-label="Preview of the yellow and orange Saucier School course">
+        <span class="course-preview__chrome"><i></i><i></i><i></i></span>
+        <span class="course-preview__label">Mini course</span>
+        <span class="course-preview__name">Pan Sauces<br>&amp; Emulsions</span>
+        <span class="course-preview__plate"><i></i><b></b></span>
+      </span>
+      <span class="course-switch__body">
+        <span class="course-switch__tag">Next course</span>
+        <strong>Saucier School</strong>
+        <span>Build sauces that hold, from fond to plate.</span>
+        <span class="course-switch__action">Visit course <b aria-hidden="true">→</b></span>
+      </span>
+    </a>
+  </section>
 
   <footer class="lc-foot" data-nema-footer>
     <span class="lc-foot__text">Line Cook Lab, an example course site.</span>
