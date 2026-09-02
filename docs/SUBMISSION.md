@@ -144,7 +144,7 @@ who signed it does.
 - `packages/nema-extension` is Manifest V3: the vault page as the side panel,
   a MAIN world bridge that is the only code touching `document.modelContext`,
   and a service worker that relays tool calls per tab.
-- Verification: 266 unit tests, and native end to end scripts that drive Chrome
+- Verification: 267 unit tests, and native end to end scripts that drive Chrome
   for Testing 154 over the DevTools Protocol against the live origins: the
   golden path, the connect handshake, the extension, replay and tampering
   rejections, wrong audience, expired tokens.
