@@ -1083,3 +1083,112 @@ What it is: the vault as a side panel, plus a broker that needs no model.
   end to end through CDP; assert the page personalised and the vault gained a
   receipt. Document the manual load steps for judges in the package README
   and in JUDGE_GUIDE ("nema in your browser, optional, 30 seconds to load").
+
+## 23. Concept alignment: sites speak their own names, the agent translates, the learner confirms (owner decision, 2026-09-02)
+
+The closed registry stays the anchor (`shared/concepts.json`), but a site is
+no longer required to use `nema:*` ids. A manifest may declare local concepts
+and, optionally, what it believes they equal:
+
+```json
+"concepts": [
+  { "id": "browning-science", "title": "Browning science" },
+  { "id": "sugar-browning", "title": "Sugar browning",
+    "alignsTo": [ { "concept": "nema:caramelization", "relation": "equivalent" } ] }
+]
+```
+
+Requirements, outcomes and receipt claims may then use local ids (any id
+without the `nema:` prefix is local to the manifest's origin).
+
+Vault storage gains `alignments`:
+
+```json
+{ "alignmentId": "aln_...", "origin": "https://maillard.migarci2.dev",
+  "providerConcept": "browning-science", "concept": "nema:maillard-reaction",
+  "relation": "equivalent" | "broader" | "narrower",
+  "status": "proposed" | "confirmed" | "rejected",
+  "proposedBy": "agent" | "provider" | "learner", "rationale": "...",
+  "proposedAt": "...", "decidedAt": null }
+```
+
+Rules:
+
+- New vault tools (they appear over WebMCP and over MCP automatically):
+  `propose_concept_alignment({ origin, providerConcept, concept, relation, rationale })`
+  returns `{ status: 'proposed', alignmentId }` or `{ status: 'exists', alignmentId, current }`;
+  `get_concept_alignments({ origin? })` returns the list with statuses. There is
+  no tool to confirm or reject: only the learner does that, in the vault UI
+  (and in the extension panel, which reuses the same vault functions
+  `confirmAlignment(alignmentId)` and `rejectAlignment(alignmentId)`).
+- An alignment declared by the provider's own manifest (`alignsTo` to a
+  registry id) is stored as `proposedBy: 'provider'` and confirmed on arrival:
+  a site may vouch for its own vocabulary. It still shows in the ledger.
+- Translation happens at the vault's edges, never inside inference:
+  `create_readiness_assertion` maps local requirement ids of that audience
+  through confirmed alignments before reading bands, and answers with the id
+  the site asked for plus `alignedTo`; an unaligned local id answers `missing`
+  with `reason: 'unaligned'`. `stage_evidence_receipt` maps local claim ids
+  through confirmed alignments for the receipt's issuer, stores
+  `claims[i].alignedTo`, and leaves unaligned claims in the receipt as
+  `pendingAlignment: true`. `derived()` builds the receipt view with `concept`
+  replaced by `alignedTo` where present and skips claims still pending, so
+  confirming an alignment later moves bands without touching the ledger.
+- `relation` only affects the direction: `equivalent` maps both ways;
+  `narrower` (the site's concept is a part of the registry concept) lets the
+  site's evidence count for the registry concept but a registry band answers
+  the site's requirement only as `uncertain` at best; `broader` the reverse.
+- Trust and weight are untouched by alignment: who signed the receipt decides
+  the weight, who translated the name never does.
+- The learner UI: an "Alignments" list next to the ledgers: proposed ones
+  with Confirm and Reject buttons and the rationale, confirmed ones as one
+  line each, rejected ones hidden under "More".
+- `recordSelfCheck({ needId, rubricResults })` is a new vault function (no
+  tool): it stores a receipt with grader `self-report`, keyId `self-check`,
+  issuer `urn:nema:self`, trust `registered`, so a person can answer a review
+  question in the vault or the extension panel without an agent, at the
+  self-report weight (0.3). The evidence ledger labels it "self check".
+- The blog (`apps/blog`) becomes the living demonstration: its manifest uses
+  local ids, one with a declared `alignsTo` (sugar-browning to
+  nema:caramelization) and one without (browning-science, the article's main
+  subject, meant to be aligned by an agent to nema:maillard-reaction). The
+  embed sends local ids in claims and requirements as they are.
+
+## 24. The smooth flow in the extension (owner decision, 2026-09-02)
+
+The learner never copies anything, approves once per site, and answers
+questions. Everything else is the extension's job.
+
+1. **Onboarding.** A fresh panel shows three choices: start empty, load the
+   demo learner, import a vault file. One sentence: "Learn anywhere you see
+   the nema mark. What you pass is kept here, and only shared when you say so."
+2. **Arriving at a site.** When the content script finds nema tools, the page
+   gets a small bar at the bottom (shadow DOM, host page styles untouched):
+   "This site works with nema. Share what you already know?" with "Share" and
+   "Not now". "Share" runs the broker's share action (consent in the panel,
+   which the service worker opens if it is closed; if it cannot be opened
+   without a user gesture, the bar itself says "Open nema to approve" and
+   highlights the toolbar icon). The consent modal gains, from the extension
+   only, a "Remember this site for 30 days" checkbox (implemented by writing
+   `settings.autoApprove[origin]` with a 30 day expiry through the vault's
+   own storage on the panel origin). A site already remembered shows the bar
+   as "Shared with this site" and the course adapts on load without asking.
+3. **Learning.** While a nema page is open, the extension polls
+   `get_attempt_status` for the manifest's activities every 4 seconds (only
+   the active tab, only while the tab is visible). When an activity turns
+   `passed` and no receipt for it is stored, it issues and stages the receipt
+   automatically and shows a toast in the page: "Kept in your vault: ratios,
+   now usable" (the bands that moved, in words). Failures and duplicates are
+   silent in the page and visible in the panel strip. The manual button stays
+   in the panel as "Check for receipts now".
+4. **Next.** The top of the panel is a "Next" card: the most urgent learning
+   need from `getNeeds(5)`, its rubric as a short checklist the learner can
+   tick ("I can explain why boiling breaks an emulsion"), a "Done" button that
+   calls `recordSelfCheck`, and one line saying an agent would grade this
+   properly ("Connect an agent to be asked instead"). When a site the vault
+   knows can teach the need, the card links there instead.
+5. **Alignments.** When a page's manifest carries local concept ids without a
+   confirmed alignment, the bar adds "This site names things its own way";
+   the panel lists the proposed alignments (from the provider or from an
+   agent) with Confirm and Reject, using the vault functions of section 23.
+6. **Tokens** never appear in the normal path; they live under "More".
