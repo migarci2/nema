@@ -59,12 +59,50 @@
       </div>
 
       <figure class="lp-shot">
-        <div class="lp-shot__frame">
-          <img class="lp-shot__img" src="/story-ask-poster.png" data-gif="/hero-ask.gif"
-               width="720" height="583" decoding="async"
-               alt="A course asks the vault what the reader can already do, the reader approves, and the path drops from 68 minutes to 27.">
+        <div class="lp-shot__frame lp-shot__frame--drawn">
+          <svg class="lp-web" viewBox="0 0 700 560" role="img" aria-labelledby="lp-web-title" focusable="false">
+            <title id="lp-web-title">Three sites send what a reader did into one vault the reader owns.</title>
+            <defs>
+              <linearGradient id="lp-edge" x1="350" y1="300" x2="470" y2="440" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#00E5FF"/><stop offset="0.5" stop-color="#15C4B4"/><stop offset="1" stop-color="#3A78FF"/>
+              </linearGradient>
+            </defs>
+            <!-- three sites, each with its own look -->
+            <g class="lp-web__site">
+              <rect x="40" y="40" width="180" height="200" rx="10" fill="#EDE6D8"/>
+              <g fill="#B9A688"><rect x="62" y="64" width="136" height="14" rx="3"/><rect x="62" y="90" width="100" height="9" rx="3"/><rect x="62" y="118" width="54" height="54" rx="3"/><rect x="126" y="118" width="72" height="9" rx="3"/><rect x="126" y="138" width="72" height="9" rx="3"/><rect x="126" y="158" width="72" height="9" rx="3"/><rect x="62" y="190" width="136" height="9" rx="3"/><rect x="62" y="210" width="100" height="9" rx="3"/></g>
+            </g>
+            <g class="lp-web__site">
+              <rect x="260" y="56" width="180" height="168" rx="10" fill="#101216" stroke="#2A2F3A" stroke-width="2"/>
+              <g fill="#4ADE80"><rect x="282" y="80" width="80" height="9" rx="3"/><rect x="282" y="98" width="110" height="9" rx="3"/><rect x="282" y="116" width="136" height="9" rx="3"/><rect x="282" y="134" width="70" height="9" rx="3"/><rect x="282" y="152" width="120" height="9" rx="3"/><rect x="282" y="170" width="140" height="9" rx="3"/><rect x="282" y="188" width="90" height="9" rx="3"/></g>
+            </g>
+            <g class="lp-web__site">
+              <rect x="480" y="48" width="180" height="192" rx="10" fill="#FAFAFA"/>
+              <g fill="#C6C6C6"><rect x="502" y="72" width="136" height="14" rx="3"/><rect x="502" y="98" width="80" height="9" rx="3"/><rect x="502" y="126" width="136" height="9" rx="3"/><rect x="502" y="146" width="136" height="9" rx="3"/><rect x="502" y="166" width="136" height="9" rx="3"/><rect x="502" y="194" width="62" height="9" rx="3"/><rect x="576" y="194" width="62" height="9" rx="3"/><rect x="502" y="214" width="100" height="9" rx="3"/></g>
+            </g>
+            <!-- links into the vault, and a receipt travelling down each one -->
+            <g fill="none" stroke="#00E5FF" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity="0.9">
+              <path id="lp-l1" d="M 130 240 V 280 L 255 366"/>
+              <path id="lp-l2" d="M 350 224 V 308"/>
+              <path id="lp-l3" d="M 570 240 V 280 L 445 366"/>
+            </g>
+            <g class="lp-web__pulses" fill="#FFCA2E">
+              <rect width="10" height="10" x="-5" y="-5"><animateMotion dur="3.6s" repeatCount="indefinite" begin="0s"><mpath href="#lp-l1"/></animateMotion></rect>
+              <rect width="10" height="10" x="-5" y="-5"><animateMotion dur="3.6s" repeatCount="indefinite" begin="1.2s"><mpath href="#lp-l2"/></animateMotion></rect>
+              <rect width="10" height="10" x="-5" y="-5"><animateMotion dur="3.6s" repeatCount="indefinite" begin="2.4s"><mpath href="#lp-l3"/></animateMotion></rect>
+            </g>
+            <!-- the vault: the nema mark -->
+            <g transform="translate(222 284) scale(4)">
+              <path d="M32 6 L54 19 L54 45 L32 58 L10 45 L10 19 Z" fill="#0B1320" stroke="url(#lp-edge)" stroke-width="0.9" stroke-linejoin="miter"/>
+              <g shape-rendering="crispEdges">
+                <rect x="29" y="3" width="6" height="6" fill="url(#lp-edge)"/><rect x="51" y="16" width="6" height="6" fill="url(#lp-edge)"/><rect x="51" y="42" width="6" height="6" fill="url(#lp-edge)"/>
+                <rect x="29" y="55" width="6" height="6" fill="#FFCA2E"/><rect x="7" y="42" width="6" height="6" fill="url(#lp-edge)"/><rect x="7" y="16" width="6" height="6" fill="url(#lp-edge)"/>
+              </g>
+              <g fill="#F2F6FF" shape-rendering="crispEdges"><rect x="24" y="24" width="16" height="4"/><rect x="24" y="28" width="4" height="12"/><rect x="36" y="28" width="4" height="12"/></g>
+            </g>
+          </svg>
         </div>
-        <figcaption class="lp-shot__cap">A course asks. Nothing leaves until <span class="hl-cyan">you say yes</span>.</figcaption>
+        <figcaption class="lp-shot__cap">Three sites that never met. One vault, <span class="hl-cyan">yours</span>.</figcaption>
       </figure>
     </section>
 
@@ -471,7 +509,7 @@
 
     <!-- tools on this page --------------------------------------------- -->
     <section class="hub-sec dock" aria-labelledby="dock-title">
-      <h2 class="u-label" id="dock-title">Two tools on this page</h2>
+      <h2 class="u-label" id="dock-title">One tool on this page</h2>
 
       <div class="dock__grid">
         <div class="ask">
@@ -489,26 +527,6 @@
           </div>
         </div>
 
-        <div class="ask">
-          <form class="open-app" id="open-app" toolname="open_app"
-                tooldescription="Open one of the nema apps in this tab. Navigates this page to the app the learner picked and returns the app key and the URL."
-                toolautosubmit>
-            <div class="n-field">
-              <label class="n-label" for="open-app-select">Open an app</label>
-              <select class="n-select" id="open-app-select" name="app" required
-                      toolparamdescription="Which nema app to open: vault, harness, security or site.">
-                <option value="vault">Vault</option>
-                <option value="harness">Saucier School</option>
-                <option value="security">Line Cook Lab</option>
-                <option value="site">Hub</option>
-              </select>
-            </div>
-            <button class="n-btn n-btn--primary" type="submit">Open</button>
-          </form>
-          <p class="n-help" data-open-status role="status" aria-live="polite">
-            A form for you, a tool for your agent.
-          </p>
-        </div>
       </div>
 
       <div class="feed">

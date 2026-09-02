@@ -241,6 +241,9 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
 }
 
 .lp-shot__img { display: block; width: 100%; height: auto; }
+.lp-shot__frame--drawn { padding: 8px 0 0; }
+.lp-web { display: block; width: 100%; height: auto; }
+@media (prefers-reduced-motion: reduce) { .lp-web__pulses { display: none; } }
 
 .lp-shot__cap { font-size: var(--fs-13); color: var(--ink-2); max-width: 52ch; }
 

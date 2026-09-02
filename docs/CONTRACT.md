@@ -649,6 +649,8 @@ the user's board with the real assets. Registers one tool
 `overview|protocol|privacy|vault|providers|judges`, plus one declarative form
 `<form toolname="open_app">` with a `<select name="app">` that navigates.
 
+**2026-09-03, owner:** the `open_app` form was removed from the hub. The hub registers one tool, `explain_nema`; navigation between apps is by links only.
+
 ## 13. Scripts
 
 - `scripts/build.sh`: `rm -rf dist; for app in site vault harness security coach: mkdir -p dist/$app; cp -r apps/$app/public/. dist/$app/; cp -r shared dist/$app/shared`.
