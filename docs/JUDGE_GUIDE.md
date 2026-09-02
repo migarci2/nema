@@ -248,6 +248,16 @@ Then ask:
 
 Tests: `npm run test:mcp` drives the server with the official MCP client.
 
+Non interactive example, verified with Codex 0.151:
+
+```sh
+node packages/nema-mcp/bin.mjs seed
+codex exec --dangerously-bypass-approvals-and-sandbox \
+  "Using the nema MCP tools, call get_vault_summary and get_learning_needs with budgetMinutes 5, then summarise."
+```
+
+Interactive `codex` and Claude Code ask you to approve each nema tool call; `codex exec` needs the bypass flag because its default approval policy is never.
+
 ## Try to break it
 
 Everything here is meant to be attacked. The apps show you what happened.

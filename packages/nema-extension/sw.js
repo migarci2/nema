@@ -13,10 +13,16 @@ const BADGE_TEXT = '#0B1320';
 /** tabId -> { url, origin, title, tools, otherTools, worksWithNema, updatedAt } */
 const pages = new Map();
 
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
-});
-chrome.sidePanel?.setPanelBehavior?.({ openPanelOnActionClick: true }).catch(() => {});
+chrome.runtime.onInstalled.addListener(openOnActionClick);
+openOnActionClick();
+
+/* The behaviour is per profile, not per session, but a worker that restarts
+ * after an update should not lose it. */
+function openOnActionClick() {
+  try {
+    Promise.resolve(chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })).catch(() => {});
+  } catch { /* an older Chrome without the side panel API */ }
+}
 
 /* ------------------------------------------------------------- badge -- */
 
@@ -26,7 +32,9 @@ function setBadge(tabId, page) {
   chrome.action.setBadgeText({ tabId, text }).catch(() => {});
   if (count > 0) {
     chrome.action.setBadgeBackgroundColor({ tabId, color: BADGE_BACKGROUND }).catch(() => {});
-    chrome.action.setBadgeTextColor?.({ tabId, color: BADGE_TEXT }).catch(() => {});
+    if (chrome.action.setBadgeTextColor) {
+      chrome.action.setBadgeTextColor({ tabId, color: BADGE_TEXT }).catch(() => {});
+    }
     chrome.action.setTitle({
       tabId,
       title: `nema: this page offers ${count} nema tool${count === 1 ? '' : 's'}`
@@ -97,16 +105,21 @@ async function resolvePage(explicitTabId, senderTabId) {
     return { tabId: explicitTabId, page: tab ? blank(tab) : null };
   }
 
-  const windows = [{ active: true, lastFocusedWindow: true }, { active: true }];
-  for (const query of windows) {
+  /* The panel's own tab is never the page it is reporting on. Anything else
+   * the learner is looking at is, even a blank tab: saying "no nema tools
+   * here" is honest, quietly keeping the last page that had them is not. */
+  const mine = (tab) => tab.id === senderTabId
+    || (typeof tab.url === 'string' && tab.url.startsWith('chrome-extension://'));
+
+  for (const query of [{ active: true, lastFocusedWindow: true }, { active: true }]) {
     const tabs = await chrome.tabs.query(query).catch(() => []);
-    const tab = tabs.find((entry) => entry.id !== senderTabId && isWebPage(entry.url));
-    if (tab) {
-      const stored = pages.get(tab.id);
-      if (stored) return { tabId: tab.id, page: stored };
-      const scanned = await rescan(tab.id);
-      return { tabId: tab.id, page: scanned || blank(tab) };
-    }
+    const tab = tabs.find((entry) => !mine(entry));
+    if (!tab) continue;
+    if (!isWebPage(tab.url)) return { tabId: tab.id, page: blank(tab) };
+    const stored = pages.get(tab.id);
+    if (stored) return { tabId: tab.id, page: stored };
+    const scanned = await rescan(tab.id);
+    return { tabId: tab.id, page: scanned || blank(tab) };
   }
 
   const recent = [...pages.entries()]

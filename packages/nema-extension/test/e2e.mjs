@@ -102,7 +102,7 @@ async function launch() {
     });
   }
 
-  async function attach(targetId, { width = 0, height = 0 } = {}) {
+  async function attach(targetId, { width = 0, height = 0, worker = false } = {}) {
     const { sessionId } = await send('Target.attachToTarget', { targetId, flatten: true });
     const page = {
       sessionId,
@@ -137,7 +137,7 @@ async function launch() {
       }
     };
     sessions.set(sessionId, page);
-    await send('Page.enable', {}, sessionId);
+    if (!worker) await send('Page.enable', {}, sessionId);
     await send('Runtime.enable', {}, sessionId);
     if (width && height) {
       await send('Emulation.setDeviceMetricsOverride', {
@@ -153,6 +153,7 @@ async function launch() {
       const { targetId } = await send('Target.createTarget', { url });
       return attach(targetId, size);
     },
+    async attachWorker(targetId) { return attach(targetId, { worker: true }); },
     async close() { ws.close(); chrome.kill(); }
   };
 }
@@ -163,12 +164,13 @@ const browser = await launch();
 try {
   /* 1. the extension id, read from its service worker target */
   let extensionId = null;
+  let workerTarget = null;
   for (let i = 0; i < 40 && !extensionId; i += 1) {
     const targets = await browser.targets();
     /* Chrome runs component extensions of its own, so match this one's worker
      * file rather than the first extension service worker in the list. */
-    const worker = targets.find((t) => t.type === 'service_worker' && /^chrome-extension:\/\/[a-p]+\/sw\.js$/.test(t.url));
-    if (worker) extensionId = new URL(worker.url).host;
+    workerTarget = targets.find((t) => t.type === 'service_worker' && /^chrome-extension:\/\/[a-p]+\/sw\.js$/.test(t.url));
+    if (workerTarget) extensionId = new URL(workerTarget.url).host;
     else await sleep(250);
   }
   ok(Boolean(extensionId), `extension loaded, id ${extensionId}`);
@@ -201,10 +203,20 @@ try {
   );
   const toolCount = Number((strip.match(/(\d+) tools/) || [])[1] || 0);
   ok(toolCount >= 5, `the strip sees the page: ${strip.trim()}`);
-  const badge = await panel.evaluate(`document.querySelector('[data-ext-tools]').textContent`);
-  ok(badge.includes('describe_learning_offer') && badge.includes('issue_evidence_receipt'),
-    `the strip lists what the page can do: ${badge.trim()}`);
+  const toolLine = await panel.evaluate(`document.querySelector('[data-ext-tools]').textContent`);
+  ok(toolLine.includes('describe_learning_offer') && toolLine.includes('issue_evidence_receipt'),
+    `the strip lists what the page can do: ${toolLine.trim()}`);
   console.log('shot ' + await panel.shot('02-panel-this-page'));
+
+  /* the badge, read from the service worker itself */
+  const worker = await browser.attachWorker(workerTarget.targetId);
+  const badge = await worker.evaluate(`(async () => {
+    const tabs = await chrome.tabs.query({});
+    const tab = tabs.find((t) => t.url.startsWith(${JSON.stringify(SAUCIER)}));
+    if (!tab) return 'no tab';
+    return await chrome.action.getBadgeText({ tabId: tab.id }) + ' | ' + await chrome.action.getTitle({ tabId: tab.id });
+  })()`);
+  ok(badge.startsWith(String(toolCount)) && badge.includes('nema tool'), `the action badge counts the page's tools: ${badge}`);
 
   /* 4. share bands, approve in the modal */
   await panel.evaluate(`document.querySelector('[data-ext-share]').click(), true`);
@@ -280,6 +292,17 @@ try {
   const moved = await panel.evaluate(`document.querySelector('[data-ext-result]').textContent.includes('ratios apply')`);
   ok(moved, 'the strip says which band moved');
   console.log('shot ' + await panel.shot('07-panel-receipt'));
+
+  /* 8. an ordinary page: the strip says so and offers nothing */
+  await browser.newPage('about:blank');
+  const quiet = await panel.waitFor(
+    `(() => { const t = document.querySelector('[data-ext-state]').textContent;
+       return t.includes('does not offer') ? t : ''; })()`,
+    { label: 'the strip to report an ordinary page' }
+  );
+  const hidden = await panel.evaluate(`document.querySelector('[data-ext-actions]').hidden`);
+  ok(quiet.includes('does not offer nema tools') && hidden === true,
+    `an ordinary page offers no buttons: ${quiet.trim()}`);
 
   /* console hygiene, both sides */
   ok(panel.errors.length === 0, `panel console errors: ${JSON.stringify(panel.errors)}`);
