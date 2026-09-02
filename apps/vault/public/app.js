@@ -21,15 +21,6 @@ const STATE_PREVIEW = 10;
 
 const BANDS = ['durable', 'usable', 'fragile', 'uncertain', 'unknown'];
 const BAND_RANK = { unknown: 0, uncertain: 1, fragile: 2, usable: 3, durable: 4 };
-const ABILITY_SHORT = {
-  recognize: 'rec',
-  retrieve: 'ret',
-  explain: 'exp',
-  apply: 'app',
-  transfer: 'tra',
-  discriminate: 'dis'
-};
-
 const PANEL_IDS = {
   summary: 'p-summary',
   graph: 'p-graph',
@@ -72,12 +63,6 @@ function shortConcept(id) {
 
 function shortOrigin(origin) {
   return String(origin || '').replace(/^https?:\/\//, '');
-}
-
-/* Every receipt id starts with the same five characters, and the id column is
- * narrow. Dropping the prefix is what makes two rows tell each other apart. */
-function shortReceiptId(id) {
-  return String(id || '').replace(/^rcpt_/, '');
 }
 
 function isoDate(iso) {
@@ -271,7 +256,7 @@ function renderStateTable() {
 function renderMisconceptions() {
   const items = vault.getMisconceptions();
   if (items.length === 0) {
-    refs.misconceptions.innerHTML = '<p class="n-empty">Nothing recorded. These never leave the vault.</p>';
+    refs.misconceptions.innerHTML = '<p class="n-empty">Nothing recorded, and these never leave the vault.</p>';
     return;
   }
   refs.misconceptions.innerHTML = `
@@ -621,14 +606,14 @@ function showInboxResult(result) {
   if (result.status === 'pending') {
     box.innerHTML = `
       <div class="v-result__box v-result__box--warn">
-        <p><b>Stored as pending.</b> ${esc(result.issuer || 'That issuer')} is not in the trusted issuer list, so nothing moved. The receipt is in the ledger with a pending badge.</p>
+        <p><b>Stored as pending.</b> ${esc(result.issuer || 'That issuer')} is not a trusted issuer, so nothing moved.</p>
       </div>`;
     return;
   }
   const reasons = {
-    'bad-signature': 'The signature does not match the issuer key. Nothing changed.',
-    duplicate: 'This receipt is already in the ledger. Nothing changed.',
-    malformed: 'That is not a readable nema receipt token. Nothing changed.'
+    'bad-signature': 'The signature does not match the issuer key.',
+    duplicate: 'This receipt is already in the ledger.',
+    malformed: 'That is not a readable nema receipt token.'
   };
   box.innerHTML = `
     <div class="v-result__box v-result__box--bad">
@@ -674,8 +659,8 @@ function readHashReceipt() {
   const described = describeToken(token);
   refs.inboxNote.hidden = false;
   refs.inboxNote.textContent = described
-    ? `A receipt arrived from ${described.issuerName} for "${described.activity}". Nothing has been staged yet. Read it, then press Stage receipt.`
-    : 'A token arrived in the page address. Nothing has been staged yet. Read it, then press Stage receipt.';
+    ? `A receipt arrived from ${described.issuerName} for "${described.activity}". Read it, then press Stage receipt.`
+    : 'A token arrived in the page address. Read it, then press Stage receipt.';
   showInboxResult(null);
   const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   refs.inboxNote.scrollIntoView({ block: 'center', behavior: calm ? 'auto' : 'smooth' });

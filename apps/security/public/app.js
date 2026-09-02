@@ -410,7 +410,7 @@ function renderStage() {
   if (!activity) {
     hint.textContent = 'nothing open';
     body.append(
-      el('p', 'empty', 'Nothing open. Start an activity above, or ask the agent to call start_activity.')
+      el('p', 'empty', 'Start an activity above, or ask the agent to call start_activity.')
     );
     return;
   }
@@ -425,9 +425,9 @@ function renderStage() {
   head.append(
     el('p', 'stage__facts', `${sentenceCase(activity.type)}, ${activity.difficulty}, ${activity.minutes} min`)
   );
-  /* A lab opens with its own scenario, which says the same thing better, so the
-     one line summary is only printed where nothing else briefs the learner. */
-  if (!activity.scenario) head.append(el('p', 'stage__does', activity.whatTheLearnerDoes));
+  /* `whatTheLearnerDoes` is written for the agent, in the third person, and it
+     describes what the stage below it already shows. It stays in the tool
+     result and off the page. */
   body.append(head);
 
   const locked = lockedEntry(activityId);
@@ -436,7 +436,8 @@ function renderStage() {
     lock.append(el('p', 'lockbox__title', plainReason(activity.lockedReason)));
     const missing = el('ul', 'lockbox__list');
     for (const need of locked.missing) {
-      const item = el('li', 'mono');
+      /* Mono for the concept id, the UI face for the sentence around it. */
+      const item = el('li');
       item.append(el('code', null, conceptLabel(need.concept, need.ability)));
       item.append(el('span', 'dim', ` needs ${need.needed}, your vault says ${statusMap()[`${need.concept}|${need.ability}`] || 'missing'}`));
       missing.append(item);
@@ -570,7 +571,11 @@ function renderLesson(body, activity) {
   button.disabled = attempt.status === 'passed';
   button.addEventListener('click', () => submit(activity.id, { completed: true }));
   actions.append(button);
-  actions.append(el('span', 'dim', 'A lesson records exposure evidence, the lowest weight the vault accepts.'));
+  /* Once the lesson is read the grader says this better, in the feedback
+     under the button, so the standing note goes away with the click. */
+  if (attempt.status !== 'passed') {
+    actions.append(el('span', 'dim', 'A lesson records exposure evidence, the lowest weight the vault accepts.'));
+  }
   wrap.append(actions);
 
   body.append(wrap);
@@ -789,7 +794,7 @@ function renderTriageLab(body, activity) {
     retry.addEventListener('click', () => resetAttempt(activity.id));
     actions.append(retry);
   } else {
-    actions.append(el('span', 'dim', 'One action per incident. Over reacting costs a table, and the grader counts it.'));
+    actions.append(el('span', 'dim', 'One action per incident. Over reacting counts against you.'));
   }
   form.append(actions);
 
@@ -1191,9 +1196,9 @@ async function presentAssertion(assertionToken) {
 
 function describeOffer() {
   const time = new Date().toLocaleTimeString('en-GB');
-  offerNote =
-    `Manifest handed to the agent at ${time}: ${MANIFEST.activities.length} activities, ` +
-    `${MANIFEST.unit.estimatedMinutes} minutes, ${MANIFEST.requirements.length} requirements.`;
+  /* The counts are already on screen a line above, so the note only carries
+     what is new: the manifest left this page, and when. */
+  offerNote = `Manifest handed to the agent at ${time}.`;
   renderHero();
   /* A copy, so a tool caller can never reach into the module the grader uses. */
   return { status: 'ok', manifest: JSON.parse(JSON.stringify(MANIFEST)) };

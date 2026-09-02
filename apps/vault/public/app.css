@@ -92,15 +92,19 @@
   margin: 0;
 }
 
-.v-flash { border-color: var(--cyan); }
-@keyframes v-flash-ring {
-  from { box-shadow: 0 0 0 1px var(--cyan); }
-  to { box-shadow: 0 0 0 1px transparent; }
+/* A tool call washes its panel for a moment. The panels carry no borders, so
+ * drawing a cyan rectangle around one would shout louder than the change it
+ * reports. The cyan note beside the heading is the part that stays. */
+@keyframes v-flash-wash {
+  from { background: var(--cyan-12); box-shadow: 0 0 0 10px var(--cyan-12); }
+  to { background: transparent; box-shadow: 0 0 0 10px transparent; }
 }
-.v-flash { animation: v-flash-ring 1400ms var(--ease-out); }
+.v-flash {
+  border-radius: var(--r-2);
+  animation: v-flash-wash 1400ms var(--ease-out);
+}
 
-/* The border colour still marks the panel the agent touched. Only the pulse
- * goes away, so the signal survives without the movement. */
+/* Without motion the note beside the heading carries the signal on its own. */
 @media (prefers-reduced-motion: reduce) {
   .v-flash { animation: none; }
 }
