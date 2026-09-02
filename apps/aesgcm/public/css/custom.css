@@ -1,0 +1,106 @@
+table {
+    text-align: center;
+    width: 100%;
+    table-layout: fixed;
+    display: table;
+}
+
+figure {
+    text-align: center;
+}
+
+figure img {
+    border: 1px solid #ddd;
+}
+
+@media (prefers-color-scheme: light) {
+    input.error {
+        background-color: pink;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    input.error {
+        background-color: maroon;
+    }
+}
+
+div.input-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-gap: 10px;
+    align-items: center;
+}
+
+div.input-grid input {
+    margin-bottom: 0;
+}
+
+input.code {
+    font-family: monospace;
+}
+
+.badge {
+    width: 100%;
+    text-align: center;
+}
+
+.badge img {
+    height: 2em;
+}
+
+.legal {
+    width: 100%;
+    text-align: center;
+}
+
+.legal {
+    font-size: small;
+}
+
+.legal a {
+    color: gray;
+}
+
+.friends {
+    padding-left: 0;
+}
+
+.friends li {
+    display: block;
+    float: left;
+    list-style: none;
+    padding-right: 1em;
+}
+
+.activate-windows {
+    position: fixed;
+    bottom: 40px;
+    right: 38px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.15em;
+    opacity: 0.5;
+    user-select: none;
+}
+
+.activate-windows .title {
+    font-size: 15.75pt;
+}
+
+.activate-windows .subtitle {
+    font-size: 12pt;
+}
+
+@media (max-width: 1337px) {
+    .activate-windows {
+        display: none;
+    }
+}
+
+.email::before {
+    content: 'hi';
+}
+
+.email::after {
+    content: 'frereit.de';
+}

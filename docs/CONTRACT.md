@@ -1304,3 +1304,45 @@ the courses, the embed and blog, the extension panel and the connect page.
   creators page do not show tokens.
 - Verify by reading every page as a first time learner: if a string looks like
   base64, a hash, an id or a key, it must be inside "Under the hood".
+
+## 27. A real article with nema added: the AES-GCM mirror (owner decision, 2026-09-02)
+
+To show the value nema adds to an educational resource that already exists,
+`apps/aesgcm` mirrors "AES-GCM and breaking it on nonce reuse" by frereit
+(https://frereit.de/aes_gcm/, licence CC BY-SA 4.0, 9,300 words, 72
+interactive controls, wasm polynomial factoring) as it is, and adds nema with
+the one tag install. Worker `nema-aesgcm`, domain `aesgcm.migarci2.dev`.
+
+Rules:
+
+- The article is reproduced verbatim (text, widgets, images, styles). A short
+  attribution block at the top and the bottom: "This is a mirror of
+  frereit.de/aes_gcm by frereit, CC BY-SA 4.0, republished under the same
+  licence with nema added to show what a learning protocol adds to an
+  article that already exists. Nothing else was changed." with links to the
+  original and the licence. The copy stays CC BY-SA 4.0 (say so in a
+  LICENSE.article file in the app directory).
+- Everything nema is between two HTML comments, as in the blog: the manifest
+  tag, the script tag, and the `<nema-activities>` element placed after the
+  Conclusion section.
+- The manifest speaks the article's own names (local ids, section 23) with
+  `alignsTo` for the ones that have a registry concept. Add a small
+  cryptography cluster to `shared/concepts.json` so the alignments resolve:
+  `nema:block-ciphers`, `nema:counter-mode`, `nema:authenticated-encryption`,
+  `nema:galois-field-arithmetic`, `nema:message-authentication`,
+  `nema:nonce-misuse` (with prereqs among themselves, rubrics, minutes,
+  confusableWith at least authenticated-encryption vs message-authentication
+  and counter-mode vs block-ciphers, misconception nonce-misuse
+  "a_nonce_only_needs_to_be_secret"). The demo seed does not change.
+- Activities from the article, in the embed's own model: `read` (lesson,
+  Mark as read, exposure), `tldr-check` (quiz, three questions the TL;DR
+  answers: what GCM adds to CTR, what H is, what nonce reuse leaks), and
+  `nonce-reuse-check` (quiz, two questions on why reusing a nonce lets an
+  attacker recover H and forge tags). Requirements: `block-ciphers.explain`
+  and `galois-field-arithmetic.recognize` in local names (for example
+  "aes" and "gf2-128") aligned to the registry, so a learner who read the
+  Maillard blog gets nothing skipped and a learner with a crypto vault does.
+- The point to make visible: the page is untouched, the reader keeps a signed
+  note of what they understood, and any other site can ask about it. Judges
+  see the diff: `git show --stat` of the app shows the article files plus
+  one manifest block.
