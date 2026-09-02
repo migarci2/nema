@@ -87,6 +87,41 @@
           <h3 class="v-sublabel" id="p-disclosures">Disclosures out</h3>
           <div class="n-ledger" data-disclosure-ledger></div>
         </div>
+        <div class="v-ledgers__block">
+          <h3 class="v-sublabel" id="p-alignments">Alignments</h3>
+          <p class="v-align__note">Sites name things their own way. An agent proposes what a name means, you decide, and nothing is translated until you do.</p>
+          <div class="n-ledger" data-alignment-list></div>
+          <details class="v-align__more" data-align-box>
+            <summary class="v-more__summary">Align a name yourself</summary>
+            <form class="stack stack--tight v-align__form" data-align-form>
+              <div class="n-field">
+                <label class="n-label" for="align-origin">Site origin</label>
+                <input class="n-input mono" id="align-origin" name="origin" type="text" required
+                       placeholder="https://maillard.migarci2.dev">
+              </div>
+              <div class="n-field">
+                <label class="n-label" for="align-name">The name that site uses</label>
+                <input class="n-input mono" id="align-name" name="providerConcept" type="text" required
+                       placeholder="browning-science">
+              </div>
+              <div class="n-field">
+                <label class="n-label" for="align-concept">The nema concept it means</label>
+                <input class="n-input mono" id="align-concept" name="concept" type="text" required
+                       placeholder="nema:maillard-reaction">
+              </div>
+              <div class="row row--tight">
+                <label class="n-label sr-only" for="align-relation">Relation</label>
+                <select class="n-select" id="align-relation" name="relation">
+                  <option value="equivalent">is the same thing as</option>
+                  <option value="narrower">is a part of</option>
+                  <option value="broader">covers more than</option>
+                </select>
+                <button class="n-btn n-btn--sm n-btn--secondary" type="submit">Align it</button>
+                <span class="n-help" data-align-status role="status" aria-live="polite"></span>
+              </div>
+            </form>
+          </details>
+        </div>
       </div>
     </section>
 

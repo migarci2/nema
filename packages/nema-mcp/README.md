@@ -1,7 +1,7 @@
 # nema-mcp
 
 The nema learning vault for terminal agents. Claude Code, Codex and any other
-MCP client get the same nine tools that browser agents reach through WebMCP
+MCP client get the same eleven tools that browser agents reach through WebMCP
 on the vault page. Same names, same schemas, same return shapes, same code:
 this package boots `apps/vault/public/vault.js` and `tools.js` inside Node
 with four small shims (a file backed `localStorage`, an event sink for
@@ -53,9 +53,37 @@ Interactive `codex` and Claude Code ask you to approve each nema tool call; `cod
 | `record_agent_assessment` | store the rubric result of a question the learner answered, as agent evidence |
 | `get_disclosure_ledger` | what left the vault, to whom, until when |
 | `get_evidence_ledger` | the receipts the vault holds, newest first |
+| `propose_concept_alignment` | propose that a site's own concept id means a nema registry concept |
+| `get_concept_alignments` | list those proposals with the learner's answer, or lack of one |
 
 Nothing here writes mastery, answers for the learner, or exports the ledger
 to an agent. Those tools do not exist on purpose.
+
+## Sites that speak their own names
+
+A site is not obliged to use `nema:` concept ids. The blog says
+`browning-science`; the registry says `nema:maillard-reaction`. The two
+alignment tools are how an agent closes that gap, and they appeared here with
+no work at all: this package serves whatever `apps/vault/public/tools.js`
+registers, so a tool added for WebMCP is an MCP tool in the same commit.
+
+Proposing does not translate anything. It puts the question in the vault's
+Alignments list, and only the learner answers it, in the vault page or the
+extension panel. There is no `confirm_concept_alignment` tool, on any surface.
+
+Try it after `nema-mcp seed`:
+
+```
+Open the blog at https://maillard.migarci2.dev, read its manifest with
+describe_learning_offer, and for every concept id it uses that is not a nema:
+id, propose what you think it means in my vault with
+propose_concept_alignment. Then show me the list and tell me what you would
+have to guess.
+```
+
+A receipt whose claims use those local ids is still accepted and still kept:
+it simply moves nothing until the alignment is confirmed, and then it moves
+bands without a single line of the ledger changing.
 
 Receipts from a site that signs with its own browser generated key verify and
 land as `self`, capped at the weight of a self report, 0.3. That is how a page
@@ -98,7 +126,8 @@ imported key is adopted so the same pseudonyms hold across surfaces.
 npm test
 ```
 
-Drives the server through the official MCP client over stdio: the nine tool
+Drives the server through the official MCP client over stdio: the eleven tool
 names, the demo seed, consent denied and approved through elicitation, the
 audience binding, the pre-approval policy, a receipt signed by the harness key,
-replay rejection, and an idempotent merge.
+replay rejection, an alignment proposed and left waiting, and an idempotent
+merge.

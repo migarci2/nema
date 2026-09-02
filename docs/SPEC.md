@@ -38,6 +38,9 @@ The agent never holds authority. It moves strings and explains them.
 ## 2. Vocabulary
 
 **Concept ids** are `nema:<kebab-case>` and come from `shared/concepts.json`.
+An id without that prefix is a local id, private to the origin of the manifest
+that published it, and means nothing to a vault until the learner says what it
+means. Section 13.
 
 **Abilities** form an ordered ladder, plus one side ability:
 
@@ -146,6 +149,18 @@ produce. This is the object that lets an agent plan before the learner commits.
 }
 ```
 
+A manifest may also carry `concepts`, the site's own vocabulary, and then use
+those local ids in `outcomes`, `requirements`, `skipIf` and receipt claims.
+Section 13 says what a vault does with them.
+
+```json
+"concepts": [
+  { "id": "browning-science", "title": "Browning science" },
+  { "id": "sugar-browning", "title": "Sugar browning",
+    "alignsTo": [ { "concept": "nema:caramelization", "relation": "equivalent" } ] }
+]
+```
+
 Activity `type` is one of `lesson`, `diagnostic`, `interactive-lab`,
 `free-recall`.
 
@@ -202,6 +217,10 @@ Rules:
 - The assertion carries only the concepts the request asked for. No history, no
   dates of study, no attempt counts, no other subjects, no misconceptions, no
   review schedule, no provider history.
+- An entry may carry two more fields when the site asked in its own vocabulary:
+  `alignedTo`, the registry concept the band was read from, and `reason`, which
+  is `"unaligned"` on a `missing` answer to a local id this vault has no
+  confirmed alignment for. Both are optional strings. Section 13.
 - Lifetime is 30 minutes. There is no refresh: the agent asks again, and the
   learner approves again.
 
@@ -508,10 +527,10 @@ list of bands that moved, and the vault animates exactly those rows.
 
 ## 7. Tool catalog: vault role
 
-Nine imperative tools, registered with `document.modelContext.registerTool` on
-the page that owns the data, plus one declarative form
+Eleven imperative tools, registered with `document.modelContext.registerTool`
+on the page that owns the data, plus one declarative form
 (`set_learning_goal_form`). `document.modelContext.getTools()` therefore lists
-ten. Every result is a JSON object with a `status` field.
+twelve. Every result is a JSON object with a `status` field.
 
 | tool | input | returns |
 |---|---|---|
@@ -523,7 +542,9 @@ ten. Every result is a JSON object with a `status` field.
 | `get_learning_needs` | `{ budgetMinutes?: number }` | `{ status:'ok', budgetMinutes, needs: LearningNeed[] }` |
 | `record_agent_assessment` | `{ needId: string, rubricResults:[{ criterion, met }], learnerAnswerSummary: string }` | `{ status:'accepted', receiptId, result, changes }` |
 | `get_disclosure_ledger` | `{}` | `{ status:'ok', disclosures:[{ audience, purpose, requestHash, sharedAt, expiresAt, shared, withheld }] }` |
-| `get_evidence_ledger` | `{ limit?: number }` | `{ status:'ok', receipts:[{ receiptId, issuerName, activity, claims, grader, signature:'verified'\|'pending'\|'agent', receivedAt, effect }] }` |
+| `get_evidence_ledger` | `{ limit?: number }` | `{ status:'ok', receipts:[{ receiptId, issuerName, activity, claims, grader, signature:'verified'\|'pending'\|'agent'\|'self-check', receivedAt, effect }] }` |
+| `propose_concept_alignment` | `{ origin, providerConcept, concept, relation, rationale }` | `{ status:'proposed', alignmentId }`, or `{ status:'exists', alignmentId, current }`, or `{ status:'error', error }` |
+| `get_concept_alignments` | `{ origin?: string }` | `{ status:'ok', alignments: Alignment[] }` |
 
 Behaviour that matters:
 
@@ -544,6 +565,9 @@ Behaviour that matters:
 - `set_learning_goal` is also exposed declaratively as
   `<form toolname="set_learning_goal_form">`, so both WebMCP registration styles
   are demonstrated on the same page without a duplicate tool name.
+- `propose_concept_alignment` translates nothing by itself. It adds a question
+  to the vault's Alignments list, and only the learner answers it. See
+  section 13.
 
 ---
 
@@ -603,6 +627,8 @@ model.
 | `submit_answer_for_learner` | only the human answers; the agent has no path to the grader |
 | `disable_review` | the schedule is a property of the evidence, not a setting |
 | `export_vault` | export is a button the human clicks, not a capability an agent can call |
+| `confirm_concept_alignment` | what a site's own name means is the learner's judgement; an agent may propose and read, never decide |
+| `record_self_check` | a self report is the learner's own word about themselves, and an agent must not be able to give it for them |
 
 A conformant vault fails conformance if any tool it registers can write a band
 directly, return raw receipts to an unbounded audience, or produce an assertion
@@ -734,12 +760,17 @@ A site with no backend joins with a manifest and a script.
 { "protocol": "nema/0.1",
   "provider": { "name": "Maillard, explained" },
   "unit": { "id": "maillard-explained", "title": "Why browning tastes like that", "estimatedMinutes": 8 },
+  "concepts": [
+    { "id": "browning-science", "title": "Browning science" },
+    { "id": "sugar-browning", "title": "Sugar browning",
+      "alignsTo": [ { "concept": "nema:caramelization", "relation": "equivalent" } ] }
+  ],
   "requirements": [ { "concept": "nema:heat-control", "ability": "explain" } ],
   "activities": [
     { "id": "read", "type": "lesson", "title": "Read the article", "minutes": 6,
-      "outcomes": [ { "concept": "nema:maillard-reaction", "ability": "recognize" } ] },
+      "outcomes": [ { "concept": "browning-science", "ability": "recognize" } ] },
     { "id": "check", "type": "quiz", "title": "Two questions before you go", "minutes": 2,
-      "outcomes": [ { "concept": "nema:maillard-reaction", "ability": "explain" } ],
+      "outcomes": [ { "concept": "browning-science", "ability": "explain" } ],
       "questions": [ { "id": "q1", "prompt": "...", "options": [ { "id": "a", "text": "..." } ], "answer": "a" } ] }
   ] }
 </script>
@@ -783,4 +814,128 @@ vault fetches it, matches it against the receipt, and treats the issuer as
 
 The reference install is `apps/blog`, one article at
 https://maillard.migarci2.dev whose source marks the nema part between two
-comments so it can be copied as a template.
+comments so it can be copied as a template. It names its concepts its own way
+on purpose: `sugar-browning` with a declared alignment the site vouches for,
+and `browning-science` with none, so a reader arriving with an agent can watch
+section 13 happen once.
+
+---
+
+## 13. Concept alignment
+
+The registry is the anchor, and it is closed. That is what makes a band mean
+the same thing to two sites that have never heard of each other. But a site
+that already has a vocabulary should not have to rename its own material to
+join, and the reader should not have to care that two names were the same
+thing all along.
+
+So a site may speak its own names, an agent may propose what they mean, and the
+learner decides. Nothing is translated by a site, and nothing is translated by
+an agent.
+
+### 13.1 Local concept ids
+
+An id without the `nema:` prefix is local to the origin of the manifest that
+published it. `browning-science` on `https://maillard.migarci2.dev` and
+`browning-science` on another site are two different names that happen to look
+alike, and a vault never confuses them: every alignment is stored against an
+origin.
+
+Local ids may appear anywhere a registry id may: `outcomes`, `requirements`,
+`skipIf`, `onlyIf`, and the `claims` of a signed receipt.
+
+### 13.2 The alignment record
+
+Alignments live in the learner's vault, in `alignments`, next to the receipts.
+
+```json
+{
+  "alignmentId": "aln_7Yk2pQ4mZr1v",
+  "origin": "https://maillard.migarci2.dev",
+  "providerConcept": "browning-science",
+  "concept": "nema:maillard-reaction",
+  "relation": "equivalent",
+  "status": "proposed",
+  "proposedBy": "agent",
+  "rationale": "The whole article is about the Maillard reaction under another name.",
+  "proposedAt": "2026-09-02T10:00:00Z",
+  "decidedAt": null
+}
+```
+
+`relation` is `equivalent`, `broader` or `narrower`. `status` is `proposed`,
+`confirmed` or `rejected`. `proposedBy` is `agent`, `provider` or `learner`.
+An alignment always points a local id at a registry id: it is a translation
+into the shared vocabulary, never a second vocabulary of its own.
+
+The learner may also write one, in the vault's own Alignments panel: that
+arrives as `proposedBy: 'learner'` and confirmed, because the person proposing
+it is the person who decides. It is the path with no agent in the room at all.
+
+Only a `confirmed` alignment translates anything. A vault holds at most one
+live alignment per (origin, local id): proposing again returns
+`{ status: 'exists' }` with the one already in play, so an agent cannot ask the
+same question twice, or ask it again under a different registry id while the
+first is unanswered.
+
+### 13.3 A site may vouch for its own names
+
+An `alignsTo` in the manifest arrives as `proposedBy: 'provider'` and
+`status: 'confirmed'`: a site is allowed to say what its own words mean. It
+shows in the Alignments list like any other, with the site named, and the
+learner can reject it. What a site cannot do is overrule a decision the learner
+has already made about that name.
+
+The arrival path is `declareAlignments({ origin, concepts })`, a vault function
+called by whatever actually read the manifest: the extension panel on the page,
+or the vault itself when a site hands it one. There is no tool for it, because
+a tool call is an agent's word, and this is the site's.
+
+### 13.4 Translation happens at the vault's edges
+
+Never inside the inference. `shared/inference.js` sees registry ids only, and
+knows nothing about any of this.
+
+**Outbound, `create_readiness_assertion`.** A local requirement id is read
+through the confirmed alignments of that audience, the band comes from the
+registry concept, and the answer goes back under the name the site asked with,
+plus `alignedTo`. A local id with no confirmed alignment answers `missing` with
+`reason: "unaligned"`, which is the truthful answer: this vault does not know
+what that name means. The site's own `skipIf` then matches its own words, which
+is why the "you can skip" note survives translation.
+
+**Inbound, `stage_evidence_receipt`.** The receipt is verified, stored and
+never rewritten: the claims stay exactly as the issuer signed them. Beside them
+the vault keeps a note per claim, `alignedTo` or `pendingAlignment: true`.
+
+**Derivation.** The state is derived from a view of the ledger in which each
+local claim is replaced by the registry concept it is confirmed to mean, and
+claims still pending are left out. Confirming an alignment therefore moves
+bands with no change to the ledger at all, and rejecting it moves them back.
+The evidence is what the issuer signed; the alignment is only how the vault
+reads it today.
+
+### 13.5 What the relation does
+
+The relation names the direction the meaning survives, and caps the other one.
+
+| relation | site's evidence, counted for the registry concept | registry band, answering the site's requirement |
+|---|---|---|
+| `equivalent` | in full | in full |
+| `narrower` (the site's concept is a part of the registry concept) | in full: evidence about the part is evidence about the whole | `uncertain` at best: knowing the whole does not prove the part |
+| `broader` (the site's concept covers more than the registry concept) | as `partial`: a pass on the whole is partial evidence for the part | in full |
+
+Trust and weight are untouched by any of this. Who signed the receipt decides
+the weight, and who translated the name never does: the grader weight, the
+trust tier and the `self` cap are computed before the name is read and are not
+consulted again.
+
+### 13.6 The self check
+
+`recordSelfCheck({ needId, rubricResults })` is a vault function with no tool
+behind it. It writes a receipt with `grader: 'self-report'`,
+`keyId: 'self-check'`, `issuer: 'urn:nema:self'` and trust `registered`, so a
+person can answer their own review question in the vault or the extension panel
+with no agent in the room. It is worth 0.3, the weakest thing the vault will
+write down, and the ledger labels it "self check" against the issuer "you, in
+the vault". Ticking your own box is honest evidence. It is not a certificate.

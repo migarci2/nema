@@ -264,6 +264,10 @@ export function assertShape(payload, type) {
       requireString(entry.ability, `assertions[${index}].ability`);
       requireString(entry.status, `assertions[${index}].status`);
       requireString(entry.confidence, `assertions[${index}].confidence`);
+      /* Concept alignment, contract 23: the registry concept the band was read
+       * from, and the reason nothing could be read. Both optional. */
+      requireOptionalString(entry.alignedTo, `assertions[${index}].alignedTo`);
+      requireOptionalString(entry.reason, `assertions[${index}].reason`);
     });
     if (!isPlainObject(payload.vaultKey) || typeof payload.vaultKey.x !== 'string') {
       throw new Error('vaultKey must be an EC public JWK');
@@ -512,12 +516,23 @@ export async function buildAssertionPayload({
           `assertion would disclose ${concept}.${ability}, which the request did not ask about`
         );
       }
-      return {
+      const line = {
         concept,
         ability,
         status: requireString(entry && entry.status, 'assertion.status'),
         confidence: requireString(entry && entry.confidence, 'assertion.confidence')
       };
+      /* A site that speaks its own names is answered in its own names, and
+       * told which registry concept the vault read the band from. `reason`
+       * names the one case where nothing could be read: a local id this vault
+       * has no confirmed alignment for. Contract section 23. */
+      if (entry.alignedTo !== undefined) {
+        line.alignedTo = requireString(entry.alignedTo, 'assertion.alignedTo');
+      }
+      if (entry.reason !== undefined) {
+        line.reason = requireString(entry.reason, 'assertion.reason');
+      }
+      return line;
     }),
     issuedAt: isoSeconds(issuedAtDate),
     expiresAt: isoSeconds(expiresAtDate),
@@ -805,6 +820,243 @@ export async function verifyReceipt(token, issuerMap, { seenReceiptIds } = {}) {
   }
 
   return { ok: true, payload, issuer, trust };
+}
+
+// ---------------------------------------------------------------------------
+// concept alignment (contract section 23)
+// ---------------------------------------------------------------------------
+//
+// The registry in shared/concepts.json stays the anchor, but a site is not
+// obliged to speak it. A manifest may declare its own concepts, and any id
+// without the `nema:` prefix is local to the origin that published it. The
+// vault translates those names at its edges, never inside the inference: an
+// assertion answers with the id the site asked for, a receipt keeps the claim
+// the issuer signed, and the mapping lives in the learner's own vault where
+// the learner can confirm or reject it.
+//
+// Everything below is pure, so the same rules run in the vault, in the
+// extension panel, in a test and in a Worker.
+
+/** The three relations an alignment may claim. Contract section 23. */
+export const ALIGNMENT_RELATIONS = Object.freeze(['equivalent', 'broader', 'narrower']);
+
+/** Lifecycle of one alignment. Only the learner moves it off `proposed`. */
+export const ALIGNMENT_STATUSES = Object.freeze(['proposed', 'confirmed', 'rejected']);
+
+/** Who put the alignment in front of the learner. */
+export const ALIGNMENT_PROPOSERS = Object.freeze(['agent', 'provider', 'learner']);
+
+/** Concept ids in the shared registry carry this prefix. Everything else is local. */
+export const REGISTRY_PREFIX = 'nema:';
+
+/**
+ * @param {unknown} id
+ * @returns {boolean} true for a `nema:` id from the shared registry
+ */
+export function isRegistryConcept(id) {
+  return typeof id === 'string' && id.startsWith(REGISTRY_PREFIX);
+}
+
+/**
+ * @param {unknown} id
+ * @returns {boolean} true for an id local to a provider's own manifest
+ */
+export function isLocalConcept(id) {
+  return typeof id === 'string' && id.length > 0 && !id.startsWith(REGISTRY_PREFIX);
+}
+
+/**
+ * Build one alignment record for vault storage.
+ *
+ * @param {object} input
+ * @param {string} input.origin the site that uses `providerConcept`
+ * @param {string} input.providerConcept the site's own id, without a prefix
+ * @param {string} input.concept the registry id it is aligned to
+ * @param {string} [input.relation] one of ALIGNMENT_RELATIONS
+ * @param {string} [input.status] one of ALIGNMENT_STATUSES
+ * @param {string} [input.proposedBy] one of ALIGNMENT_PROPOSERS
+ * @param {string} [input.rationale] why the proposer believes it
+ * @param {Date|string|number} [input.now]
+ * @param {string} [input.alignmentId] pass one to make the record reproducible
+ * @returns {object}
+ */
+export function buildAlignment({
+  origin,
+  providerConcept,
+  concept,
+  relation = 'equivalent',
+  status = 'proposed',
+  proposedBy = 'agent',
+  rationale = '',
+  now,
+  alignmentId
+}) {
+  requireString(origin, 'origin');
+  requireString(providerConcept, 'providerConcept');
+  requireString(concept, 'concept');
+  if (!ALIGNMENT_RELATIONS.includes(relation)) {
+    throw new Error(`relation must be one of ${ALIGNMENT_RELATIONS.join(', ')}`);
+  }
+  if (!ALIGNMENT_STATUSES.includes(status)) {
+    throw new Error(`status must be one of ${ALIGNMENT_STATUSES.join(', ')}`);
+  }
+  if (!ALIGNMENT_PROPOSERS.includes(proposedBy)) {
+    throw new Error(`proposedBy must be one of ${ALIGNMENT_PROPOSERS.join(', ')}`);
+  }
+  if (!isRegistryConcept(concept)) {
+    throw new Error(`an alignment must point at a registry concept, got ${concept}`);
+  }
+  if (!isLocalConcept(providerConcept)) {
+    throw new Error(`providerConcept must be the site's own id, without the ${REGISTRY_PREFIX} prefix`);
+  }
+  const proposedAt = isoSeconds(now);
+  return {
+    alignmentId: alignmentId ? requireString(alignmentId, 'alignmentId') : randomId('aln'),
+    origin,
+    providerConcept,
+    concept,
+    relation,
+    status,
+    proposedBy,
+    rationale: typeof rationale === 'string' ? rationale : '',
+    proposedAt,
+    decidedAt: status === 'proposed' ? null : proposedAt
+  };
+}
+
+/**
+ * The confirmed alignments of one origin, keyed by the site's own concept id.
+ * Only confirmed entries translate anything: a proposal the learner has not
+ * answered moves no band and answers no requirement.
+ *
+ * @param {Array<object>} alignments every alignment the vault holds
+ * @param {string} origin the site whose names are being read
+ * @returns {Map<string, object>}
+ */
+export function alignmentIndex(alignments, origin) {
+  const index = new Map();
+  for (const entry of Array.isArray(alignments) ? alignments : []) {
+    if (!isPlainObject(entry) || entry.status !== 'confirmed') continue;
+    if (entry.origin !== origin) continue;
+    if (index.has(entry.providerConcept)) continue;
+    index.set(entry.providerConcept, entry);
+  }
+  return index;
+}
+
+/**
+ * How far a band on the registry concept may answer a question asked in the
+ * site's own words.
+ *
+ * `equivalent` passes through. `narrower` means the site's concept is a part of
+ * the registry concept, so knowing the whole broadly does not prove the part:
+ * the answer is `uncertain` at best. `broader` is the mirror of that, and it is
+ * capped on the evidence side instead (see `translateClaim`).
+ *
+ * @param {string} status 'verified' | 'uncertain' | 'missing'
+ * @param {string} [relation]
+ * @returns {string}
+ */
+export function capStatus(status, relation) {
+  if (relation === 'narrower' && status === 'verified') return 'uncertain';
+  return status;
+}
+
+/**
+ * Translate one requirement id before the bands are read.
+ *
+ * @param {{concept: string, ability: string}} requirement as the site asked it
+ * @param {Map<string, object>} index confirmed alignments for that audience
+ * @returns {{ concept: string, ability: string, lookup: string|null,
+ *             alignedTo?: string, relation?: string, unaligned?: boolean }}
+ *   `lookup` is the id whose band answers the question, or null when the site
+ *   used a local name this vault has no confirmed alignment for.
+ */
+export function alignRequirement(requirement, index) {
+  const concept = requirement.concept;
+  const ability = requirement.ability;
+  if (!isLocalConcept(concept)) return { concept, ability, lookup: concept };
+  const alignment = index instanceof Map ? index.get(concept) : null;
+  if (!alignment) return { concept, ability, lookup: null, unaligned: true };
+  return {
+    concept,
+    ability,
+    lookup: alignment.concept,
+    alignedTo: alignment.concept,
+    relation: alignment.relation
+  };
+}
+
+/**
+ * The alignment note the vault stores beside one signed claim. The receipt
+ * itself is never rewritten: the note says what the claim was read as.
+ *
+ * @param {object} claim a claim from a signed receipt
+ * @param {Map<string, object>} index confirmed alignments for the issuer
+ * @returns {{ concept: string, ability: string, alignedTo?: string,
+ *             relation?: string, pendingAlignment?: boolean }}
+ */
+export function alignClaim(claim, index) {
+  const note = { concept: claim.concept, ability: claim.ability };
+  if (!isLocalConcept(claim.concept)) return note;
+  const alignment = index instanceof Map ? index.get(claim.concept) : null;
+  if (!alignment) {
+    note.pendingAlignment = true;
+    return note;
+  }
+  note.alignedTo = alignment.concept;
+  note.relation = alignment.relation;
+  return note;
+}
+
+/**
+ * The claim a derivation should count, or null when it is still waiting for an
+ * alignment the learner has not confirmed.
+ *
+ * A `broader` alignment says the site's concept covers more ground than the
+ * registry concept, so a pass on the whole is only partial evidence for the
+ * part: the claim maps with `result` capped at `partial`. This is a semantic
+ * cap on what the name can mean, not a trust one. The grader weight and the
+ * trust tier are untouched by alignment, exactly as the contract says: who
+ * signed the receipt decides the weight, who translated the name never does.
+ *
+ * @param {object} claim a claim from a signed receipt
+ * @param {Map<string, object>} index confirmed alignments for the issuer
+ * @returns {object|null}
+ */
+export function translateClaim(claim, index) {
+  const note = alignClaim(claim, index);
+  if (note.pendingAlignment) return null;
+  if (!note.alignedTo) return claim;
+  const mapped = { ...claim, concept: note.alignedTo };
+  if (note.relation === 'broader' && mapped.result === 'passed') mapped.result = 'partial';
+  return mapped;
+}
+
+/**
+ * Read the `concepts` block of a manifest into the alignments a site declares
+ * about its own vocabulary. Anything malformed is skipped rather than thrown:
+ * a site with one bad entry still installs.
+ *
+ * @param {Array<object>} concepts the manifest's `concepts` array
+ * @returns {Array<{providerConcept: string, concept: string, relation: string, title: string}>}
+ */
+export function declaredAlignments(concepts) {
+  const out = [];
+  for (const entry of Array.isArray(concepts) ? concepts : []) {
+    if (!isPlainObject(entry) || !isLocalConcept(entry.id)) continue;
+    for (const target of Array.isArray(entry.alignsTo) ? entry.alignsTo : []) {
+      if (!isPlainObject(target) || !isRegistryConcept(target.concept)) continue;
+      const relation = ALIGNMENT_RELATIONS.includes(target.relation) ? target.relation : 'equivalent';
+      out.push({
+        providerConcept: entry.id,
+        concept: target.concept,
+        relation,
+        title: typeof entry.title === 'string' ? entry.title : entry.id
+      });
+    }
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------------------

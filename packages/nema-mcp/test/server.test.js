@@ -13,7 +13,7 @@ const REPO = path.resolve(HERE, '../../..');
 const BIN = path.join(HERE, '..', 'bin.mjs');
 const proto = await import(path.join(REPO, 'shared/protocol.js'));
 const HARNESS = 'https://saucier.migarci2.dev';
-const NINE = ['create_readiness_assertion', 'get_disclosure_ledger', 'get_evidence_ledger', 'get_learner_state', 'get_learning_needs', 'get_vault_summary', 'record_agent_assessment', 'set_learning_goal', 'stage_evidence_receipt'];
+const ELEVEN = ['create_readiness_assertion', 'get_concept_alignments', 'get_disclosure_ledger', 'get_evidence_ledger', 'get_learner_state', 'get_learning_needs', 'get_vault_summary', 'propose_concept_alignment', 'record_agent_assessment', 'set_learning_goal', 'stage_evidence_receipt'];
 
 function tmpFile() {
   return path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'nema-mcp-')), 'vault.json');
@@ -29,12 +29,58 @@ async function connect(file, { elicit } = {}) {
 
 const parse = (res) => JSON.parse(res.content[0].text);
 
-test('lists exactly the nine vault tools with JSON schemas', async () => {
+test('lists exactly the eleven vault tools with JSON schemas', async () => {
   const client = await connect(tmpFile());
   try {
     const { tools } = await client.listTools();
-    assert.deepEqual(tools.map((t) => t.name).sort(), NINE);
+    assert.deepEqual(tools.map((t) => t.name).sort(), ELEVEN);
     for (const t of tools) assert.equal(t.inputSchema.type, 'object');
+    // The two alignment tools of contract section 23 reach a terminal agent
+    // with no work here: the MCP server serves whatever tools.js registers.
+    // What no agent gets, on either surface, is a way to confirm one.
+    const names = tools.map((t) => t.name);
+    assert.ok(names.includes('propose_concept_alignment'));
+    assert.ok(names.includes('get_concept_alignments'));
+    assert.equal(names.some((name) => /confirm|reject|self_check/.test(name)), false);
+  } finally { await client.close(); }
+});
+
+test('an alignment is proposed over MCP and waits for the learner', async () => {
+  const client = await connect(tmpFile());
+  try {
+    const empty = parse(await client.callTool({ name: 'get_concept_alignments', arguments: {} }));
+    assert.deepEqual(empty.alignments, []);
+
+    const proposed = parse(await client.callTool({
+      name: 'propose_concept_alignment',
+      arguments: {
+        origin: 'https://maillard.migarci2.dev',
+        providerConcept: 'browning-science',
+        concept: 'nema:maillard-reaction',
+        relation: 'equivalent',
+        rationale: 'The article is about the Maillard reaction under another name.'
+      }
+    }));
+    assert.equal(proposed.status, 'proposed');
+    assert.match(proposed.alignmentId, /^aln_/);
+
+    const again = parse(await client.callTool({
+      name: 'propose_concept_alignment',
+      arguments: {
+        origin: 'https://maillard.migarci2.dev',
+        providerConcept: 'browning-science',
+        concept: 'nema:maillard-reaction',
+        relation: 'equivalent',
+        rationale: 'Asking twice.'
+      }
+    }));
+    assert.equal(again.status, 'exists');
+    assert.equal(again.alignmentId, proposed.alignmentId);
+
+    const listed = parse(await client.callTool({ name: 'get_concept_alignments', arguments: { origin: 'https://maillard.migarci2.dev' } }));
+    assert.equal(listed.alignments.length, 1);
+    assert.equal(listed.alignments[0].status, 'proposed', 'nothing an agent can do moves it off this');
+    assert.equal(listed.alignments[0].proposedBy, 'agent');
   } finally { await client.close(); }
 });
 

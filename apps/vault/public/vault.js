@@ -8,23 +8,39 @@
  * This module holds no DOM. app.js renders, tools.js exposes the same calls to
  * an agent, and both go through the functions below so a tool call and a click
  * take exactly the same code path.
+ *
+ * It also holds the vault's other small ledger, `alignments`: what the names a
+ * site uses in its own vocabulary mean in the shared registry. Sites are not
+ * obliged to speak `nema:` ids, so the translation happens here, at the two
+ * edges where names cross the boundary (`createAssertion` on the way out,
+ * `stageReceipt` on the way in) and nowhere else. Inference never sees a local
+ * id, and only the learner may confirm one. Contract section 23.
  */
 
 import { ORIGINS, ORIGINS_BY_ENV, isDev } from '/shared/origins.js';
 import { generateKeyPair, randomId, nowIso } from '/shared/crypto.js';
 import {
+  ALIGNMENT_RELATIONS,
   DEFAULT_TTL_MINUTES,
   ISSUER_WELL_KNOWN_PATH,
   SEED_ORIGIN,
+  alignClaim,
+  alignRequirement,
+  alignmentIndex,
+  buildAlignment,
   buildAssertionPayload,
   buildIssuerMap,
   buildReadinessRequest,
   buildReceiptPayload,
+  capStatus,
+  declaredAlignments,
   inspectAssertion,
+  isLocalConcept,
   isSelfCertified,
   learnerKeyId,
   matchesPublishedKey,
   signToken,
+  translateClaim,
   verifyReceipt
 } from '/shared/protocol.js';
 import {
@@ -74,6 +90,10 @@ export const trustWeightCap = (entry) => (
 
 const DAY_MS = 86400000;
 
+/** The learner is the issuer of their own self check. Contract section 23. */
+export const SELF_CHECK_ISSUER = 'urn:nema:self';
+export const SELF_CHECK_KEY_ID = 'self-check';
+
 /** Evidence type produced by an ability, used for agent assessed receipts. */
 const EVIDENCE_TYPE = {
   recognize: 'recognition',
@@ -104,6 +124,7 @@ function emptyDoc() {
     disclosures: [],
     goals: [],
     misconceptions: [],
+    alignments: [],
     settings: { autoApprove: {} }
   };
 }
@@ -115,7 +136,7 @@ function normalize(value) {
   if (value.vaultKey && value.vaultKey.publicJwk && value.vaultKey.privateJwk) {
     next.vaultKey = value.vaultKey;
   }
-  for (const key of ['receipts', 'disclosures', 'goals', 'misconceptions']) {
+  for (const key of ['receipts', 'disclosures', 'goals', 'misconceptions', 'alignments']) {
     if (Array.isArray(value[key])) next[key] = value[key].filter((item) => item && typeof item === 'object');
   }
   const auto = value.settings && value.settings.autoApprove;
@@ -202,6 +223,9 @@ export function shortConcept(id) {
 export function issuerName(payload) {
   if (!payload) return 'unknown issuer';
   if (payload.keyId === 'agent') return 'nema coach agent';
+  /* A self check has no issuer but the learner, and saying so is the point:
+   * the ledger must never let a self report read like somebody else's word. */
+  if (payload.keyId === SELF_CHECK_KEY_ID) return 'you, in the vault';
   const known = (issuerMapProd && issuerMapProd[payload.keyId]) || (issuerMapDev && issuerMapDev[payload.keyId]);
   if (known) return known.name;
   /* A site that installed the one tag has no registered name, so it is known
@@ -263,6 +287,203 @@ export function getVaultPublicJwk() {
   return doc.vaultKey ? doc.vaultKey.publicJwk : null;
 }
 
+/* ------------------------------------------------- concept alignment -- */
+
+/**
+ * Every alignment the vault holds, newest first, optionally for one origin.
+ * @param {string} [origin]
+ */
+export function getAlignments(origin) {
+  const all = doc.alignments.slice().reverse();
+  return origin ? all.filter((entry) => entry.origin === origin) : all;
+}
+
+export function getAlignment(alignmentId) {
+  return doc.alignments.find((entry) => entry.alignmentId === alignmentId) || null;
+}
+
+/** Confirmed alignments for one origin, keyed by the site's own concept id. */
+function indexFor(origin) {
+  return alignmentIndex(doc.alignments, origin);
+}
+
+/**
+ * The alignment already in play for one of a site's names: the same target
+ * whatever the learner decided about it, or any proposal or confirmation still
+ * standing. Both block a new proposal, so an agent cannot ask twice, and cannot
+ * ask again under a different registry id while one is live.
+ */
+function liveAlignment(origin, providerConcept, concept) {
+  return doc.alignments.find((entry) => (
+    entry.origin === origin
+    && entry.providerConcept === providerConcept
+    && (entry.concept === concept || entry.status === 'proposed' || entry.status === 'confirmed')
+  )) || null;
+}
+
+/**
+ * Propose that a site's own concept id means a registry concept. Nothing is
+ * translated until the learner confirms it in the vault: this only puts the
+ * question in front of them.
+ *
+ * @returns {{status: 'proposed', alignmentId}|{status: 'exists', alignmentId, current}|{status: 'error', error: string}}
+ */
+export function proposeAlignment({ origin, providerConcept, concept, relation = 'equivalent', rationale = '', proposedBy = 'agent' }) {
+  if (typeof origin !== 'string' || origin.trim() === '') {
+    return { status: 'error', error: 'origin must be the origin of the site that uses this name' };
+  }
+  if (!isLocalConcept(providerConcept)) {
+    return { status: 'error', error: 'providerConcept must be the id the site uses, without the nema: prefix' };
+  }
+  if (!conceptIndex.has(concept)) {
+    return { status: 'error', error: `${concept} is not a concept in the nema registry`, unknownConcept: concept };
+  }
+  if (!ALIGNMENT_RELATIONS.includes(relation)) {
+    return { status: 'error', error: `relation must be one of ${ALIGNMENT_RELATIONS.join(', ')}` };
+  }
+
+  const existing = liveAlignment(origin, providerConcept, concept);
+  if (existing) {
+    return { status: 'exists', alignmentId: existing.alignmentId, current: { ...existing } };
+  }
+
+  const alignment = buildAlignment({ origin, providerConcept, concept, relation, rationale, proposedBy, now: new Date() });
+  doc.alignments.push(alignment);
+  save({ reason: 'alignment-proposed', alignmentId: alignment.alignmentId });
+  return { status: 'proposed', alignmentId: alignment.alignmentId, alignment: { ...alignment } };
+}
+
+/**
+ * Take the `concepts` block of a manifest as the site's own word about its own
+ * vocabulary. A site may vouch for its names, so a declared alignment arrives
+ * confirmed, marked `proposedBy: 'provider'`, and shows in the list like any
+ * other. It still cannot touch a name the learner has already ruled on.
+ *
+ * @param {{origin: string, concepts: Array<object>}} input the manifest fields
+ * @returns {{status: 'ok', declared: number, skipped: number, alignments: Array<object>}}
+ */
+export function declareAlignments({ origin, concepts: declared }) {
+  if (typeof origin !== 'string' || origin.trim() === '') {
+    return { status: 'error', error: 'origin must be the origin of the site that declared these concepts' };
+  }
+  const wanted = declaredAlignments(declared);
+  const added = [];
+  let skipped = 0;
+
+  for (const entry of wanted) {
+    if (!conceptIndex.has(entry.concept)) {
+      skipped += 1;
+      continue;
+    }
+    if (liveAlignment(origin, entry.providerConcept, entry.concept)) {
+      skipped += 1;
+      continue;
+    }
+    added.push(buildAlignment({
+      origin,
+      providerConcept: entry.providerConcept,
+      concept: entry.concept,
+      relation: entry.relation,
+      status: 'confirmed',
+      proposedBy: 'provider',
+      rationale: `Declared by the site as "${entry.title}".`,
+      now: new Date()
+    }));
+  }
+
+  if (added.length === 0) return { status: 'ok', declared: 0, skipped, alignments: [] };
+
+  doc.alignments.push(...added);
+  reannotate(origin);
+  save({ reason: 'alignments-declared', origin });
+  return { status: 'ok', declared: added.length, skipped, alignments: added.map((entry) => ({ ...entry })) };
+}
+
+/** The learner's decision, and the only way an alignment starts translating. */
+export function confirmAlignment(alignmentId) {
+  return decide(alignmentId, 'confirmed');
+}
+
+/** The learner's other decision. A rejected name never translates again. */
+export function rejectAlignment(alignmentId) {
+  return decide(alignmentId, 'rejected');
+}
+
+function decide(alignmentId, status) {
+  const alignment = getAlignment(alignmentId);
+  if (!alignment) return { status: 'rejected', reason: 'unknown-alignment' };
+  if (alignment.status === status) {
+    return { status: 'ok', alignment: { ...alignment }, changes: [] };
+  }
+
+  const nowMs = Date.now();
+  const now = new Date(nowMs).toISOString();
+  const before = deriveFrom(translated(doc.receipts), now);
+
+  alignment.status = status;
+  alignment.decidedAt = nowIso();
+  /* Receipts already in the ledger are re-read, not rewritten: the signed
+   * claims stay exactly as their issuer signed them and only the vault's note
+   * about what each claim was read as moves. */
+  reannotate(alignment.origin);
+
+  const after = deriveFrom(translated(doc.receipts), now);
+  const changes = diffStates(before, after);
+  save({ reason: `alignment-${status}`, alignmentId, changes });
+  return { status: 'ok', alignment: { ...alignment }, changes };
+}
+
+/**
+ * The alignment note the vault keeps beside each signed claim of a receipt, or
+ * null when every claim in it names a registry concept and there is nothing to
+ * translate. Parallel to `payload.claims`, so `claims[i].alignedTo` and
+ * `claims[i].pendingAlignment` read straight off it.
+ */
+function claimNotes(payload, index) {
+  const claims = payload && Array.isArray(payload.claims) ? payload.claims : [];
+  if (!claims.some((claim) => isLocalConcept(claim.concept))) return null;
+  return claims.map((claim) => alignClaim(claim, index));
+}
+
+/** Refresh the stored notes of every receipt issued by one origin. */
+function reannotate(origin) {
+  const index = indexFor(origin);
+  for (const entry of doc.receipts) {
+    if (!entry.payload || entry.payload.issuer !== origin) continue;
+    const notes = claimNotes(entry.payload, index);
+    if (notes) entry.claims = notes;
+    else delete entry.claims;
+  }
+}
+
+/**
+ * The receipts as a derivation reads them: local claim ids replaced by the
+ * registry concept the learner confirmed them to mean, claims with no confirmed
+ * alignment left out entirely. Nothing here is stored. Confirming an alignment
+ * later therefore moves bands without a single line of the ledger changing,
+ * which is the whole point: the evidence is what the issuer signed, this is
+ * only how the vault reads it today.
+ */
+function translated(receipts) {
+  const indexes = new Map();
+  return receipts.map((entry) => {
+    const payload = entry.payload;
+    const claims = payload && Array.isArray(payload.claims) ? payload.claims : null;
+    if (!claims || !claims.some((claim) => isLocalConcept(claim.concept))) return entry;
+
+    const origin = payload.issuer;
+    if (!indexes.has(origin)) indexes.set(origin, indexFor(origin));
+    const index = indexes.get(origin);
+
+    const mapped = [];
+    for (const claim of claims) {
+      const value = translateClaim(claim, index);
+      if (value) mapped.push(value);
+    }
+    return { ...entry, payload: { ...payload, claims: mapped } };
+  });
+}
+
 /**
  * Every derivation in the vault goes through here, so the trust cap can never
  * be forgotten in one code path and applied in another.
@@ -302,7 +523,7 @@ export function derived() {
     return derivedCache.value;
   }
   const now = new Date(nowMs).toISOString();
-  const state = deriveFrom(doc.receipts, now);
+  const state = deriveFrom(translated(doc.receipts), now);
   const value = { now, state, summary: summarize(state, { now }) };
   derivedCache = { revision, at: nowMs, value };
   return value;
@@ -379,13 +600,19 @@ function effectFor(changes, after, nowMs) {
   });
 }
 
-function reviewsFor(payload, after) {
+/* Reviews are scheduled against the concept the vault reads the claim as, so a
+ * claim in the site's own words reports the review of the registry concept it
+ * was aligned to, and one still waiting for an alignment reports nothing. */
+function reviewsFor(payload, after, notes) {
   const out = [];
   const seen = new Set();
-  for (const claim of payload.claims || []) {
-    if (seen.has(claim.concept)) continue;
-    seen.add(claim.concept);
-    const abilities = after[claim.concept] || {};
+  for (const [index, claim] of (payload.claims || []).entries()) {
+    const note = notes ? notes[index] : null;
+    if (note && note.pendingAlignment) continue;
+    const concept = note && note.alignedTo ? note.alignedTo : claim.concept;
+    if (seen.has(concept)) continue;
+    seen.add(concept);
+    const abilities = after[concept] || {};
     let soonest = null;
     for (const value of Object.values(abilities)) {
       if (!value || !value.nextReview) continue;
@@ -492,7 +719,7 @@ export async function stageReceipt(token, options = {}) {
 
   const nowMs = Date.now();
   const now = new Date(nowMs).toISOString();
-  const before = deriveFrom(doc.receipts, now);
+  const before = deriveFrom(translated(doc.receipts), now);
   const entry = {
     receiptId: payload.receiptId,
     token: raw,
@@ -503,26 +730,42 @@ export async function stageReceipt(token, options = {}) {
     effect: [],
     source: options.source || 'manual'
   };
+  /* Translation at the edge, contract section 23. A claim in the site's own
+   * words is noted with the registry concept the learner confirmed it to mean,
+   * and one with no confirmed alignment is kept as `pendingAlignment` so it can
+   * start counting the moment the learner says what it means. */
+  const notes = claimNotes(payload, indexFor(payload.issuer));
+  if (notes) entry.claims = notes;
   doc.receipts.push(entry);
-  const after = deriveFrom(doc.receipts, now);
+  const after = deriveFrom(translated(doc.receipts), now);
   const changes = diffStates(before, after);
   entry.effect = effectFor(changes, after, nowMs);
-  if (trust === 'self' && changes.length > 0) {
+  const waiting = (notes || []).filter((note) => note.pendingAlignment).map((note) => note.concept);
+  if (waiting.length > 0) {
+    entry.effect = [`waiting on an alignment for ${[...new Set(waiting)].join(', ')}`];
+  } else if (trust === 'self' && changes.length > 0) {
     entry.effect.push('capped at the self report weight, the site signed its own key');
   }
   save({ reason: 'receipt-accepted', receiptId: entry.receiptId, changes });
 
-  return {
+  const accepted = {
     status: 'accepted',
     receiptId: payload.receiptId,
     issuer: payload.issuer,
     issuerName: issuerName(payload),
     trust,
     activity: payload.activity,
-    claims: payload.claims,
+    claims: notes
+      ? payload.claims.map((claim, i) => ({ ...claim, ...notes[i] }))
+      : payload.claims,
     changes,
-    reviewsScheduled: reviewsFor(payload, after)
+    reviewsScheduled: reviewsFor(payload, after, notes)
   };
+  if (waiting.length > 0) {
+    accepted.pendingAlignment = [...new Set(waiting)];
+    accepted.hint = 'Nothing moved yet: this site names things its own way. Call propose_concept_alignment, then the learner confirms it in the vault.';
+  }
+  return accepted;
 }
 
 /* --------------------------------------------------------- demo seed -- */
@@ -533,7 +776,7 @@ export async function loadDemoSeed() {
   const seen = seenReceiptIds();
   const nowMs = Date.now();
   const now = new Date(nowMs).toISOString();
-  const first = deriveFrom(doc.receipts, now);
+  const first = deriveFrom(translated(doc.receipts), now);
   let before = first;
 
   let added = 0;
@@ -569,7 +812,7 @@ export async function loadDemoSeed() {
     if (result.ok) {
       /* Each seed receipt gets the same treatment a live one gets: the state is
        * rederived and the row says exactly what that receipt moved. */
-      const step = deriveFrom(doc.receipts, now);
+      const step = deriveFrom(translated(doc.receipts), now);
       entry.effect = effectFor(diffStates(before, step), step, nowMs);
       before = step;
       added += 1;
@@ -578,7 +821,7 @@ export async function loadDemoSeed() {
     }
   }
 
-  const after = deriveFrom(doc.receipts, now);
+  const after = deriveFrom(translated(doc.receipts), now);
   const changes = diffStates(first, after);
 
   const goalIds = new Set(doc.goals.map((goal) => goal.goalId));
@@ -634,21 +877,40 @@ export function clearAutoApproval(audience) {
   }
 }
 
-/** The exact lines a request would disclose, with the titles the modal shows. */
-export function previewDisclosure(requirements) {
+/**
+ * The exact lines a request would disclose, with the titles the modal shows.
+ *
+ * Translation at the edge, contract section 23: a requirement written in the
+ * site's own words is read from the registry concept the learner confirmed it
+ * to mean, and answered under the name the site asked with. A local id with no
+ * confirmed alignment is answered `missing` for the reason `unaligned`, which
+ * is the honest answer: this vault does not know what that name means yet.
+ *
+ * @param {Array<{concept: string, ability: string}>} requirements
+ * @param {string} [audience] the origin whose alignments apply
+ */
+export function previewDisclosure(requirements, audience) {
   const { state } = derived();
+  const index = indexFor(audience);
   return requirements.map((entry) => {
-    const abilities = state[entry.concept] || {};
+    const aligned = alignRequirement(entry, index);
+    const abilities = aligned.lookup ? state[aligned.lookup] || {} : {};
     const value = abilities[entry.ability] || null;
     const band = value ? value.band : 'unknown';
-    return {
+    const line = {
       concept: entry.concept,
-      title: conceptTitle(entry.concept),
+      title: aligned.lookup ? conceptTitle(aligned.lookup) : entry.concept,
       ability: entry.ability,
       band,
-      status: toAssertionStatus(band),
+      status: capStatus(toAssertionStatus(band), aligned.relation),
       confidence: value ? value.confidence : bandToConfidence(band, 0)
     };
+    if (aligned.alignedTo) {
+      line.alignedTo = aligned.alignedTo;
+      line.relation = aligned.relation;
+    }
+    if (aligned.unaligned) line.reason = 'unaligned';
+    return line;
   });
 }
 
@@ -673,7 +935,7 @@ export async function createAssertion({ audience, purpose, requirements }) {
   }
 
   const request = buildReadinessRequest({ audience, purpose, requirements });
-  const shared = previewDisclosure(request.requirements);
+  const shared = previewDisclosure(request.requirements, audience);
   const auto = autoApprovedUntil(audience);
   /* The pseudonym this audience will see. Derived before anything is signed so
    * the learner can read it in the modal and check that it differs per site. */
@@ -728,7 +990,16 @@ export async function createAssertion({ audience, purpose, requirements }) {
 
   const payload = await buildAssertionPayload({
     request,
-    statuses: shared.map(({ concept, ability, status, confidence }) => ({ concept, ability, status, confidence })),
+    /* The site is answered in its own words, with the registry concept the
+     * band was read from beside it. Contract section 23. */
+    statuses: shared.map(({ concept, ability, status, confidence, alignedTo, reason }) => ({
+      concept,
+      ability,
+      status,
+      confidence,
+      ...(alignedTo ? { alignedTo } : {}),
+      ...(reason ? { reason } : {})
+    })),
     vaultPublicJwk: doc.vaultKey.publicJwk,
     now: new Date(),
     ttlMinutes: DEFAULT_TTL_MINUTES
@@ -754,7 +1025,12 @@ export async function createAssertion({ audience, purpose, requirements }) {
     learnerKeyId: payload.learnerKeyId,
     sharedAt: payload.issuedAt,
     expiresAt: payload.expiresAt,
-    shared: shared.map(({ concept, ability, status }) => ({ concept, ability, status })),
+    shared: shared.map(({ concept, ability, status, alignedTo }) => ({
+      concept,
+      ability,
+      status,
+      ...(alignedTo ? { alignedTo } : {})
+    })),
     withheld: [...WITHHELD],
     token,
     auto: Boolean(auto)
@@ -766,7 +1042,13 @@ export async function createAssertion({ audience, purpose, requirements }) {
     token,
     expiresAt: payload.expiresAt,
     learnerKeyId: payload.learnerKeyId,
-    shared: shared.map(({ concept, ability, status }) => ({ concept, ability, status })),
+    shared: shared.map(({ concept, ability, status, alignedTo, reason }) => ({
+      concept,
+      ability,
+      status,
+      ...(alignedTo ? { alignedTo } : {}),
+      ...(reason ? { reason } : {})
+    })),
     withheld: [...WITHHELD]
   };
 }
@@ -804,14 +1086,26 @@ export function removeGoal(goalId) {
   if (doc.goals.length !== before) save({ reason: 'goal-removed', goalId });
 }
 
-/* -------------------------------------------- agent assessed evidence -- */
+/* ------------------------------------------- rubric graded evidence -- */
 
 /**
- * Record the coach's rubric assessment as a receipt with grader
- * `agent-assessed`, weight 0.6. Unsigned, labelled in the ledger, and rejected
- * outright when the need id was never issued by this vault.
+ * The shared half of `recordAgentAssessment` and `recordSelfCheck`: find the
+ * need, read the rubric, build one unsigned receipt and report what it moved.
+ * The only difference between the two is who did the grading, which is exactly
+ * the difference the ledger and the weights are supposed to show.
+ *
+ * @param {object} input
+ * @param {string} input.needId a need id this vault issued
+ * @param {Array<{criterion: string, met: boolean}>} input.rubricResults
+ * @param {string} input.issuer origin recorded on the receipt
+ * @param {string} input.keyId `agent` or `self-check`
+ * @param {string} input.grader `agent-assessed` or `self-report`
+ * @param {string} input.label how the activity reads in the ledger
+ * @param {string} input.source `agent` or `self`
+ * @param {string} [input.trust] trust tier stored on the entry
+ * @param {string} [input.note] one or two sentences of context
  */
-export async function recordAgentAssessment({ needId, rubricResults, learnerAnswerSummary }) {
+async function recordRubricResult({ needId, rubricResults, issuer, keyId, grader, label, source, trust, note }) {
   if (typeof needId !== 'string' || needId.trim() === '') {
     return { status: 'rejected', reason: 'unknown-need' };
   }
@@ -825,17 +1119,16 @@ export async function recordAgentAssessment({ needId, rubricResults, learnerAnsw
   const total = rubricResults.length;
   const result = met === total ? 'passed' : met * 2 >= total ? 'partial' : 'failed';
 
-  const issuer = ORIGINS.coach || 'urn:nema:agent';
   const subject = await learnerKeyId(doc.vaultKey.publicJwk, issuer);
   const ability = need.ability || 'explain';
   const payload = buildReceiptPayload({
     issuer,
-    keyId: 'agent',
+    keyId,
     subject,
     activity: {
-      id: `agent-assessment-${need.kind}-${shortConcept(need.concept)}`,
+      id: `${keyId}-${need.kind}-${shortConcept(need.concept)}`,
       version: '1.0.0',
-      title: `Agent assessed: ${conceptTitle(need.concept)}, ${ability}`
+      title: `${label}: ${conceptTitle(need.concept)}, ${ability}`
     },
     claims: [{
       concept: need.concept,
@@ -844,13 +1137,13 @@ export async function recordAgentAssessment({ needId, rubricResults, learnerAnsw
       result,
       difficulty: 'intermediate'
     }],
-    conditions: { attempts: 1, hintsUsed: 0, grader: 'agent-assessed', graderVersion: '1' },
+    conditions: { attempts: 1, hintsUsed: 0, grader, graderVersion: '1' },
     now: new Date()
   });
 
   const nowMs = Date.now();
   const now = new Date(nowMs).toISOString();
-  const before = deriveFrom(doc.receipts, now);
+  const before = deriveFrom(translated(doc.receipts), now);
   const entry = {
     receiptId: payload.receiptId,
     token: null,
@@ -858,21 +1151,66 @@ export async function recordAgentAssessment({ needId, rubricResults, learnerAnsw
     status: 'verified',
     receivedAt: nowIso(),
     effect: [],
-    source: 'agent',
+    source,
     needId,
     rubricResults: rubricResults.map((item) => ({
       criterion: String(item && item.criterion ? item.criterion : ''),
       met: Boolean(item && item.met)
     })),
-    note: typeof learnerAnswerSummary === 'string' ? learnerAnswerSummary : ''
+    note: typeof note === 'string' ? note : ''
   };
+  if (trust) entry.trust = trust;
   doc.receipts.push(entry);
-  const after = deriveFrom(doc.receipts, now);
+  const after = deriveFrom(translated(doc.receipts), now);
   const changes = diffStates(before, after);
   entry.effect = effectFor(changes, after, nowMs);
-  save({ reason: 'agent-assessment', receiptId: entry.receiptId, changes });
+  save({ reason: source === 'self' ? 'self-check' : 'agent-assessment', receiptId: entry.receiptId, changes });
 
   return { status: 'accepted', receiptId: payload.receiptId, result, changes };
+}
+
+/**
+ * Record an agent's rubric assessment as a receipt with grader
+ * `agent-assessed`, weight 0.6. Unsigned, labelled in the ledger, and rejected
+ * outright when the need id was never issued by this vault.
+ */
+export async function recordAgentAssessment({ needId, rubricResults, learnerAnswerSummary }) {
+  return recordRubricResult({
+    needId,
+    rubricResults,
+    issuer: ORIGINS.coach || 'urn:nema:agent',
+    keyId: 'agent',
+    grader: 'agent-assessed',
+    label: 'Agent assessed',
+    source: 'agent',
+    note: learnerAnswerSummary
+  });
+}
+
+/**
+ * The learner answering their own review question, with no agent in the room.
+ * Contract section 23: grader `self-report`, keyId `self-check`, issuer
+ * `urn:nema:self`, trust `registered`, and the ledger says "self check".
+ *
+ * It is honest evidence and it is worth 0.3, the weakest thing a person can
+ * say about themselves that is still worth writing down. There is no tool for
+ * this on purpose: an agent must never tick a learner's boxes for them.
+ */
+export async function recordSelfCheck({ needId, rubricResults, note }) {
+  return recordRubricResult({
+    needId,
+    rubricResults,
+    issuer: SELF_CHECK_ISSUER,
+    keyId: SELF_CHECK_KEY_ID,
+    grader: 'self-report',
+    label: 'Self check',
+    source: 'self',
+    /* Nothing was signed, but nothing was claimed on anyone else's behalf
+     * either: the learner is the issuer, so the tier is not in question and
+     * the weight, 0.3, is what keeps it honest. */
+    trust: 'registered',
+    note
+  });
 }
 
 /* ------------------------------------------------ export, import, reset -- */

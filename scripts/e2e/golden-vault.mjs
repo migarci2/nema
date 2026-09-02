@@ -109,6 +109,92 @@ try {
   const tamperedSelf = parse(await page.evaluate(tool('stage_evidence_receipt', { token: forgedSelf })));
   ok(tamperedSelf.status === 'rejected' && tamperedSelf.reason === 'bad-signature', 'tampered self signed receipt rejected: ' + tamperedSelf.status + ' ' + tamperedSelf.reason);
 
+  // A site that names things its own way (contract section 23). The blog says
+  // "browning-science"; the registry says nema:maillard-reaction. The receipt is
+  // kept, moves nothing, and starts counting the moment the learner confirms
+  // what the name means, with no second staging and no change to the ledger.
+  const BLOG = 'http://localhost:8785';
+  const blogKey = await cryptoMod.generateKeyPair();
+  const bandsOf = async c => (parse(await page.evaluate(tool('get_learner_state', { concepts: [c] })))).state[0].bands;
+  const beforeBands = await bandsOf('nema:maillard-reaction');
+  const localToken = await proto.signToken(proto.buildReceiptPayload({
+    issuer: BLOG, keyId: 'self:' + BLOG, issuerKey: blogKey.publicJwk, subject: learnerKeyId,
+    activity: { id: 'check', version: '1.0.0', title: 'Two questions before you go' },
+    claims: [{ concept: 'browning-science', ability: 'transfer', evidenceType: 'transfer', result: 'passed', difficulty: 'introductory' }],
+    conditions: { attempts: 1, hintsUsed: 0, durationSeconds: 120, grader: 'deterministic', graderVersion: '1' }
+  }), blogKey.privateJwk);
+  const localStaged = parse(await page.evaluate(tool('stage_evidence_receipt', { token: localToken })));
+  ok(localStaged.status === 'accepted' && JSON.stringify(localStaged.pendingAlignment) === '["browning-science"]' && (localStaged.changes || []).length === 0,
+    'a receipt in the site own words is kept and moves nothing: ' + localStaged.status + ' pending=' + JSON.stringify(localStaged.pendingAlignment) + ' changes=' + (localStaged.changes || []).length);
+  const pendingBands = await bandsOf('nema:maillard-reaction');
+  ok(JSON.stringify(pendingBands) === JSON.stringify(beforeBands), 'nothing moved while the name is unaligned: ' + JSON.stringify(pendingBands));
+
+  const proposed = parse(await page.evaluate(tool('propose_concept_alignment', {
+    origin: BLOG, providerConcept: 'browning-science', concept: 'nema:maillard-reaction', relation: 'equivalent',
+    rationale: 'The whole article is about the Maillard reaction under another name.' })));
+  ok(proposed.status === 'proposed' && /^aln_/.test(proposed.alignmentId || ''), 'the agent proposes what the name means: ' + proposed.status);
+  const stillPending = parse(await page.evaluate(tool('get_concept_alignments', { origin: BLOG })));
+  ok(stillPending.alignments?.length === 1 && stillPending.alignments[0].status === 'proposed' && stillPending.alignments[0].proposedBy === 'agent',
+    'and it waits for the learner: ' + JSON.stringify(stillPending.alignments?.[0]?.status));
+  ok(JSON.stringify(await bandsOf('nema:maillard-reaction')) === JSON.stringify(beforeBands), 'proposing translates nothing on its own');
+
+  // The learner confirms it. There is no tool for this click, on purpose.
+  await page.shot('/tmp/nema-e2e-alignment.png');
+  const clicked = await page.evaluate(`(() => { const b = document.querySelector('[data-confirm-alignment="${proposed.alignmentId}"]'); if (!b) return false; b.click(); return true; })()`);
+  ok(clicked === true, 'the vault page offers a Confirm button for the proposal');
+  await sleep(400);
+  const afterBands = await bandsOf('nema:maillard-reaction');
+  ok(afterBands.transfer !== beforeBands.transfer && afterBands.transfer !== 'unknown',
+    'confirming moved the Maillard band: transfer ' + beforeBands.transfer + ' to ' + afterBands.transfer);
+  const confirmed = parse(await page.evaluate(tool('get_concept_alignments', {})));
+  ok(confirmed.alignments?.[0]?.status === 'confirmed' && confirmed.alignments[0].decidedAt, 'the alignment is confirmed and dated');
+  const alignedLedger = parse(await page.evaluate(tool('get_evidence_ledger', { limit: 1 })));
+  ok(alignedLedger.receipts?.[0]?.claims?.[0]?.concept === 'browning-science' && alignedLedger.receipts[0].claims[0].alignedTo === 'nema:maillard-reaction',
+    'the ledger still says what the site said, and what it is read as: ' + JSON.stringify(alignedLedger.receipts?.[0]?.claims?.[0]));
+
+  // The same thing with no agent in the room: the panel names the word that is
+  // waiting and the learner says what it means themselves.
+  const sugarToken = await proto.signToken(proto.buildReceiptPayload({
+    issuer: BLOG, keyId: 'self:' + BLOG, issuerKey: blogKey.publicJwk, subject: learnerKeyId,
+    activity: { id: 'check', version: '1.0.0', title: 'Two questions before you go' },
+    claims: [{ concept: 'sugar-browning', ability: 'discriminate', evidenceType: 'discrimination', result: 'passed', difficulty: 'introductory' }],
+    conditions: { attempts: 1, hintsUsed: 0, durationSeconds: 90, grader: 'deterministic', graderVersion: '1' }
+  }), blogKey.privateJwk);
+  const sugarStaged = parse(await page.evaluate(tool('stage_evidence_receipt', { token: sugarToken })));
+  ok(JSON.stringify(sugarStaged.pendingAlignment) === '["sugar-browning"]', 'a second name waits: ' + JSON.stringify(sugarStaged.pendingAlignment));
+  const waitingWord = await page.evaluate(`document.querySelector('[data-align-name] , .v-align--waiting')?.textContent.trim().slice(0, 60) || ''`);
+  ok(waitingWord.length > 0, 'the alignments panel names the waiting word: ' + JSON.stringify(waitingWord));
+  const beforeSugar = await bandsOf('nema:caramelization');
+  await page.evaluate(`(() => {
+    document.querySelector('[data-align-name="${BLOG}"][data-align-word="sugar-browning"]').click();
+    const f = document.querySelector('[data-align-form]');
+    f.elements.concept.value = 'nema:caramelization';
+    f.requestSubmit();
+    return true;
+  })()`);
+  await sleep(400);
+  const afterSugar = await bandsOf('nema:caramelization');
+  ok(afterSugar.discriminate !== beforeSugar.discriminate, 'aligning by hand moved the band: discriminate ' + beforeSugar.discriminate + ' to ' + afterSugar.discriminate);
+  const byHand = parse(await page.evaluate(tool('get_concept_alignments', { origin: BLOG })));
+  const learnerOwn = byHand.alignments.find(a => a.providerConcept === 'sugar-browning');
+  ok(learnerOwn?.proposedBy === 'learner' && learnerOwn.status === 'confirmed', 'and it is recorded as the learner own word: ' + JSON.stringify([learnerOwn?.proposedBy, learnerOwn?.status]));
+
+  // A self check: the learner answers their own review question, no agent.
+  const selfNeeds = parse(await page.evaluate(tool('get_learning_needs', { budgetMinutes: 5 })));
+  const ticked = await page.evaluate(`(() => {
+    const box = document.querySelector('[data-self-check]');
+    if (!box) return 'no checklist';
+    for (const input of box.querySelectorAll('[data-check-criterion]')) input.checked = true;
+    box.querySelector('[data-action="self-check"]').click();
+    return box.getAttribute('data-self-check');
+  })()`);
+  ok(typeof ticked === 'string' && ticked.startsWith('need_') && selfNeeds.needs.some(n => n.needId === ticked),
+    'the needs panel offers the first need as a checklist: ' + ticked);
+  await sleep(400);
+  const selfLedgerRow = parse(await page.evaluate(tool('get_evidence_ledger', { limit: 1 }))).receipts?.[0];
+  ok(selfLedgerRow?.signature === 'self-check' && selfLedgerRow.grader === 'self-report',
+    'the ledger labels it a self check at the self report weight: ' + JSON.stringify([selfLedgerRow?.signature, selfLedgerRow?.grader]));
+
   // Hand delivery: the same consent modal, driven from the page, no agent.
   await page.evaluate(`(() => {
     document.querySelector('#share-audience').value = ${JSON.stringify(H)};

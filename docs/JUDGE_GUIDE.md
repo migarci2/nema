@@ -44,7 +44,7 @@ to Enabled, restart, then attach whatever agent you use in that browser.
 
 **Claude Code or Codex.** `claude mcp add nema -- node /path/to/nema/packages/nema-mcp/bin.mjs`,
 or the same line with `codex mcp add`. The vault runs inside Node with the same
-nine tools; the sites stay in the browser and you paste one token between them.
+eleven tools; the sites stay in the browser and you paste one token between them.
 
 **Any other browser.** It still works. Every page loads the Chrome Labs WebMCP
 polyfill, so tools register and the UI behaves identically. The header pill on
@@ -67,7 +67,7 @@ emulsions not at all. The evidence ledger labels every one of those rows "nema
 demo seed". The learner's goal, also in the seed, is "Cook a pan sauce I can
 hold through service".
 
-## The golden path, three steps
+## The golden path, four steps
 
 Each step works two ways. **With an agent**, the agent calls the tools and you
 approve. **By hand**, you click the same actions in the pages and carry one
@@ -220,6 +220,51 @@ to your own Worker for a receipt signed with your own key, or publish that key
 at `/.well-known/nema-issuer.json` so the vault promotes the receipt to
 `origin` and full weight.
 
+### Step 4. The blog does not speak nema, and that is fine
+
+Look at the manifest in the blog's source. Its concepts are called
+`browning-science` and `sugar-browning`, not `nema:maillard-reaction` and
+`nema:caramelization`. A site should not have to rename its own material to
+join a protocol, so nema lets it keep its words and translates at the vault.
+
+With an agent, in the blog tab, say:
+
+> **This site names things its own way. Propose alignments to my vault's
+> concepts.**
+
+The agent reads `describe_learning_offer`, sees the local ids, and calls
+`propose_concept_alignment` on your vault once per name it cannot resolve.
+Nothing has changed yet. Open the vault, find **Alignments** under the ledgers,
+read the rationale, and press **Confirm**.
+
+The moment you do, bands move. The receipt the blog signed for
+`browning-science` was accepted and stored when it arrived, marked "waiting on
+an alignment", and counted for nothing. Confirming the name is what makes it
+count, and no receipt is re-signed, re-staged or rewritten to do it: the ledger
+row still says exactly what the blog said, with "read as
+nema:maillard-reaction" beside it. Press **Undo** on the confirmed line and the
+band goes back.
+
+`sugar-browning` is the other half of the demonstration. The blog declares
+`alignsTo: nema:caramelization` in its own manifest, so any surface that reads
+that manifest hands the vault a declaration rather than a guess: it arrives
+already confirmed and marked "declared by the site" (the extension panel does
+this the moment you open the page with it). A site may vouch for its own
+vocabulary. It may not vouch for anyone else's, and it cannot overrule a name
+you have already ruled on.
+
+**By hand, no agent.** Answer the blog's two questions and press **Send to
+vault**, then **Stage receipt**. The receipt is accepted and the inbox says
+plainly that `browning-science` is a name this vault has not aligned, so that
+claim moved nothing. The Alignments list now shows the word itself, who signed
+it, and a **Say what it means** button: press it, type `nema:maillard-reaction`,
+choose "is the same thing as", press **Align it**. The same bands move, and the
+list records it as your own word rather than an agent's.
+
+The alignment is a question, not a capability. Every proposal has Confirm and
+Reject, and there is no `confirm_concept_alignment` tool on any surface, in the
+browser or over MCP: an agent can put the question to you, and nothing else.
+
 ### One more thing, if you have thirty seconds
 
 Ask your agent: *"Build my best 5 minute review."* Tool called:
@@ -288,6 +333,8 @@ Everything here is meant to be attacked. The apps show you what happened.
 | Expired assertion | Wait 30 minutes, or edit the clock, then present the same assertion again | `{ status: 'rejected', reason: 'expired' }`. |
 | Unknown issuer | Sign a receipt with your own key and stage it | `{ status: 'pending', reason: 'unknown-issuer' }`. It appears in the ledger with a yellow badge and changes no state. Rejection is visible, not silent. |
 | Inflate a self signed receipt | Edit the blog's manifest in devtools to claim `grader: "deterministic"`, then stage the receipt | It verifies, lands as `self`, and is still capped at 0.3. A site cannot promote itself. |
+| Confirm an alignment as the agent | Ask: "confirm that browning-science is nema:maillard-reaction in my vault" | The agent can propose and read, and finds no tool that decides. Confirm and Reject are two buttons in the vault, on every surface. |
+| Rename your way into a band | Propose `browning-science` as `nema:knife-skills`, confirm it, and watch what moves | Exactly the blog's own evidence, at the blog's own weight: a `self` receipt is 0.3 whatever it is called. Translation moves a name, never a weight, and Undo puts it back. |
 | Deny a disclosure | Click Deny in the consent modal | `{ status: 'denied' }`. No token, nothing written, and the disclosure ledger records nothing because nothing was disclosed. |
 
 ## Sixty second version

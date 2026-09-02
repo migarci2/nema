@@ -90,10 +90,49 @@ test('the blog manifest parses into a LearningManifest for this origin', () => {
   assert.equal(quiz.minutes, 2);
 
   assert.deepEqual(manifest.outcomes, [
-    { concept: 'nema:maillard-reaction', ability: 'recognize' },
-    { concept: 'nema:maillard-reaction', ability: 'explain' },
-    { concept: 'nema:caramelization', ability: 'discriminate' }
+    { concept: 'browning-science', ability: 'recognize' },
+    { concept: 'browning-science', ability: 'explain' },
+    { concept: 'sugar-browning', ability: 'discriminate' }
   ]);
+});
+
+test('the blog speaks its own names and says what it thinks they mean', () => {
+  const { manifest } = parsed();
+
+  // Contract section 23: a site is not obliged to use nema: ids. The blog is
+  // the living demonstration, so its manifest declares both cases: a name it
+  // vouches for itself, and the one it leaves to an agent and the learner.
+  assert.deepEqual(manifest.concepts, [
+    { id: 'browning-science', title: 'Browning science' },
+    {
+      id: 'sugar-browning',
+      title: 'Sugar browning',
+      alignsTo: [{ concept: 'nema:caramelization', relation: 'equivalent' }]
+    }
+  ]);
+
+  // Every id the activities use is one of those, passed through untouched.
+  for (const outcome of manifest.outcomes) {
+    assert.ok(
+      manifest.concepts.some((concept) => concept.id === outcome.concept),
+      `${outcome.concept} must be declared in concepts`
+    );
+    assert.equal(outcome.concept.startsWith('nema:'), false, 'local ids travel as they are');
+  }
+
+  // The requirement is a registry id, which is the point of allowing both: a
+  // site can borrow the shared vocabulary where it fits and keep its own where
+  // it does not.
+  assert.deepEqual(manifest.requirements, [{ concept: 'nema:heat-control', ability: 'explain' }]);
+});
+
+test('a manifest with no concepts block carries no concepts key', () => {
+  const source = JSON.stringify({
+    unit: { id: 'u', title: 'T' },
+    activities: [{ id: 'read', type: 'lesson', title: 'Read', minutes: 1, outcomes: [{ concept: 'nema:ratios', ability: 'recognize' }] }]
+  });
+  const { manifest } = parseManifest(source, { origin: BLOG_ORIGIN });
+  assert.equal('concepts' in manifest, false);
 });
 
 test('the manifest an agent reads carries no questions and no answer key', () => {
@@ -172,14 +211,14 @@ test('the quiz grades deterministically: both right passes', () => {
   assert.match(grading.feedback[0], /^Question 1: correct\./);
   assert.deepEqual(grading.claims, [
     {
-      concept: 'nema:maillard-reaction',
+      concept: 'browning-science',
       ability: 'explain',
       evidenceType: 'explanation',
       result: 'passed',
       difficulty: 'introductory'
     },
     {
-      concept: 'nema:caramelization',
+      concept: 'sugar-browning',
       ability: 'discriminate',
       evidenceType: 'discrimination',
       result: 'passed',
@@ -220,7 +259,7 @@ test('Mark as read is exposure evidence and nothing more', () => {
   assert.equal(grading.result, 'passed');
   assert.deepEqual(grading.claims, [
     {
-      concept: 'nema:maillard-reaction',
+      concept: 'browning-science',
       ability: 'recognize',
       evidenceType: 'recognition',
       result: 'passed',
@@ -244,7 +283,9 @@ const ASSERTION_FOR_A_READER_WHO_KNOWS_IT = {
   learnerKeyId: 'lk_abcdefgh12345678',
   assertions: [
     { concept: 'nema:heat-control', ability: 'explain', status: 'verified', confidence: 'high' },
-    { concept: 'nema:maillard-reaction', ability: 'recognize', status: 'verified', confidence: 'high' }
+    /* The vault answers in the words the site asked with, and names the
+     * registry concept it read the band from. Contract section 23. */
+    { concept: 'browning-science', ability: 'recognize', status: 'verified', confidence: 'high', alignedTo: 'nema:maillard-reaction' }
   ],
   issuedAt: '2026-09-02T10:00:00Z',
   expiresAt: '2026-09-02T10:30:00Z',
@@ -263,7 +304,32 @@ test('an assertion that recognises the concept skips the article', () => {
   assert.deepEqual(result.path.map((entry) => entry.activityId), ['check']);
   assert.equal(result.path[0].reason, 'Always in the path');
   assert.deepEqual(result.skipped.map((entry) => entry.activityId), ['read']);
-  assert.match(result.skipped[0].reason, /nema:maillard-reaction\.recognize/);
+  assert.match(result.skipped[0].reason, /browning-science\.recognize/);
+});
+
+test('the skip note survives a translated answer, and only a translated one', () => {
+  const { manifest } = parsed();
+
+  // What the vault sends back is the site's own id with `alignedTo` beside it,
+  // so the page matches its own skipIf without knowing the registry exists.
+  // This is the whole reason the assertion answers in the words it was asked
+  // in: the note the reader sees is built from the site's vocabulary.
+  const answered = personalize(manifest, ASSERTION_FOR_A_READER_WHO_KNOWS_IT);
+  assert.equal(answered.skipped.length, 1);
+  assert.equal(answered.skipped[0].title, 'Read the article');
+  assert.equal(answered.personalMinutes, 2);
+  assert.notEqual(answered.personalMinutes, answered.fullMinutes, 'there is something to skip, so there is a note');
+
+  // A vault that answered with the registry id instead would leave the page
+  // unable to recognise its own requirement, and the reader would be told to
+  // read something they already know.
+  const untranslated = {
+    ...ASSERTION_FOR_A_READER_WHO_KNOWS_IT,
+    assertions: [
+      { concept: 'nema:maillard-reaction', ability: 'recognize', status: 'verified', confidence: 'high' }
+    ]
+  };
+  assert.deepEqual(personalize(manifest, untranslated).skipped, []);
 });
 
 test('a reader the vault knows nothing about keeps the whole path', () => {
@@ -278,7 +344,7 @@ test('a reader the vault knows nothing about keeps the whole path', () => {
   assert.deepEqual(result.requirements, [
     { concept: 'nema:heat-control', ability: 'explain', status: 'missing' }
   ]);
-  assert.match(result.path[0].reason, /^Not yet verified: nema:maillard-reaction\.recognize$/);
+  assert.match(result.path[0].reason, /^Not yet verified: browning-science\.recognize$/);
 });
 
 test('an uncertain band does not satisfy a skipIf that asks for verified', () => {
@@ -286,7 +352,7 @@ test('an uncertain band does not satisfy a skipIf that asks for verified', () =>
   const uncertain = {
     ...ASSERTION_FOR_A_READER_WHO_KNOWS_IT,
     assertions: [
-      { concept: 'nema:maillard-reaction', ability: 'recognize', status: 'uncertain', confidence: 'low' }
+      { concept: 'browning-science', ability: 'recognize', status: 'uncertain', confidence: 'low', alignedTo: 'nema:maillard-reaction' }
     ]
   };
   const result = personalize(manifest, uncertain);

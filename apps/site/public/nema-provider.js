@@ -121,6 +121,40 @@ function pairs(list, field) {
   });
 }
 
+/**
+ * A site's own vocabulary, contract section 23.
+ *
+ * A concept id without the `nema:` prefix is local to the origin that publishes
+ * it, and `alignsTo` is what the site believes it equals in the shared registry.
+ * The embed passes both through untouched: naming is the site's business, and
+ * translating is the learner's vault's, which is the only place that can ask a
+ * person whether two names mean the same thing.
+ */
+function localConcepts(raw, field) {
+  if (raw === undefined || raw === null) return [];
+  if (!Array.isArray(raw)) throw new Error(`nema manifest: ${field} must be an array`);
+  return raw.map((entry, index) => {
+    const where = `${field}[${index}]`;
+    if (!isObject(entry)) throw new Error(`nema manifest: ${where} must be an object`);
+    const concept = {
+      id: str(entry.id, `${where}.id`),
+      title: entry.title ? str(entry.title, `${where}.title`) : str(entry.id, `${where}.id`)
+    };
+    if (entry.alignsTo !== undefined) {
+      if (!Array.isArray(entry.alignsTo)) throw new Error(`nema manifest: ${where}.alignsTo must be an array`);
+      concept.alignsTo = entry.alignsTo.map((target, targetIndex) => {
+        const at = `${where}.alignsTo[${targetIndex}]`;
+        if (!isObject(target)) throw new Error(`nema manifest: ${at} must be an object`);
+        return {
+          concept: str(target.concept, `${at}.concept`),
+          relation: target.relation ? str(target.relation, `${at}.relation`) : 'equivalent'
+        };
+      });
+    }
+    return concept;
+  });
+}
+
 /** The evidence type of the strongest outcome, used for the activity summary. */
 function strongestEvidence(outcomes) {
   let best = null;
@@ -246,6 +280,7 @@ export function parseManifest(text, { origin } = {}) {
   }
 
   const totalMinutes = publicActivities.reduce((sum, entry) => sum + entry.minutes, 0);
+  const concepts = localConcepts(raw.concepts, 'concepts');
 
   const manifest = {
     protocol: PROTOCOL,
@@ -262,6 +297,7 @@ export function parseManifest(text, { origin } = {}) {
       language: raw.unit.language ? str(raw.unit.language, 'unit.language') : 'en',
       price: raw.unit.price ? str(raw.unit.price, 'unit.price') : 'free'
     },
+    ...(concepts.length > 0 ? { concepts } : {}),
     outcomes: Array.from(outcomeIndex.values()).map((outcome) => ({
       concept: outcome.concept,
       ability: outcome.ability
@@ -1211,7 +1247,7 @@ async function registerEmbedTools(app, registerTools, EXPOSED_TO) {
     {
       name: 'describe_learning_offer',
       description:
-        'Return the LearningManifest of this page: outcomes, requirements, and every activity with its minutes and grader. Nothing about the learner is read or written, and no question or answer key is returned.',
+        'Return the LearningManifest of this page: outcomes, requirements, and every activity with its minutes and grader. When this site names concepts its own way, `concepts` lists those local ids and any alignment the site declares to the nema registry, so a vault can be asked to translate them. Nothing about the learner is read or written, and no question or answer key is returned.',
       inputSchema: EMPTY_SCHEMA,
       async execute() {
         flash();

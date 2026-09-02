@@ -31,7 +31,19 @@ import {
   TRUST_TIERS,
   buildIssuerMap,
   loadIssuers,
-  isToken
+  isToken,
+  ALIGNMENT_RELATIONS,
+  ALIGNMENT_STATUSES,
+  REGISTRY_PREFIX,
+  alignClaim,
+  alignRequirement,
+  alignmentIndex,
+  buildAlignment,
+  capStatus,
+  declaredAlignments,
+  isLocalConcept,
+  isRegistryConcept,
+  translateClaim
 } from '../shared/protocol.js';
 
 const HARNESS = 'https://saucier.migarci2.dev';
@@ -906,4 +918,219 @@ test('matchesPublishedKey lifts self to origin only on an exact match', async ()
   // A receipt with no enclosed key can never be lifted, whatever is published.
   assert.equal(matchesPublishedKey(buildReceiptPayload(sampleReceiptInput()), published), false);
   assert.equal(matchesPublishedKey(null, published), false);
+});
+
+// ---------------------------------------------------------------------------
+// concept alignment (contract section 23)
+// ---------------------------------------------------------------------------
+
+const BLOG_LOCAL = 'https://maillard.migarci2.dev';
+
+const alignment = (overrides = {}) =>
+  buildAlignment({
+    origin: BLOG_LOCAL,
+    providerConcept: 'browning-science',
+    concept: 'nema:maillard-reaction',
+    relation: 'equivalent',
+    rationale: 'The article is about the Maillard reaction under another name.',
+    now: NOW,
+    alignmentId: 'aln_fixture_001',
+    ...overrides
+  });
+
+const claim = (concept, overrides = {}) => ({
+  concept,
+  ability: 'explain',
+  evidenceType: 'explanation',
+  result: 'passed',
+  difficulty: 'introductory',
+  ...overrides
+});
+
+test('an id is local exactly when it is not a registry id', () => {
+  assert.equal(REGISTRY_PREFIX, 'nema:');
+  assert.equal(isRegistryConcept('nema:maillard-reaction'), true);
+  assert.equal(isLocalConcept('nema:maillard-reaction'), false);
+  assert.equal(isLocalConcept('browning-science'), true);
+  assert.equal(isRegistryConcept('browning-science'), false);
+  for (const value of [null, undefined, '', 42, {}]) {
+    assert.equal(isLocalConcept(value), false);
+    assert.equal(isRegistryConcept(value), false);
+  }
+});
+
+test('an alignment record has the documented shape and starts undecided', () => {
+  const entry = alignment();
+  assert.deepEqual(Object.keys(entry), [
+    'alignmentId',
+    'origin',
+    'providerConcept',
+    'concept',
+    'relation',
+    'status',
+    'proposedBy',
+    'rationale',
+    'proposedAt',
+    'decidedAt'
+  ]);
+  assert.equal(entry.status, 'proposed');
+  assert.equal(entry.proposedBy, 'agent');
+  assert.equal(entry.decidedAt, null, 'nobody has answered yet');
+  assert.deepEqual(ALIGNMENT_RELATIONS, ['equivalent', 'broader', 'narrower']);
+  assert.deepEqual(ALIGNMENT_STATUSES, ['proposed', 'confirmed', 'rejected']);
+
+  // A site vouching for its own vocabulary arrives decided.
+  const declared = alignment({ status: 'confirmed', proposedBy: 'provider' });
+  assert.equal(declared.decidedAt, declared.proposedAt);
+});
+
+test('an alignment can only point a local name at a registry concept', () => {
+  assert.throws(() => alignment({ concept: 'browning-science' }), /registry concept/);
+  assert.throws(() => alignment({ providerConcept: 'nema:caramelization' }), /without the nema: prefix/);
+  assert.throws(() => alignment({ relation: 'sort-of' }), /relation must be one of/);
+  assert.throws(() => alignment({ status: 'maybe' }), /status must be one of/);
+  assert.throws(() => alignment({ proposedBy: 'the internet' }), /proposedBy must be one of/);
+});
+
+test('only confirmed alignments of that origin translate anything', () => {
+  const stored = [
+    alignment(),
+    alignment({ alignmentId: 'aln_2', providerConcept: 'sugar-browning', concept: 'nema:caramelization', status: 'confirmed' }),
+    alignment({ alignmentId: 'aln_3', providerConcept: 'water-control', concept: 'nema:heat-control', status: 'rejected' }),
+    alignment({ alignmentId: 'aln_4', origin: 'https://elsewhere.example', providerConcept: 'browning-science', concept: 'nema:caramelization', status: 'confirmed' })
+  ];
+  const index = alignmentIndex(stored, BLOG_LOCAL);
+
+  assert.deepEqual([...index.keys()], ['sugar-browning'], 'proposed, rejected and other origins are not in the index');
+  assert.equal(index.get('sugar-browning').concept, 'nema:caramelization');
+  assert.equal(alignmentIndex(stored, 'https://elsewhere.example').get('browning-science').concept, 'nema:caramelization');
+  assert.equal(alignmentIndex(null, BLOG_LOCAL).size, 0);
+});
+
+test('a requirement is read from the concept the learner confirmed it means', () => {
+  const index = alignmentIndex([alignment({ status: 'confirmed' })], BLOG_LOCAL);
+
+  const local = alignRequirement({ concept: 'browning-science', ability: 'explain' }, index);
+  assert.deepEqual(local, {
+    concept: 'browning-science',
+    ability: 'explain',
+    lookup: 'nema:maillard-reaction',
+    alignedTo: 'nema:maillard-reaction',
+    relation: 'equivalent'
+  });
+
+  // A registry id needs no translation, and is never touched by one.
+  assert.deepEqual(alignRequirement({ concept: 'nema:ratios', ability: 'apply' }, index), {
+    concept: 'nema:ratios',
+    ability: 'apply',
+    lookup: 'nema:ratios'
+  });
+
+  // A local id with nothing confirmed has nowhere to read a band from.
+  const unaligned = alignRequirement({ concept: 'water-control', ability: 'explain' }, index);
+  assert.equal(unaligned.lookup, null);
+  assert.equal(unaligned.unaligned, true);
+  assert.equal(unaligned.alignedTo, undefined);
+});
+
+test('the relation decides the direction, and caps the weak one', () => {
+  // equivalent maps both ways at full strength.
+  assert.equal(capStatus('verified', 'equivalent'), 'verified');
+  assert.equal(translateClaim(claim('browning-science'), alignmentIndex([alignment({ status: 'confirmed' })], BLOG_LOCAL)).result, 'passed');
+
+  // narrower: the site's concept is a part of the registry concept. Evidence
+  // about the part counts for the whole, but a band on the whole answers a
+  // question about the part as uncertain at best.
+  const narrower = alignmentIndex([alignment({ status: 'confirmed', relation: 'narrower' })], BLOG_LOCAL);
+  assert.equal(capStatus('verified', 'narrower'), 'uncertain');
+  assert.equal(capStatus('uncertain', 'narrower'), 'uncertain');
+  assert.equal(capStatus('missing', 'narrower'), 'missing');
+  const fromPart = translateClaim(claim('browning-science'), narrower);
+  assert.equal(fromPart.concept, 'nema:maillard-reaction');
+  assert.equal(fromPart.result, 'passed', 'evidence about a part is evidence about the whole');
+
+  // broader is the mirror: the requirement answers in full, the evidence is
+  // capped, because a pass on the whole is only partial evidence for the part.
+  const broader = alignmentIndex([alignment({ status: 'confirmed', relation: 'broader' })], BLOG_LOCAL);
+  assert.equal(capStatus('verified', 'broader'), 'verified');
+  const fromWhole = translateClaim(claim('browning-science'), broader);
+  assert.equal(fromWhole.concept, 'nema:maillard-reaction');
+  assert.equal(fromWhole.result, 'partial');
+  assert.equal(translateClaim(claim('browning-science', { result: 'failed' }), broader).result, 'failed');
+
+  // Nothing about the grader or the receipt's trust is touched by any of this.
+  assert.equal(fromWhole.evidenceType, 'explanation');
+  assert.equal(fromWhole.difficulty, 'introductory');
+});
+
+test('a claim with no confirmed alignment is noted, kept and counted by nobody', () => {
+  const index = alignmentIndex([alignment()], BLOG_LOCAL);
+
+  const note = alignClaim(claim('browning-science'), index);
+  assert.deepEqual(note, { concept: 'browning-science', ability: 'explain', pendingAlignment: true });
+  assert.equal(translateClaim(claim('browning-science'), index), null, 'nothing is counted until the learner answers');
+
+  // A registry claim is passed through by identity: no copy, no rewrite.
+  const registry = claim('nema:maillard-reaction');
+  assert.deepEqual(alignClaim(registry, index), { concept: 'nema:maillard-reaction', ability: 'explain' });
+  assert.equal(translateClaim(registry, index), registry);
+});
+
+test('declaredAlignments reads a manifest concepts block and skips what it cannot read', () => {
+  const declared = declaredAlignments([
+    { id: 'browning-science', title: 'Browning science' },
+    { id: 'sugar-browning', title: 'Sugar browning', alignsTo: [{ concept: 'nema:caramelization', relation: 'equivalent' }] },
+    { id: 'water-control', alignsTo: [{ concept: 'not-a-registry-id' }] },
+    { id: 'nema:ratios', alignsTo: [{ concept: 'nema:ratios' }] },
+    { id: 'no-relation', alignsTo: [{ concept: 'nema:heat-control' }] },
+    'not an object'
+  ]);
+
+  assert.deepEqual(declared, [
+    { providerConcept: 'sugar-browning', concept: 'nema:caramelization', relation: 'equivalent', title: 'Sugar browning' },
+    { providerConcept: 'no-relation', concept: 'nema:heat-control', relation: 'equivalent', title: 'no-relation' }
+  ]);
+  assert.deepEqual(declaredAlignments(undefined), []);
+});
+
+test('an assertion may answer in the site own words and say what it read', async () => {
+  const request = buildReadinessRequest({
+    audience: BLOG_LOCAL,
+    purpose: 'personalize-maillard-explained',
+    requirements: [
+      { concept: 'browning-science', ability: 'explain' },
+      { concept: 'water-control', ability: 'explain' }
+    ]
+  });
+  const vaultKey = await generateKeyPair();
+  const payload = await buildAssertionPayload({
+    request,
+    statuses: [
+      { concept: 'browning-science', ability: 'explain', status: 'verified', confidence: 'high', alignedTo: 'nema:maillard-reaction' },
+      { concept: 'water-control', ability: 'explain', status: 'missing', confidence: 'low', reason: 'unaligned' }
+    ],
+    vaultPublicJwk: vaultKey.publicJwk,
+    now: NOW
+  });
+
+  assert.deepEqual(payload.assertions[0], {
+    concept: 'browning-science',
+    ability: 'explain',
+    status: 'verified',
+    confidence: 'high',
+    alignedTo: 'nema:maillard-reaction'
+  });
+  assert.equal(payload.assertions[1].reason, 'unaligned');
+  assert.equal(payload.assertions[1].alignedTo, undefined);
+
+  // It is still an assertion: the same allowed keys, the same signature rules.
+  assert.ok(Object.keys(payload).every((key) => ALLOWED_ASSERTION_KEYS.includes(key)));
+  const token = await signToken(payload, vaultKey.privateJwk);
+  const verified = await verifyAssertion(token, { audience: BLOG_LOCAL, now: NOW });
+  assert.equal(verified.ok, true);
+  assert.equal(verified.payload.assertions[0].alignedTo, 'nema:maillard-reaction');
+
+  // And the two new fields are strings or they are nothing.
+  assert.throws(() => assertShape({ ...payload, assertions: [{ ...payload.assertions[0], alignedTo: 7 }] }, ASSERTION_TYPE), /alignedTo/);
+  assert.throws(() => assertShape({ ...payload, assertions: [{ ...payload.assertions[1], reason: {} }] }, ASSERTION_TYPE), /reason/);
 });

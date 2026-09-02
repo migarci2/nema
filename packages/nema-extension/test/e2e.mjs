@@ -2,16 +2,22 @@
  *
  * Drives the real extension in a real Chrome with native WebMCP, through CDP,
  * with no test doubles anywhere: the vault is the vault, Saucier School is the
- * dev server, and the two buttons in the panel are clicked the way a person
- * clicks them.
+ * dev server, and every button is clicked the way a person clicks it, including
+ * the Share button in the page's own bar.
  *
  *   1. load the unpacked extension, find its id from the service worker target
- *   2. open the side panel page, load the demo learner
- *   3. open Saucier School, wait for the strip to see its tools
- *   4. Share bands with this page, approve in the consent modal
- *   5. assert the provider rebuilt the path: 27 minutes of 68
+ *   2. open the side panel: a fresh profile shows the onboarding, and its own
+ *      button loads the demo learner
+ *   3. the Next card names a need and lists its rubric as a checklist
+ *   4. open Saucier School, wait for the strip and the in page bar
+ *   5. Share from the bar, tick "Remember this site for 30 days", approve in
+ *      the consent modal, assert 27 minutes of 68 and the 30 day approval
  *   6. answer the ratios diagnostic in the page, as the learner
- *   7. Take the receipt to my vault, assert accepted and one more ledger row
+ *   7. the receipt is collected with no click, and the page gets the toast
+ *   8. "Check for receipts now" still works and says it is already kept
+ *   9. an ordinary page offers nothing
+ *  10. the Next card's rubric is ticked and Done records a self check
+ *  11. Saucier School again: a remembered site personalises with no consent
  *
  * Usage:
  *   bash scripts/build-extension.sh
@@ -21,7 +27,7 @@
  */
 
 import { spawn } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const REPO = fileURLToPath(new URL('../../..', import.meta.url)).replace(/\/$/, '');
@@ -47,7 +53,10 @@ function ok(condition, message) {
 
 async function launch() {
   const port = 9400 + Math.floor(Math.random() * 400);
-  const profile = `/tmp/nema-ext-profile-${port}`;
+  /* A fresh profile every run, and only this run's: two runs that pick the same
+   * port must not share a vault, or the second one starts with the first one's
+   * receipts and no onboarding. */
+  const profile = `/tmp/nema-ext-profile-${port}-${process.pid}-${Date.now()}`;
   const chrome = spawn(CHROME, [
     '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`,
@@ -154,7 +163,12 @@ async function launch() {
       return attach(targetId, size);
     },
     async attachWorker(targetId) { return attach(targetId, { worker: true }); },
-    async close() { ws.close(); chrome.kill(); }
+    async close() {
+      ws.close();
+      chrome.kill();
+      await sleep(300);
+      rmSync(profile, { recursive: true, force: true });
+    }
   };
 }
 
@@ -180,25 +194,64 @@ try {
   const panel = await browser.newPage(`chrome-extension://${extensionId}/sidepanel.html`, {
     width: 420, height: 1000
   });
-  await panel.waitFor(`Boolean(document.querySelector('[data-action="load-demo"]'))`, { label: 'the vault to render' });
+  /* The header and the extension's cards are both written by their modules, so
+   * the onboarding card is the signal that the whole panel is up. */
+  const onboarding = await panel.waitFor(
+    `(() => { const el = document.querySelector('[data-ext-onboard]');
+       const nav = document.querySelector('.n-header__nav');
+       return el && !el.hidden && nav ? el.textContent.replace(/\\s+/g, ' ').trim() : ''; })()`,
+    { label: 'the onboarding card on a fresh profile' }
+  );
   ok(await panel.evaluate(`document.title`) === 'nema in your browser', 'the panel is the vault page, titled for the browser');
   ok(await panel.evaluate(`getComputedStyle(document.querySelector('.n-header__nav')).display === 'none'`),
     'the hub nav is hidden in the panel');
+  const onboardingButtons = await panel.evaluate(`[
+    Boolean(document.querySelector('[data-ext-onboard-demo]')),
+    Boolean(document.querySelector('[data-ext-onboard-import]')),
+    Boolean(document.querySelector('[data-ext-onboard-empty]')),
+    getComputedStyle(document.querySelector('[aria-labelledby="p-graph"]')).display === 'none'
+  ]`);
+  ok(onboarding.includes('Learn anywhere you see the nema mark') && onboardingButtons.every(Boolean),
+    `a fresh panel offers three choices and hides the empty vault: ${onboarding.slice(0, 90)}`);
+  console.log('shot ' + await panel.shot('01-panel-onboarding'));
 
-  await panel.evaluate(`document.querySelector('[data-action="load-demo"]').click(), true`);
+  await panel.evaluate(`document.querySelector('[data-ext-onboard-demo]').click(), true`);
   const seeded = await panel.waitFor(
     `(() => { const d = JSON.parse(localStorage.getItem('nema.vault.v1') || '{}'); return d.receipts && d.receipts.length > 20 ? d.receipts.length : 0; })()`,
     { label: 'the demo learner to load' }
   );
-  ok(seeded > 20, `demo learner loaded: ${seeded} receipts`);
-  console.log('shot ' + await panel.shot('01-panel-vault'));
+  ok(seeded > 20, `the onboarding button loaded the demo learner: ${seeded} receipts`);
+  ok(await panel.waitFor(`document.querySelector('[data-ext-onboard]').hidden === true`, { label: 'the onboarding to step aside' }),
+    'the onboarding steps aside once the vault has evidence');
+  console.log('shot ' + await panel.shot('02-panel-vault'));
 
-  /* 3. Saucier School in a second tab */
+  /* 3. the Next card: one need, its rubric as a checklist, a way to answer it */
+  const next = await panel.waitFor(
+    `(() => { const el = document.querySelector('[data-ext-next]');
+       if (!el || el.hidden) return '';
+       const boxes = el.querySelectorAll('[data-ext-check]').length;
+       const title = el.querySelector('.x-next__title');
+       const done = el.querySelector('[data-ext-done]');
+       return boxes > 0 && title && done ? JSON.stringify({ title: title.textContent.trim(), boxes, done: done.textContent.trim() }) : ''; })()`,
+    { label: 'the Next card' }
+  );
+  const nextCard = JSON.parse(next);
+  ok(nextCard.boxes >= 2 && nextCard.title.length > 0,
+    `the Next card names a need and lists its rubric: ${nextCard.title}, ${nextCard.boxes} criteria`);
+  ok(/Done|agent would grade/.test(nextCard.done),
+    `the Next card offers the answer the vault can take: "${nextCard.done}"`);
+  console.log('shot ' + await panel.shot('03-panel-next'));
+
+  /* 4. Saucier School in a second tab */
   const site = await browser.newPage(SAUCIER + '/');
   await site.waitFor(`Boolean(document.querySelector('[data-path-list] .n-path__row'))`, { label: 'Saucier School to render' });
 
+  /* The page registers its tools one at a time, so wait for the whole set
+   * rather than the first list that has any of them in it. */
   const strip = await panel.waitFor(
-    `(() => { const t = document.querySelector('[data-ext-state]').textContent; return t.includes('Works with nema') ? t : ''; })()`,
+    `(() => { const t = document.querySelector('[data-ext-state]').textContent;
+       const tools = document.querySelector('[data-ext-tools]').textContent;
+       return t.includes('Works with nema') && tools.includes('issue_evidence_receipt') ? t : ''; })()`,
     { timeoutMs: 25000, label: 'the strip to see the page' }
   );
   const toolCount = Number((strip.match(/(\d+) tools/) || [])[1] || 0);
@@ -206,7 +259,25 @@ try {
   const toolLine = await panel.evaluate(`document.querySelector('[data-ext-tools]').textContent`);
   ok(toolLine.includes('describe_learning_offer') && toolLine.includes('issue_evidence_receipt'),
     `the strip lists what the page can do: ${toolLine.trim()}`);
-  console.log('shot ' + await panel.shot('02-panel-this-page'));
+  console.log('shot ' + await panel.shot('04-panel-this-page'));
+
+  /* the page's own bar, in its shadow root */
+  const barText = await site.waitFor(
+    `(() => { const host = document.getElementById('nema-ext-bar');
+       if (!host || !host.shadowRoot) return '';
+       const bar = host.shadowRoot.querySelector('[data-bar]');
+       return bar ? bar.textContent.replace(/\\s+/g, ' ').trim() : ''; })()`,
+    { timeoutMs: 25000, label: 'the in page bar' }
+  );
+  const barButtons = await site.evaluate(`(() => {
+    const root = document.getElementById('nema-ext-bar').shadowRoot;
+    return [...root.querySelectorAll('button')].map((b) => b.textContent.trim());
+  })()`);
+  ok(barText.includes('This site works with nema') && barButtons.join(' ') === 'Share Not now',
+    `the page gets a bar with Share and Not now: ${barText.slice(0, 80)}`);
+  ok(await site.evaluate(`document.getElementById('nema-ext-bar').shadowRoot.mode === 'open' && !document.getElementById('nema-ext-bar').shadowRoot.host.getAttribute('style')`),
+    'the bar lives in a shadow root and leaves the page alone');
+  console.log('shot ' + await site.shot('05-saucier-bar'));
 
   /* the badge, read from the service worker itself */
   const worker = await browser.attachWorker(workerTarget.targetId);
@@ -218,13 +289,19 @@ try {
   })()`);
   ok(badge.startsWith(String(toolCount)) && badge.includes('nema tool'), `the action badge counts the page's tools: ${badge}`);
 
-  /* 4. share bands, approve in the modal */
-  await panel.evaluate(`document.querySelector('[data-ext-share]').click(), true`);
-  await panel.waitFor(`document.querySelector('#consent-modal').hidden === false`, { label: 'the consent modal' });
+  /* 5. Share from the page's own bar, approve in the modal */
+  await site.evaluate(`document.getElementById('nema-ext-bar').shadowRoot.querySelector('[data-share]').click(), true`);
+  await panel.waitFor(`document.querySelector('#consent-modal').hidden === false`,
+    { timeoutMs: 25000, label: 'the consent modal, opened from the bar' });
   const modal = await panel.evaluate(`document.querySelector('[data-consent-origin]').textContent + ' | ' + document.querySelector('[data-consent-purpose]').textContent`);
   ok(modal.includes('localhost:8782') && modal.includes('personalize-pan-sauces-foundations'),
-    `the modal names the site and the purpose: ${modal}`);
-  console.log('shot ' + await panel.shot('03-panel-consent'));
+    `Share in the page's bar opens the vault's own consent modal: ${modal}`);
+  const remember = await panel.evaluate(`(() => { const el = document.querySelector('.x-remember');
+    return el && !el.hidden ? el.textContent.trim() : ''; })()`);
+  ok(remember.includes('Remember this site for 30 days'),
+    `the extension adds its own line to the modal: ${remember}`);
+  console.log('shot ' + await panel.shot('06-panel-consent'));
+  await panel.evaluate(`document.querySelector('[data-ext-remember]').click(), true`);
   await panel.evaluate(`document.querySelector('[data-consent-approve]').click(), true`);
 
   const shareResult = await panel.waitFor(
@@ -232,18 +309,30 @@ try {
     { label: 'the share result' }
   );
   ok(shareResult.includes('27 minutes of 68'), `the strip reports the new path: ${shareResult.trim().slice(0, 120)}`);
-  console.log('shot ' + await panel.shot('04-panel-shared'));
+  const barAfter = await site.waitFor(
+    `(() => { const t = document.getElementById('nema-ext-bar').shadowRoot.querySelector('[data-bar]').textContent.replace(/\\s+/g, ' ').trim();
+       return t.includes('Shared with this site') ? t : ''; })()`,
+    { label: 'the bar to report the share' }
+  );
+  ok(barAfter.includes('27 minutes instead of 68'), `the bar says what the site did with the bands: ${barAfter}`);
+  const rememberedFor = await panel.evaluate(`(() => {
+    const doc = JSON.parse(localStorage.getItem('nema.vault.v1'));
+    const until = doc.settings.autoApprove[${JSON.stringify(SAUCIER)}];
+    return until ? Math.round((Date.parse(until) - Date.now()) / 86400000) : 0;
+  })()`);
+  ok(rememberedFor === 30, `the checkbox remembered the site for 30 days: ${rememberedFor}`);
+  console.log('shot ' + await panel.shot('07-panel-shared'));
 
-  /* 5. the page itself changed */
+  /* 6. the page itself changed */
   const pathNote = await site.waitFor(
     `(() => { const t = document.querySelector('[data-path-note]').textContent; return t.includes('27') ? t : ''; })()`,
     { label: 'Saucier School to personalise' }
   );
   const struck = await site.evaluate(`document.querySelectorAll('.n-path__row--skipped').length`);
   ok(pathNote.includes('27 of 68') && struck >= 2, `the page rebuilt its path: ${pathNote.trim()} (${struck} struck through)`);
-  console.log('shot ' + await site.shot('05-saucier-personalised'));
+  console.log('shot ' + await site.shot('08-saucier-personalised'));
 
-  /* 6. the learner answers the diagnostic, in the page, by hand */
+  /* 7. the learner answers the diagnostic, in the page, by hand */
   await site.evaluate(`(() => {
     const row = [...document.querySelectorAll('[data-path-list] .n-path__row')]
       .find((r) => r.textContent.toLowerCase().includes('vinaigrette'));
@@ -266,20 +355,22 @@ try {
     { label: 'the diagnostic to grade' }
   );
   ok(passed === 'passed', `the learner passed the ratios diagnostic in the page: ${passed}`);
-  console.log('shot ' + await site.shot('06-saucier-passed'));
+  console.log('shot ' + await site.shot('09-saucier-passed'));
 
-  /* 7. take the receipt to the vault */
-  const before = await panel.evaluate(`JSON.parse(localStorage.getItem('nema.vault.v1')).receipts.length`);
-  await panel.evaluate(`document.querySelector('[data-ext-receipt]').click(), true`);
-  const receiptResult = await panel.waitFor(
-    `(() => { const t = document.querySelector('[data-ext-result]').textContent;
-       return t.includes('accepted') || t.includes('rejected') || t.includes('Nothing to collect') ? t : ''; })()`,
-    { timeoutMs: 40000, label: 'the receipt result' }
+  /* 8. nobody clicks anything: the receipt is collected within four seconds */
+  const before = seeded;
+  const toast = await site.waitFor(
+    `(() => { const root = document.getElementById('nema-ext-bar').shadowRoot;
+       const el = root.querySelector('[data-toast]');
+       return el && !el.hidden ? el.textContent.replace(/\\s+/g, ' ').trim() : ''; })()`,
+    { timeoutMs: 40000, label: 'the toast in the page' }
   );
-  ok(receiptResult.includes('accepted'), `the strip reports the receipt: ${receiptResult.trim().slice(0, 200)}`);
+  ok(toast.includes('Kept in your vault') && toast.includes('ratios'),
+    `the page is told what was kept, with no button click: ${toast}`);
+  console.log('shot ' + await site.shot('10-saucier-toast'));
 
   const after = await panel.evaluate(`JSON.parse(localStorage.getItem('nema.vault.v1')).receipts.length`);
-  ok(after === before + 1, `the vault gained one receipt: ${before} to ${after}`);
+  ok(after === before + 1, `the vault gained one receipt on its own: ${before} to ${after}`);
   const staged = await panel.evaluate(`(() => {
     const doc = JSON.parse(localStorage.getItem('nema.vault.v1'));
     const entry = doc.receipts[doc.receipts.length - 1];
@@ -291,9 +382,20 @@ try {
   ok(ledger, 'the evidence ledger shows the new receipt');
   const moved = await panel.evaluate(`document.querySelector('[data-ext-result]').textContent.includes('ratios apply')`);
   ok(moved, 'the strip says which band moved');
-  console.log('shot ' + await panel.shot('07-panel-receipt'));
+  console.log('shot ' + await panel.shot('11-panel-receipt'));
 
-  /* 8. an ordinary page: the strip says so and offers nothing */
+  /* 9. the manual button is still there, and is honest about the duplicate */
+  await panel.evaluate(`document.querySelector('[data-ext-receipt]').click(), true`);
+  const manual = await panel.waitFor(
+    `(() => { const t = document.querySelector('[data-ext-result]').textContent;
+       return t.includes('already in your vault') || t.includes('Nothing to collect') ? t : ''; })()`,
+    { timeoutMs: 40000, label: 'the manual check' }
+  );
+  const stillOne = await panel.evaluate(`JSON.parse(localStorage.getItem('nema.vault.v1')).receipts.length`);
+  ok(manual.includes('already in your vault') && stillOne === after,
+    `"Check for receipts now" collects nothing twice: ${manual.trim().slice(0, 120)}`);
+
+  /* 10. an ordinary page: the strip says so and offers nothing */
   await browser.newPage('about:blank');
   const quiet = await panel.waitFor(
     `(() => { const t = document.querySelector('[data-ext-state]').textContent;
@@ -303,6 +405,50 @@ try {
   const hidden = await panel.evaluate(`document.querySelector('[data-ext-actions]').hidden`);
   ok(quiet.includes('does not offer nema tools') && hidden === true,
     `an ordinary page offers no buttons: ${quiet.trim()}`);
+
+  /* 11. the Next card answers itself: tick the rubric, press Done */
+  const selfCheck = await panel.evaluate(`(() => {
+    const card = document.querySelector('[data-ext-next]');
+    const done = card.querySelector('[data-ext-done]');
+    if (!done || done.disabled) return { skipped: done ? done.textContent.trim() : 'no button' };
+    for (const box of card.querySelectorAll('[data-ext-check]')) box.click();
+    done.click();
+    return { clicked: true };
+  })()`);
+  if (selfCheck.clicked) {
+    const kept = await panel.waitFor(
+      `(() => { const t = document.querySelector('[data-ext-next-status]');
+         return t && t.textContent.trim() ? t.textContent.trim() : ''; })()`,
+      { label: 'the self check to land' }
+    );
+    const selfRow = await panel.evaluate(`(() => {
+      const doc = JSON.parse(localStorage.getItem('nema.vault.v1'));
+      const entry = doc.receipts[doc.receipts.length - 1];
+      return { grader: entry.payload.conditions.grader, source: entry.source, keyId: entry.payload.keyId };
+    })()`);
+    ok(kept.includes('self check') && selfRow.grader === 'self-report',
+      `Done records a self check at the self report weight: ${kept} (${JSON.stringify(selfRow)})`);
+  } else {
+    ok(/agent would grade/.test(selfCheck.skipped),
+      `without recordSelfCheck the button says what an agent would do: ${selfCheck.skipped}`);
+  }
+  console.log('shot ' + await panel.shot('12-panel-next-done'));
+
+  /* 12. a remembered site: the bar says so and the share runs with nothing to approve */
+  const disclosuresBefore = await panel.evaluate(`JSON.parse(localStorage.getItem('nema.vault.v1')).disclosures.length`);
+  const again = await browser.newPage(SAUCIER + '/');
+  const auto = await panel.waitFor(`(() => {
+    const doc = JSON.parse(localStorage.getItem('nema.vault.v1'));
+    const last = doc.disclosures[doc.disclosures.length - 1];
+    return doc.disclosures.length > ${disclosuresBefore} && last.auto === true ? last.audience : ''; })()`,
+    { timeoutMs: 30000, label: 'the automatic disclosure' });
+  const askedAgain = await panel.evaluate(`document.querySelector('#consent-modal').hidden`);
+  const quietBar = await again.evaluate(`(() => { const h = document.getElementById('nema-ext-bar');
+    if (!h || !h.shadowRoot) return 'no bar';
+    return h.shadowRoot.querySelector('[data-bar]').textContent.replace(/\\s+/g, ' ').trim(); })()`);
+  ok(quietBar.includes('Shared with this site') && askedAgain === true && auto === SAUCIER,
+    `a remembered site shares on load with nothing to approve: ${quietBar.slice(0, 90)}`);
+  console.log('shot ' + await again.shot('13-saucier-remembered'));
 
   /* console hygiene, both sides */
   ok(panel.errors.length === 0, `panel console errors: ${JSON.stringify(panel.errors)}`);

@@ -38,10 +38,11 @@ cp "$PKG/sw.js" "$PKG/content.js" "$PKG/bridge.js" \
    "$PKG/sidepanel.js" "$PKG/sidepanel.css" "$PKG/panel-webmcp.js" "$OUT/"
 cp "$PKG"/icons/icon*.png "$OUT/icons/"
 
-# 4. sidepanel.html: the vault page with the hub nav hidden, the "This page"
-#    strip above the summary, and one more module. Every anchor is checked, so
-#    an edit to index.html that moves one of them fails the build loudly instead
-#    of shipping a panel with no strip.
+# 4. sidepanel.html: the vault page with the hub nav hidden, the extension's
+#    three containers above the summary (onboarding, Next, "This page"), and one
+#    more module. Every anchor is checked, so an edit to index.html that moves
+#    one of them fails the build loudly instead of shipping a panel with no
+#    cards.
 node - "$OUT" <<'NODE'
 const { readFileSync, writeFileSync } = require('node:fs');
 const out = process.argv[2];
@@ -56,7 +57,12 @@ function replace(find, make, what) {
   html = html.slice(0, at) + make(find) + html.slice(at + find.length);
 }
 
-const STRIP = `<!-- This page: the extension's broker strip. Filled by sidepanel.js. -->
+const STRIP = `<!-- The extension's three cards, all filled by sidepanel.js: the first run
+         choices, the Next card, and the broker strip for the open page. -->
+    <section class="n-panel n-panel--quiet x-onboard" aria-labelledby="p-ext-onboard" data-ext-onboard hidden></section>
+
+    <section class="n-panel n-panel--quiet x-next" aria-labelledby="p-ext-next" data-ext-next hidden></section>
+
     <section class="n-panel n-panel--quiet x-page" aria-labelledby="p-ext-page" data-ext-page></section>
 
     `;

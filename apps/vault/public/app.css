@@ -340,6 +340,79 @@
   max-width: 68ch;
 }
 
+/* ------------------------------------------------------- alignments -- */
+
+/* A proposal is a question with two answers, so it gets the room a question
+ * needs: the claim, the reason, where it came from, and the two buttons. A
+ * confirmed alignment is settled, so it collapses to one line. */
+.v-align__note {
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+  line-height: var(--lh-snug);
+  max-width: 68ch;
+}
+.v-align {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-2) 0;
+  border-top: 1px solid var(--line-soft);
+}
+.v-align:first-child { border-top: 0; }
+.v-align--proposed {
+  box-shadow: inset 2px 0 0 var(--cyan);
+  padding-left: var(--sp-3);
+}
+.v-align__claim {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-size: var(--fs-13);
+  color: var(--ink);
+}
+.v-align__claim--off { color: var(--ink-3); }
+.v-align__claim .mono { font-size: var(--fs-12); }
+.v-align__why {
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+  line-height: var(--lh-snug);
+  max-width: 68ch;
+}
+.v-align__meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  color: var(--ink-3);
+}
+.v-align--waiting { box-shadow: inset 2px 0 0 var(--yellow); padding-left: var(--sp-3); }
+.v-align__more { padding-top: var(--sp-2); }
+.v-align__form { padding: var(--sp-3) 0 var(--sp-2); max-width: 46ch; }
+
+/* ------------------------------------------------------- self check -- */
+
+/* The first need, answerable with nobody in the room. It sits under the row it
+ * belongs to and stays quiet: an agent grading the same rubric is worth twice
+ * as much, and the line under the button says so. */
+.v-check {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: 0 0 var(--sp-3) var(--sp-6);
+}
+.v-check__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.v-check .n-check { font-size: var(--fs-13); color: var(--ink-2); }
+
+@media (max-width: 640px) {
+  .v-check { padding-left: 0; }
+}
+
 /* ------------------------------------------------------------- more -- */
 
 .v-more { padding-top: var(--sp-2); }

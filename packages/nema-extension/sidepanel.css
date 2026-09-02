@@ -131,3 +131,140 @@
 .x-call[data-status="error"] .x-call__status,
 .x-call[data-status="rejected"] .x-call__status,
 .x-call[data-status="denied"] .x-call__status { color: var(--danger); }
+
+/* ---------------------------------------------------- the onboarding -- */
+
+/* A fresh vault has nothing to draw: an empty graph, an empty table and five
+ * empty ledgers are noise in a 400 px column. While the panel is on its first
+ * run everything but the choices is out of the way. */
+body[data-nema-onboarding='on'] .v-lede,
+body[data-nema-onboarding='on'] .v-summary,
+body[data-nema-onboarding='on'] .v-main > section[aria-labelledby='p-graph'],
+body[data-nema-onboarding='on'] .v-main > section[aria-labelledby='p-state'],
+body[data-nema-onboarding='on'] .v-main > section[aria-labelledby='p-needs'],
+body[data-nema-onboarding='on'] .v-ledgers,
+body[data-nema-onboarding='on'] .v-more,
+body[data-nema-onboarding='on'] .v-activity { display: none; }
+
+.x-onboard__lede {
+  margin: 0;
+  font-size: var(--fs-14);
+  color: var(--ink);
+  max-width: 46ch;
+}
+
+.x-onboard__choices {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-2);
+  margin: var(--sp-3) 0 var(--sp-2);
+}
+
+.x-onboard__note {
+  margin: 0;
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+}
+
+/* ------------------------------------------------------ the Next card -- */
+
+.x-next__what {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin: 0;
+}
+
+.x-next__title { flex: 1 1 auto; font-size: var(--fs-14); color: var(--ink); }
+.x-next__minutes { flex: none; font-size: var(--fs-12); color: var(--ink-2); }
+
+.x-next__why {
+  margin: 2px 0 0;
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+}
+
+.x-next__reason {
+  margin: 2px 0 0;
+  font-size: var(--fs-11);
+  color: var(--ink-label);
+}
+
+.x-next__ask {
+  margin: var(--sp-3) 0 var(--sp-2);
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+}
+
+.x-next__rubric {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.x-next__rubric .n-check { align-items: flex-start; line-height: var(--lh-snug); }
+.x-next__rubric .n-check input { margin-top: 2px; }
+
+.x-next__none,
+.x-next__agent {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+}
+
+.x-next__acts { flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3); }
+
+.x-next__status {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-12);
+  color: var(--ink);
+}
+.x-next__status:empty { display: none; }
+
+/* ----------------------------------------------------- the alignments -- */
+
+.x-aligns {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+}
+
+.x-aligns__label {
+  margin: 0;
+  font-size: var(--fs-12);
+  color: var(--ink);
+}
+
+.x-aligns__open {
+  margin: 0;
+  font-size: var(--fs-12);
+  color: var(--ink-2);
+}
+
+.x-aligns__note {
+  margin: 0;
+  font-size: var(--fs-12);
+  color: var(--ink);
+}
+
+.x-align {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.x-align__pair { flex: 1 1 100%; font-size: var(--fs-11); color: var(--ink); }
+.x-align__why { flex: 1 1 100%; font-size: var(--fs-12); color: var(--ink-2); }
+.x-align__state { font-size: var(--fs-11); color: var(--teal); }
+.x-align__acts { display: flex; gap: var(--sp-2); }
+.x-aligns__done { display: flex; flex-direction: column; gap: var(--sp-1); }
+
+/* The extension's own line in the vault's consent modal. */
+.x-remember { margin-top: var(--sp-1); }

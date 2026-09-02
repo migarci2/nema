@@ -146,14 +146,19 @@
     { "protocol": "nema/0.1",
       "provider": { "name": "Maillard, explained" },
       "unit": { "id": "maillard-explained", "title": "Why browning tastes like that", "estimatedMinutes": 8 },
+      "concepts": [
+        { "id": "browning-science", "title": "Browning science" },
+        { "id": "sugar-browning", "title": "Sugar browning",
+          "alignsTo": [ { "concept": "nema:caramelization", "relation": "equivalent" } ] }
+      ],
       "requirements": [ { "concept": "nema:heat-control", "ability": "explain" } ],
       "activities": [
         { "id": "read", "type": "lesson", "title": "Read the article", "minutes": 6,
-          "outcomes": [ { "concept": "nema:maillard-reaction", "ability": "recognize" } ],
-          "skipIf": [ { "concept": "nema:maillard-reaction", "ability": "recognize", "status": "verified" } ] },
+          "outcomes": [ { "concept": "browning-science", "ability": "recognize" } ],
+          "skipIf": [ { "concept": "browning-science", "ability": "recognize", "status": "verified" } ] },
         { "id": "check", "type": "quiz", "title": "Two questions before you go", "minutes": 2,
-          "outcomes": [ { "concept": "nema:maillard-reaction", "ability": "explain" },
-                        { "concept": "nema:caramelization", "ability": "discriminate" } ],
+          "outcomes": [ { "concept": "browning-science", "ability": "explain" },
+                        { "concept": "sugar-browning", "ability": "discriminate" } ],
           "questions": [
             { "id": "q1",
               "prompt": "A steak crust, toast and roast chicken skin all smell savoury rather than sweet. Which reaction is doing most of that?",

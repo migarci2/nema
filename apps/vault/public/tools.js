@@ -1,7 +1,7 @@
 /* nema vault: the WebMCP surface.
  *
- * Nine imperative tools, registered through /shared/webmcp.js so every call is
- * timed, normalized and pushed into the activity strip. A tenth tool, the
+ * Eleven imperative tools, registered through /shared/webmcp.js so every call
+ * is timed, normalized and pushed into the activity strip. A twelfth tool, the
  * declarative `set_learning_goal_form`, lives in index.html.
  *
  * What is deliberately missing is as much of the design as what is here. There
@@ -9,6 +9,12 @@
  * disable_review and no export_vault. An agent cannot write a band, read the
  * evidence history of another site, answer for the learner, or lift the whole
  * document out of the browser.
+ *
+ * The same line is drawn around concept alignment: an agent may propose that a
+ * site's own name means a registry concept, and read what has been proposed,
+ * but there is no tool that confirms or rejects one. Only the learner does
+ * that, in the vault. Nor is there a tool for `recordSelfCheck`: a person may
+ * tick their own rubric, an agent may not tick it for them.
  */
 
 import { registerTools, EXPOSED_TO } from '/shared/webmcp.js';
@@ -62,7 +68,19 @@ function stateRows(ids) {
 function signatureOf(entry) {
   if (entry.status === 'pending') return 'pending';
   if (entry.payload && entry.payload.keyId === 'agent') return 'agent';
+  /* Nothing signed a self check, and the ledger says which of the two it is
+   * rather than lumping both under "unsigned". Contract section 23. */
+  if (entry.payload && entry.payload.keyId === 'self-check') return 'self-check';
   return 'verified';
+}
+
+/* The claim as the ledger shows it: the words the issuer signed, plus what the
+ * vault reads them as when the issuer used its own vocabulary. */
+function claimRow(claim, note) {
+  const row = { concept: claim.concept, ability: claim.ability, result: claim.result };
+  if (note && note.alignedTo) row.alignedTo = note.alignedTo;
+  if (note && note.pendingAlignment) row.pendingAlignment = true;
+  return row;
 }
 
 export function evidenceRows(limit) {
@@ -73,11 +91,9 @@ export function evidenceRows(limit) {
     receiptId: entry.receiptId,
     issuerName: vault.issuerName(entry.payload),
     activity: entry.payload && entry.payload.activity ? entry.payload.activity.title : 'unknown activity',
-    claims: (entry.payload && entry.payload.claims ? entry.payload.claims : []).map((claim) => ({
-      concept: claim.concept,
-      ability: claim.ability,
-      result: claim.result
-    })),
+    claims: (entry.payload && entry.payload.claims ? entry.payload.claims : []).map(
+      (claim, index) => claimRow(claim, Array.isArray(entry.claims) ? entry.claims[index] : null)
+    ),
     grader: entry.payload && entry.payload.conditions && entry.payload.conditions.grader
       ? entry.payload.conditions.grader
       : 'unspecified',
@@ -315,10 +331,66 @@ export const TOOLS = [
       highlight('evidence', `${receipts.length} receipt${receipts.length === 1 ? '' : 's'} read`);
       return { status: 'ok', receipts };
     }
+  },
+
+  {
+    name: 'propose_concept_alignment',
+    description:
+      'Propose that a concept id a site uses in its own vocabulary means a concept in the nema registry. Sites are not required to use nema: ids, so this is how a site that says "browning-science" is understood as nema:maillard-reaction. Nothing is translated by proposing: the alignment is added to the Alignments list in the vault page and the learner must confirm it there before it moves a band or answers a requirement. Returns proposed with the new id, or exists with the alignment already in play for that name.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        origin: { type: 'string', description: 'Origin of the site that uses this name, for example https://maillard.migarci2.dev.' },
+        providerConcept: { type: 'string', description: "The site's own concept id, as it appears in its manifest, without the nema: prefix." },
+        concept: { type: 'string', description: 'The nema registry concept it means, for example nema:maillard-reaction.' },
+        relation: {
+          type: 'string',
+          enum: ['equivalent', 'broader', 'narrower'],
+          description: 'equivalent when the two names mean the same thing, narrower when the site concept is a part of the registry concept, broader when it covers more.'
+        },
+        rationale: { type: 'string', description: 'One sentence for the learner: why these two names are the same thing.' }
+      },
+      required: ['origin', 'providerConcept', 'concept', 'relation', 'rationale'],
+      additionalProperties: false
+    },
+    execute(args) {
+      /* The fields are passed one by one, and `proposedBy` is not one of them.
+       * A tool call is an agent's word: it cannot arrive labelled as the site's
+       * or the learner's, whatever an MCP client puts in the arguments. */
+      const result = vault.proposeAlignment({
+        origin: args.origin,
+        providerConcept: args.providerConcept,
+        concept: args.concept,
+        relation: args.relation,
+        rationale: args.rationale,
+        proposedBy: 'agent'
+      });
+      highlight('alignments', `alignment ${result.status}`);
+      return result;
+    }
+  },
+
+  {
+    name: 'get_concept_alignments',
+    description:
+      'List the concept alignments this vault holds: which local concept id of which site means which nema registry concept, who proposed it, and whether the learner confirmed, rejected or has not answered yet. Pass an origin to narrow it to one site. Only confirmed alignments translate anything. Highlights the alignments list on screen.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        origin: { type: 'string', description: 'Origin of one site, for example https://maillard.migarci2.dev. Omit for every site.' }
+      },
+      required: [],
+      additionalProperties: false
+    },
+    execute(args) {
+      const alignments = vault.getAlignments(args.origin);
+      highlight('alignments', `${alignments.length} alignment${alignments.length === 1 ? '' : 's'} read`);
+      return { status: 'ok', alignments };
+    }
   }
 ];
 
-/** Register the nine imperative tools. The declarative form is in the HTML. */
+/** Register the eleven imperative tools. The declarative form is in the HTML. */
 export async function register() {
   return registerTools(TOOLS, { exposedTo: EXPOSED_TO });
 }

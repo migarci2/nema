@@ -29,6 +29,7 @@ const PANEL_IDS = {
   needs: 'p-needs',
   disclosures: 'p-disclosures',
   evidence: 'p-evidence',
+  alignments: 'p-alignments',
   goals: 'p-goals',
   inbox: 'p-inbox',
   share: 'p-share'
@@ -37,6 +38,7 @@ const PANEL_IDS = {
 const refs = {};
 let showAllEvidence = false;
 let showAllState = false;
+let showRejectedAlignments = false;
 let consentState = null;
 let consentTimeoutMs = 120000;
 let shareToken = '';
@@ -299,10 +301,68 @@ function renderNeeds(explicitNeeds, budgetOverride) {
         <span class="n-path__reason">${esc((need.reason || []).map(humanize).join(', '))}${need.confusableWith ? `, against ${esc(shortConcept(need.confusableWith))}` : ''}</span>
       </span>
       <span class="n-path__minutes">${need.minutes} min</span>
-    </div>`).join('');
+    </div>${index === 0 ? selfCheck(need) : ''}`).join('');
 
   refs.needsList.innerHTML = `${rows}
     <p class="v-path__total">${minutes} minutes over ${plural(needs.length, 'need')}.</p>`;
+}
+
+/* The first need, answerable with no agent in the room. The rubric is the same
+ * list an agent would grade against, so ticking it honestly is worth something:
+ * 0.3, a self report, the weakest evidence the vault will write down. */
+function selfCheck(need) {
+  const rubric = Array.isArray(need.rubric) ? need.rubric : [];
+  if (rubric.length === 0) return '';
+  return `
+    <div class="v-check" data-self-check="${esc(need.needId)}">
+      <ul class="v-check__list">
+        ${rubric.map((criterion, index) => `
+          <li>
+            <label class="n-check">
+              <input type="checkbox" data-check-criterion="${index}">
+              <span>${esc(criterion)}</span>
+            </label>
+          </li>`).join('')}
+      </ul>
+      <div class="row row--tight">
+        <button class="n-btn n-btn--sm n-btn--secondary" type="button" data-action="self-check">Done</button>
+        <span class="n-help" data-self-check-status role="status" aria-live="polite">Tick what you can already do. An agent would ask you to prove it, and that is worth more.</span>
+      </div>
+    </div>`;
+}
+
+/**
+ * Record the ticked rubric as a self check. Nothing ticked records nothing: a
+ * receipt saying the learner failed their own review is not what an empty
+ * checklist means, it means they have not answered yet.
+ */
+async function runSelfCheck(button) {
+  const box = button.closest('[data-self-check]');
+  if (!box) return;
+  const needId = box.getAttribute('data-self-check');
+  const status = box.querySelector('[data-self-check-status]');
+  const boxes = [...box.querySelectorAll('[data-check-criterion]')];
+  const rubricResults = boxes.map((input) => ({
+    criterion: input.parentElement.querySelector('span').textContent,
+    met: input.checked
+  }));
+
+  if (!rubricResults.some((entry) => entry.met)) {
+    status.textContent = 'Tick at least one thing you can already do.';
+    return;
+  }
+
+  const result = await vault.recordSelfCheck({
+    needId,
+    rubricResults,
+    note: 'Ticked by the learner in the vault, with no agent and no grader.'
+  });
+  if (result.status !== 'accepted') {
+    status.textContent = 'That need is no longer on the list. Plan the session again.';
+    return;
+  }
+  toast(`Self check recorded as ${result.result}, at the self report weight.`, 'ok');
+  flash('evidence', 'self check recorded');
 }
 
 /* ------------------------------------------------- disclosure ledger -- */
@@ -358,6 +418,7 @@ function signaturePill(signature) {
    * simply has no key for it. The row's yellow edge is what asks for a look. */
   if (signature === 'pending') return '<span class="n-pill n-pill--unknown">pending</span>';
   if (signature === 'agent') return '<span class="n-pill n-pill--agent">agent assessed</span>';
+  if (signature === 'self-check') return '<span class="n-pill n-pill--agent">self check</span>';
   return '<span class="n-pill n-pill--durable">verified</span>';
 }
 
@@ -367,8 +428,16 @@ function signaturePill(signature) {
  * says the word and repeating it would say nothing new. */
 function trustWord(trust, signature) {
   if (!trust || trust === 'pending') return '';
-  if (signature === 'agent') return '';
+  if (signature === 'agent' || signature === 'self-check') return '';
   return `<span class="v-trust v-trust--${esc(trust)}">${esc(trust)}</span>`;
+}
+
+/* A claim a site wrote in its own words says what the vault reads it as, or
+ * that it is still waiting for the learner to say. Contract section 23. */
+function claimNote(claim) {
+  if (claim.pendingAlignment) return ', not aligned yet';
+  if (claim.alignedTo) return `, read as ${esc(shortConcept(claim.alignedTo))}`;
+  return '';
 }
 
 function renderEvidence() {
@@ -385,11 +454,14 @@ function renderEvidence() {
   refs.evidenceLedger.innerHTML = visible.map((row) => {
     const entry = receipts.find((item) => item.receiptId === row.receiptId);
     const claims = row.claims
-      .map((claim) => `<span class="v-claim v-claim--${esc(claim.result)}">${esc(shortConcept(claim.concept))}.${esc(claim.ability)} ${esc(claim.result)}</span>`)
+      .map((claim) => `<span class="v-claim v-claim--${esc(claim.result)}">${esc(shortConcept(claim.concept))}.${esc(claim.ability)} ${esc(claim.result)}${claimNote(claim)}</span>`)
       .join('');
     const effect = (row.effect || []).join('. ');
+    /* Two reasons a row asks for a look: nothing could check the signature, or
+     * the vault cannot read one of the names in it yet. */
+    const waiting = row.claims.some((item) => item.pendingAlignment);
     return `
-      <details class="v-erow${row.signature === 'pending' ? ' v-erow--flag' : ''}">
+      <details class="v-erow${row.signature === 'pending' || waiting ? ' v-erow--flag' : ''}">
         <summary class="v-erow__head">
           <span class="v-erow__title">${esc(row.activity)}</span>
           <span class="v-erow__meta">${esc(row.issuerName)}</span>
@@ -408,6 +480,129 @@ function renderEvidence() {
   refs.evidenceToggle.textContent = showAllEvidence
     ? `Show ${EVIDENCE_PREVIEW}`
     : `Show all ${rows.length}`;
+}
+
+/* --------------------------------------------------------- alignments -- */
+
+/* A site says "browning-science", the registry says nema:maillard-reaction, and
+ * the learner is the only one who can say those are the same thing. Proposals
+ * carry the rationale and two buttons; a confirmed alignment is one quiet line;
+ * a rejected one is out of the way but never deleted, because the vault holding
+ * the answer is the point. */
+function alignmentLine(entry) {
+  const relation = entry.relation === 'equivalent' ? 'is' : `is ${entry.relation} than`;
+  return `<span class="mono">${esc(entry.providerConcept)}</span> ${relation} <span class="mono">${esc(entry.concept)}</span>`;
+}
+
+/* Names a receipt in the ledger used and this vault cannot read. They are the
+ * reason the panel exists, so they are what it shows when there is nothing else
+ * in it: a word, who signed it, and one button to say what it means. */
+function waitingNames() {
+  const out = new Map();
+  for (const entry of vault.getReceipts()) {
+    if (!entry.payload || !Array.isArray(entry.claims)) continue;
+    const origin = entry.payload.issuer;
+    for (const note of entry.claims) {
+      if (!note.pendingAlignment) continue;
+      const key = `${origin}|${note.concept}`;
+      if (!out.has(key)) out.set(key, { origin, name: note.concept, receipts: new Set() });
+      out.get(key).receipts.add(entry.receiptId);
+    }
+  }
+  return [...out.values()].map((entry) => ({ ...entry, receipts: entry.receipts.size }));
+}
+
+function waitingRow(entry) {
+  return `
+    <div class="v-align v-align--waiting">
+      <p class="v-align__claim"><span class="mono">${esc(entry.name)}</span> is waiting for a meaning</p>
+      <p class="v-align__why">${esc(shortOrigin(entry.origin))} signed ${plural(entry.receipts, 'receipt')} with this name and nothing here knows what it means, so ${entry.receipts === 1 ? 'it counts' : 'they count'} for nothing. An agent can propose it, or you can say it yourself.</p>
+      <div class="row row--tight">
+        <button class="n-btn n-btn--sm n-btn--secondary" type="button" data-align-name="${esc(entry.origin)}" data-align-word="${esc(entry.name)}">Say what it means</button>
+      </div>
+    </div>`;
+}
+
+function renderAlignments() {
+  const all = vault.getAlignments();
+  const waiting = waitingNames().map(waitingRow).join('');
+  if (all.length === 0) {
+    refs.alignmentList.innerHTML = waiting || '<p class="n-empty">No site has asked to be understood yet.</p>';
+    return;
+  }
+
+  const proposed = all.filter((entry) => entry.status === 'proposed');
+  const confirmed = all.filter((entry) => entry.status === 'confirmed');
+  const rejected = all.filter((entry) => entry.status === 'rejected');
+
+  const proposedRows = proposed.map((entry) => `
+    <div class="v-align v-align--proposed" data-alignment="${esc(entry.alignmentId)}">
+      <p class="v-align__claim">${alignmentLine(entry)}</p>
+      <p class="v-align__why">${esc(entry.rationale || 'No reason given.')}</p>
+      <p class="v-align__meta">${esc(shortOrigin(entry.origin))}, proposed by the ${esc(entry.proposedBy)}</p>
+      <div class="row row--tight">
+        <button class="n-btn n-btn--sm n-btn--primary" type="button" data-confirm-alignment="${esc(entry.alignmentId)}">Confirm</button>
+        <button class="n-btn n-btn--sm n-btn--secondary" type="button" data-reject-alignment="${esc(entry.alignmentId)}">Reject</button>
+      </div>
+    </div>`).join('');
+
+  const confirmedRows = confirmed.map((entry) => `
+    <div class="v-align" data-alignment="${esc(entry.alignmentId)}">
+      <p class="v-align__claim">${alignmentLine(entry)}
+        <span class="v-align__meta">${esc(shortOrigin(entry.origin))}${entry.proposedBy === 'provider' ? ', declared by the site' : ''}</span>
+        <button class="v-text-btn" type="button" data-reject-alignment="${esc(entry.alignmentId)}">Undo</button>
+      </p>
+    </div>`).join('');
+
+  const rejectedRows = rejected.length === 0 ? '' : `
+    <details class="v-align__more"${showRejectedAlignments ? ' open' : ''}>
+      <summary class="v-more__summary">More: ${plural(rejected.length, 'rejected name')}</summary>
+      ${rejected.map((entry) => `
+        <div class="v-align" data-alignment="${esc(entry.alignmentId)}">
+          <p class="v-align__claim v-align__claim--off">${alignmentLine(entry)}
+            <span class="v-align__meta">${esc(shortOrigin(entry.origin))}</span>
+            <button class="v-text-btn" type="button" data-confirm-alignment="${esc(entry.alignmentId)}">Confirm after all</button>
+          </p>
+        </div>`).join('')}
+    </details>`;
+
+  refs.alignmentList.innerHTML = waiting + proposedRows + confirmedRows + rejectedRows;
+}
+
+/**
+ * The learner naming a concept themselves, with no agent in the room. It is
+ * stored as `proposedBy: 'learner'` and confirmed in the same breath, because
+ * the person doing the proposing is the person who decides.
+ */
+function alignByHand() {
+  const data = new FormData(refs.alignForm);
+  const result = vault.proposeAlignment({
+    origin: String(data.get('origin') || '').trim(),
+    providerConcept: String(data.get('providerConcept') || '').trim(),
+    concept: String(data.get('concept') || '').trim(),
+    relation: String(data.get('relation') || 'equivalent'),
+    rationale: 'You said so, in the vault.',
+    proposedBy: 'learner'
+  });
+
+  if (result.status === 'error') {
+    refs.alignStatus.textContent = result.error;
+    return;
+  }
+  if (result.status === 'exists') {
+    refs.alignStatus.textContent = `That name is already ${result.current.status} as ${result.current.concept}.`;
+    return;
+  }
+
+  const confirmed = vault.confirmAlignment(result.alignmentId);
+  const moved = confirmed.changes.length;
+  refs.alignStatus.textContent = '';
+  refs.alignForm.reset();
+  refs.alignBox.open = false;
+  toast(moved > 0
+    ? `Aligned. ${plural(moved, 'band')} moved from evidence already in the vault.`
+    : 'Aligned. Nothing to move yet.', 'ok');
+  flash(moved > 0 ? 'state' : 'alignments', 'aligned by hand');
 }
 
 /* -------------------------------------------------------------- goals -- */
@@ -442,6 +637,7 @@ function render() {
   renderNeeds();
   renderDisclosures();
   renderEvidence();
+  renderAlignments();
   renderGoals();
 }
 
@@ -512,7 +708,7 @@ function askForConsent(request, { signal }) {
       <div class="n-ledger__row">
         <span class="n-ledger__main">
           <span class="n-ledger__title">${esc(item.title)}</span>
-          <span class="n-ledger__meta"><span class="mono">${esc(item.concept)}.${esc(item.ability)}</span></span>
+          <span class="n-ledger__meta"><span class="mono">${esc(item.concept)}.${esc(item.ability)}</span>${item.alignedTo ? ` read as <span class="mono">${esc(item.alignedTo)}</span>` : ''}${item.reason === 'unaligned' ? ', a name this vault has not aligned' : ''}</span>
         </span>
         <span class="n-ledger__end"><span class="${statusPill(item.status)}">${esc(item.status)}</span></span>
       </div>`).join('');
@@ -621,10 +817,17 @@ function showInboxResult(result) {
     const reviews = result.reviewsScheduled.length > 0
       ? `<p class="mono dim">next review ${esc(relTime(result.reviewsScheduled[0].nextReview))} for ${esc(shortConcept(result.reviewsScheduled[0].concept))}</p>`
       : '';
+    /* A claim in words this vault has not been taught is not a rejection and
+     * not a silence: the receipt is kept, and the learner is told what would
+     * make it count. Contract section 23. */
+    const waiting = Array.isArray(result.pendingAlignment) && result.pendingAlignment.length > 0
+      ? `<p class="mono dim">${esc(result.pendingAlignment.join(', '))} ${result.pendingAlignment.length === 1 ? 'is a name' : 'are names'} this site uses and this vault has not aligned, so ${result.pendingAlignment.length === 1 ? 'that claim' : 'those claims'} moved nothing. Say what ${result.pendingAlignment.length === 1 ? 'it means' : 'they mean'} under Alignments and this receipt starts counting.</p>`
+      : '';
     box.innerHTML = `
       <div class="v-result__box v-result__box--ok">
         <p><b>Accepted.</b> Signature verified against ${esc(result.issuerName)}, receipt ${esc(result.receiptId)}.</p>
         ${trustNote(result)}
+        ${waiting}
         <ul class="v-result__list">${changes}</ul>
         ${reviews}
       </div>`;
@@ -849,6 +1052,10 @@ function collectRefs() {
   refs.disclosureLedger = $('[data-disclosure-ledger]');
   refs.evidenceLedger = $('[data-evidence-ledger]');
   refs.evidenceToggle = $('[data-action="toggle-evidence"]');
+  refs.alignmentList = $('[data-alignment-list]');
+  refs.alignForm = $('[data-align-form]');
+  refs.alignBox = $('[data-align-box]');
+  refs.alignStatus = $('[data-align-status]');
   refs.goalForm = $('[data-goal-form]');
   refs.goalList = $('[data-goal-list]');
   refs.goalStatus = $('[data-goal-status]');
@@ -876,8 +1083,47 @@ function collectRefs() {
 
 function wireActions() {
   document.addEventListener('click', async (event) => {
-    const button = event.target.closest('[data-action], [data-remove-goal], [data-copy-token], [data-stop-auto]');
+    const button = event.target.closest('[data-action], [data-remove-goal], [data-copy-token], [data-stop-auto], [data-confirm-alignment], [data-reject-alignment], [data-align-name]');
     if (!button) return;
+
+    const alignName = button.getAttribute('data-align-name');
+    if (alignName) {
+      refs.alignBox.open = true;
+      refs.alignForm.elements.origin.value = alignName;
+      refs.alignForm.elements.providerConcept.value = button.getAttribute('data-align-word') || '';
+      refs.alignStatus.textContent = '';
+      refs.alignForm.elements.concept.focus();
+      return;
+    }
+
+    /* The learner is the only one who decides what a site's name means. There
+     * is no tool for these two clicks, and there never will be. */
+    const confirmAlignment = button.getAttribute('data-confirm-alignment');
+    if (confirmAlignment) {
+      const result = vault.confirmAlignment(confirmAlignment);
+      if (result.status === 'ok') {
+        showRejectedAlignments = false;
+        const moved = result.changes.length;
+        toast(moved > 0
+          ? `Alignment confirmed. ${plural(moved, 'band')} moved from evidence already in the vault.`
+          : 'Alignment confirmed. Nothing to move yet.', 'ok');
+        flash(moved > 0 ? 'state' : 'alignments', 'alignment confirmed');
+      }
+      return;
+    }
+
+    const rejectAlignment = button.getAttribute('data-reject-alignment');
+    if (rejectAlignment) {
+      const result = vault.rejectAlignment(rejectAlignment);
+      if (result.status === 'ok') {
+        showRejectedAlignments = true;
+        toast(result.changes.length > 0
+          ? `Rejected. ${plural(result.changes.length, 'band')} moved back.`
+          : 'Rejected. That name translates nothing.', 'info');
+        flash('alignments', 'alignment rejected');
+      }
+      return;
+    }
 
     const removeGoal = button.getAttribute('data-remove-goal');
     if (removeGoal) {
@@ -955,6 +1201,11 @@ function wireActions() {
       return;
     }
 
+    if (action === 'self-check') {
+      await runSelfCheck(button);
+      return;
+    }
+
     if (action === 'clear-inbox') {
       refs.inboxToken.value = '';
       refs.inboxNote.hidden = true;
@@ -990,6 +1241,11 @@ function wireActions() {
   refs.shareForm.addEventListener('submit', (event) => {
     event.preventDefault();
     shareWithSite();
+  });
+
+  refs.alignForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    alignByHand();
   });
 
   refs.needsForm.addEventListener('submit', (event) => {
