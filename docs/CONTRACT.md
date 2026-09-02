@@ -917,3 +917,104 @@ for the wordmark and section titles only):
   WCAG AA, source order is reading order.
 - Copy: simplify the language, never the claim. Keep every qualifier that
   changes meaning. No authoring narration.
+
+## 21. No coach. nema is a protocol anyone who teaches on the web can install (owner decision, 2026-09-02)
+
+The coach page is removed. The agents are the real ones: ChatGPT desktop and
+Chrome 149+ in the browser (WebMCP), Claude Code and Codex in the terminal
+(MCP through `packages/nema-mcp`). Every flow must work with any of them, and
+with no agent at all (a person copying tokens by hand).
+
+### The one tag install: `nema-provider.js`
+
+Served from the hub at `https://nema.migarci2.dev/nema-provider.js`
+(source `shared/provider-embed.js`, copied into `apps/site/public/`). A blog
+post, an article, a course page installs nema with a manifest and one script:
+
+```html
+<script type="application/nema+json">
+{ "protocol": "nema/0.1",
+  "provider": { "name": "Maillard, explained" },
+  "unit": { "id": "maillard-explained", "title": "Why browning tastes like that", "estimatedMinutes": 8 },
+  "requirements": [ { "concept": "nema:heat-control", "ability": "explain" } ],
+  "activities": [
+    { "id": "read", "type": "lesson", "title": "Read the article", "minutes": 6,
+      "outcomes": [ { "concept": "nema:maillard-reaction", "ability": "recognize" } ] },
+    { "id": "check", "type": "quiz", "title": "Two questions before you go", "minutes": 2,
+      "outcomes": [ { "concept": "nema:maillard-reaction", "ability": "explain" } ],
+      "questions": [ { "id": "q1", "prompt": "...", "options": [ { "id": "a", "text": "..." } ], "answer": "a" } ] }
+  ] }
+</script>
+<script type="module" src="https://nema.migarci2.dev/nema-provider.js"></script>
+```
+
+What the script does, with no backend and no account:
+
+- Registers the five provider tools with the exact names, schemas and return
+  shapes of section 10 (`describe_learning_offer`, `personalize_learning_path`,
+  `start_activity`, `get_attempt_status`, `issue_evidence_receipt`), plus the
+  declarative form `<form toolname="present_assertion">` with one textarea so
+  a person or an agent can hand over a vault assertion.
+- Renders one quiet block where the page puts `<nema-activities></nema-activities>`
+  (or at the end of `<main>` / `<article>` when absent): the lesson "Mark as
+  read" button, the quiz (radio options, Submit, feedback), the personalised
+  path note ("You can skip: ...") once an assertion is presented, and the
+  receipt with Copy and a "Send to vault" link (`<vault>/#receipt=<token>`).
+  Styles are scoped and inherit the host page's fonts and colours; nothing
+  about the block looks like nema except a 16px mark and the words "Works with
+  nema".
+- Grades the quiz deterministically in the page and issues receipts signed
+  with a per origin key generated in localStorage on first use. The receipt
+  carries `keyId: "self:<origin>"` and `issuerKey` (the public JWK), so it is
+  self certifying. Grader for the quiz: `deterministic`; for "Mark as read":
+  `exposure`.
+- Optional attributes on the script tag: `data-endpoint="/api/receipt"`
+  (post the submission for server signing, same body as section 10; the
+  server's receipt replaces the self signed one), `data-vault` (vault origin
+  for the "Send to vault" link, default the nema vault).
+- Optional trust upgrade with no server: publish the same public key at
+  `/.well-known/nema-issuer.json` (`{ "keyId", "jwk" }`, CORS `*`). The vault
+  fetches it and treats the issuer as origin published.
+
+### Vault: three trust tiers for receipts
+
+`verifyReceipt` gains an `issuerKey` path and the vault stores a
+`trust` field on every receipt:
+
+| trust | how it is established | evidence weight |
+|---|---|---|
+| `registered` | keyId in `shared/issuers.json` | full (section 3 table) |
+| `origin` | `issuerKey` verifies the signature AND `https://<issuer>/.well-known/nema-issuer.json` returns the same keyId and jwk | full |
+| `self` | `issuerKey` verifies the signature, nothing else | capped at the `self-report` weight (0.3) whatever the grader says |
+| `pending` | no key matches | none |
+
+The ledger shows the tier as a word (registered, origin, self) and the
+learner state derivation caps `self` receipts. `deriveState` takes an
+optional `weightCap(receipt)`; the vault passes the tier rule.
+
+### Hand delivery, no agent needed
+
+- Vault: a "Share with a site" action (audience origin, purpose, the
+  concept and ability pairs) that runs the same consent modal and shows the
+  signed token with Copy. Same code path as `create_readiness_assertion`.
+- Saucier School, Line Cook Lab and the embed: a "Paste an assertion" textarea
+  that calls the same verify and personalise path as the tool (declarative
+  form `present_assertion`, `toolautosubmit`).
+- Receipts already travel by the "Send to vault" link and the vault inbox.
+
+### The third example: a blog post
+
+`apps/blog` (worker `nema-blog`, `https://maillard.migarci2.dev`): one static
+article, "Why browning tastes like that", written like a good personal blog
+(white page, serif, 70ch, a photo free layout), with the manifest above and
+the one script tag. It is the proof that the install is one tag, so its
+source must be readable as a template: `index.html` with a comment "everything
+nema is between these two lines".
+
+### The message, everywhere
+
+nema is a protocol for the people who make the web's learning: sites, blogs,
+articles, courses. Install it in a minute, keep your content and your voice,
+and every reader who arrives keeps what they learned with them. The vault is
+the reader's; the protocol is everyone's; the agents are whichever the reader
+already uses. The hub says this first. The docs say how.
