@@ -260,7 +260,7 @@ body[data-nema-onboarding='on'] .v-activity { display: none; }
   gap: var(--sp-2);
 }
 
-.x-align__pair { flex: 1 1 100%; font-size: var(--fs-11); color: var(--ink); }
+.x-align__pair { flex: 1 1 100%; font-size: var(--fs-13); color: var(--ink); }
 .x-align__why { flex: 1 1 100%; font-size: var(--fs-12); color: var(--ink-2); }
 .x-align__state { font-size: var(--fs-11); color: var(--teal); }
 .x-align__acts { display: flex; gap: var(--sp-2); }
@@ -268,3 +268,9 @@ body[data-nema-onboarding='on'] .v-activity { display: none; }
 
 /* The extension's own line in the vault's consent modal. */
 .x-remember { margin-top: var(--sp-1); }
+
+/* The panel's own copy of the block of contract section 26: the tool names and
+ * the calls the extension made are the only machine words in the panel, and
+ * they live behind one closed summary like everything else. */
+.n-under .x-tools { font-size: var(--fs-13); color: var(--ink-2); }
+.n-under .x-calls { margin-top: 0; }

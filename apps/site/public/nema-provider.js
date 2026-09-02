@@ -584,6 +584,15 @@ const STYLE = `
   background:transparent;padding:.5em;border:1px solid rgba(128,128,128,.5);
   border:1px solid color-mix(in oklab, currentColor 30%, transparent);border-radius:2px}
 .nema-embed details summary{cursor:pointer}
+.nema-embed-under{margin:1rem 0 0;font-size:.85em}
+.nema-embed-under>summary{opacity:.7}
+.nema-embed-under[open]>summary{margin-bottom:.6em}
+.nema-embed-under-body{display:flex;flex-direction:column;gap:.6em;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;
+  line-height:1.5;overflow-wrap:anywhere}
+.nema-embed-under-body p{margin:0}
+.nema-embed-under-say{opacity:.75}
+.nema-embed--anchored{margin:2rem 0}
 .nema-embed-foot{display:flex;align-items:center;gap:.45em;font-size:.85em;opacity:.75;margin-top:1.5rem}
 .nema-embed-foot a{color:inherit;display:inline-flex;align-items:center;gap:.45em;text-decoration:none}
 .nema-embed-foot a:hover{text-decoration:underline}
@@ -1007,13 +1016,45 @@ async function presentAssertion(app, token) {
 // the block on the page
 // ---------------------------------------------------------------------------
 
-function mountPoint() {
-  return (
-    document.querySelector('nema-activities') ||
-    document.querySelector('main') ||
-    document.querySelector('article') ||
-    document.body
-  );
+/**
+ * Where the block goes, contract section 27b.
+ *
+ * `<nema-activities for="<activityId>">` is an anchor: that one activity is
+ * rendered where the anchor stands, inside the article, so a retrieval
+ * question sits under the section it is about. A plain `<nema-activities>` is
+ * the main block and renders everything else. An anchor naming an activity
+ * this manifest does not have, or naming one twice, is ignored, so an
+ * activity is rendered exactly once whatever the page says.
+ *
+ * With no plain `<nema-activities>` on the page the main block is appended to
+ * <main>, then <article>, then the body, exactly as before.
+ */
+function mountPoints(app) {
+  const anchors = [];
+  const taken = new Set();
+  let main = null;
+  for (const node of document.querySelectorAll('nema-activities')) {
+    const id = (node.getAttribute('for') || '').trim();
+    if (id === '') {
+      if (main === null) main = node;
+      continue;
+    }
+    if (!app.activities[id] || taken.has(id)) {
+      console.warn(`[nema] <nema-activities for="${id}"> names no activity of this manifest, or names one twice`);
+      continue;
+    }
+    taken.add(id);
+    anchors.push({ id, node });
+  }
+  const host = main
+    || document.querySelector('main')
+    || document.querySelector('article')
+    || document.body;
+  return { anchors, host };
+}
+
+function activitySection(app, activity) {
+  return activity.type === 'quiz' ? quizSection(app, activity) : lessonSection(app, activity);
 }
 
 function mount(app) {
@@ -1021,7 +1062,19 @@ function mount(app) {
   style.textContent = STYLE;
   document.head.appendChild(style);
 
-  const host = mountPoint();
+  const { anchors, host } = mountPoints(app);
+  const anchored = anchors.map((anchor) => {
+    const node = el('section', {
+      class: 'nema-embed nema-embed--anchored',
+      'data-nema-embed': app.manifest.unit.id,
+      'data-nema-anchor': anchor.id,
+      'aria-label': app.activities[anchor.id].title
+    });
+    anchor.node.appendChild(node);
+    return { id: anchor.id, node };
+  });
+  const inPlace = new Set(anchored.map((entry) => entry.id));
+
   const root = el('section', {
     class: 'nema-embed',
     'data-nema-embed': app.manifest.unit.id,
@@ -1030,19 +1083,23 @@ function mount(app) {
   host.appendChild(root);
 
   function render() {
+    for (const entry of anchored) {
+      entry.node.textContent = '';
+      entry.node.appendChild(activitySection(app, app.activities[entry.id]));
+    }
+
     root.textContent = '';
     if (app.message) {
       root.appendChild(el('p', { class: 'nema-embed-note', 'data-nema-message': '', text: app.message }));
     }
     /* The handshake comes first, because it is the thing that changes what the
-     * rest of the block says. The paste box stays directly under it as the
-     * fallback for a browser that will not open a popup. */
+     * rest of the block says. The paste box is under the hood beneath it, as
+     * the fallback for a browser that will not open a popup. */
     root.appendChild(connectSection(app));
-    root.appendChild(assertionSection(app));
     if (app.personal) root.appendChild(pathNote(app));
     for (const activity of app.manifest.activities) {
-      const full = app.activities[activity.id];
-      root.appendChild(full.type === 'quiz' ? quizSection(app, full) : lessonSection(app, full));
+      if (inPlace.has(activity.id)) continue;
+      root.appendChild(activitySection(app, app.activities[activity.id]));
     }
     const receipts = app.store.read().receipts;
     if (receipts.length > 0) root.appendChild(receiptSection(app, receipts));
@@ -1050,6 +1107,31 @@ function mount(app) {
   }
 
   return { root, render };
+}
+
+/**
+ * One closed block per section for everything a reader never has to read:
+ * tokens, key ids, the ids the site and the registry use, the fields a
+ * verifier checks. Contract section 26.
+ */
+function underSection(children, { hook = null } = {}) {
+  const details = el('details', {
+    class: 'nema-embed-under',
+    ...(hook ? { [hook]: '' } : {})
+  });
+  details.appendChild(el('summary', { class: 'nema-embed-sub', text: 'Under the hood' }));
+  details.appendChild(el('div', { class: 'nema-embed-under-body' }, children.filter(Boolean)));
+  return details;
+}
+
+function underLine(key, value) {
+  if (value === undefined || value === null || value === '') return null;
+  return el('p', { text: `${key}: ${value}` });
+}
+
+/** A concept in words: the site's own name reads as words, never as an id. */
+function conceptWords(id) {
+  return String(id || '').replace(/^nema:/, '').replace(/[-_]/g, ' ');
 }
 
 /**
@@ -1082,11 +1164,14 @@ function connectSection(app) {
       el('p', { class: 'nema-embed-note', 'data-nema-connect-status': '', text: app.connectNote })
     );
   }
+  /* The paste box is the fallback for a browser that will not open a popup,
+   * and it is the one place on this page that names a token. */
+  section.appendChild(assertionSection(app));
   return section;
 }
 
 function pathNote(app) {
-  const { skipped, personalMinutes, fullMinutes } = app.personal;
+  const { skipped, personalMinutes, fullMinutes, requirements } = app.personal;
   const section = el('div', { class: 'nema-embed-section nema-embed-note', 'data-nema-path': '' });
   if (skipped.length === 0) {
     section.appendChild(
@@ -1097,13 +1182,22 @@ function pathNote(app) {
       el('p', {
         text:
           `You can skip: ${skipped.map((entry) => entry.title).join(', ')}. ` +
-          `${skipped[0].reason}. That leaves ${plural(personalMinutes, 'minute')} of ${fullMinutes}.`
+          `Your vault already vouches for that. That leaves ${plural(personalMinutes, 'minute')} of ${fullMinutes}.`
       })
     );
   }
-  const who = app.assertion ? app.assertion.payload.learnerKeyId : '';
   section.appendChild(
-    el('p', { class: 'nema-embed-sub', text: `Read from a signed readiness assertion for ${who}. Bands only, nothing else was shared.` })
+    el('p', { class: 'nema-embed-sub', text: 'Your vault told this page how sure it is, and nothing else.' })
+  );
+  section.appendChild(
+    underSection([
+      underLine('learner id', app.assertion ? app.assertion.payload.learnerKeyId : ''),
+      underLine('audience', app.assertion ? app.assertion.payload.audience : ''),
+      underLine('expires', app.assertion ? app.assertion.payload.expiresAt : ''),
+      el('ul', {}, (requirements || []).map((entry) =>
+        el('li', { text: `${entry.concept}.${entry.ability} ${entry.status}` }))),
+      el('ul', {}, skipped.map((entry) => el('li', { text: `${entry.activityId}: ${entry.reason}` })))
+    ], { hook: 'data-nema-path-under' })
   );
   return section;
 }
@@ -1242,8 +1336,8 @@ function receiptSection(app, receipts) {
     el('p', {
       class: 'nema-embed-sub',
       text:
-        `Signed by this site with a key it generated in your browser (${selfKeyId(location.origin)}). ` +
-        'The public key travels inside the receipt, so any vault can check the signature without knowing this site.'
+        `${app.manifest.provider.name} signed what you did, with a key it made in your browser. ` +
+        'Any vault can check that signature without knowing this site, and it counts as a self report.'
     })
   );
 
@@ -1253,11 +1347,11 @@ function receiptSection(app, receipts) {
     row.appendChild(
       el('p', {
         class: 'nema-embed-sub',
-        text: `${activity ? activity.title : entry.activityId}: ${entry.payload.claims.map((claim) => `${claim.concept}.${claim.ability} ${claim.result}`).join(', ')}`
+        text: `${activity ? activity.title : entry.activityId}: ${entry.payload.claims.map((claim) => `${conceptWords(claim.concept)}, ${claim.ability}: ${claim.result}`).join('; ')}`
       })
     );
     /* The primary action is the one that finishes the job. The bytes and the
-       old link fold away under "Do it by hand" for a reader with no popups. */
+       old link fold away under the hood for a reader with no popups. */
     row.appendChild(
       el('div', { class: 'nema-embed-row' }, [
         el('button', {
@@ -1283,9 +1377,11 @@ function receiptSection(app, receipts) {
       );
     }
 
-    const byHand = el('details', { 'data-nema-byhand': entry.activityId });
-    byHand.appendChild(el('summary', { class: 'nema-embed-sub', text: 'Do it by hand' }));
-    byHand.appendChild(el('code', { class: 'nema-embed-token', 'data-nema-token': entry.activityId, text: entry.token }));
+    const byHand = el('details', { class: 'nema-embed-under', 'data-nema-byhand': entry.activityId });
+    byHand.appendChild(el('summary', { class: 'nema-embed-sub', text: 'Under the hood' }));
+    const byHandBody = el('div', { class: 'nema-embed-under-body' });
+    byHandBody.appendChild(el('p', { class: 'nema-embed-under-say', text: 'Do it by hand: copy what this site signed, or open your vault with it in the address.' }));
+    byHandBody.appendChild(el('code', { class: 'nema-embed-token', 'data-nema-token': entry.activityId, text: entry.token }));
     const copy = el('button', {
       class: 'nema-embed-btn',
       type: 'button',
@@ -1309,7 +1405,7 @@ function receiptSection(app, receipts) {
         }, 2000);
       }
     });
-    byHand.appendChild(
+    byHandBody.appendChild(
       el('div', { class: 'nema-embed-row' }, [
         copy,
         el('a', {
@@ -1321,6 +1417,18 @@ function receiptSection(app, receipts) {
         })
       ])
     );
+    byHandBody.appendChild(underLine('receipt', entry.payload.receiptId));
+    byHandBody.appendChild(underLine('key', entry.payload.keyId));
+    byHandBody.appendChild(underLine('learner id', entry.payload.subject));
+    byHandBody.appendChild(underLine('activity', `${entry.payload.activity.id} ${entry.payload.activity.version}`));
+    byHandBody.appendChild(underLine('content hash', entry.payload.activity.contentHash));
+    byHandBody.appendChild(underLine('claims', entry.payload.claims
+      .map((claim) => `${claim.concept}.${claim.ability} ${claim.evidenceType} ${claim.result}`).join('  ')));
+    byHandBody.appendChild(underLine('conditions', entry.payload.conditions
+      ? `${entry.payload.conditions.grader} v${entry.payload.conditions.graderVersion}, ${entry.payload.conditions.attempts} attempts, ${entry.payload.conditions.durationSeconds} s`
+      : ''));
+    byHandBody.appendChild(underLine('issued', entry.payload.issuedAt));
+    byHand.appendChild(byHandBody);
     row.appendChild(byHand);
     section.appendChild(row);
   }
@@ -1328,14 +1436,20 @@ function receiptSection(app, receipts) {
 }
 
 function assertionSection(app) {
-  const details = el('details', { class: 'nema-embed-section', 'data-nema-assertion': '' });
-  details.appendChild(el('summary', { text: app.assertion ? 'Assertion presented' : 'Paste an assertion from your vault' }));
-  details.appendChild(
+  const details = el('details', { class: 'nema-embed-under', 'data-nema-assertion': '' });
+  details.appendChild(el('summary', { class: 'nema-embed-sub', text: 'Under the hood' }));
+  const body = el('div', { class: 'nema-embed-under-body' });
+  details.appendChild(body);
+  body.appendChild(
     el('p', {
-      class: 'nema-embed-sub',
-      text: 'Your vault can sign a short statement of what you already know, addressed to this site only. Paste it here and this page will tell you what to skip. An agent can do the same through present_assertion.'
+      class: 'nema-embed-under-say',
+      text: app.assertion
+        ? 'Your vault already answered this page. You can present another statement here.'
+        : 'No vault window? Your vault can sign a short statement of what you already know, addressed to this site only. Paste it here and this page will tell you what to skip. An agent can do the same through present_assertion.'
     })
   );
+  body.appendChild(underLine('this page asks for', (app.manifest.requirements || [])
+    .map((entry) => `${entry.concept}.${entry.ability}`).join('  ')));
 
   const form = el('form', {
     toolname: 'present_assertion',
@@ -1361,7 +1475,7 @@ function assertionSection(app) {
     const result = await presentAssertion(app, textarea.value);
     if (typeof event.respondWith === 'function') event.respondWith(result);
   });
-  details.appendChild(form);
+  body.appendChild(form);
   return details;
 }
 
@@ -1375,10 +1489,11 @@ function footer(app) {
 }
 
 function flash() {
-  const root = document.querySelector('[data-nema-embed]');
-  if (!root) return;
-  root.setAttribute('data-flash', 'true');
-  setTimeout(() => root.removeAttribute('data-flash'), 1200);
+  const roots = document.querySelectorAll('[data-nema-embed]');
+  for (const root of roots) {
+    root.setAttribute('data-flash', 'true');
+    setTimeout(() => root.removeAttribute('data-flash'), 1200);
+  }
 }
 
 // ---------------------------------------------------------------------------

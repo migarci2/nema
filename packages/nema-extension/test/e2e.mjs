@@ -297,9 +297,14 @@ try {
   await site.evaluate(`document.getElementById('nema-ext-bar').shadowRoot.querySelector('[data-share]').click(), true`);
   await panel.waitFor(`document.querySelector('#consent-modal').hidden === false`,
     { timeoutMs: 25000, label: 'the consent modal, opened from the bar' });
-  const modal = await panel.evaluate(`document.querySelector('[data-consent-origin]').textContent + ' | ' + document.querySelector('[data-consent-purpose]').textContent`);
-  ok(modal.includes('localhost:8782') && modal.includes('personalize-pan-sauces-foundations'),
+  const modal = await panel.evaluate(`document.querySelector('[data-consent-purpose]').textContent`);
+  const modalUnder = await panel.evaluate(`document.querySelector('[data-consent-origin]').textContent + ' | ' + document.querySelector('[data-consent-under]').textContent.replace(/\\s+/g, ' ')`);
+  /* CONTRACT 26: the question is in words, and the origin, the purpose string
+     and the learner id are behind the panel's one closed block. */
+  ok(modal.includes('to skip what you already know') && !/nema:|lk_|personalize-/.test(modal),
     `Share in the page's bar opens the vault's own consent modal: ${modal}`);
+  ok(modalUnder.includes('localhost:8782') && modalUnder.includes('personalize-pan-sauces-foundations') && modalUnder.includes('lk_'),
+    `and the machine words are under the hood: ${modalUnder.slice(0, 120)}`);
   const remember = await panel.evaluate(`(() => { const el = document.querySelector('.x-remember');
     return el && !el.hidden ? el.textContent.trim() : ''; })()`);
   ok(remember.includes('Remember this site for 30 days'),
@@ -384,8 +389,9 @@ try {
     `the new row is the diagnostic receipt: ${JSON.stringify(staged)}`);
   const ledger = await panel.evaluate(`document.querySelector('[data-evidence-ledger]').textContent.includes('Which vinaigrette holds')`);
   ok(ledger, 'the evidence ledger shows the new receipt');
-  const moved = await panel.evaluate(`document.querySelector('[data-ext-result]').textContent.includes('ratios apply')`);
-  ok(moved, 'the strip says which band moved');
+  const result = await panel.evaluate(`document.querySelector('[data-ext-result]').textContent`);
+  ok(result.includes('Cooking ratios, apply') && !/nema:|rcpt_|nema1\./.test(result),
+    `the strip says which band moved, in words: ${result.replace(/\s+/g, ' ').slice(0, 120)}`);
   console.log('shot ' + await panel.shot('11-panel-receipt'));
 
   /* 9. the manual button is still there, and is honest about the duplicate */
@@ -464,7 +470,7 @@ try {
        return el && !el.hidden ? el.textContent.replace(/\\s+/g, ' ').trim() : ''; })()`,
     { timeoutMs: 30000, label: 'the alignments the blog declares' }
   );
-  ok(aligns.includes('This site names things its own way') && aligns.includes('sugar-browning equivalent caramelization'),
+  ok(aligns.includes('This site names things its own way') && aligns.includes('This site calls Caramelization "sugar browning"'),
     `the strip lists the name the blog uses and what it means: ${aligns.slice(0, 140)}`);
   const declared = await panel.evaluate(`(() => {
     const doc = JSON.parse(localStorage.getItem('nema.vault.v1'));
@@ -483,8 +489,16 @@ try {
   const buttons = await panel.evaluate(`document.querySelectorAll('[data-ext-aligns] [data-ext-confirm]').length`);
   ok(buttons === 0 && blogAligns.browning === false,
     `a confirmed alignment needs no decision, and the undeclared name is not invented: ${buttons} buttons`);
-  ok(aligns.includes('No match proposed yet for browning-science'),
+  ok(aligns.includes('Nothing has said what "browning science" means'),
     `the name the blog declared nothing about is still waiting: ${aligns.slice(-160)}`);
+  /* CONTRACT 26: no token and no id anywhere in the panel a learner reads. */
+  const panelText = await panel.evaluate(`(() => {
+    const clone = document.body.cloneNode(true);
+    for (const open of clone.querySelectorAll('details.n-under')) open.remove();
+    return clone.textContent.replace(/\\s+/g, ' ');
+  })()`);
+  ok(!/nema1\.|rcpt_|lk_|aln_|nema:[a-z]/.test(panelText),
+    `the panel shows no token, key or id outside the block under the hood: ${(panelText.match(/nema1\.|rcpt_|lk_|aln_|nema:[a-z-]+/g) || []).slice(0, 5).join(' ')}`);
   console.log('shot ' + await panel.shot('14-panel-alignments'));
   console.log('shot ' + await blog.shot('15-blog'));
 

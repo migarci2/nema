@@ -146,7 +146,7 @@ function head(activity) {
       'p',
       'stage__meta',
       `${TYPE_LABEL[activity.type] || activity.type}, ${activity.minutes} min. ` +
-        `Produces ${activity.evidenceProduced} evidence, graded ${activity.grader}.`
+        `Worth ${activity.evidenceProduced} evidence, graded in our kitchen.`
     )
   );
   return wrap;
@@ -614,7 +614,7 @@ function renderFreeRecall(activity, attempt, handlers) {
       rubric.append(row);
     }
     rubric.append(
-      el('p', 'lab-note', 'Graded by a keyword rubric in our kitchen, grader provider-rubric, weight 0.8 in your vault.')
+      el('p', 'lab-note', 'Graded by a keyword rubric in our kitchen, and worth 0.8 of a full assessment in your vault.')
     );
   }
   frag.append(rubric);

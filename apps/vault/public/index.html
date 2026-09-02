@@ -55,6 +55,10 @@
         <div class="row row--tight">
           <button class="v-text-btn" type="button" data-action="toggle-state" hidden>Show all</button>
         </div>
+        <details class="n-under">
+          <summary class="n-under__summary">Under the hood</summary>
+          <div class="n-under__body" data-state-under></div>
+        </details>
       </div>
     </section>
 
@@ -82,17 +86,28 @@
           <div class="row row--tight">
             <button class="v-text-btn" type="button" data-action="toggle-evidence" hidden>Show all</button>
           </div>
+          <details class="n-under">
+            <summary class="n-under__summary">Under the hood</summary>
+            <div class="n-under__body" data-evidence-under></div>
+          </details>
         </div>
         <div class="v-ledgers__block">
           <h3 class="v-sublabel" id="p-disclosures">Disclosures out</h3>
           <div class="n-ledger" data-disclosure-ledger></div>
+          <details class="n-under">
+            <summary class="n-under__summary">Under the hood</summary>
+            <div class="n-under__body" data-disclosure-under></div>
+          </details>
         </div>
         <div class="v-ledgers__block">
           <h3 class="v-sublabel" id="p-alignments">Alignments</h3>
           <p class="v-align__note">Sites name things their own way. An agent proposes what a name means, you decide, and nothing is translated until you do.</p>
           <div class="n-ledger" data-alignment-list></div>
-          <details class="v-align__more" data-align-box>
-            <summary class="v-more__summary">Align a name yourself</summary>
+          <details class="n-under" data-align-box>
+            <summary class="n-under__summary">Under the hood</summary>
+            <div class="n-under__body">
+            <div data-alignment-under></div>
+            <p class="n-under__say">Say what a name means yourself.</p>
             <form class="stack stack--tight v-align__form" data-align-form>
               <div class="n-field">
                 <label class="n-label" for="align-origin">Site origin</label>
@@ -120,6 +135,7 @@
                 <span class="n-help" data-align-status role="status" aria-live="polite"></span>
               </div>
             </form>
+            </div>
           </details>
         </div>
       </div>
@@ -130,79 +146,110 @@
       <summary class="v-more__summary">More</summary>
       <div class="v-more__body">
 
+        <h3 class="v-sublabel v-more__heading">Do it by hand</h3>
+        <p class="v-more__lede">Everything the vault does with an agent, a site or the browser, you can also
+        do yourself. Each of these works on its own, with nothing else in the room.</p>
+
         <section class="n-panel n-panel--quiet v-sub" aria-labelledby="p-goals">
           <h3 class="v-sublabel" id="p-goals">Goals</h3>
-          <form class="stack stack--tight" data-goal-form toolautosubmit
-                toolname="set_learning_goal_form"
-                tooldescription="Set the learner's active goal from the goal form in the vault page. Goals only re-order learning needs, they never create evidence and never change a band.">
-            <div class="n-field">
-              <label class="n-label" for="goal-title">Goal title</label>
-              <input class="n-input" id="goal-title" name="title" type="text" required
-                     placeholder="What I want to be able to do"
-                     toolparamdescription="Short title of the goal, in the learner's own words.">
-            </div>
-            <div class="n-field">
-              <label class="n-label" for="goal-concepts">Concept ids, comma separated</label>
-              <input class="n-input mono" id="goal-concepts" name="concepts" type="text" required
-                     placeholder="nema:concept-id, nema:another-concept"
-                     toolparamdescription="Comma separated nema concept ids from the shared registry, as returned by get_learner_state.">
-            </div>
-            <div class="row row--tight">
-              <button class="n-btn n-btn--secondary n-btn--sm" type="submit">Set goal</button>
-              <span class="n-help" data-goal-status role="status" aria-live="polite"></span>
-            </div>
-          </form>
+          <p class="v-share__note">Name what you are working towards. A goal only re-orders what to study next.</p>
           <div class="n-ledger" data-goal-list></div>
+          <details class="n-under">
+            <summary class="n-under__summary">Under the hood</summary>
+            <div class="n-under__body">
+              <p class="n-under__say">A goal is a title and the registry names it covers.</p>
+              <form class="stack stack--tight" data-goal-form toolautosubmit
+                    toolname="set_learning_goal_form"
+                    tooldescription="Set the learner's active goal from the goal form in the vault page. Goals only re-order learning needs, they never create evidence and never change a band.">
+                <div class="n-field">
+                  <label class="n-label" for="goal-title">Goal title</label>
+                  <input class="n-input" id="goal-title" name="title" type="text" required
+                         placeholder="What I want to be able to do"
+                         toolparamdescription="Short title of the goal, in the learner's own words.">
+                </div>
+                <div class="n-field">
+                  <label class="n-label" for="goal-concepts">Concept ids, comma separated</label>
+                  <input class="n-input mono" id="goal-concepts" name="concepts" type="text" required
+                         placeholder="nema:concept-id, nema:another-concept"
+                         toolparamdescription="Comma separated nema concept ids from the shared registry, as returned by get_learner_state.">
+                </div>
+                <div class="row row--tight">
+                  <button class="n-btn n-btn--secondary n-btn--sm" type="submit">Set goal</button>
+                  <span class="n-help" data-goal-status role="status" aria-live="polite"></span>
+                </div>
+              </form>
+            </div>
+          </details>
         </section>
 
         <section class="n-panel n-panel--quiet v-sub" aria-labelledby="p-share">
           <h3 class="v-sublabel" id="p-share">Share with a site</h3>
-          <p class="v-share__note">Hand a site your bands with no agent in the room. Same request, same approval, a token you copy into the site's box.</p>
-          <form class="stack stack--tight" data-share-form>
-            <div class="n-field">
-              <label class="n-label" for="share-audience">Site origin</label>
-              <input class="n-input mono" id="share-audience" name="audience" type="text" required
-                     placeholder="https://saucier.migarci2.dev">
-            </div>
-            <div class="n-field">
-              <label class="n-label" for="share-purpose">Purpose</label>
-              <input class="n-input mono" id="share-purpose" name="purpose" type="text" required
-                     value="personalize-pan-sauces-path">
-            </div>
-            <div class="n-field">
-              <label class="n-label" for="share-concepts">Concepts, comma separated concept:ability pairs</label>
-              <input class="n-input mono" id="share-concepts" name="concepts" type="text" required
-                     value="nema:knife-skills:apply, nema:heat-control:explain, nema:ratios:apply">
-            </div>
-            <div class="row row--tight">
-              <button class="n-btn n-btn--secondary n-btn--sm" type="submit" data-action="share">Share with a site</button>
-              <span class="n-help" data-share-status role="status" aria-live="polite"></span>
-            </div>
-          </form>
+          <p class="v-share__note">Tell a site what you already know, with no agent and no site in the room.
+          You approve it here, and you carry the answer over yourself.</p>
           <div class="v-result" data-share-result></div>
+          <details class="n-under">
+            <summary class="n-under__summary">Under the hood</summary>
+            <div class="n-under__body">
+              <p class="n-under__say">Name the site, why it is asking, and the concept and ability pairs it may see.</p>
+              <form class="stack stack--tight" data-share-form>
+                <div class="n-field">
+                  <label class="n-label" for="share-audience">Site origin</label>
+                  <input class="n-input mono" id="share-audience" name="audience" type="text" required
+                         placeholder="https://saucier.migarci2.dev">
+                </div>
+                <div class="n-field">
+                  <label class="n-label" for="share-purpose">Purpose</label>
+                  <input class="n-input mono" id="share-purpose" name="purpose" type="text" required
+                         value="personalize-pan-sauces-path">
+                </div>
+                <div class="n-field">
+                  <label class="n-label" for="share-concepts">Concepts, comma separated concept:ability pairs</label>
+                  <input class="n-input mono" id="share-concepts" name="concepts" type="text" required
+                         value="nema:knife-skills:apply, nema:heat-control:explain, nema:ratios:apply">
+                </div>
+                <div class="row row--tight">
+                  <button class="n-btn n-btn--secondary n-btn--sm" type="submit" data-action="share">Share with a site</button>
+                  <span class="n-help" data-share-status role="status" aria-live="polite"></span>
+                </div>
+              </form>
+              <div data-share-under></div>
+            </div>
+          </details>
         </section>
 
         <section class="n-panel n-panel--quiet v-sub" aria-labelledby="p-inbox">
           <h3 class="v-sublabel" id="p-inbox">Receipt inbox</h3>
+          <p class="v-share__note">A site can hand you a signed note of what you did. Paste it here and the
+          vault checks who signed it before anything moves.</p>
           <p class="v-inbox__note" data-inbox-note hidden></p>
-          <div class="n-field">
-            <label class="n-label" for="inbox-token">Paste a receipt token</label>
-            <textarea class="n-textarea" id="inbox-token" data-inbox-token spellcheck="false" placeholder="nema1.eyJ0eXBlIjoiZXZpZGVuY2UtcmVjZWlwdCIs..."></textarea>
-          </div>
-          <div class="row row--tight">
-            <button class="n-btn n-btn--secondary n-btn--sm" type="button" data-action="stage">Stage receipt</button>
-            <button class="n-btn n-btn--secondary n-btn--sm" type="button" data-action="clear-inbox">Clear</button>
-          </div>
           <div class="v-result" data-inbox-result role="status" aria-live="polite"></div>
+          <details class="n-under" data-inbox-box>
+            <summary class="n-under__summary">Under the hood</summary>
+            <div class="n-under__body">
+              <div class="n-field">
+                <label class="n-label" for="inbox-token">Paste a receipt token</label>
+                <textarea class="n-textarea" id="inbox-token" data-inbox-token spellcheck="false" placeholder="nema1.eyJ0eXBlIjoiZXZpZGVuY2UtcmVjZWlwdCIs..."></textarea>
+              </div>
+              <div class="row row--tight">
+                <button class="n-btn n-btn--secondary n-btn--sm" type="button" data-action="stage">Stage receipt</button>
+                <button class="n-btn n-btn--secondary n-btn--sm" type="button" data-action="clear-inbox">Clear</button>
+              </div>
+              <div data-inbox-under></div>
+            </div>
+          </details>
         </section>
 
         <section class="n-panel n-panel--quiet v-sub" aria-labelledby="p-misconceptions">
           <h3 class="v-sublabel" id="p-misconceptions">Misconceptions</h3>
+          <p class="v-share__note">Things you once had backwards, kept so a review can put them right. No site
+          ever sees these.</p>
           <div data-misconceptions></div>
         </section>
 
         <section class="n-panel n-panel--quiet v-sub" aria-labelledby="p-file">
           <h3 class="v-sublabel" id="p-file">Vault file</h3>
+          <p class="v-share__note">Your vault is a file in this browser. Take a copy with you, bring one back,
+          or start again from nothing.</p>
           <div class="row row--tight v-file">
             <button class="v-text-btn" type="button" data-action="export">Export</button>
             <button class="v-text-btn" type="button" data-action="import">Import</button>
@@ -232,8 +279,7 @@
 <div class="n-modal" id="consent-modal" role="dialog" aria-modal="true" aria-labelledby="consent-title" aria-describedby="consent-purpose" hidden>
   <div class="n-modal__dialog" tabindex="-1">
     <div class="n-modal__head">
-      <h2 class="n-modal__title" id="consent-title" data-consent-title>A provider asks to know</h2>
-      <p class="v-consent__origin mono" data-consent-origin></p>
+      <h2 class="n-modal__title" id="consent-title" data-consent-title>A site asks to know</h2>
       <p class="v-consent__purpose" id="consent-purpose" data-consent-purpose></p>
     </div>
     <div class="n-modal__body">
@@ -245,13 +291,20 @@
         <span class="v-sublabel">Not shared</span>
         <ul class="v-consent__withheld" data-consent-withheld></ul>
       </div>
+      <details class="n-under">
+        <summary class="n-under__summary">Under the hood</summary>
+        <div class="n-under__body">
+          <p class="v-consent__origin mono" data-consent-origin></p>
+          <div data-consent-under></div>
+        </div>
+      </details>
     </div>
     <div class="n-modal__foot v-consent__foot">
       <div class="v-consent__decide">
         <p class="v-consent__expiry" data-consent-expiry>Expires in 30 minutes</p>
         <label class="n-check">
           <input type="checkbox" data-consent-auto>
-          <span>Auto approve this provider for 1 hour</span>
+          <span>Auto approve this site for 1 hour</span>
         </label>
       </div>
       <button class="n-btn n-btn--secondary" type="button" data-consent-deny>Deny</button>

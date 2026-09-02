@@ -102,6 +102,61 @@ function plural(count, word, many) {
   return `${count} ${many || `${word}s`}`;
 }
 
+/* --------------------------------------------------- under the hood -- */
+
+/* Contract section 26. Ids, keys, signatures and tokens never appear on the
+ * normal path: every panel that holds any of them holds one closed block, and
+ * these three helpers are the only way anything gets written into it. */
+
+function underLine(key, value) {
+  if (value === undefined || value === null || value === '') return '';
+  return `<p class="n-under__row"><span class="n-under__key">${esc(key)}</span>${esc(String(value))}</p>`;
+}
+
+function underList(items) {
+  if (items.length === 0) return '<p class="n-under__row">Nothing yet.</p>';
+  return `<ul class="n-under__list">${items.map((item) => `<li>${item}</li>`).join('')}</ul>`;
+}
+
+function paintUnder(ref, html) {
+  if (ref) ref.innerHTML = html;
+}
+
+/* ----------------------------------------------------------- wording -- */
+
+/** `knife-skills` reads as `knife skills`, whoever named it. */
+function humanName(id) {
+  return shortConcept(id).replace(/[-_]/g, ' ');
+}
+
+/**
+ * A concept in words. A registry concept is its title; a name a site made up
+ * for itself is that site's own words, in quotes, so the two can never be
+ * mistaken for each other and neither reads as an id.
+ */
+function conceptWords(id) {
+  const raw = String(id || '');
+  if (vault.getConcept(raw)) return vault.conceptTitle(raw);
+  return `"${humanName(raw)}"`;
+}
+
+/** The site as a person would name it: its own name, or its domain. */
+function siteWords(origin) {
+  const name = vault.audienceName(origin);
+  return name === origin ? shortOrigin(origin) : name;
+}
+
+/* Why a site is asking, in words. Every purpose nema ships is a personalise
+ * request, which is one sentence in the learner's language; anything else is
+ * at least read as words rather than as a machine string. */
+function purposeWords(purpose) {
+  const raw = String(purpose || '').trim();
+  if (raw === '') return 'to adapt what it shows you';
+  if (/^personalize|^personalise|path|unlock/i.test(raw)) return 'to skip what you already know';
+  if (/hand-delivered/i.test(raw)) return 'to skip what you already know';
+  return `for ${humanize(raw.replace(/-/g, ' '))}`;
+}
+
 /* ------------------------------------------------------------ summary -- */
 
 function renderSummary() {
@@ -218,10 +273,20 @@ function renderStateTable() {
   if (concepts.length === 0) {
     refs.stateTable.innerHTML = '<p class="n-empty">No evidence yet, so there is no state to derive.</p>';
     refs.stateToggle.hidden = true;
+    paintUnder(refs.stateUnder, underList([]));
     return;
   }
 
   const visible = showAllState ? concepts : concepts.slice(0, STATE_PREVIEW);
+
+  paintUnder(refs.stateUnder, underList(visible.map(({ concept }) => {
+    const abilities = state[concept.id] || {};
+    const bands = ABILITIES
+      .filter((ability) => abilities[ability])
+      .map((ability) => `${ability} ${abilities[ability].band}`)
+      .join(', ');
+    return `${esc(concept.id)} ${esc(bands)}`;
+  })));
 
   refs.stateTable.innerHTML = visible.map(({ concept, band, review }) => {
     const abilities = state[concept.id] || {};
@@ -243,7 +308,6 @@ function renderStateTable() {
           ${next}
         </summary>
         <div class="v-row__body">
-          <span class="v-row__id">${esc(concept.id)}</span>
           ${breakdown}
         </div>
       </details>`;
@@ -269,7 +333,7 @@ function renderMisconceptions() {
       ${items.map((item) => `
         <li class="v-mis__row">
           <span class="v-mis__text">${esc(item.text)}</span>
-          <span class="v-mis__meta">${esc(shortConcept(item.concept))}, ${esc(isoDate(item.recordedAt))}</span>
+          <span class="v-mis__meta">${esc(conceptWords(item.concept))}, ${esc(isoDate(item.recordedAt))}</span>
         </li>`).join('')}
     </ul>`;
 }
@@ -298,7 +362,7 @@ function renderNeeds(explicitNeeds, budgetOverride) {
       <span class="n-path__index">${String(index + 1).padStart(2, '0')}</span>
       <span class="n-path__main">
         <span class="n-path__title">${esc(vault.conceptTitle(need.concept))}, <span class="v-need__ability">${esc(need.ability)}</span></span>
-        <span class="n-path__reason">${esc((need.reason || []).map(humanize).join(', '))}${need.confusableWith ? `, against ${esc(shortConcept(need.confusableWith))}` : ''}</span>
+        <span class="n-path__reason">${esc((need.reason || []).map(humanize).join(', '))}${need.confusableWith ? `, against ${esc(conceptWords(need.confusableWith))}` : ''}</span>
       </span>
       <span class="n-path__minutes">${need.minutes} min</span>
     </div>${index === 0 ? selfCheck(need) : ''}`).join('');
@@ -371,6 +435,7 @@ function renderDisclosures() {
   const rows = disclosureRows();
   if (rows.length === 0) {
     refs.disclosureLedger.innerHTML = '<p class="n-empty">Nothing has left the vault.</p>';
+    paintUnder(refs.disclosureUnder, underList([]));
     return;
   }
 
@@ -386,58 +451,81 @@ function renderDisclosures() {
 
   const stored = vault.getDisclosures().slice().reverse();
 
+  /* Site, what was shared, until when. Nothing else is what left the vault. */
   refs.disclosureLedger.innerHTML = autoRow + rows.map((row, index) => {
     const shared = row.shared
-      .map((item) => `<span class="v-claim v-claim--${item.status}">${esc(shortConcept(item.concept))}.${esc(item.ability)} ${esc(item.status)}</span>`)
+      .map((item) => `<span class="v-claim v-claim--${item.status}">${esc(conceptWords(item.concept))}, ${esc(item.ability)}: ${esc(item.status)}</span>`)
       .join('');
     const viaAuto = Boolean(stored[index] && stored[index].auto);
     return `
       <details class="v-erow">
         <summary class="v-erow__head">
           <span class="v-erow__title">${esc(row.audienceName)}${viaAuto ? ', auto approved' : ''}</span>
-          <span class="v-erow__meta">${esc(row.purpose)}</span>
+          <span class="v-erow__meta">${plural(row.shared.length, 'band')}</span>
           <span class="v-erow__date">${esc(isoDate(row.sharedAt))}</span>
           <span class="v-erow__end"><span class="n-pill n-pill--pending" data-expires="${esc(row.expiresAt)}">expires</span></span>
         </summary>
         <div class="v-erow__body">
-          <span class="v-erow__date">${esc(shortOrigin(row.audience))}</span>
           <span class="v-claims">${shared}</span>
-          <span class="v-effect">${plural(row.withheld.length, 'category', 'categories')} withheld.</span>
-          <button class="n-btn n-btn--sm n-btn--secondary" type="button" data-copy-token="${index}">Copy token</button>
+          <span class="v-effect">Asked ${esc(purposeWords(row.purpose))}. ${plural(row.withheld.length, 'category', 'categories')} withheld.</span>
         </div>
       </details>`;
   }).join('');
+
+  paintUnder(refs.disclosureUnder, underList(rows.map((row, index) => `
+    ${esc(row.audience)} ${esc(row.purpose)} until ${esc(row.expiresAt)}
+    ${row.shared.map((item) => `<span class="n-under__pair">${esc(item.concept)}.${esc(item.ability)} ${esc(item.status)}</span>`).join(' ')}
+    <button class="n-btn n-btn--sm n-btn--secondary" type="button" data-copy-token="${index}">Copy token</button>`)));
 
   tickExpiries();
 }
 
 /* --------------------------------------------------- evidence ledger -- */
 
-function signaturePill(signature) {
-  /* Pending is grey, not amber: nothing is wrong with the receipt, the vault
-   * simply has no key for it. The row's yellow edge is what asks for a look. */
-  if (signature === 'pending') return '<span class="n-pill n-pill--unknown">pending</span>';
-  if (signature === 'agent') return '<span class="n-pill n-pill--agent">agent assessed</span>';
-  if (signature === 'self-check') return '<span class="n-pill n-pill--agent">self check</span>';
-  return '<span class="n-pill n-pill--durable">verified</span>';
+/**
+ * One word for what the vault could check about a row, and only one.
+ *
+ * "verified" is a receipt whose signature checked out against a key the vault
+ * trusts; "self issued" is one signed with a key the site made for itself, and
+ * it is worth a self report whatever it says; "waiting" is a receipt nothing
+ * here can check yet. The tier, the grader and the signature are three facts
+ * about the same question, so the row answers it once and the rest is under
+ * the hood. Contract section 26.
+ */
+function stateWord(row) {
+  if (row.signature === 'pending') return { word: 'waiting', tone: 'unknown' };
+  if (row.signature === 'agent') return { word: 'agent assessed', tone: 'agent' };
+  if (row.signature === 'self-check') return { word: 'self check', tone: 'agent' };
+  if (row.trust === 'self') return { word: 'self issued', tone: 'uncertain' };
+  return { word: 'verified', tone: 'durable' };
 }
 
-/* The trust tier beside the signature state, one word. Registered and origin
- * are quiet, self is yellow because it is the tier a stranger can mint. A
- * pending receipt has no signature the vault could check, so its pill already
- * says the word and repeating it would say nothing new. */
-function trustWord(trust, signature) {
-  if (!trust || trust === 'pending') return '';
-  if (signature === 'agent' || signature === 'self-check') return '';
-  return `<span class="v-trust v-trust--${esc(trust)}">${esc(trust)}</span>`;
+function statePill(row) {
+  const { word, tone } = stateWord(row);
+  return `<span class="n-pill n-pill--${tone}" data-state-word>${esc(word)}</span>`;
 }
 
 /* A claim a site wrote in its own words says what the vault reads it as, or
  * that it is still waiting for the learner to say. Contract section 23. */
 function claimNote(claim) {
-  if (claim.pendingAlignment) return ', not aligned yet';
-  if (claim.alignedTo) return `, read as ${esc(shortConcept(claim.alignedTo))}`;
+  if (claim.pendingAlignment) return ', a name this vault has not been taught';
+  if (claim.alignedTo) return `, read as ${esc(conceptWords(claim.alignedTo))}`;
   return '';
+}
+
+/**
+ * The vault writes its effect sentences in the protocol's shorthand, which is
+ * what an agent reads back through `get_evidence_ledger`. The ledger on screen
+ * says the same thing in words, and the shorthand stays under the hood.
+ */
+function effectWords(line) {
+  return String(line || '')
+    .replace(/^([A-Za-z0-9:_-]+)\.([a-z]+)\b/, (match, concept, ability) => {
+      const id = vault.getConcept(`nema:${concept}`) ? `nema:${concept}` : concept;
+      return `${conceptWords(id)}, ${ability}:`;
+    })
+    .replace(/waiting on an alignment for (.+)$/, (match, names) =>
+      `waiting for you to say what ${names.split(', ').map((name) => `"${humanName(name)}"`).join(', ')} means`);
 }
 
 function renderEvidence() {
@@ -445,18 +533,20 @@ function renderEvidence() {
   if (receipts.length === 0) {
     refs.evidenceLedger.innerHTML = '<p class="n-empty">No receipts yet.</p>';
     refs.evidenceToggle.hidden = true;
+    paintUnder(refs.evidenceUnder, underList([]));
     return;
   }
 
   const rows = evidenceRows();
   const visible = showAllEvidence ? rows : rows.slice(0, EVIDENCE_PREVIEW);
 
+  /* Activity, who signed it, the date, one word for the state. */
   refs.evidenceLedger.innerHTML = visible.map((row) => {
     const entry = receipts.find((item) => item.receiptId === row.receiptId);
     const claims = row.claims
-      .map((claim) => `<span class="v-claim v-claim--${esc(claim.result)}">${esc(shortConcept(claim.concept))}.${esc(claim.ability)} ${esc(claim.result)}${claimNote(claim)}</span>`)
+      .map((claim) => `<span class="v-claim v-claim--${esc(claim.result)}">${esc(conceptWords(claim.concept))}, ${esc(claim.ability)}: ${esc(claim.result)}${claimNote(claim)}</span>`)
       .join('');
-    const effect = (row.effect || []).join('. ');
+    const effect = (row.effect || []).map(effectWords).join('. ');
     /* Two reasons a row asks for a look: nothing could check the signature, or
      * the vault cannot read one of the names in it yet. */
     const waiting = row.claims.some((item) => item.pendingAlignment);
@@ -466,15 +556,29 @@ function renderEvidence() {
           <span class="v-erow__title">${esc(row.activity)}</span>
           <span class="v-erow__meta">${esc(row.issuerName)}</span>
           <span class="v-erow__date">${esc(isoDate(entry && entry.payload ? entry.payload.issuedAt : row.receivedAt))}</span>
-          <span class="v-erow__end">${signaturePill(row.signature)}${trustWord(row.trust, row.signature)}</span>
+          <span class="v-erow__end">${statePill(row)}</span>
         </summary>
         <div class="v-erow__body">
-          <span class="v-erow__date">${esc(row.receiptId)}, grader ${esc(row.grader)}${row.trust ? `, trust ${esc(row.trust)}` : ''}</span>
           <span class="v-claims">${claims}</span>
           ${effect ? `<span class="v-effect">${esc(effect)}</span>` : ''}
         </div>
       </details>`;
   }).join('');
+
+  /* The fold mirrors the rows on screen: the same receipts, in the words a
+   * verifier reads. "Show all" opens both at once. */
+  paintUnder(refs.evidenceUnder, underList(visible.map((row) => {
+    const entry = receipts.find((item) => item.receiptId === row.receiptId);
+    const payload = entry ? entry.payload : null;
+    const claims = row.claims
+      .map((claim) => `${esc(claim.concept)}.${esc(claim.ability)} ${esc(claim.result)}${claim.alignedTo ? ` -> ${esc(claim.alignedTo)}` : ''}`)
+      .join(' ');
+    return `${esc(row.receiptId)} ${esc(row.activity)}
+      grader ${esc(row.grader)}${payload && payload.conditions && payload.conditions.graderVersion ? ` v${esc(payload.conditions.graderVersion)}` : ''}
+      signature ${esc(row.signature)}${row.trust ? `, trust ${esc(row.trust)}` : ''}
+      ${payload ? `key ${esc(payload.keyId)}` : ''}
+      ${claims}`;
+  })));
 
   refs.evidenceToggle.hidden = rows.length <= EVIDENCE_PREVIEW;
   refs.evidenceToggle.textContent = showAllEvidence
@@ -490,8 +594,17 @@ function renderEvidence() {
  * a rejected one is out of the way but never deleted, because the vault holding
  * the answer is the point. */
 function alignmentLine(entry) {
-  const relation = entry.relation === 'equivalent' ? 'is' : `is ${entry.relation} than`;
-  return `<span class="mono">${esc(entry.providerConcept)}</span> ${relation} <span class="mono">${esc(entry.concept)}</span>`;
+  const site = esc(siteWords(entry.origin));
+  const own = esc(`"${humanName(entry.providerConcept)}"`);
+  const registry = esc(vault.conceptTitle(entry.concept));
+  if (entry.relation === 'narrower') return `${site} says ${own} is a part of ${registry}`;
+  if (entry.relation === 'broader') return `${site} says ${own} covers more than ${registry}`;
+  return `${site} calls ${registry} ${own}`;
+}
+
+/** The same fact for the block under the hood: the ids, as they are written. */
+function alignmentRaw(entry) {
+  return `${esc(entry.alignmentId)} ${esc(entry.origin)} ${esc(entry.providerConcept)} ${esc(entry.relation)} ${esc(entry.concept)} ${esc(entry.status)}`;
 }
 
 /* Names a receipt in the ledger used and this vault cannot read. They are the
@@ -515,8 +628,8 @@ function waitingNames() {
 function waitingRow(entry) {
   return `
     <div class="v-align v-align--waiting">
-      <p class="v-align__claim"><span class="mono">${esc(entry.name)}</span> is waiting for a meaning</p>
-      <p class="v-align__why">${esc(shortOrigin(entry.origin))} signed ${plural(entry.receipts, 'receipt')} with this name and nothing here knows what it means, so ${entry.receipts === 1 ? 'it counts' : 'they count'} for nothing. An agent can propose it, or you can say it yourself.</p>
+      <p class="v-align__claim">${esc(siteWords(entry.origin))} says "${esc(humanName(entry.name))}", and nobody has said what it means</p>
+      <p class="v-align__why">It signed ${plural(entry.receipts, 'receipt')} with that name, so until you say what it means ${entry.receipts === 1 ? 'it counts' : 'they count'} for nothing. An agent can propose it, or you can say it yourself.</p>
       <div class="row row--tight">
         <button class="n-btn n-btn--sm n-btn--secondary" type="button" data-align-name="${esc(entry.origin)}" data-align-word="${esc(entry.name)}">Say what it means</button>
       </div>
@@ -526,6 +639,7 @@ function waitingRow(entry) {
 function renderAlignments() {
   const all = vault.getAlignments();
   const waiting = waitingNames().map(waitingRow).join('');
+  paintUnder(refs.alignmentUnder, underList(all.map(alignmentRaw)));
   if (all.length === 0) {
     refs.alignmentList.innerHTML = waiting || '<p class="n-empty">No site has asked to be understood yet.</p>';
     return;
@@ -539,7 +653,7 @@ function renderAlignments() {
     <div class="v-align v-align--proposed" data-alignment="${esc(entry.alignmentId)}">
       <p class="v-align__claim">${alignmentLine(entry)}</p>
       <p class="v-align__why">${esc(entry.rationale || 'No reason given.')}</p>
-      <p class="v-align__meta">${esc(shortOrigin(entry.origin))}, proposed by the ${esc(entry.proposedBy)}</p>
+      <p class="v-align__meta">proposed by the ${esc(entry.proposedBy)}</p>
       <div class="row row--tight">
         <button class="n-btn n-btn--sm n-btn--primary" type="button" data-confirm-alignment="${esc(entry.alignmentId)}">Confirm</button>
         <button class="n-btn n-btn--sm n-btn--secondary" type="button" data-reject-alignment="${esc(entry.alignmentId)}">Reject</button>
@@ -549,7 +663,7 @@ function renderAlignments() {
   const confirmedRows = confirmed.map((entry) => `
     <div class="v-align" data-alignment="${esc(entry.alignmentId)}">
       <p class="v-align__claim">${alignmentLine(entry)}
-        <span class="v-align__meta">${esc(shortOrigin(entry.origin))}${entry.proposedBy === 'provider' ? ', declared by the site' : ''}</span>
+        <span class="v-align__meta">${entry.proposedBy === 'provider' ? 'declared by the site' : `you confirmed this${entry.proposedBy === 'learner' ? '' : ', an agent proposed it'}`}</span>
         <button class="v-text-btn" type="button" data-reject-alignment="${esc(entry.alignmentId)}">Undo</button>
       </p>
     </div>`).join('');
@@ -560,7 +674,6 @@ function renderAlignments() {
       ${rejected.map((entry) => `
         <div class="v-align" data-alignment="${esc(entry.alignmentId)}">
           <p class="v-align__claim v-align__claim--off">${alignmentLine(entry)}
-            <span class="v-align__meta">${esc(shortOrigin(entry.origin))}</span>
             <button class="v-text-btn" type="button" data-confirm-alignment="${esc(entry.alignmentId)}">Confirm after all</button>
           </p>
         </div>`).join('')}
@@ -622,7 +735,7 @@ function renderGoals() {
         </span>
       </div>
       <div class="v-erow__body">
-        <span class="v-claims">${goal.concepts.map((id) => `<span class="v-claim">${esc(shortConcept(id))}</span>`).join('')}</span>
+        <span class="v-claims">${goal.concepts.map((id) => `<span class="v-claim">${esc(conceptWords(id))}</span>`).join('')}</span>
       </div>
     </div>`).join('');
 }
@@ -703,18 +816,30 @@ function askForConsent(request, { signal }) {
     const modal = refs.modal;
     $('[data-consent-title]').textContent = `${request.audienceName} asks to know`;
     $('[data-consent-origin]').textContent = request.audience;
-    $('[data-consent-purpose]').textContent = `Purpose: ${request.purpose}`;
+    $('[data-consent-purpose]').textContent = `${request.audienceName} is asking ${purposeWords(request.purpose)}.`;
+    /* What the site would learn, in the words the learner uses for it. The ids
+     * it asked with, and the pseudonym it would be answered under, are under
+     * the hood. Contract section 26. */
     $('[data-consent-shared]').innerHTML = request.shared.map((item) => `
       <div class="n-ledger__row">
         <span class="n-ledger__main">
-          <span class="n-ledger__title">${esc(item.title)}</span>
-          <span class="n-ledger__meta"><span class="mono">${esc(item.concept)}.${esc(item.ability)}</span>${item.alignedTo ? ` read as <span class="mono">${esc(item.alignedTo)}</span>` : ''}${item.reason === 'unaligned' ? ', a name this vault has not aligned' : ''}</span>
+          <span class="n-ledger__title">${esc(consentTitle(item))}, ${esc(item.ability)}</span>
+          <span class="n-ledger__meta">${item.reason === 'unaligned'
+            ? 'a name this vault has not been taught, so it can only answer missing'
+            : item.alignedTo
+              ? `their name for ${esc(conceptWords(item.alignedTo))}, and how sure your vault is`
+              : 'how sure your vault is, and nothing else'}</span>
         </span>
         <span class="n-ledger__end"><span class="${statusPill(item.status)}">${esc(item.status)}</span></span>
       </div>`).join('');
     $('[data-consent-withheld]').innerHTML = request.withheld
       .map((item) => `<li>${esc(item)}</li>`).join('');
-    $('[data-consent-expiry]').textContent = `Expires in ${request.ttlMinutes} minutes`;
+    $('[data-consent-expiry]').textContent = `They can use this answer for the next ${request.ttlMinutes} minutes`;
+    paintUnder($('[data-consent-under]'), [
+      underLine('purpose', request.purpose),
+      underLine('learner id', request.learnerKeyId),
+      underList(request.shared.map((item) => `${esc(item.concept)}.${esc(item.ability)} ${esc(item.status)}${item.alignedTo ? ` read from ${esc(item.alignedTo)}` : ''}`))
+    ].join(''));
     refs.consentAuto.checked = false;
 
     const previous = document.activeElement;
@@ -762,6 +887,15 @@ function askForConsent(request, { signal }) {
   });
 }
 
+
+/* A site that asked in its own words is answered in its own words, and the
+ * modal says so the same way: the site's name, then what the vault read it
+ * as. Contract sections 23 and 26. */
+function consentTitle(item) {
+  if (item.alignedTo || item.reason === 'unaligned') return `"${humanName(item.concept)}"`;
+  return item.title;
+}
+
 /* -------------------------------------------------------------- inbox -- */
 
 function describeToken(token) {
@@ -795,10 +929,10 @@ function condenseChanges(changes) {
 /* What the tier means, in the learner's words, for the receipt just staged. */
 function trustNote(result) {
   if (result.trust === 'self') {
-    return `<p class="mono dim">self certified: ${esc(result.issuerName)} signed with a key it made itself, so this evidence counts as a self report.</p>`;
+    return `<p>${esc(result.issuerName)} signed this with a key it made for itself, so it counts as a self report.</p>`;
   }
   if (result.trust === 'origin') {
-    return `<p class="mono dim">origin verified: ${esc(result.issuerName)} publishes this key on its own domain.</p>`;
+    return `<p>${esc(result.issuerName)} publishes that key on its own domain, so the whole of it counts.</p>`;
   }
   return '';
 }
@@ -807,48 +941,56 @@ function showInboxResult(result) {
   const box = refs.inboxResult;
   if (!result) {
     box.innerHTML = '';
+    paintUnder(refs.inboxUnder, '');
     return;
   }
   if (result.status === 'accepted') {
     const condensed = condenseChanges(result.changes);
     const changes = condensed.length > 0
-      ? condensed.map((change) => `<li class="mono">${esc(shortConcept(change.concept))}.${esc(change.ability)} ${esc(change.from)} to ${esc(change.to)}${change.lower > 0 ? `, with ${plural(change.lower, 'ability', 'abilities')} below it on the ladder` : ''}</li>`).join('')
-      : '<li class="mono">no band moved, the evidence is recorded</li>';
+      ? condensed.map((change) => `<li>${esc(conceptWords(change.concept))}, ${esc(change.ability)}: ${esc(change.from)} to ${esc(change.to)}${change.lower > 0 ? `, with ${plural(change.lower, 'ability', 'abilities')} below it on the ladder` : ''}</li>`).join('')
+      : '<li>nothing moved, and the work is on file</li>';
     const reviews = result.reviewsScheduled.length > 0
-      ? `<p class="mono dim">next review ${esc(relTime(result.reviewsScheduled[0].nextReview))} for ${esc(shortConcept(result.reviewsScheduled[0].concept))}</p>`
+      ? `<p>Next review ${esc(relTime(result.reviewsScheduled[0].nextReview))} for ${esc(conceptWords(result.reviewsScheduled[0].concept))}.</p>`
       : '';
     /* A claim in words this vault has not been taught is not a rejection and
      * not a silence: the receipt is kept, and the learner is told what would
      * make it count. Contract section 23. */
     const waiting = Array.isArray(result.pendingAlignment) && result.pendingAlignment.length > 0
-      ? `<p class="mono dim">${esc(result.pendingAlignment.join(', '))} ${result.pendingAlignment.length === 1 ? 'is a name' : 'are names'} this site uses and this vault has not aligned, so ${result.pendingAlignment.length === 1 ? 'that claim' : 'those claims'} moved nothing. Say what ${result.pendingAlignment.length === 1 ? 'it means' : 'they mean'} under Alignments and this receipt starts counting.</p>`
+      ? `<p>${esc(result.pendingAlignment.map((name) => `"${humanName(name)}"`).join(', '))} ${result.pendingAlignment.length === 1 ? 'is a name' : 'are names'} this site uses and nobody has said what ${result.pendingAlignment.length === 1 ? 'it means' : 'they mean'}, so ${result.pendingAlignment.length === 1 ? 'that claim' : 'those claims'} moved nothing. Say so under Alignments and this receipt starts counting.</p>`
       : '';
     box.innerHTML = `
       <div class="v-result__box v-result__box--ok">
-        <p><b>Accepted.</b> Signature verified against ${esc(result.issuerName)}, receipt ${esc(result.receiptId)}.</p>
+        <p><b>${esc(result.issuerName)} signed what you did. Verified.</b></p>
         ${trustNote(result)}
         ${waiting}
         <ul class="v-result__list">${changes}</ul>
         ${reviews}
       </div>`;
+    paintUnder(refs.inboxUnder, [
+      underLine('receipt', result.receiptId),
+      underLine('issuer', result.issuer),
+      underLine('trust', result.trust)
+    ].join(''));
     return;
   }
   if (result.status === 'pending') {
     box.innerHTML = `
       <div class="v-result__box v-result__box--warn">
-        <p><b>Stored as pending.</b> ${esc(result.issuer || 'That issuer')} is not a trusted issuer, so nothing moved.</p>
+        <p><b>Kept, and it counts for nothing.</b> Nothing here knows who ${esc(result.issuer || 'that site')} is, so no band moved.</p>
       </div>`;
+    paintUnder(refs.inboxUnder, underLine('issuer', result.issuer) + underLine('reason', result.reason));
     return;
   }
   const reasons = {
-    'bad-signature': 'The signature does not match the issuer key.',
-    duplicate: 'This receipt is already in the ledger.',
-    malformed: 'That is not a readable nema receipt token.'
+    'bad-signature': 'The signature does not match the site it says signed it.',
+    duplicate: 'This is already in your ledger.',
+    malformed: 'That is not something this vault can read.'
   };
   box.innerHTML = `
     <div class="v-result__box v-result__box--bad">
-      <p><b>Rejected: ${esc(result.reason)}.</b> ${esc(reasons[result.reason] || 'Nothing changed.')}</p>
+      <p><b>Not kept.</b> ${esc(reasons[result.reason] || 'Nothing changed.')}</p>
     </div>`;
+  paintUnder(refs.inboxUnder, underLine('reason', result.reason));
 }
 
 async function stageFromInbox() {
@@ -867,11 +1009,13 @@ async function stageFromInbox() {
     if (location.hash.startsWith('#receipt=')) {
       history.replaceState(null, '', location.pathname + location.search);
     }
-    toast(`Receipt accepted. ${result.changes.length} band${result.changes.length === 1 ? '' : 's'} moved.`, 'ok');
+    toast(`Kept in your vault. ${result.changes.length} band${result.changes.length === 1 ? '' : 's'} moved.`, 'ok');
   } else if (result.status === 'pending') {
-    toast('Receipt stored as pending: unknown issuer.', 'warn');
+    toast('Kept, but nothing here knows who signed it, so nothing moved.', 'warn');
+  } else if (result.reason === 'duplicate') {
+    toast('That one is already in your vault.', 'info');
   } else {
-    toast(`Receipt rejected: ${result.reason}.`, 'error');
+    toast('Not kept. Your vault could not read that.', 'error');
   }
   flash('evidence', `inbox ${result.status}`);
 }
@@ -889,9 +1033,11 @@ function readHashReceipt() {
   const described = describeToken(token);
   refs.inboxNote.hidden = false;
   refs.inboxNote.textContent = described
-    ? `A receipt arrived from ${described.issuerName} for "${described.activity}". Read it, then press Stage receipt.`
-    : 'A token arrived in the page address. Read it, then press Stage receipt.';
+    ? `${described.issuerName} sent a receipt for "${described.activity}". Press Stage receipt to keep it.`
+    : 'A receipt arrived in the page address. Press Stage receipt to keep it.';
   showInboxResult(null);
+  /* The receipt arrived by hand, so the block that takes it by hand opens. */
+  if (refs.inboxBox) refs.inboxBox.open = true;
   const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   refs.inboxNote.scrollIntoView({ block: 'center', behavior: calm ? 'auto' : 'smooth' });
   refs.stageButton.focus();
@@ -931,6 +1077,7 @@ function showShareResult(result) {
   const box = refs.shareResult;
   if (!result) {
     box.innerHTML = '';
+    paintUnder(refs.shareUnder, '');
     shareToken = '';
     return;
   }
@@ -939,21 +1086,28 @@ function showShareResult(result) {
     shareToken = result.token;
     const rest = result.token.slice('nema1.'.length);
     const shared = result.shared
-      .map((item) => `<span class="v-claim v-claim--${esc(item.status)}">${esc(shortConcept(item.concept))}.${esc(item.ability)} ${esc(item.status)}</span>`)
+      .map((item) => `<span class="v-claim v-claim--${esc(item.status)}">${esc(conceptWords(item.concept))}, ${esc(item.ability)}: ${esc(item.status)}</span>`)
       .join('');
     box.innerHTML = `
+      <div class="v-result__box v-result__box--ok">
+        <p><b>Signed for ${esc(vault.audienceName(result.audience || refs.shareAudience.value.trim()))}.</b>
+        Good for ${esc(relTime(result.expiresAt).replace(/^in /, ''))}, and only for that site.</p>
+        <p class="v-share__meta"><span class="v-claims">${shared}</span></p>
+        <p class="v-share__meta">Copy it under the hood and paste it into the site's box.</p>
+      </div>`;
+    /* The token itself is the one thing here a person never has to read. */
+    paintUnder(refs.shareUnder, `
       <div class="n-token">
         <span class="n-token__head">readiness assertion<button class="n-btn n-btn--sm n-btn--secondary" type="button" data-action="copy-share">Copy</button></span>
         <p class="n-token__text" data-share-token><b>nema1.</b>${esc(rest)}</p>
-      </div>
-      <p class="v-share__meta"><span class="v-claims">${shared}</span></p>
-      <p class="v-share__meta">Expires ${esc(relTime(result.expiresAt))}. Paste it into the site's "Paste an assertion" box.</p>`;
+      </div>`);
     return;
   }
 
   shareToken = '';
+  paintUnder(refs.shareUnder, '');
   const lines = {
-    denied: 'Denied. Nothing was shared and nothing was signed.',
+    denied: 'You said no. Nothing was shared and nothing was signed.',
     timeout: 'The request timed out. Nothing was shared.'
   };
   box.innerHTML = `
@@ -1045,14 +1199,18 @@ function collectRefs() {
   refs.graphLegend = $('[data-graph-legend]');
   refs.stateTable = $('[data-state-table]');
   refs.stateToggle = $('[data-action="toggle-state"]');
+  refs.stateUnder = $('[data-state-under]');
   refs.misconceptions = $('[data-misconceptions]');
   refs.needsForm = $('[data-needs-form]');
   refs.budgetInput = $('#budget-minutes');
   refs.needsList = $('[data-needs-list]');
   refs.disclosureLedger = $('[data-disclosure-ledger]');
+  refs.disclosureUnder = $('[data-disclosure-under]');
   refs.evidenceLedger = $('[data-evidence-ledger]');
   refs.evidenceToggle = $('[data-action="toggle-evidence"]');
+  refs.evidenceUnder = $('[data-evidence-under]');
   refs.alignmentList = $('[data-alignment-list]');
+  refs.alignmentUnder = $('[data-alignment-under]');
   refs.alignForm = $('[data-align-form]');
   refs.alignBox = $('[data-align-box]');
   refs.alignStatus = $('[data-align-status]');
@@ -1065,9 +1223,12 @@ function collectRefs() {
   refs.shareConcepts = $('#share-concepts');
   refs.shareStatus = $('[data-share-status]');
   refs.shareResult = $('[data-share-result]');
+  refs.shareUnder = $('[data-share-under]');
   refs.inboxToken = $('[data-inbox-token]');
   refs.inboxNote = $('[data-inbox-note]');
   refs.inboxResult = $('[data-inbox-result]');
+  refs.inboxUnder = $('[data-inbox-under]');
+  refs.inboxBox = $('[data-inbox-box]');
   refs.stageButton = $('[data-action="stage"]');
   refs.activity = $('[data-activity-strip]');
   refs.toolsList = $('[data-tools-list]');

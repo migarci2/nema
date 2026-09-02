@@ -78,16 +78,21 @@ nextCard.innerHTML = `
 strip.innerHTML = `
   <h2 class="n-panel__label" id="p-ext-page">This page</h2>
   <div class="n-panel__body">
-    <p class="x-origin mono" data-ext-origin>Looking for the page you are on.</p>
+    <p class="x-origin" data-ext-origin>Looking for the page you are on.</p>
     <p class="x-state" data-ext-state aria-live="polite"></p>
-    <p class="x-tools mono" data-ext-tools hidden></p>
     <div class="row row--tight x-actions" data-ext-actions hidden>
-      <button class="n-btn n-btn--primary n-btn--sm" type="button" data-ext-share>Share bands with this page</button>
+      <button class="n-btn n-btn--primary n-btn--sm" type="button" data-ext-share>Share what you know</button>
       <button class="n-btn n-btn--secondary n-btn--sm" type="button" data-ext-receipt>Check for receipts now</button>
     </div>
     <div class="x-result" data-ext-result role="status" aria-live="polite"></div>
     <div class="x-aligns" data-ext-aligns hidden></div>
-    <div class="x-calls" data-ext-calls hidden></div>
+    <details class="n-under">
+      <summary class="n-under__summary">Under the hood</summary>
+      <div class="n-under__body">
+        <p class="x-tools mono" data-ext-tools hidden></p>
+        <div class="x-calls" data-ext-calls hidden></div>
+      </div>
+    </details>
   </div>`;
 
 refs.origin = strip.querySelector('[data-ext-origin]');
@@ -135,8 +140,29 @@ function shortOrigin(origin) {
   return String(origin || '').replace(/^https?:\/\//, '');
 }
 
+/** A site as a person names it: its domain, never its full origin string. */
+function siteWords(origin) {
+  return shortOrigin(origin).replace(/\/$/, '');
+}
+
 function shortConcept(id) {
   return String(id || '').replace(/^nema:/, '');
+}
+
+/** `knife-skills` reads as `knife skills`, whoever named it. */
+function humanName(id) {
+  return shortConcept(id).replace(/[-_]/g, ' ');
+}
+
+/**
+ * A concept in words. The panel never shows an id: a registry concept reads as
+ * its title, a name a site made up reads as that site's words in quotes.
+ * Contract section 26.
+ */
+function conceptWords(id) {
+  const raw = String(id || '');
+  if (typeof vault.getConcept === 'function' && vault.getConcept(raw)) return vault.conceptTitle(raw);
+  return `"${humanName(raw)}"`;
 }
 
 function statusOf(result) {
@@ -329,7 +355,7 @@ function renderNext() {
 
   refs.next.innerHTML = `
     <p class="x-next__what">
-      <span class="x-next__title">${esc(vault.conceptTitle(need.concept))}, ${esc(need.ability)}</span>
+      <span class="x-next__title">${esc(conceptWords(need.concept))}, ${esc(need.ability)}</span>
       <span class="x-next__minutes mono">${esc(String(need.minutes))} min</span>
     </p>
     <p class="x-next__why">Time to ${esc(KIND_WORDS[need.kind] || need.kind)}.</p>
@@ -431,10 +457,21 @@ function declareOnce(page) {
   declareFrom(page && page.origin, info && info.concepts);
 }
 
+/** "This site calls Caramelization 'sugar browning'", never a pair of ids. */
+function alignWords(entry) {
+  const own = `"${humanName(entry.providerConcept)}"`;
+  const target = typeof vault.conceptTitle === 'function'
+    ? vault.conceptTitle(entry.concept)
+    : humanName(entry.concept);
+  if (entry.relation === 'narrower') return `This site says ${own} is a part of ${target}`;
+  if (entry.relation === 'broader') return `This site says ${own} covers more than ${target}`;
+  return `This site calls ${target} ${own}`;
+}
+
 function alignmentRow(entry, actions) {
   return `
     <div class="x-align" data-align="${esc(entry.alignmentId)}">
-      <span class="x-align__pair mono">${esc(entry.providerConcept)} ${esc(entry.relation)} ${esc(shortConcept(entry.concept))}</span>
+      <span class="x-align__pair">${esc(alignWords(entry))}</span>
       ${entry.rationale ? `<span class="x-align__why">${esc(entry.rationale)}</span>` : ''}
       ${actions ? `<span class="x-align__acts">
         <button class="n-btn n-btn--sm n-btn--primary" type="button" data-ext-confirm="${esc(entry.alignmentId)}">Confirm</button>
@@ -465,7 +502,7 @@ function renderAlignments() {
     <p class="x-aligns__label">This site names things its own way</p>
     ${proposed.length > 0 ? proposed.map((entry) => alignmentRow(entry, true)).join('') : ''}
     ${confirmed.length > 0 ? `<div class="x-aligns__done">${confirmed.map((entry) => alignmentRow(entry, false)).join('')}</div>` : ''}
-    ${orphans.length > 0 ? `<p class="x-aligns__open">No match proposed yet for ${esc(orphans.join(', '))}. An agent can propose one with propose_concept_alignment, and you decide.</p>` : ''}
+    ${orphans.length > 0 ? `<p class="x-aligns__open">Nothing has said what ${esc(orphans.map((id) => `"${humanName(id)}"`).join(', '))} means. An agent can propose a match, and you decide.</p>` : ''}
     ${alignNote ? `<p class="x-aligns__note">${esc(alignNote)}</p>` : ''}`;
 }
 
@@ -610,7 +647,7 @@ function requirementRows(rows) {
   if (!Array.isArray(rows) || rows.length === 0) return '';
   return `<div class="x-rows">${rows.map((row) => `
     <div class="x-row">
-      <span class="x-row__main mono">${esc(shortConcept(row.concept))} ${esc(row.ability)}</span>
+      <span class="x-row__main">${esc(conceptWords(row.concept))}, ${esc(row.ability)}</span>
       <span class="n-pill n-pill--nodot n-pill--${row.status === 'verified' ? 'durable' : row.status === 'uncertain' ? 'uncertain' : 'unknown'}">${esc(row.status)}</span>
     </div>`).join('')}</div>`;
 }
@@ -811,11 +848,24 @@ async function shareBands({ fromBar = false } = {}) {
 
 /* ---------------------------------- action 2: receipts, automatic and by hand -- */
 
+/* One claim lifts every ability under it, so four lines about the same concept
+ * are one piece of news. The panel names the furthest ability that moved and
+ * counts the rest, the way the vault does. */
+const ABILITY_LADDER = ['recognize', 'retrieve', 'explain', 'apply', 'transfer', 'discriminate'];
+
 function bandsMoved(changes) {
   if (!Array.isArray(changes) || changes.length === 0) return 'no band moved yet';
-  return changes
-    .map((change) => `${shortConcept(change.concept)} ${change.ability} ${change.from} to ${change.to}`)
-    .join(', ');
+  const best = new Map();
+  for (const change of changes) {
+    const rank = ABILITY_LADDER.indexOf(change.ability);
+    const held = best.get(change.concept);
+    if (!held || rank > held.rank) best.set(change.concept, { change, rank, lower: held ? held.lower + 1 : 0 });
+    else best.set(change.concept, { ...held, lower: held.lower + 1 });
+  }
+  return [...best.values()]
+    .map(({ change, lower }) => `${conceptWords(change.concept)}, ${change.ability}: ${change.from} to ${change.to}`
+      + (lower > 0 ? `, and ${lower} below it` : ''))
+    .join('; ');
 }
 
 /** The toast wording of CONTRACT 24.3: the bands that moved, in words. */
@@ -825,13 +875,13 @@ function bandWords(changes) {
     if (!best.has(change.concept)) best.set(change.concept, change.to);
   }
   return [...best.entries()]
-    .map(([concept, band]) => `${shortConcept(concept)}, now ${band}`)
+    .map(([concept, band]) => `${humanName(concept)}, now ${band}`)
     .join('; ');
 }
 
 function receiptRow(title, status, detail) {
   const kind = status === 'accepted' ? 'durable'
-    : status === 'pending' ? 'pending'
+    : status === 'waiting' ? 'pending'
       : status === 'already in your vault' ? 'unknown' : 'danger';
   return `
     <div class="x-row x-row--stacked">
@@ -921,10 +971,10 @@ async function collect({ manual }) {
       rows.push(receiptRow(
         title,
         'accepted',
-        `${staged.issuerName || staged.issuer}, trust ${staged.trust}. ${bandsMoved(staged.changes)}.`
+        `${staged.issuerName || siteWords(staged.issuer)} signed it. ${bandsMoved(staged.changes)}.`
       ));
     } else if (staged.status === 'pending') {
-      rows.push(receiptRow(title, 'pending', 'the issuer is not in the trusted list yet'));
+      rows.push(receiptRow(title, 'waiting', 'nothing here knows who signed it yet'));
     } else if (staged.status === 'rejected' && staged.reason === 'duplicate') {
       rows.push(receiptRow(title, 'already in your vault', ''));
     } else {

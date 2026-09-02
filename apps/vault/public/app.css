@@ -593,21 +593,6 @@
 }
 .v-graph .n-graph__edge--active { stroke-opacity: 0.9; stroke: var(--cyan); }
 
-/* ------------------------------------------------------------- trust -- */
-
-/* The trust tier of a receipt, one word beside the signature state. Quiet for
- * a registered or origin verified issuer, yellow for `self`, because a self
- * certified key is one anybody can mint and the vault caps what it is worth.
- * A pending receipt says so in its grey pill instead: same fact, one word. */
-.v-trust {
-  flex: none;
-  font-family: var(--font-mono);
-  font-size: var(--fs-11);
-  letter-spacing: var(--ls-label);
-  color: var(--ink-label);
-}
-.v-trust--self { color: var(--yellow); }
-
 /* ------------------------------------------------------------- share -- */
 
 .v-share__note,
@@ -616,3 +601,73 @@
   color: var(--ink-2);
 }
 .v-share__meta { margin-top: var(--sp-2); }
+
+/* --------------------------------------------------- under the hood -- */
+
+/* Contract section 26. A learner never meets a token, a key, a receipt id or a
+ * grader version on the normal path: every one of them lives in one closed
+ * block per panel, quiet by default, monospace once it is open. Nothing in the
+ * normal path needs it opened. */
+.n-under {
+  margin-top: var(--sp-1);
+  border-top: 1px solid var(--line-soft);
+}
+.n-under__summary {
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--ink-2);
+  padding: var(--sp-2) 0;
+}
+.n-under__summary:hover { color: var(--ink); }
+.n-under__summary::marker { color: var(--ink-3); }
+.n-under__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: 0 0 var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-13);
+  line-height: var(--lh-body);
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.n-under__body .n-label,
+.n-under__body .n-help,
+.n-under__body .n-btn,
+.n-under__body .v-under__say {
+  font-family: var(--font-ui);
+}
+.n-under__body p { margin: 0; }
+.n-under__say {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--ink-2);
+}
+.n-under__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.n-under__key {
+  color: var(--ink-label);
+  padding-right: var(--sp-2);
+}
+
+/* The modal carries its own copy of the block, one fold under the answer. */
+.n-modal .n-under { margin-top: var(--sp-3); }
+
+/* The More block leads with one heading over the manual paths. */
+.v-more__heading,
+.v-more__lede { grid-column: 1 / -1; margin: 0; }
+.v-more__lede {
+  font-size: var(--fs-13);
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+.n-under__row { margin: 0; }
+.n-under__pair { padding-right: var(--sp-2); }
+.n-under .n-token { margin: 0; }

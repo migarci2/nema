@@ -213,6 +213,26 @@ function conceptLabel(concept, ability) {
   return `${concept}.${ability}`;
 }
 
+/* Contract section 26: the page names a skill the way a cook would. The ids
+   are still exact, and they are in the block under the hood. */
+const ABILITY_PHRASE = {
+  apply: 'hands on',
+  explain: 'in your own words',
+  discriminate: 'told apart',
+  transfer: 'in a new kitchen',
+  recognize: 'recognised',
+  retrieve: 'from memory'
+};
+
+function conceptWords(concept) {
+  const name = String(concept || '').replace(/^nema:/, '').replace(/[-_]/g, ' ');
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+function requirementWords(concept, ability) {
+  return `${conceptWords(concept)}, ${ABILITY_PHRASE[ability] || ability}`;
+}
+
 /* content.js prefixes its reason strings with the state they belong to
    ("Included: ", "Skipped: ", "Locked: "). The row already shows the state, so
    the prefix is dropped here and the sentence starts on its own. */
@@ -258,9 +278,16 @@ function renderHero() {
   for (const requirement of prereq.recognized) {
     const item = el('li', 'reqs__item');
     item.append(dot(requirement.status));
-    item.append(el('code', null, conceptLabel(requirement.concept, requirement.ability)));
+    item.append(el('code', null, requirementWords(requirement.concept, requirement.ability)));
     item.append(el('span', 'reqs__status', requirement.status));
     list.append(item);
+  }
+
+  const reqUnder = $('[data-reqs-under]');
+  if (reqUnder) {
+    reqUnder.textContent = `Asks for ${prereq.recognized
+      .map((requirement) => conceptLabel(requirement.concept, requirement.ability))
+      .join('  ')}`;
   }
 
   const origin = $('[data-hero-origin]');
@@ -295,15 +322,15 @@ function renderPrereq() {
   meta.textContent = '';
 
   if (!state.assertion) {
-    hint.textContent = 'no assertion on file';
-    body.append(el('p', 'reqs__sentence', 'No readiness assertion on file for this origin.'));
+    hint.textContent = 'nothing from your vault yet';
+    body.append(el('p', 'reqs__sentence', 'Your vault has not told this unit anything yet, so nothing is assumed about you.'));
     if (assertionNote) body.append(el('p', 'prereq-alert', assertionNote));
     return;
   }
 
   const payload = state.assertion.payload;
-  hint.textContent = 'verified assertion';
-  body.append(el('p', 'reqs__sentence reqs__sentence--ok', 'Prerequisites recognised from another provider.'));
+  hint.textContent = 'read from your vault';
+  body.append(el('p', 'reqs__sentence reqs__sentence--ok', 'Your vault vouched for what you already know, and this unit read it.'));
 
   /* A rejected token never unseats the assertion the learner already approved.
      The alert says what was refused, under the statuses that are still standing. */
@@ -525,12 +552,12 @@ function renderStage() {
   if (!activity) {
     hint.textContent = 'stage clear';
     body.append(
-      el('p', 'empty', 'Nothing on the stage. Open an activity above, or let the agent call start_activity.')
+      el('p', 'empty', 'Nothing on the stage. Open an activity above, or let your agent open one for you.')
     );
     return;
   }
 
-  hint.textContent = `${activityId}, ${activity.minutes} min`;
+  hint.textContent = `${sentenceCase(activity.type)}, ${activity.minutes} min`;
 
   const head = el('div', 'stage__head');
   const heading = el('h3', 'stage__title', activity.title);
@@ -551,10 +578,10 @@ function renderStage() {
     lock.append(el('p', 'lockbox__title', plainReason(activity.lockedReason)));
     const missing = el('ul', 'lockbox__list');
     for (const need of locked.missing) {
-      /* Mono for the concept id, the UI face for the sentence around it. */
+      /* What is missing, in the words the rest of the page uses for it. */
       const item = el('li');
-      item.append(el('code', null, conceptLabel(need.concept, need.ability)));
-      item.append(el('span', 'dim', ` needs ${need.needed}, your vault says ${statusMap()[`${need.concept}|${need.ability}`] || 'missing'}`));
+      item.append(el('span', null, requirementWords(need.concept, need.ability)));
+      item.append(el('span', 'dim', `: needs ${need.needed}, your vault says ${statusMap()[`${need.concept}|${need.ability}`] || 'missing'}`));
       missing.append(item);
     }
     lock.append(missing);
@@ -648,7 +675,7 @@ function renderFeedback(activity) {
       button.disabled = true;
       const result = await issueReceipt(activity.id);
       button.disabled = false;
-      if (result.status !== 'issued') toast(`Receipt not issued: ${result.status}`, 'error');
+      if (result.status !== 'issued') toast('Nothing was signed for that attempt.', 'error');
     });
     wrap.append(button);
   }
@@ -977,68 +1004,38 @@ function renderReceipt() {
   hint.textContent = `${entries.length} issued`;
   for (const [activityId, receipt] of entries.reverse()) {
     const payload = receipt.payload;
+    const activity = ACTIVITIES[activityId];
     const block = el('div', 'receipt');
 
-    /* CONTRACT DEVIATION (section 10): the contract says "token in a textarea
-       with Copy button". The token box here is the shared .n-token component
-       (brand.css component 10), which is what the harness provider and the
-       vault also use, so the three token surfaces look the same. The full token
-       is in the DOM, the Copy button puts the whole string on the clipboard,
-       and the box clamps to a readable height instead of a resizable field.
-       Since section 25 it lives one fold down, under "Do it by hand". */
-    const token = el('div', 'n-token');
-    const head = el('span', 'n-token__head', 'Signed receipt for ');
-    head.append(el('code', 'mono', activityId));
-    const copy = el('button', 'n-btn n-btn--sm n-btn--mono', 'Copy');
-    copy.type = 'button';
-    copy.addEventListener('click', () => copyToClipboard(receipt.token, copy));
-    head.append(copy);
-    token.append(head);
-    const text = el('p', 'n-token__text');
-    text.append(el('b', null, 'nema1.'));
-    text.append(document.createTextNode(receipt.token.slice(6)));
-    token.append(text);
+    /* Contract section 26: what happened, in words, and one thing to do with
+       it. Every signed field, the claim ids and the token itself are one fold
+       down, under the hood, where a verifier and a judge can still read them
+       and a learner never has to. */
+    block.append(el('p', 'receipt__said', `${PROVIDER.name} signed what you did. Verified.`));
+    block.append(
+      el(
+        'p',
+        'receipt__note',
+        `${activity ? activity.title : 'This activity'}. It says this and nothing else about you.`
+      )
+    );
 
     const claims = el('div', 'n-ledger');
-    payload.claims.forEach((claim, index) => {
+    for (const claim of payload.claims) {
       const row = el('div', 'n-ledger__row');
-      row.append(el('span', 'n-ledger__id', `claim ${index + 1}`));
       const main = el('span', 'n-ledger__main');
-      main.append(el('span', 'n-ledger__title mono', conceptLabel(claim.concept, claim.ability)));
-      main.append(
-        el('span', 'n-ledger__meta', `${claim.evidenceType}, ${claim.difficulty}, graded ${payload.conditions.grader}`)
-      );
+      main.append(el('span', 'n-ledger__title', requirementWords(claim.concept, claim.ability)));
+      main.append(el('span', 'n-ledger__meta', `${claim.difficulty}, graded in the lab`));
       row.append(main);
       const end = el('span', 'n-ledger__end');
       end.append(pill(claim.result, claim.result === 'passed' ? 'usable' : claim.result === 'partial' ? 'uncertain' : 'danger'));
       row.append(end);
       claims.append(row);
-    });
+    }
     block.append(claims);
 
-    /* Seven signed fields matter to a verifier and to nobody else on first
-       read, so they fold away under the claims they belong to. */
-    const details = el('details', 'more');
-    details.append(el('summary', 'more__summary', 'Signed fields'));
-    const meta = el('dl', 'meta');
-    const rows = [
-      ['Receipt', payload.receiptId],
-      ['Issuer', `${payload.issuer}  key ${payload.keyId}`],
-      ['Subject', payload.subject],
-      ['Activity', `${payload.activity.id} ${payload.activity.version}`],
-      ['Content hash', payload.activity.contentHash],
-      ['Conditions', `attempts ${payload.conditions.attempts}, hints ${payload.conditions.hintsUsed}, ${payload.conditions.durationSeconds} s, grader ${payload.conditions.grader} v${payload.conditions.graderVersion}`],
-      ['Issued', payload.issuedAt]
-    ];
-    for (const [key, value] of rows) meta.append(el('dt', null, key), el('dd', null, value));
-    const metaWrap = el('div', 'more__body');
-    metaWrap.append(meta);
-    details.append(metaWrap);
-    block.append(details);
-
     /* One button finishes the job: the vault opens in its own window, checks
-       the signature and says what moved. The token, the Copy box and the old
-       link are still here, one fold down, for a browser with no popups. */
+       the signature and says what moved. */
     const actions = el('div', 'row');
     const keep = el('button', 'n-btn n-btn--primary', 'Keep in my vault');
     keep.type = 'button';
@@ -1057,19 +1054,53 @@ function renderReceipt() {
     block.append(actions);
     block.append(keepStatus);
 
-    const byHand = el('details', 'byhand');
-    byHand.append(el('summary', 'byhand__summary', 'Do it by hand'));
-    const byHandBody = el('div', 'byhand__body');
-    byHandBody.append(token);
+    const under = el('details', 'byhand n-under');
+    under.append(el('summary', 'byhand__summary n-under__summary', 'Under the hood'));
+    const underBody = el('div', 'byhand__body n-under__body');
+
+    /* CONTRACT DEVIATION (section 10): the contract says "token in a textarea
+       with Copy button". The token box here is the shared .n-token component
+       (brand.css component 10), which is what the harness provider and the
+       vault also use, so the three token surfaces look the same. The full token
+       is in the DOM, the Copy button puts the whole string on the clipboard,
+       and the box clamps to a readable height instead of a resizable field. */
+    const token = el('div', 'n-token');
+    const head = el('span', 'n-token__head', 'Signed receipt for ');
+    head.append(el('code', 'mono', activityId));
+    const copy = el('button', 'n-btn n-btn--sm n-btn--mono', 'Copy');
+    copy.type = 'button';
+    copy.addEventListener('click', () => copyToClipboard(receipt.token, copy));
+    head.append(copy);
+    token.append(head);
+    const text = el('p', 'n-token__text');
+    text.append(el('b', null, 'nema1.'));
+    text.append(document.createTextNode(receipt.token.slice(6)));
+    token.append(text);
+    underBody.append(token);
+
     const handRow = el('div', 'row');
     const link = el('a', 'n-btn n-btn--secondary', 'Send to vault');
     link.href = `${VAULT_ORIGIN}/#receipt=${encodeURIComponent(receipt.token)}`;
     link.rel = 'noopener';
     handRow.append(link);
     handRow.append(el('span', 'receipt__note', 'Opens your vault with the token in the address, ready to stage.'));
-    byHandBody.append(handRow);
-    byHand.append(byHandBody);
-    block.append(byHand);
+    underBody.append(handRow);
+
+    const meta = el('dl', 'meta');
+    const rows = [
+      ['Receipt', payload.receiptId],
+      ['Issuer', `${payload.issuer}  key ${payload.keyId}`],
+      ['Subject', payload.subject],
+      ['Activity', `${payload.activity.id} ${payload.activity.version}`],
+      ['Content hash', payload.activity.contentHash],
+      ['Claims', payload.claims.map((claim) => `${conceptLabel(claim.concept, claim.ability)} ${claim.evidenceType} ${claim.difficulty} ${claim.result}`).join('  ')],
+      ['Conditions', `attempts ${payload.conditions.attempts}, hints ${payload.conditions.hintsUsed}, ${payload.conditions.durationSeconds} s, grader ${payload.conditions.grader} v${payload.conditions.graderVersion}`],
+      ['Issued', payload.issuedAt]
+    ];
+    for (const [key, value] of rows) meta.append(el('dt', null, key), el('dd', null, value));
+    underBody.append(meta);
+    under.append(underBody);
+    block.append(under);
 
     body.append(block);
   }
@@ -1308,7 +1339,7 @@ async function requestReceipt(activityId) {
   renderAll();
   const panel = $('[data-receipt-panel]');
   if (panel) panel.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
-  toast('Evidence receipt signed. Send it to your vault.', 'ok');
+  toast('Signed. Keep it in your vault.', 'ok');
 
   return {
     status: 'issued',
@@ -1328,7 +1359,7 @@ async function presentAssertion(assertionToken) {
        stale or mistyped retry cannot relock a lab in the middle of the unit. */
     assertionNote = `Assertion rejected: ${result.reason}. Nothing on this page changed.`;
     renderPrereq();
-    toast(`Assertion rejected: ${result.reason}`, 'error');
+    toast('That answer was refused, so nothing changed here.', 'error');
     announce(`Assertion rejected: ${result.reason}. The page kept the statuses it already had.`);
     return { status: 'rejected', reason: result.reason };
   }
@@ -1341,7 +1372,7 @@ async function presentAssertion(assertionToken) {
   prereq = computePrereq();
   save();
   renderAll();
-  toast('Readiness assertion verified. Prerequisites recognised.', 'ok');
+  toast('Your vault answered. This unit knows what you already know.', 'ok');
   announce(
     `Readiness assertion verified. ${prereq.unlocked.length} of ${ACTIVITY_ORDER.length} activities unlocked, ` +
       `${prereq.skippable.length} already covered by your vault.`

@@ -304,8 +304,17 @@ try {
     `document.querySelector('[data-consent-shared]').textContent.replace(/\\s+/g, ' ').trim()`
   );
   ok(
-    asked.includes('knife-skills') && asked.includes('ratios') && !asked.includes('receipt'),
-    'it names the exact lines and no evidence: ' + asked.slice(0, 90)
+    asked.includes('Knife skills') && asked.includes('Cooking ratios') && !asked.includes('receipt'),
+    'it names the exact lines in words and no evidence: ' + asked.slice(0, 90)
+  );
+  /* Contract section 26: the ids it asked with and the pseudonym it is
+     answered under are behind the one closed block, and nowhere else. */
+  const askedUnder = await vaultPopup.evaluate(
+    `document.querySelector('[data-consent-under]').textContent.replace(/\\s+/g, ' ').trim()`
+  );
+  ok(
+    !/nema:|lk_/.test(asked) && /nema:knife-skills\.apply/.test(askedUnder) && /lk_/.test(askedUnder),
+    'and the ids and the learner id are under the hood: ' + askedUnder.slice(0, 80)
   );
   await vaultPopup.shot(`${SHOTS}/nema-connect-popup.png`);
 
@@ -362,7 +371,14 @@ try {
   const handKept = await course.evaluate(
     `document.querySelector('.lab-byhand__summary')?.textContent || ''`
   );
-  ok(handKept === 'Do it by hand', 'and the token and the old link fold away under it');
+  ok(handKept === 'Under the hood', 'and the token, the signed fields and the old link fold away under it');
+  const receiptText = await course.evaluate(
+    `document.querySelector('[data-receipt]').firstElementChild.querySelector('.stack').textContent.replace(/\\s+/g, ' ')`
+  );
+  ok(
+    /signed what you did\. Verified\./.test(receiptText) && !/nema1\.|rcpt_|lk_|nema:/.test(receiptText),
+    'the receipt speaks in outcomes: ' + receiptText.slice(0, 90)
+  );
 
   await course.evaluate(`document.querySelector('[data-keep-vault]').click(); true`);
   const keepPopup = await browser.waitForTarget(isConnect('receipt'));
@@ -420,7 +436,7 @@ try {
     `document.querySelector('[data-consent-shared]').textContent.replace(/\\s+/g, ' ').trim()`
   );
   ok(
-    blogAsked.includes('browning-science') && blogAsked.includes('nema:maillard-reaction'),
+    blogAsked.includes('"browning science"') && blogAsked.includes('Maillard reaction'),
     'the site own name is answered under the name it asked with: ' + blogAsked.slice(0, 110)
   );
   await blogVault.evaluate(`document.querySelector('[data-consent-approve]').click(); true`);

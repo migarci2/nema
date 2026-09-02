@@ -99,8 +99,14 @@ try {
   ok((selfStaged.changes || []).length > 0 && selfStaged.changes.every(c => ['uncertain', 'fragile'].includes(c.to)), 'self certified evidence moves a band at most to fragile: ' + JSON.stringify(selfStaged.changes || []));
   const selfLedger = parse(await page.evaluate(tool('get_evidence_ledger', { limit: 1 })));
   ok(selfLedger.receipts?.[0]?.trust === 'self' && selfLedger.receipts[0].signature === 'verified', 'the ledger row carries the tier: ' + JSON.stringify(selfLedger.receipts?.[0]?.trust));
-  const trustWord = await page.evaluate(`document.querySelector('.v-trust--self')?.textContent || ''`);
-  ok(trustWord === 'self', 'the ledger shows the tier as a word: ' + JSON.stringify(trustWord));
+  // Contract section 26: the row says one word for what the vault could check,
+  // and the tier, the grader and the receipt id are under the hood.
+  const trustWord = await page.evaluate(`document.querySelector('[data-evidence-ledger] [data-state-word]')?.textContent || ''`);
+  ok(trustWord === 'self issued', 'the ledger shows the state as one word: ' + JSON.stringify(trustWord));
+  const rowText = await page.evaluate(`document.querySelector('[data-evidence-ledger]').textContent`);
+  ok(!/rcpt_|nema1\.|self:http/.test(rowText), 'and no id, key or token is on the ledger rows');
+  const underText = await page.evaluate(`document.querySelector('[data-evidence-under]').textContent`);
+  ok(/rcpt_/.test(underText) && /grader/.test(underText), 'the block under the hood still has them: ' + underText.trim().slice(0, 80));
   // The forgery that matters: a readable receipt, someone else's key enclosed,
   // the original signature kept. The signature covers the key, so it fails.
   const decodedSelf = proto.decodeToken(selfToken);

@@ -78,11 +78,15 @@
           <span class="lab-note" data-connect-status role="status" aria-live="polite"></span>
         </div>
 
-        <!-- Hand delivery. No agent needed: a learner can carry the token from
-             their vault and paste it here. The same form is a declarative
-             WebMCP tool, so an agent can present a token the same way. -->
-        <details class="lab-paste" data-paste>
-          <summary class="lab-paste__summary">Paste an assertion</summary>
+        <!-- Hand delivery, and the only place on this page where a token is
+             named. No agent needed: a learner can carry one from their vault
+             and paste it here. The same form is a declarative WebMCP tool, so
+             an agent can present one the same way. -->
+        <details class="lab-paste n-under" data-paste>
+          <summary class="lab-paste__summary n-under__summary">Under the hood</summary>
+          <div class="n-under__body">
+          <p class="n-under__say" data-req-under></p>
+          <p class="n-under__say">No vault window? Paste what your vault signed.</p>
           <form class="lab-paste__form"
                 toolname="present_assertion"
                 tooldescription="Present a readiness assertion token from the learner's vault. Runs the same check as personalize_learning_path: the requirement pills fill in, the activities the learner can skip strike through, and the minutes counter drops."
@@ -106,6 +110,7 @@
           <p class="lab-note">
             Your vault mints one under "Share with a site". Nothing else on this page is read.
           </p>
+          </div>
         </details>
       </div>
     </section>
@@ -151,15 +156,15 @@
     </section>
 
     <div class="lab-tail">
-      <details class="lab-more">
-        <summary class="lab-more__summary">More about this unit</summary>
-        <div class="lab-more__body">
-          <p class="lab-line">A receipt from this unit can claim these.</p>
+      <p class="lab-line">
+        Taught and graded by <span data-unit-provider>Saucier School</span>.
+        No tool on this page submits an answer, grades one, or writes to your vault.
+      </p>
+      <details class="lab-more n-under">
+        <summary class="lab-more__summary n-under__summary">Under the hood</summary>
+        <div class="lab-more__body n-under__body">
+          <p class="n-under__say">What a receipt from this unit can claim, and who signs it.</p>
           <p class="lab-ids mono" data-outcomes></p>
-          <p class="lab-line">
-            Taught and graded by <span data-unit-provider>Saucier School</span>.
-            No tool on this page submits an answer, grades one, or writes to your vault.
-          </p>
           <p class="lab-ids mono" data-unit-ids></p>
         </div>
       </details>

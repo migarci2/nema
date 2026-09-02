@@ -100,7 +100,6 @@
       <div class="n-modal__dialog" tabindex="-1">
         <div class="n-modal__head">
           <h2 class="n-modal__title" id="consent-title" data-consent-title>A site asks to know</h2>
-          <p class="v-consent__origin mono" data-consent-origin></p>
           <p class="v-consent__purpose" id="consent-purpose" data-consent-purpose></p>
         </div>
         <div class="n-modal__body">
@@ -112,6 +111,13 @@
             <span class="v-sublabel">Not shared</span>
             <ul class="v-consent__withheld" data-consent-withheld></ul>
           </div>
+          <details class="n-under">
+            <summary class="n-under__summary">Under the hood</summary>
+            <div class="n-under__body">
+              <p class="v-consent__origin mono" data-consent-origin></p>
+              <div data-consent-under></div>
+            </div>
+          </details>
         </div>
         <div class="n-modal__foot v-consent__foot">
           <div class="v-consent__decide">

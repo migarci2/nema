@@ -1249,3 +1249,31 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .course-switch__card:hover, .course-switch__card:hover .course-switch__action b { transform: none; }
 }
+
+/* --------------------------------------------------- under the hood -- */
+
+/* Contract section 26. The unit talks about service; the tokens, the keys, the
+ * signed fields and the ids live in one closed block per panel, in the same
+ * colours as the rest of the lab and one step quieter. */
+.n-under__summary {
+  font-size: var(--fs-13);
+  color: var(--ink-2);
+  cursor: pointer;
+  width: max-content;
+}
+.n-under__summary:hover { color: var(--ink); }
+.n-under__summary:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+.n-under__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding-top: var(--sp-3);
+}
+
+/* The receipt says what happened before it says what it is made of. */
+.receipt__said {
+  font-size: var(--fs-16);
+  line-height: var(--lh-snug);
+  color: var(--ink);
+}
+.more__origin-note { margin: 0; }

@@ -58,10 +58,6 @@ function el(name, attrs = {}) {
   return node;
 }
 
-function shortId(id) {
-  return String(id).replace(/^nema:/, '');
-}
-
 /**
  * Draw the graph into `container`.
  *
@@ -211,7 +207,9 @@ export function renderGraph(container, { concepts, state, onSelect } = {}) {
       x: point.x,
       y: point.y + LABEL_DY
     });
-    label.textContent = shortId(entry.id);
+    /* The graph is read by a learner, so a node is named the way the registry
+     * names it, not the way it is keyed. Contract section 26. */
+    label.textContent = entry.title;
     group.appendChild(label);
 
     group.addEventListener('mouseenter', () => setActive(entry.id));

@@ -125,6 +125,7 @@ const dom = {
   startCourse: document.querySelector('[data-start-course]'),
   startLabel: document.querySelector('[data-start-label]'),
   unitIds: document.querySelector('[data-unit-ids]'),
+  reqUnder: document.querySelector('[data-req-under]'),
   outcomes: document.querySelector('[data-outcomes]'),
   reqLine: document.querySelector('[data-req-line]'),
   requirements: document.querySelector('[data-requirements]'),
@@ -291,7 +292,6 @@ function renderUnit({ countMinutesFrom = null } = {}) {
   for (const row of requirementRows()) {
     const line = el('div', 'lab-req');
     const name = el('span', 'lab-req__id', requirementLabel(row.concept, row.ability));
-    name.title = `${row.concept}.${row.ability}`;
     line.append(name);
     const pill = el(
       'span',
@@ -301,6 +301,14 @@ function renderUnit({ countMinutesFrom = null } = {}) {
     if (row.confidence) pill.title = `confidence ${row.confidence}`;
     line.append(pill);
     dom.requirements.append(line);
+  }
+
+  /* The pairs a vault is actually asked for. They are the same three rows in
+   * the registry's own words, and a learner never needs to read them. */
+  if (dom.reqUnder) {
+    dom.reqUnder.textContent = `Asks for ${requirementRows()
+      .map((row) => `${row.concept}.${row.ability}`)
+      .join('  ')}`;
   }
 
   renderConnect();
@@ -642,10 +650,11 @@ function renderReceipt() {
   if (issued.length > 1) {
     const picker = el('div', 'row row--tight lab-receipt-picker');
     for (const entry of issued) {
+      const activity = ACTIVITIES[entry.activityId];
       const pick = el(
         'button',
-        `n-btn n-btn--sm ${entry === selected ? 'n-btn--primary' : 'n-btn--secondary'} n-btn--mono`,
-        entry.activityId
+        `n-btn n-btn--sm ${entry === selected ? 'n-btn--primary' : 'n-btn--secondary'}`,
+        activity ? activity.title : entry.activityId
       );
       pick.type = 'button';
       pick.setAttribute('aria-pressed', entry === selected ? 'true' : 'false');
@@ -661,10 +670,44 @@ function renderReceipt() {
 
   const wrap = el('div', 'receipt');
 
-  /* Left: one button that finishes the job. The token, the Copy box and the
-   * old link are still here, one fold down, for a learner with no popups or a
-   * judge who wants to see the bytes. */
+  /* Left: what happened, in words, and the one button that finishes the job.
+     Contract section 26: the signed fields, the token and the old link are one
+     fold down, under the hood, for a learner with no popups or a judge who
+     wants to see the bytes. */
   const left = el('div', 'stack');
+  const activity = ACTIVITIES[selected.activityId];
+  left.append(
+    el(
+      'p',
+      'receipt__said',
+      `${MANIFEST.provider.name} signed what you did. Verified.`
+    )
+  );
+  left.append(
+    el(
+      'p',
+      'lab-line',
+      `${activity ? activity.title : 'This activity'}, ${shortTime(payload.issuedAt)}. It says this and nothing else about you.`
+    )
+  );
+
+  const claims = el('ul', 'lab-claims');
+  for (const claim of payload.claims) {
+    const row = el('li', 'lab-claim');
+    row.append(
+      el('span', 'lab-claim__id', requirementLabel(claim.concept, claim.ability))
+    );
+    row.append(
+      el(
+        'span',
+        `n-pill ${claim.result === 'passed' ? 'n-pill--usable' : claim.result === 'partial' ? 'n-pill--uncertain' : 'n-pill--danger'}`,
+        claim.result
+      )
+    );
+    claims.append(row);
+  }
+  left.append(claims);
+
   const actions = el('div', 'row');
   const keep = el('button', 'n-btn n-btn--primary', 'Keep in my vault');
   keep.type = 'button';
@@ -678,9 +721,13 @@ function renderReceipt() {
   keepStatus.setAttribute('role', 'status');
   keepStatus.setAttribute('aria-live', 'polite');
   left.append(keepStatus);
+  wrap.append(left);
 
-  const byHand = el('details', 'lab-byhand');
-  byHand.append(el('summary', 'lab-byhand__summary', 'Do it by hand'));
+  /* Right: everything a machine reads, folded away. */
+  const under = el('details', 'lab-byhand n-under');
+  under.append(el('summary', 'lab-byhand__summary n-under__summary', 'Under the hood'));
+  const underBody = el('div', 'n-under__body');
+
   const box = el('div', 'n-token');
   const boxHead = el('span', 'n-token__head', 'Signed receipt');
   boxHead.append(el('span', 'n-pill n-pill--durable', 'signed'));
@@ -692,7 +739,7 @@ function renderReceipt() {
   const text = el('p', 'n-token__text');
   text.innerHTML = `<b>nema1.</b>${escapeHtml(token.slice(6))}`;
   box.append(text);
-  byHand.append(box);
+  underBody.append(box);
 
   const handRow = el('div', 'row');
   const send = el('a', 'n-btn n-btn--secondary', 'Send to vault');
@@ -700,36 +747,16 @@ function renderReceipt() {
   send.rel = 'noopener';
   handRow.append(send);
   handRow.append(el('span', 'lab-line', 'Opens your vault with the token in the address, ready to stage.'));
-  byHand.append(handRow);
-  left.append(byHand);
-  wrap.append(left);
-
-  /* Right: what the token says, decoded. */
-  const right = el('div', 'stack stack--tight');
-  right.append(el('span', 'lab-cap', 'What it says'));
-
-  const claims = el('div', 'lab-claims');
-  for (const claim of payload.claims) {
-    const row = el('div', 'lab-claim');
-    row.append(el('span', 'lab-claim__id mono', `${claim.concept}.${claim.ability}`));
-    row.append(el('span', 'lab-claim__meta', `${claim.evidenceType} evidence`));
-    row.append(
-      el(
-        'span',
-        `n-pill ${claim.result === 'passed' ? 'n-pill--usable' : claim.result === 'partial' ? 'n-pill--uncertain' : 'n-pill--danger'}`,
-        claim.result
-      )
-    );
-    claims.append(row);
-  }
-  right.append(claims);
+  underBody.append(handRow);
 
   const meta = el('dl', 'kv');
   const entries = [
+    ['receipt', payload.receiptId],
     ['issuer', payload.issuer],
     ['key', payload.keyId],
     ['subject', payload.subject],
     ['activity', `${payload.activity.id} ${payload.activity.version}`],
+    ['claims', payload.claims.map((claim) => `${claim.concept}.${claim.ability} ${claim.evidenceType} ${claim.result}`).join('  ')],
     [
       'conditions',
       payload.conditions
@@ -744,8 +771,9 @@ function renderReceipt() {
     meta.append(el('dt', 'kv__key', key));
     meta.append(el('dd', 'kv__value mono', value));
   }
-  right.append(meta);
-  wrap.append(right);
+  underBody.append(meta);
+  under.append(underBody);
+  wrap.append(under);
 
   dom.receipt.append(wrap);
 }
@@ -905,7 +933,7 @@ async function requestReceipt(activityId) {
   renderStagePanel();
   flash(dom.receiptPanel);
   scrollToPanel(dom.receiptPanel);
-  toast(`Signed by ${MANIFEST.provider.name}. Take it to your vault.`, 'ok');
+  toast(`Signed by ${MANIFEST.provider.name}. Keep it in your vault.`, 'ok');
   return { status: 'issued', token: body.token, payload: body.payload, repeat: false };
 }
 

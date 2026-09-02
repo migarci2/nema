@@ -65,10 +65,39 @@ function say(title, line, { origin = '', moved = [], kind = 'info' } = {}) {
   refs.moved.innerHTML = moved.map((text) => `<span>${esc(text)}</span>`).join('');
 }
 
+/** `knife-skills` reads as `knife skills`, whoever named it. */
+function humanName(id) {
+  return vault.shortConcept(id).replace(/[-_]/g, ' ');
+}
+
+/**
+ * A concept in words: the registry title, or the site's own words in quotes.
+ * Contract section 26: nothing on the normal path reads as an id.
+ */
+function conceptWords(id) {
+  const raw = String(id || '');
+  if (vault.getConcept(raw)) return vault.conceptTitle(raw);
+  return `"${humanName(raw)}"`;
+}
+
+/** Why a site is asking, in words rather than in its machine string. */
+function purposeWords(purpose) {
+  const raw = String(purpose || '').trim();
+  if (raw === '') return 'to adapt what it shows you';
+  if (/^personalize|^personalise|path|unlock/i.test(raw)) return 'to skip what you already know';
+  return `for ${raw.replace(/[-_]/g, ' ')}`;
+}
+
+/* A site that asked in its own words is answered in its own words. */
+function consentTitle(item) {
+  if (item.alignedTo || item.reason === 'unaligned') return `"${humanName(item.concept)}"`;
+  return item.title;
+}
+
 /** The bands a receipt moved, in the learner's words. */
 function movedWords(changes) {
   return (Array.isArray(changes) ? changes : []).map(
-    (change) => `${vault.shortConcept(change.concept)} ${change.ability}, now ${change.to}`
+    (change) => `${conceptWords(change.concept)}, ${change.ability}: now ${change.to}`
   );
 }
 
@@ -145,18 +174,31 @@ function askForConsent(request, { signal }) {
 
     document.querySelector('[data-consent-title]').textContent = `${request.audienceName} asks to know`;
     document.querySelector('[data-consent-origin]').textContent = request.audience;
-    document.querySelector('[data-consent-purpose]').textContent = `Purpose: ${request.purpose}`;
+    document.querySelector('[data-consent-purpose]').textContent =
+      `${request.audienceName} is asking ${purposeWords(request.purpose)}.`;
+    /* The lines in the learner's words. The ids the site asked with and the
+     * pseudonym it is answered under are under the hood, section 26. */
     document.querySelector('[data-consent-shared]').innerHTML = request.shared.map((item) => `
       <div class="n-ledger__row">
         <span class="n-ledger__main">
-          <span class="n-ledger__title">${esc(item.title)}</span>
-          <span class="n-ledger__meta"><span class="mono">${esc(item.concept)}.${esc(item.ability)}</span>${item.alignedTo ? ` read as <span class="mono">${esc(item.alignedTo)}</span>` : ''}${item.reason === 'unaligned' ? ', a name this vault has not aligned' : ''}</span>
+          <span class="n-ledger__title">${esc(consentTitle(item))}, ${esc(item.ability)}</span>
+          <span class="n-ledger__meta">${item.reason === 'unaligned'
+            ? 'a name this vault has not been taught, so it can only answer missing'
+            : item.alignedTo
+              ? `their name for ${esc(conceptWords(item.alignedTo))}, and how sure your vault is`
+              : 'how sure your vault is, and nothing else'}</span>
         </span>
         <span class="n-ledger__end"><span class="${statusPill(item.status)}">${esc(item.status)}</span></span>
       </div>`).join('');
     document.querySelector('[data-consent-withheld]').innerHTML = request.withheld
       .map((item) => `<li>${esc(item)}</li>`).join('');
-    document.querySelector('[data-consent-expiry]').textContent = `Expires in ${request.ttlMinutes} minutes`;
+    document.querySelector('[data-consent-expiry]').textContent =
+      `They can use this answer for the next ${request.ttlMinutes} minutes`;
+    document.querySelector('[data-consent-under]').innerHTML = `
+      <p class="n-under__row"><span class="n-under__key">purpose</span>${esc(request.purpose)}</p>
+      <p class="n-under__row"><span class="n-under__key">learner id</span>${esc(request.learnerKeyId || '')}</p>
+      <ul class="n-under__list">${request.shared.map((item) => `
+        <li>${esc(item.concept)}.${esc(item.ability)} ${esc(item.status)}${item.alignedTo ? ` read from ${esc(item.alignedTo)}` : ''}</li>`).join('')}</ul>`;
     refs.auto.checked = false;
 
     refs.modal.hidden = false;
@@ -237,7 +279,7 @@ async function runAssertion(encoded, returnOrigin) {
     answer(request.audience, { type: ASSERTION_MESSAGE, status: 'approved', token: result.token });
     say('Shared. You can close this window', `${vault.audienceName(request.audience)} was told your bands for ${result.shared.length} thing${result.shared.length === 1 ? '' : 's'}, and nothing else.`, {
       origin: request.audience,
-      moved: result.shared.map((item) => `${vault.shortConcept(item.concept)} ${item.ability}: ${item.status}`)
+      moved: result.shared.map((item) => `${conceptWords(item.concept)}, ${item.ability}: ${item.status}`)
     });
   } else if (result.status === 'denied') {
     answer(request.audience, { type: ASSERTION_MESSAGE, status: 'denied' });
@@ -295,7 +337,7 @@ async function runReceipt(token, returnOrigin) {
       moved.length > 0
         ? 'The signature checked out and these bands moved.'
         : result.pendingAlignment
-          ? `${result.pendingAlignment.join(', ')} ${result.pendingAlignment.length === 1 ? 'is a name' : 'are names'} this vault has not aligned yet, so nothing moved. Say what ${result.pendingAlignment.length === 1 ? 'it means' : 'they mean'} under Alignments.`
+          ? `${result.pendingAlignment.map((name) => `"${humanName(name)}"`).join(', ')} ${result.pendingAlignment.length === 1 ? 'is a name' : 'are names'} nobody has explained to this vault yet, so nothing moved. Say what ${result.pendingAlignment.length === 1 ? 'it means' : 'they mean'} under Alignments.`
           : 'The signature checked out. This one repeats what your vault already knew.',
       { origin: returnOrigin, moved }
     );
@@ -305,9 +347,9 @@ async function runReceipt(token, returnOrigin) {
     });
   } else {
     const reasons = {
-      'bad-signature': 'The signature does not match the receipt.',
-      duplicate: 'This receipt is already in your ledger.',
-      malformed: 'That is not a readable nema receipt token.'
+      'bad-signature': 'The signature does not match the site it says signed it.',
+      duplicate: 'This is already in your ledger.',
+      malformed: 'That is not something your vault can read.'
     };
     say('Not kept', reasons[result.reason] || 'Your vault refused this receipt.', {
       origin: returnOrigin,
