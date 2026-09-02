@@ -127,7 +127,10 @@
         try {
           var y = from.contentWindow.scrollY;
           if (Math.abs(to.contentWindow.scrollY - y) > 1) {
-            to.contentWindow.scrollTo(from.contentWindow.scrollX, y);
+            // behavior: instant on purpose. The article's own stylesheet asks
+            // for smooth scrolling, and an animation started on every frame of
+            // the other frame's scroll never arrives.
+            to.contentWindow.scrollTo({ left: from.contentWindow.scrollX, top: y, behavior: 'instant' });
           }
         } catch (err) { /* a frame that has not loaded yet */ }
       };
