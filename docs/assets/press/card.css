@@ -1,12 +1,11 @@
 /* Shared shell for the Devpost story cards.
  *
- * Every card is 1600 px wide and exported at 1x. Devpost renders a markdown
- * image at about 700 px, so the source is read at 0.44x: body text never goes
- * under 30 px and a label never under 26 px.
+ * One idea per card, drawn rather than written. Every card is 1600 px wide and
+ * exported at 1x; the story uses the 720 px variants, so nothing smaller than
+ * about 26 px in this source is allowed to carry meaning.
  *
- * The visual language is the Devpost thumbnail's: navy ground, one accent per
- * card, drawn site cards and the hex mark, no gradients except the mark edge
- * and the one horizontal fade, no shadows, no icons that are not information.
+ * Navy ground, one accent per card, lots of air. The vocabulary is the Devpost
+ * thumbnail's: drawn site pages, the hex mark with the pixel n, bands as pills.
  */
 
 @import url('http://localhost:8780/shared/brand/tokens.css');
@@ -22,7 +21,7 @@ html, body { margin: 0; background: #0B1320; }
   font-family: var(--font-ui), Inter, sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
-  padding: 72px 80px;
+  padding: 88px 80px;
 }
 
 /* One accent per card, set by a class on .card. */
@@ -30,43 +29,21 @@ html, body { margin: 0; background: #0B1320; }
 .card--teal   { --accent: #15C4B4; }
 .card--yellow { --accent: #FFCA2E; }
 
-.eyebrow {
-  font-family: var(--font-mono), monospace;
-  font-size: 27px;
-  letter-spacing: 0.06em;
-  color: var(--accent);
-  margin: 0 0 20px;
-}
-
-.title {
+/* At most one headline per card, six words or fewer, sentence case. */
+.h {
   font-size: 56px;
   line-height: 1.1;
   font-weight: 600;
   letter-spacing: -0.015em;
-  margin: 0;
+  margin: 0 0 56px;
 }
 
-.lede {
+/* One or two word labels inside a drawing. */
+.lbl {
+  font-family: var(--font-mono), monospace;
   font-size: 32px;
-  line-height: 1.5;
   color: #9FB0CC;
-  margin: 20px 0 0;
-  max-width: 22ch;
-}
-
-.foot {
-  font-size: 28px;
-  line-height: 1.5;
-  color: #5E7095;
   margin: 0;
 }
 
 .mono { font-family: var(--font-mono), monospace; }
-.num  { font-variant-numeric: tabular-nums; }
-.rule { height: 1px; background: #1E3050; border: 0; margin: 0; }
-
-/* Drawn pages, the same three grounds the thumbnail uses. */
-.page { border-radius: 10px; overflow: hidden; }
-.page--paper { background: #EDE6D8; }
-.page--white { background: #FAFAFA; }
-.page--dark  { background: #101216; border: 2px solid #2A2F3A; box-sizing: border-box; }

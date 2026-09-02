@@ -37,11 +37,13 @@ state, everywhere.
 
 ## What it does
 
-**A vault you own.** A page at https://nema-vault.migarci2.dev holds signed
-receipts of work you actually did, and derives your state from them: a band
-per concept and per ability (recognise, retrieve, explain, apply, transfer,
-discriminate), a memory schedule, and a list of what to learn next. It lives
-in your browser. There is no account.
+**A vault you own.** The vault is your own record of what you have learned:
+signed receipts of work you actually did, issued by the sites where you did
+it. From those receipts it derives your state: a band per concept and per
+ability (recognise, retrieve, explain, apply, transfer, discriminate), a memory
+schedule, and a list of what to learn next. It lives with you, in your browser
+or on your disk, not on any site, and there is no account. The demo vault is
+at https://nema-vault.migarci2.dev.
 
 ![A receipt, signed by the course and kept in the vault](https://nema.migarci2.dev/press/story-receipt-sm.gif)
 
@@ -212,8 +214,8 @@ who signed it does.
 
 **Why WebMCP suits this.** Learning happens on many sites that will never
 share a database. WebMCP lets each page expose what it can do, on the page,
-with the human present, and lets a learner owned page (the vault) expose a
-minimal, consented answer. No API keys, no accounts, no scraping: the page is
+with the human present, and lets the learner's own vault expose a minimal,
+consented answer. No API keys, no accounts, no scraping: the page is
 the API, and the person is in the loop by construction.
 
 **How it improves the user experience.** You never start from zero. A course
