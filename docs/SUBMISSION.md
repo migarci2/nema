@@ -54,6 +54,17 @@ That page now exposes six WebMCP tools: it describes what it teaches, asks the
 vault about three prerequisites, adapts, and signs a receipt when the reader
 passes a check. No backend needed.
 
+**A learner model with a source.** The vault follows the principles of learning
+fast that Justin Skycak writes up at justinmath.com and that Kris Abdelmessih
+collects in "The Principles of Learning Fast"
+(https://moontowermeta.com/the-principles-of-learning-fast/). Passing something
+advanced credits every prerequisite under it at a fraction and pushes its review
+date out, which Math Academy calls Fractional Implicit Repetition. The vault
+asks for a concept only when its prerequisites are held, and otherwise names the
+weakest prerequisite and the goal it is blocking. A session interleaves rather
+than drilling one concept, and keeps confusable concepts apart unless telling
+them apart is the point.
+
 **Consent you can see.** A site never reads the vault. It asks one question,
 and the vault shows a modal: what will be shared (three status bands), what
 will not (history, scores, other subjects), for which site, for how long. You
@@ -171,10 +182,10 @@ who signed it does.
 - Evidence beats mastery. Storing what happened, signed, and deriving state
   from it is simpler and more honest than storing a score, and it makes the
   learner model recomputable.
-- Human in the loop is a design property, not a checkbox. Two things have no
-  tool on purpose: answering an activity and approving a disclosure.
-- Restraint is a feature. The pages got better every time we removed a panel,
-  a pill, a number.
+- Human in the loop had to be built into the tool surface rather than promised
+  in a description. Two things have no tool at all, on purpose: answering an
+  activity and approving a disclosure.
+- The pages got better every time we removed a panel, a pill or a number.
 
 ## What's next for nema
 

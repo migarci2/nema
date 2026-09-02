@@ -513,15 +513,20 @@ Ranking:
 ### 6.4 Other exports
 
 ```js
-deriveState(receipts, { now }) -> { [concept]: { [ability]: { band, score, confidence, graderWeight, lastSuccess, stabilityDays, nextReview, reviewDue, evidenceRefs } } }
+deriveState(receipts, { now }) -> { [concept]: { [ability]: { band, score, confidence, graderWeight, passes, gradedPasses, gradedScore, lastSuccess, lastGradedPass, lastFailure, stabilityDays, nextReview, reviewDue, evidenceRefs } } }
 toAssertionStatus(band) -> 'verified' | 'uncertain' | 'missing'
 bandToConfidence(band, score) -> 'high' | 'medium' | 'low'
 diffStates(before, after) -> [{ concept, ability, from, to }]
 summarize(state, { now }) -> { concepts, durable, usable, fragile, uncertain, unknown, reviewsDue }
+applyImplicitRepetition(state, { concepts, now }) -> state
+encompassedPrereqs(concept, registry) -> Map<conceptId, { fraction, level }>
 ```
 
 `diffStates` is what makes a tool call visible. Staging a receipt returns the
 list of bands that moved, and the vault animates exactly those rows.
+
+Section 15 is the rest of the learner model: the encompassing graph these rules
+feed, the rules that turn needs into a session, and where all of it comes from.
 
 ---
 
@@ -1030,3 +1035,248 @@ under it and that is still one piece of news. The token box, Copy and the old
 
 A blocked popup is named, not swallowed: "Your browser blocked the vault
 window. Allow popups for this site or use the paste box below."
+
+---
+
+## 15. The learner model
+
+Sections 5 and 6 describe how one receipt moves one band. This section
+describes the model those bands belong to: what the vault believes about a
+person, how that belief decays, and how it decides what they should do next.
+
+The model is an old idea. A tutor who knows what you know, what you have
+forgotten, what you are not ready for and where the hole is will beat a class
+schedule every time, and the reason that is rare is that doing it by hand does
+not scale past a handful of students. Everything here is an attempt to write
+that bookkeeping down. The sources are listed at the end, and the working notes
+they were read into live in `docs/LEARNING_FAST_NOTES.md`.
+
+Every function below is pure and lives in `shared/inference.js`. Nothing reads
+the clock. The vault stores no learner state at all: it derives everything from
+the ledger on each read, so any two people with the same receipts and the same
+`now` get the same answer.
+
+### 15.1 What the ledger records
+
+`deriveState` builds one entry per concept and ability. Section 6.1 covers the
+score and the band. The learner model needs four more numbers from the same
+pass over the evidence:
+
+```
+passes         passed claims graded above exposure
+gradedPasses   passed claims where the grader weight is at least 0.6
+gradedScore    the part of the score those graded passes contributed
+lastGradedPass the date of the most recent one
+lastFailure    the date of the most recent failed claim
+```
+
+A pass is **graded** when somebody other than the learner checked it: the
+grader is `agent-assessed`, `provider-rubric` or `deterministic`. A self report
+and a page read are not. The distinction matters twice below, and both times it
+is the same argument: a learner ticking their own box is a useful record and a
+poor measurement.
+
+### 15.2 The encompassing graph
+
+A flashcard deck treats every fact as its own island. Cooking does not work
+that way, and neither does cryptography or computer architecture. You cannot
+mount a pan sauce without controlling heat, holding a ratio and reading an
+emulsion, so the person who just sent a pan sauce has practised all three
+whether or not anybody wrote it down.
+
+Skycak calls the graph of what you need before something the prerequisite
+graph, and the graph of what you implicitly practise while doing something more
+advanced the encompassing graph. Math Academy's partial version of the second
+is Fractional Implicit Repetition. `applyImplicitRepetition` is our small
+version of it.
+
+For a concept `C` at ability `A`, every prerequisite `P` is credited:
+
+```
+f        = C.encompasses[P] ?? 0.5
+implicit = weight(grader) x resultValue x recency x f
+
+summed over C's graded passes at A, that is exactly
+
+implicit(P, A) += f x gradedScore(C, A)
+```
+
+The graph travels one level, to the direct prerequisites. It travels a second
+level, at `f squared`, only through a relation the registry marked explicitly:
+
+```
+second level, only where C.encompasses names P
+implicit(Q, A) += f**2 x gradedScore(C, A)   for every prerequisite Q of P
+```
+
+A concept reached both ways keeps the closer fraction, and a concept reached
+twice at the same level keeps the larger, never the sum. `encompassedPrereqs`
+returns that map, so the graph is inspectable rather than implied.
+
+Two rules keep the credit honest, and both are load bearing:
+
+- **Implicit repetition is repetition.** It only reaches an ability the learner
+  has already produced evidence for. Passing a pan sauce lab is not a first
+  claim about heat control, because nobody has asked the learner about heat
+  control yet, and the vault does not invent claims. The set of concepts and
+  abilities in the result is exactly the set that went in.
+- **Only graded passes propagate.** A self check or a page read lends nothing
+  downwards. A failed claim lends nothing either, in either direction: failing
+  a pan sauce is not evidence about the ratio underneath it.
+
+`encompasses` is optional per concept in `shared/concepts.json`, and the
+default of 0.5 is deliberately modest. The registry declares a fraction only
+where the higher skill genuinely does most of the lower one:
+
+```json
+{
+  "id": "nema:pan-sauces",
+  "prereqs": ["nema:deglazing", "nema:reduction", "nema:emulsions"],
+  "encompasses": { "nema:emulsions": 0.8, "nema:deglazing": 0.7, "nema:reduction": 0.6 }
+}
+```
+
+### 15.3 The schedule the graph moves
+
+Memory decays, and understanding something once is not knowing it. A review is
+worth doing when it has become effortful and is still recoverable, and each
+success lets the next interval grow. That is section 6.2. The encompassing
+graph changes what counts as a success.
+
+An implicit repetition is worth **half a pass**, a quarter at the second level,
+and it moves the last success to the day the practice happened:
+
+```
+passes'      = passes + sum over sources of gradedPasses(C, A) x 0.5**level
+lastSuccess' = max(lastSuccess, latest lastGradedPass among counted sources)
+stability'   = min(60, 3 * 2 ** (passes' - 1))
+nextReview'  = lastSuccess' + stability'
+```
+
+Implicit passes that predate the concept's own last direct success are ignored
+by the schedule. The interval that success set already reflects them, and
+counting them again would push a review away for work that had already
+happened. They still count towards the score, which is a decayed sum of
+everything on record.
+
+The practical effect is the point of the whole exercise. A learner who keeps
+cooking never sees a review for heat control, because every sear, reduction and
+braise is one. New learning is the spaced repetition of what sits under it.
+
+Where this runs matters. The bands the vault shows, and the status a provider
+reads, come from `deriveState` alone: they report what the learner actually
+produced, and no inference dressed up as evidence ever reaches a provider.
+`computeNeeds` applies the encompassing graph to that state before it plans
+anything, so the graph decides what to do next and never what to certify.
+
+### 15.4 The edge of mastery
+
+Do not teach X until the prerequisites of X are mastered, and work just outside
+the current repertoire rather than far above it. An `acquire` need is therefore
+only issued for a concept whose prerequisites are all at `usable` or better.
+
+When one is not, `computeNeeds` walks down the weakest branch: at each step it
+takes the prerequisite with the lowest band, breaking ties by the one closest to
+being ready and then by id, and stops at the deepest concept whose own
+prerequisites are all usable. That concept is the work, and its need says so:
+
+```
+reason: ['prerequisite_first', ..., 'before_pan_sauces']
+```
+
+The blocked goal keeps a need of its own at a quarter of the urgency, marked
+`prerequisites_are_not_ready` and naming what to start with, so a learner who
+asked for pan sauces still sees pan sauces on the list. It can never outrank the
+prerequisite that unblocks it.
+
+### 15.5 The session planner
+
+Without `budgetMinutes` the result is a ranking, sorted by priority. With a
+budget it is a session, which is a different object, and three rules shape it.
+
+**Minimum effective dose.** Thirty calibrated problems with feedback beat one
+very hard problem, so a session should hold several attempts rather than one
+long exercise. Needs carry `minutes` from the registry, and a `retrieve` need
+is capped at four minutes whatever the registry says. The fill is greedy by
+priority and keeps scanning after a need does not fit, so a four minute recall
+still rides along behind a six minute task that was skipped.
+
+**Interference.** Introducing several confusable things at once is how people
+learn to confuse them. Two concepts that name each other in `confusableWith`
+never share a session, unless one of them is the `discriminate` need that exists
+to tell them apart, which is exactly when they belong together. The need that
+stays gains the reason `interference_avoided`.
+
+A related rule sits in the need itself rather than the session: a `discriminate`
+need whose confusable neighbour is also at `usable` or better is urgent at 0.8
+rather than 0.65, and says `confusable_neighbour_is_strong`. Two strong
+neighbours is a live confusion, and it is as urgent as a misconception somebody
+wrote down.
+
+**Interleaving.** Practising A, B, C, A, D, B forces the learner to choose the
+method instead of repeating the one they were just handed. It feels worse and it
+works better. So no two needs on the same concept sit next to each other, and
+kinds alternate wherever the session allows it. A need pulled ahead of a higher
+priority one to make that work gains the reason `interleaved`.
+
+### 15.6 Two more things the vault refuses to let slide
+
+**The illusion of understanding.** Rereading measures recognition. It feels like
+learning because the words look familiar, and familiarity is not recall. A
+concept whose evidence is only exposure or self report produces a `retrieve`
+need with the reason `exposure_only` and the note "You have read about this. You
+have not retrieved it yet." Exposure alone also never lifts a band past
+`uncertain`, however many pages the learner reads.
+
+**Audits, not grades.** A failed claim is a node that needs an intervention, not
+one point off a total. When a failure is the last thing on record for a concept
+the vault asks for a `repair_misconception` need if it has a misconception
+written down for that concept, and a `reassess` need otherwise. Both say
+`failed_claim_on_record`. A pass after the failure closes it.
+
+### 15.7 The reason strings
+
+Every need carries a `reason` array, and every string in it is meant for a
+person. The full set the learner model adds:
+
+| reason | what it means |
+|---|---|
+| `prerequisite_first` | this is the prerequisite standing between you and a goal |
+| `before_<concept>` | the goal it unblocks |
+| `prerequisites_are_not_ready` | you asked for this and you are not ready for it yet |
+| `start_with_<concept>` | what to do instead |
+| `confusable_neighbour_is_strong` | you know both of these well enough to mix them up |
+| `exposure_only` | you have read about this and never retrieved it |
+| `failed_claim_on_record` | something failed here |
+| `nothing_has_confirmed_it_since` | and nothing has answered it |
+| `interference_avoided` | a confusable neighbour was left out of this session |
+| `interleaved` | this was moved so the session alternates |
+
+### 15.8 Sources
+
+The model is assembled from other people's work, and the claims above belong to
+them rather than to us.
+
+- Kris Abdelmessih, "The Principles of Learning Fast", Party at the Moontower.
+  <https://moontowermeta.com/the-principles-of-learning-fast/>
+- Justin Skycak, "The Pedagogically Optimal Way to Learn Math".
+  <https://www.justinmath.com/the-pedagogically-optimal-way-to-learn-math/>
+- Justin Skycak, "Individualized Spaced Repetition in Hierarchical Knowledge
+  Structures", which is where Fractional Implicit Repetition comes from.
+  <https://www.justinmath.com/individualized-spaced-repetition-in-hierarchical-knowledge-structures/>
+- Justin Skycak, "Cognitive Science of Learning: Spaced Repetition".
+  <https://www.justinmath.com/cognitive-science-of-learning-spaced-repetition/>
+- Justin Skycak, "Talent Development vs Traditional Schooling".
+  <https://www.justinmath.com/talent-development-vs-traditional-schooling/>
+- Justin Skycak, "Why Is the Edtech Industry So Damn Soft?".
+  <https://www.justinmath.com/why-is-the-edtech-industry-so-damn-soft/>
+- Justin Skycak, "Recreational Mathematics: Why Focus on Projects Over
+  Puzzles?".
+  <https://www.justinmath.com/recreational-mathematics-why-focus-on-projects-over-puzzles/>
+- Math Academy, "How Our AI Works".
+  <https://www.mathacademy.com/how-our-ai-works>
+
+The numbers are ours. The fractions, the four minute cap on a retrieval, the
+0.8 for a live confusion and the half pass for an implicit repetition are
+choices we made and pinned in `test/learning-fast.test.js`, not results anybody
+published. They are meant to be argued with.

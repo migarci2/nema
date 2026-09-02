@@ -253,9 +253,14 @@ test('budget filling respects the minutes it is given', () => {
   assert.equal(computeNeeds(needsState, { ...needsOptions, budgetMinutes: 2 }).length, 0,
     'nothing in the fixture fits in 2 minutes');
 
+  // A budget nothing can exhaust holds every need. The order is the session
+  // order rather than the priority order, because a session interleaves.
   const all = computeNeeds(needsState, needsOptions);
   const generous = computeNeeds(needsState, { ...needsOptions, budgetMinutes: 1000 });
-  assert.deepEqual(generous.map((need) => need.needId), all.map((need) => need.needId));
+  assert.deepEqual(
+    generous.map((need) => need.needId).sort(),
+    all.map((need) => need.needId).sort()
+  );
 });
 
 test('every need carries the full LearningNeed shape', () => {
@@ -602,27 +607,38 @@ test('a ledger where every review is overdue fills the 5 minute review with reca
   // The arithmetic, pinned so a change is loud. Every receipt in this fixture is
   // 5 to 40 days old and carries one or two passes, so stability is 3 to 6 days
   // and every review is overdue. An overdue retrieve need (urgency up to 1,
-  // 3 minutes) then outranks the emulsions discriminate need (0.65 * 1.5 / 4),
-  // and recall takes the whole five minutes. This is why the shipped demo
-  // ledger in shared/seed-evidence.json backfills a year of early coursework:
-  // the extra passes push the review intervals out to 60 days, so only the
-  // handful of concepts that are meant to be due are due.
+  // 3 minutes) then outranks the emulsions discriminate need, and recall takes
+  // the whole five minutes. This is why the shipped demo ledger in
+  // shared/seed-evidence.json backfills a year of early coursework: the extra
+  // passes push the review intervals out to 60 days, so only the handful of
+  // concepts that are meant to be due are due.
   const needs = computeNeeds(seedState(), seedOptions({ budgetMinutes: 5 }));
-  assert.deepEqual(summaryOf(needs), ['retrieve:nema:heat-control']);
+  assert.deepEqual(summaryOf(needs), ['retrieve:nema:knife-skills']);
 
   const all = computeNeeds(seedState(), seedOptions());
   assert.deepEqual(summaryOf(all).slice(0, 6), [
-    'retrieve:nema:heat-control',
+    'retrieve:nema:knife-skills',
     'retrieve:nema:reduction',
     'retrieve:nema:stocks',
-    'retrieve:nema:ratios',
     'repair_misconception:nema:emulsions',
-    'discriminate:nema:emulsions'
+    'discriminate:nema:emulsions',
+    'retrieve:nema:cold-chain'
   ]);
   const discriminate = all.find((need) => need.kind === 'discriminate' && need.concept === 'nema:emulsions');
   assert.ok(discriminate, 'the discriminate need exists, it just does not fit in five minutes');
   assert.equal(discriminate.confusableWith, 'nema:reduction');
   assert.equal(discriminate.rubric.length, 3);
+
+  // Heat control is overdue in the ledger and is not asked for, because the
+  // learner practised reduction and emulsions on top of it since. That is the
+  // encompassing graph changing what review means.
+  const state = seedState();
+  assert.equal(state['nema:heat-control'].apply.reviewDue, true, 'the ledger says it is due');
+  assert.equal(
+    all.some((need) => need.kind === 'retrieve' && need.concept === 'nema:heat-control'),
+    false,
+    'implicit repetition rescheduled it'
+  );
 });
 
 test('with no review overdue, the 5 minute review is the discriminate need', () => {
@@ -641,18 +657,24 @@ test('with no review overdue, the 5 minute review is the discriminate need', () 
   assert.deepEqual(first.reason, [
     'application_is_strong',
     'no_discrimination_evidence',
+    'confusable_neighbour_is_strong',
     'active_goal_depends_on_this_concept'
   ]);
 
-  // The seed also records a misconception on the same concept, and repairing a
-  // misconception outranks discrimination, so the promised pair needs 8 minutes.
+  // The seed also records a misconception on the same concept. Reduction is
+  // usable here, so the confusion with it is live and discrimination is as
+  // urgent as a repair, 0.8 either way, over the same four minutes. The tie goes
+  // to discrimination, and the promised pair needs 8 minutes.
+  const repair = computeNeeds(fresh, seedOptions())
+    .find((need) => need.kind === 'repair_misconception');
+  assert.equal(repair.priority, first.priority, 'a live confusion is as urgent as a misconception');
   assert.deepEqual(
     summaryOf(computeNeeds(fresh, seedOptions({ budgetMinutes: 5 }))),
-    ['repair_misconception:nema:emulsions']
+    ['discriminate:nema:emulsions']
   );
   assert.deepEqual(summaryOf(computeNeeds(fresh, seedOptions({ budgetMinutes: 8 }))), [
-    'repair_misconception:nema:emulsions',
-    'discriminate:nema:emulsions'
+    'discriminate:nema:emulsions',
+    'repair_misconception:nema:emulsions'
   ]);
 });
 

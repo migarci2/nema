@@ -89,8 +89,8 @@ status bands, the fixed list of what is not shared (attempt history, exact
 scores, other subjects, misconceptions, review schedule, provider history), and
 the expiry, 30 minutes. Click **Approve**.
 
-This is the moment worth four seconds of your attention. The agent asked. The
-human decided. The token did not exist until you clicked.
+This is the moment worth four seconds of your attention: the agent asked, the
+human decided, and the token did not exist until you clicked.
 
 **With a terminal agent.** Claude Code or Codex handles the vault side: ask for
 a readiness assertion for `https://saucier.migarci2.dev` and approve through the
@@ -207,8 +207,8 @@ Present a fresh assertion to Line Cook Lab and `emulsions.explain` comes back
 `uncertain`, which is what the lock asked for. Both labs flip from locked to
 available with the label "Prerequisite recognised from another provider".
 
-Two independent websites. One learner-owned vault. No shared accounts, no
-partnership, no back channel.
+Two independent websites and one learner owned vault, with no shared account
+between them and no back channel.
 
 ### Step 3. A blog post does the same with one tag
 
@@ -279,9 +279,10 @@ it, and a **Say what it means** button: press it, type `nema:maillard-reaction`,
 choose "is the same thing as", press **Align it**. The same bands move, and the
 list records it as your own word rather than an agent's.
 
-The alignment is a question, not a capability. Every proposal has Confirm and
-Reject, and there is no `confirm_concept_alignment` tool on any surface, in the
-browser or over MCP: an agent can put the question to you, and nothing else.
+An alignment is a question put to the learner rather than a capability an agent
+holds. Every proposal has Confirm and Reject, and there is no
+`confirm_concept_alignment` tool on any surface, in the browser or over MCP: an
+agent can put the question to you, and nothing else.
 
 ### One more thing, if you have thirty seconds
 

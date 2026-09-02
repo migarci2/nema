@@ -433,6 +433,10 @@
       "nema:maillard-reaction",
       "nema:reduction"
     ],
+    "encompasses": {
+      "nema:maillard-reaction": 0.7,
+      "nema:reduction": 0.7
+    },
     "confusableWith": [
       "nema:roasting"
     ],
@@ -522,6 +526,9 @@
       "nema:ratios",
       "nema:heat-control"
     ],
+    "encompasses": {
+      "nema:ratios": 0.6
+    },
     "confusableWith": [
       "nema:reduction"
     ],
@@ -655,6 +662,9 @@
       "nema:roux",
       "nema:ratios"
     ],
+    "encompasses": {
+      "nema:roux": 0.7
+    },
     "confusableWith": [
       "nema:roux"
     ],
@@ -700,6 +710,9 @@
       "nema:maillard-reaction",
       "nema:heat-control"
     ],
+    "encompasses": {
+      "nema:maillard-reaction": 0.7
+    },
     "confusableWith": [
       "nema:reduction"
     ],
@@ -746,6 +759,11 @@
       "nema:reduction",
       "nema:emulsions"
     ],
+    "encompasses": {
+      "nema:emulsions": 0.8,
+      "nema:deglazing": 0.7,
+      "nema:reduction": 0.6
+    },
     "confusableWith": [
       "nema:mother-sauces"
     ],
@@ -792,6 +810,11 @@
       "nema:stocks",
       "nema:thickeners"
     ],
+    "encompasses": {
+      "nema:roux": 0.8,
+      "nema:stocks": 0.7,
+      "nema:thickeners": 0.7
+    },
     "confusableWith": [
       "nema:pan-sauces"
     ],
@@ -836,6 +859,9 @@
     "prereqs": [
       "nema:seasoning"
     ],
+    "encompasses": {
+      "nema:seasoning": 0.7
+    },
     "confusableWith": [
       "nema:seasoning"
     ],
@@ -881,6 +907,10 @@
       "nema:seasoning",
       "nema:acid-balance"
     ],
+    "encompasses": {
+      "nema:seasoning": 0.8,
+      "nema:acid-balance": 0.7
+    },
     "confusableWith": [
       "nema:seasoning"
     ],
@@ -1414,6 +1444,9 @@
       "nema:ratios",
       "nema:fermentation"
     ],
+    "encompasses": {
+      "nema:fermentation": 0.7
+    },
     "confusableWith": [
       "nema:pastry-basics"
     ],
@@ -1545,6 +1578,9 @@
     "prereqs": [
       "nema:block-ciphers"
     ],
+    "encompasses": {
+      "nema:block-ciphers": 0.7
+    },
     "confusableWith": [
       "nema:block-ciphers"
     ],
@@ -1671,6 +1707,10 @@
       "nema:counter-mode",
       "nema:message-authentication"
     ],
+    "encompasses": {
+      "nema:counter-mode": 0.8,
+      "nema:message-authentication": 0.8
+    },
     "confusableWith": [
       "nema:message-authentication",
       "nema:block-ciphers"
@@ -1716,6 +1756,9 @@
       "nema:authenticated-encryption",
       "nema:galois-field-arithmetic"
     ],
+    "encompasses": {
+      "nema:authenticated-encryption": 0.8
+    },
     "confusableWith": [
       "nema:counter-mode"
     ],
@@ -1801,6 +1844,9 @@
     "prereqs": [
       "nema:cpu-architecture"
     ],
+    "encompasses": {
+      "nema:cpu-architecture": 0.7
+    },
     "confusableWith": [
       "nema:cpu-architecture"
     ],
@@ -1931,6 +1977,10 @@
       "nema:privilege-rings",
       "nema:interrupts"
     ],
+    "encompasses": {
+      "nema:privilege-rings": 0.8,
+      "nema:interrupts": 0.7
+    },
     "confusableWith": [
       "nema:privilege-rings",
       "nema:interrupts"

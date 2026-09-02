@@ -60,6 +60,7 @@
         <a class="site-nav__link" href="#start">Before you start</a>
         <a class="site-nav__link" href="#path">The golden path</a>
         <a class="site-nav__link" href="#mcp">Terminal agents</a>
+        <a class="site-nav__link" href="#extension">In your browser</a>
         <a class="site-nav__link" href="#break">Try to break it</a>
         <a class="site-nav__link" href="#sixty">Sixty second version</a>
         <a class="site-nav__link" href="#real">Real or simulated</a>
@@ -155,7 +156,7 @@
         can hold through service".
       </p>
 
-      <h2 id="path">The golden path, three steps</h2>
+      <h2 id="path">The golden path, four steps</h2>
       <p>
         Each step works two ways. <strong>With an agent</strong>, the agent calls the tools and you approve.
         <strong>By hand</strong>, you click the same actions in the pages and carry one token across yourself.
@@ -186,8 +187,8 @@
             history), and the expiry, 30 minutes. Click <strong>Approve</strong>.
           </p>
           <p>
-            This is the moment worth four seconds of your attention. The agent asked. The human decided. The
-            token did not exist until you clicked.
+            This is the moment worth four seconds of your attention: the agent asked, the human decided, and
+            the token did not exist until you clicked.
           </p>
 
           <h4>With a terminal agent.</h4>
@@ -356,8 +357,8 @@
             locked to available with the label "Prerequisite recognised from another provider".
           </p>
           <p>
-            Two independent websites. One learner-owned vault. No shared accounts, no partnership, no back
-            channel.
+            Two independent websites and one learner owned vault, with no shared account between them and no
+            back channel.
           </p>
         </section>
 
@@ -370,9 +371,14 @@
             integration is two tags, and the source marks them with a comment so you can copy them.
           </p>
           <p>
-            Read it, click <strong>Mark as read</strong>, answer the two questions at the end, and take the
-            receipt to your vault with <strong>Send to vault</strong>. With an agent, the same five provider
-            tool names are on that page and it can do all of it.
+            Read it, click <strong>Connect your vault</strong> at the top of the block, approve, and the
+            article tells you what you can skip. Answer the two questions at the end and click
+            <strong>Keep in my vault</strong>. With an agent, the same five provider tool names are on that
+            page and it can do all of it.
+          </p>
+          <p>
+            That whole loop is the point of this step: a blog with no server, no account and no build step,
+            talking to a vault it has never met, through two buttons that came with the one script tag.
           </p>
           <p>
             In the vault, that receipt reads <span class="mono">self</span>. The blog signs with a key it
@@ -387,6 +393,48 @@
             submission to your own Worker for a receipt signed with your own key, or publish that key at
             <span class="mono">/.well-known/nema-issuer.json</span> so the vault promotes the receipt to
             <span class="mono">origin</span> and full weight.
+          </p>
+        </section>
+
+        <section class="doc__step">
+          <h3 class="doc__step-head"><span class="doc__step-num">4</span><span class="doc__step-title">The blog does not speak nema, and that is fine</span></h3>
+          <p>
+            Look at the manifest in the blog's source. Its concepts are called
+            <span class="mono">browning-science</span> and <span class="mono">sugar-browning</span>, not
+            <span class="mono">nema:maillard-reaction</span> and <span class="mono">nema:caramelization</span>.
+            A site should not have to rename its own material to join a protocol, so nema lets it keep its
+            words and translates at the vault.
+          </p>
+          <h4>With an agent.</h4>
+          <p class="doc__prompt">"This site names things its own way. Propose alignments to my vault's concepts."</p>
+          <p class="doc__tools">Tools called: <b>describe_learning_offer</b> on the blog, then <b>propose_concept_alignment</b> on your vault, once per name it cannot resolve.</p>
+          <p>
+            Nothing has changed yet. Open the vault, find <strong>Alignments</strong> under the ledgers, read
+            the rationale, and press <strong>Confirm</strong>. The moment you do, bands move. The receipt the
+            blog signed for <span class="mono">browning-science</span> was accepted and stored when it arrived,
+            marked "waiting on an alignment", and counted for nothing. Confirming the name is what makes it
+            count, and no receipt is re-signed or rewritten to do it. Press <strong>Undo</strong> on the
+            confirmed line and the band goes back.
+          </p>
+          <p>
+            <span class="mono">sugar-browning</span> is the other half. The blog declares
+            <span class="mono">alignsTo: nema:caramelization</span> in its own manifest, so it arrives already
+            confirmed and marked "declared by the site". A site may vouch for its own vocabulary. It may not
+            vouch for anyone else's, and it cannot overrule a name you have already ruled on.
+          </p>
+          <h4>By hand, no agent.</h4>
+          <p>
+            Answer the blog's two questions and press <strong>Keep in my vault</strong>. The vault says plainly
+            that <span class="mono">browning-science</span> is a name it has not aligned, so that claim moved
+            nothing. The Alignments list shows the word, who signed it, and a <strong>Say what it means</strong>
+            button: press it, type <span class="mono">nema:maillard-reaction</span>, choose "is the same thing
+            as", press <strong>Align it</strong>. The same bands move, recorded as your own word rather than an
+            agent's.
+          </p>
+          <p>
+            An alignment is a question put to the learner, not a capability an agent holds. Every proposal has
+            Confirm and Reject, and there is no <span class="mono">confirm_concept_alignment</span> tool on any
+            surface, in the browser or over MCP.
           </p>
         </section>
 
@@ -417,6 +465,22 @@
         <li>Paste a receipt token from a provider page: "Stage this receipt: nema1...". The bands move in <span class="mono">~/.nema/vault.json</span>, and <span class="mono">nema-mcp merge</span> folds a browser export into the same ledger.</li>
       </ol>
       <p>Tests: <span class="mono">npm run test:mcp</span> drives the server with the official MCP client.</p>
+
+      <h2 id="extension">nema in your browser, optional, 30 seconds to load</h2>
+      <p>
+        The same vault as a Chrome side panel, with a broker that needs no model: one click shares bands with
+        the page you are on, one click takes the receipt home. Chrome 116 or newer. ChatGPT desktop's browser
+        does not run extensions.
+      </p>
+      <ol class="numbered">
+        <li><span class="mono">bash scripts/build-extension.sh</span></li>
+        <li>Open <span class="mono">chrome://extensions</span>, turn on Developer mode, click Load unpacked and choose <span class="mono">packages/nema-extension/dist</span>.</li>
+        <li>Pin the nema icon and click it: the vault opens in the side panel. Click "Load demo learner".</li>
+        <li>Open <a class="mono" href="https://saucier.migarci2.dev" rel="noopener">https://saucier.migarci2.dev</a>. The badge shows how many nema tools the page has; the "This page" strip lists them.</li>
+        <li>Click "Share bands with this page" and approve: the course rebuilds its path from 68 minutes to 27.</li>
+        <li>Answer "Which vinaigrette holds" in the page, then click "Take the receipt to my vault": the signed receipt lands in your ledger and the ratios bands move.</li>
+      </ol>
+      <p>Reload any tab that was open before you loaded the extension. Its own test: <span class="mono">CHROME=&lt;chrome&gt; node packages/nema-extension/test/e2e.mjs</span>.</p>
 
       <h2 id="break">Try to break it</h2>
       <p>Everything here is meant to be attacked. The apps show you what happened.</p>

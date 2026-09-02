@@ -2,133 +2,155 @@
 
 > The web teaches. Your vault remembers. Your agent connects the two.
 
-nema starts from one observation. The web is full of teaching. Almost none of
-it remembers you, and the parts that do remember you keep the memory for
-themselves.
+Most of what I know came from pages that will never know me again. A blog post
+about browning meat. A chapter on syscalls. A forum reply from 2014 by somebody
+who has since deleted the account. None of them knew what I understood when I
+arrived, and none found out whether it worked.
 
 ## Learning state belongs to the learner
 
 Every course platform builds a model of you. Which lessons you opened, which
-questions you answered, which ones you failed twice. That model is the most
-valuable thing produced by your study, and it is the one thing you cannot take
-with you. Cancel the subscription and it is gone. Open a second site and you
-start at zero, watching a video about a topic you already applied at work last
-month.
+question you failed twice. That model is the most valuable thing your studying
+produced and the one thing you cannot take with you. Cancel the subscription and
+it is gone. Open a second site and you start at zero, watching a video about
+something you used at work last week.
 
-The fix is not a bigger platform. It is moving the state. In nema the learner
-holds a vault. The vault is a page on an origin the learner controls, storing
-signed evidence and deriving state from it. Sites ask the vault questions. The
-vault answers with the smallest true answer, after the learner approves it.
-Nothing else leaves.
+The fix is not a bigger platform. It is moving the state. The learner holds a
+vault: a page on an origin they control, storing signed evidence and deriving
+state from it. Sites ask it a question, and it answers with the smallest true
+answer, after the learner approves. Nothing else leaves.
 
-That is the whole shape of the idea.
+## Learning fast is not reading fast
 
-> Any website can teach you. Any agent can coach you. Your learning state stays
-> local, portable and yours.
+The learner model is not ours. Kris Abdelmessih's essay
+[The Principles of Learning Fast](https://moontowermeta.com/the-principles-of-learning-fast/)
+collects the argument, and most of it comes from Justin Skycak, who
+[writes it out at length](https://www.justinmath.com/the-pedagogically-optimal-way-to-learn-math/)
+and built it into Math Academy.
 
-## Everyone teaches on the web
+Their definition is narrow and useful. Learning fast means knowledge acquired,
+retained and usable per unit of effort, which has nothing to do with how quickly
+you get through the material. What an exceptional tutor removes, Skycak argues,
+is the years spent practising the wrong thing, building on weak prerequisites,
+and forgetting.
 
-The word "provider" makes it sound like there is a class of companies who teach
-and a class of people who learn. That is not what the web looks like. Somebody
-wrote the answer that unblocked you last Tuesday, and it was a blog post, or a
-forum reply, or a page of notes from a course that ran once in 2019. Most of
-what any of us knows came from people who were not running an education
-business, who taught something because they knew it and wrote it down, and who
-will never find out whether it worked.
+Working memory is the bottleneck underneath. A basketball player still thinking
+about the dribble has nothing left for the play. Automaticity in the lower
+skills frees the capacity to hold a harder problem.
 
-nema is built for those people first. The protocol is small enough that a
-personal site can implement it with one manifest tag and one script tag, no
-backend, no account, and no permission from anyone: keep your page, your voice
-and your design, and a reader who arrives with a vault leaves with a signed note
-of what they actually did. That is what makes the network worth anything. Two
-course sites that recognise each other is a demo. A blog, a documentation page,
-a workshop handout and a course all issuing evidence a reader can carry is a
-web that teaches better than the sum of its pages, because the parts finally
-stop forgetting.
+## Reading it again is not remembering it
+
+Skycak separates two things that feel alike. Re-exposure is opening the page
+again, and it produces familiarity. Retrieval is producing the answer with the
+material closed, and it produces memory. Rereading measures recognition, which
+is why it feels good and predicts little.
+
+nema is built around that split. Marking an article read counts 0.1 against 1.0
+for a graded answer, and exposure alone never carries a concept past
+`uncertain`. When a concept has nothing else behind it the vault says so
+plainly: you have read about this, you have not retrieved it yet.
+
+Memory decays, so the vault schedules a return. Following
+[the spacing work Skycak summarises](https://www.justinmath.com/cognitive-science-of-learning-spaced-repetition/),
+the moment to retrieve something is when it has gone effortful but is still
+recoverable, and each success buys a longer interval.
+
+## Practising something hard repeats everything under it
+
+This is the part that changed the design most, and it is Skycak's:
+[knowledge is hierarchical](https://www.justinmath.com/individualized-spaced-repetition-in-hierarchical-knowledge-structures/).
+Flashcards treat facts as independent units. Mathematics and programming are not
+like that. Practising D also practises C, B and A, so the prerequisite graph has
+a mirror image: an encompassing graph of what you rehearse while doing something
+advanced. Math Academy credits those partial repetitions and calls it Fractional
+Implicit Repetition.
+
+The vault does the same. A passed claim credits each prerequisite at a fraction
+and extends its stability as half a pass, so new learning is the spaced
+repetition of everything below it. Review in nema costs less than people fear,
+and costs less the harder you work.
+
+## The edge, not the middle
+
+Mastery learning says do not teach something until its prerequisites are held.
+There is no class level, only a distribution of knowledge profiles, and the
+useful next task sits just outside what you can already do.
+
+That is why a site asks your vault before it plans. When a concept's
+prerequisites are weak, the vault proposes the weakest one instead, and names
+the goal it is blocking.
+
+## Short cycles beat hard problems
+
+Deliberate practice is many cycles of attempt, feedback and adjustment. Thirty
+calibrated problems teach more than one olympiad problem, and an hour stuck on
+one question teaches close to nothing.
+
+We mirrored two articles by other people, one on AES-GCM and one chapter of
+cpu.land. Neither ends with an exam and we did not add one. nema adds
+a retrieval question after each section, graded in the page. The session planner
+does the rest: it never puts two needs on one concept next to each other, and it
+keeps confusable concepts apart unless telling them apart is the point.
 
 ## Evidence, not mastery
 
 A number called "mastery: 78%" is a claim with no author. You cannot check it,
-you cannot dispute it, and you cannot rebuild it if the vendor changes the
-formula.
+dispute it, or rebuild it when the vendor changes the formula.
 
-nema stores evidence instead. An `EvidenceReceipt` says: this provider, at this
-time, ran this activity with this grader, and the learner produced this result.
-It is signed by the provider that observed it. The vault keeps receipts and
-recomputes state from them on every read. Delete the derivation code and you
-lose nothing, because the ledger is the truth and the state is a function of it.
+nema stores evidence instead. A receipt says that this site ran this activity
+with this grader and the learner produced this result, signed by the site that
+watched it happen. The vault recomputes state from the receipts on every read.
+Evidence decays, because a passing answer from a year ago is not a claim about
+today.
 
-This has consequences the demo makes visible. Evidence is weighted by how it
-was produced: a deterministic grader counts 1.0, a provider rubric 0.8, an
-agent assessment 0.6, a self report 0.3, mere exposure 0.1. Evidence decays,
-because a passing answer from a year ago is not a claim about today. And an
-assertion the vault signs is not a score. It is a band, `verified`, `uncertain`
-or `missing`, bound to one audience and one purpose, valid for thirty minutes.
+## The agent manages, it does not explain
 
-## The agent is a broker, not an authority
+Skycak's point about AI tutoring is that the hard part is learning management
+rather than text generation: what to study now, what you are not ready for, and
+what you have forgotten. Models are good at explaining. Explaining was never the
+scarce thing.
 
-An agent that can write mastery into your record is an agent that can lie about
-you, cheaply, at scale. So nema gives it no way to do that.
+So the model lives in the vault. The agent reads manifests, carries signed
+tokens between origins, and works from the vault's `LearningNeed` list, which
+arrives with the rubric attached so it does not invent the standard.
 
-The vault has no `set_mastery` tool. Providers have no tool that submits an
-answer. The only way state moves is a signed receipt from a provider that
-graded work the human did, or an explicit `record_agent_assessment` that is
-stamped `agent-assessed`, weighted 0.6, and shown in the ledger with its own
-badge. The agent reads manifests, explains what a site is asking for, carries
-tokens between origins, and works from the vault's `LearningNeed` list. It is
-whichever agent the learner already uses, and nothing here depends on which one:
-every flow also works with no agent at all, by copying one token. The human
-answers every question and approves every disclosure.
+It cannot write your record. There is no `set_mastery` tool and no provider tool
+that submits an answer for you. The one write an agent can originate is stamped
+`agent-assessed`, weighted 0.6, and badged in the ledger. That rule is enforced
+by a missing function rather than by a written policy, and a policy can be
+argued with in a way a missing function cannot.
 
-This is not a policy written in a prompt. It is the absence of a tool. Prompts
-can be argued with. Missing functions cannot.
+## Effort is not learning, but it is not the enemy
 
-## Content stays where it is
+Technology should remove wasted effort and leave productive effort alone.
+Skipping three lessons your vault already vouches for is waste removed. Skipping
+the retrieval question because it is uncomfortable is not, and nema will not do
+it. Good practice feels worse than rereading and works better, which is most of
+why these ideas are old and still rare.
 
-nema does not want your course catalogue. Providers keep their content, their
-pedagogy, their pricing and their brand. What they publish is a
-`LearningManifest`: what this unit teaches, what it assumes, what evidence each
-activity can produce. The protocol carries the shape of the learning, never the
-learning material.
-
-The two example providers in this repository teach cooking, on purpose. Knife
-skills, heat control, ratios, emulsions, food safety, service timing. Nothing
-in the protocol is specific to a subject, and a demo that taught the reader
-about agents would have been read as a description of nema rather than as an
-example of it. A pan sauce is a better test anyway: it is a real skill, it has
-a right answer you can taste, and nobody confuses it with a protocol.
-
-The payoff shows up the first time two unrelated sites meet. In the demo one
-cooking site teaches pan sauces and another runs a service line, they have
-never heard of each other, and the second one still skips its own introductory
-lessons because the learner's vault says those prerequisites are already held.
-No partnership, no shared account, no back channel API. One signed object, one
-audience, one learner who said yes.
+One limit, plainly. nema manages learning. It does not replace a teacher, a
+mentor, or the work. Competence is what drives motivation, and nothing here
+produces it for you.
 
 ## What nema refuses to do
 
-- It will not store a global learner id. Each provider sees a different
-  `learnerKeyId`, derived from the vault key and that provider's origin.
-- It will not send history. An assertion carries the concepts that were asked
-  for and nothing else. No dates, no attempt counts, no other subjects.
-- It will not let a site pull. Sites can only ask, and only the human can
-  answer.
-- It will not rank learners, score them or sell the ledger.
-- It will not accept unsigned evidence from a provider. An unknown issuer lands
-  in the ledger as `pending` and changes no state, so the learner can see the
-  attempt. There is exactly one unsigned path, the agent assessment, and it is
-  labelled in the ledger and weighted 0.6.
+- No global learner id. Each provider sees a different `learnerKeyId`, derived
+  from the vault key and that provider's origin.
+- No history. An assertion carries the concepts asked for: no dates, no attempt
+  counts, no other subjects.
+- No pulling. Sites ask, and only the human answers.
+- No ranking, no scoring, no selling the ledger.
+- No unsigned provider evidence. An unknown issuer lands in the ledger as
+  `pending` and changes nothing, in plain sight.
 
 ## Why this belongs on the open web
 
-WebMCP puts humans and agents on the same page, literally. A site declares its
-capabilities as tools, and the agent in the browser can call them while the
-person watches the page change. That is the right substrate for this idea,
-because learning needs both parties. The agent is good at reading five
-manifests and planning a path. Only the human can actually learn something, and
-only the human should decide what a site is allowed to know about them.
+Somebody wrote the answer that unblocked you last Tuesday, and it was a blog
+post or notes from a course that ran once in 2019. A protocol only platforms can
+implement is another platform, so the install had to be small enough for those
+people: one manifest tag, one script tag, no backend, no permission from anyone.
 
-So nema is built as pages, not as a service. Five origins, no shared database,
-no accounts, no keys to exchange. Every capability is a tool the browser can
-see, every disclosure is a modal the human clicks, and every claim is a token
-anyone can verify with a public key.
+WebMCP is what makes that possible. A site declares what it can do as tools on
+the page it already serves, and an agent calls them while the person watches.
+The agent can plan a path across five manifests. Only the human can learn the
+thing, and only the human should decide what a site may know.

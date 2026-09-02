@@ -67,6 +67,49 @@
  *    `medium` when score >= 0.6, otherwise `low`. Confidence is about how much
  *    the evidence can be trusted, the band is about how strong it is.
  *
+ * 6. Bookkeeping the planner needs. Each ability also records `passes` (assessed
+ *    passes, exposure excluded), `lastFailure`, and the three numbers the
+ *    encompassing graph propagates: `gradedPasses`, `gradedScore` and
+ *    `lastGradedPass`. A pass is graded when somebody other than the learner
+ *    checked it, that is when the grader weight is at least 0.6.
+ *
+ * ---------------------------------------------------------------------------
+ * The encompassing graph
+ * ---------------------------------------------------------------------------
+ *
+ * Contract section 30, from `docs/LEARNING_FAST_NOTES.md`. Flashcards treat
+ * knowledge as independent units. Cooking, cryptography and computer
+ * architecture are hierarchical: practising a pan sauce also practises
+ * emulsions, deglazing and heat control. Math Academy calls the partial version
+ * of this Fractional Implicit Repetition, and `applyImplicitRepetition` is our
+ * small version of it.
+ *
+ *   implicit = weight x result x recency x f,  f = concept.encompasses[prereq] ?? 0.5
+ *
+ * Summed over a concept's graded passes at one ability, that is `f` times the
+ * concept's `gradedScore` at that ability. It travels one level, to the direct
+ * prerequisites. It travels a second level, at `f squared`, only through a
+ * relation the registry marks explicitly with `encompasses`.
+ *
+ * Two rules keep it honest, and both are load bearing:
+ *
+ *   - Implicit repetition is repetition. It only reaches an ability the learner
+ *     has already produced evidence for. It never invents a first claim about
+ *     something nobody ever asked.
+ *   - Only graded passes propagate. A learner ticking their own box is not
+ *     practice for anything underneath it.
+ *
+ * The implicit evidence also moves the schedule. Each implicit pass is worth
+ * half a pass (a quarter at the second level), and `lastSuccess` moves to the
+ * date of the implicit practice, so new learning is the spaced repetition of
+ * what sits below it. Implicit passes that predate the concept's own last
+ * success are ignored by the schedule: the interval that success set already
+ * reflects them.
+ *
+ * The ledger and the bands report what the learner produced. The encompassing
+ * graph is applied when the vault decides what to do next, which is why
+ * `computeNeeds` runs it and `deriveState` does not.
+ *
  * ---------------------------------------------------------------------------
  * Needs
  * ---------------------------------------------------------------------------
@@ -91,9 +134,44 @@
  *                   else 1
  *   priority      = urgency * goalRelevance / max(2, minutes)
  *
- * Needs are sorted by priority descending. With `budgetMinutes` the list is
- * filled greedily in that order, skipping needs that do not fit and continuing,
- * so a short need can still ride along after a long one is skipped.
+ * Four rules from contract section 30 sit on top of that table:
+ *
+ *   Edge of mastery. An `acquire` need is only worth doing when every
+ *   prerequisite is already usable. When one is not, the work is the weakest
+ *   prerequisite, and that is the need the vault issues, with reason
+ *   `prerequisite_first` naming the goal it unblocks. The goal concept itself
+ *   keeps a quarter urgency need so it never disappears from the panel, marked
+ *   `prerequisites_are_not_ready`.
+ *
+ *   Interference. A `discriminate` need whose confusable neighbour is itself
+ *   usable or better is urgent at 0.8 rather than 0.65: the confusion is live,
+ *   not hypothetical. Reason `confusable_neighbour_is_strong`.
+ *
+ *   Illusion of understanding. A concept whose evidence is only exposure or
+ *   self report produces a retrieve need with reason `exposure_only`, because
+ *   rereading measures recognition and only retrieval measures memory.
+ *
+ *   Audits, not grades. A failed claim with nothing after it is a node that
+ *   needs an intervention, not minus one point. It produces a
+ *   `repair_misconception` need when the vault has a misconception on record
+ *   for that concept, and a `reassess` need otherwise.
+ *
+ * Needs are sorted by priority descending. With `budgetMinutes` the list
+ * becomes a session, which is a different thing from a list:
+ *
+ *   Minimum effective dose. Retrieve needs are capped at four minutes, so a
+ *   budget holds several retrievals rather than one long exercise. The fill is
+ *   greedy by priority and keeps scanning after a need does not fit, so a short
+ *   need still rides along behind a long one that was skipped.
+ *
+ *   Interference. Two confusable concepts never share a session unless one of
+ *   them is a `discriminate` need, which is the whole point of that kind. The
+ *   need that stays is marked `interference_avoided`.
+ *
+ *   Interleaving. No two needs on the same concept sit next to each other and
+ *   kinds alternate where the session allows it, because choosing the method is
+ *   part of the skill. A need pulled ahead of a higher priority one to make that
+ *   work is marked `interleaved`.
  *
  * Each need carries the rubric a coach grades it against. The concept registry
  * only defines rubrics for explain, apply and discriminate, so a need whose kind
@@ -140,6 +218,21 @@ const BASE_STABILITY_DAYS = 3;
 const MAX_STABILITY_DAYS = 60;
 const DEFAULT_MINUTES = 4;
 
+/** The fraction of a pass a concept lends to a direct prerequisite by default. */
+export const IMPLICIT_FRACTION = 0.5;
+
+/** A pass is graded when somebody other than the learner checked it. */
+export const GRADED_WEIGHT = WEIGHTS['agent-assessed'];
+
+/** What one implicit repetition is worth to the review schedule. */
+const IMPLICIT_PASS = 0.5;
+
+/** Minimum effective dose: a retrieval is short, so a session can hold several. */
+const MAX_RETRIEVE_MINUTES = 4;
+
+/** How far the edge of mastery walk follows prerequisites before it gives up. */
+const MAX_PREREQUISITE_WALK = 8;
+
 const BAND_THRESHOLDS = [
   [1.6, 'durable'],
   [0.9, 'usable'],
@@ -164,6 +257,11 @@ const NEED_URGENCY = {
   discriminate: 0.65,
   repair_misconception: 0.8,
   reassess: 0.45
+};
+
+/** Copy a person reads, for the reasons that need more than two words. */
+const NEED_NOTES = {
+  exposure_only: 'You have read about this. You have not retrieved it yet.'
 };
 
 const EXERCISE_HINTS = {
@@ -246,6 +344,38 @@ function bandForScore(score) {
     if (score >= threshold) return band;
   }
   return score > 0 ? 'uncertain' : 'unknown';
+}
+
+/**
+ * The band for a score, with the one cap: evidence that never rose above
+ * exposure grade is clamped to `uncertain`, however much of it there is.
+ */
+function bandFor(score, weight) {
+  const band = bandForScore(score);
+  if (weight <= WEIGHTS.exposure && bandRank(band) > bandRank('uncertain')) return 'uncertain';
+  return band;
+}
+
+function confidenceFor(score, weight) {
+  if (score >= 1.2 && weight >= 0.8) return 'high';
+  if (score >= 0.6) return 'medium';
+  return 'low';
+}
+
+/**
+ * The review schedule for one ability: how long the memory should hold and when
+ * it needs touching again. `passes` may be fractional, because an implicit
+ * repetition is worth half a pass.
+ */
+function scheduleFor(passes, lastSuccessMs, lastFailureMs, nowMs) {
+  if (lastSuccessMs === null || passes <= 0) {
+    return { stabilityDays: null, nextReview: null, reviewDue: false };
+  }
+  let stabilityDays = Math.min(MAX_STABILITY_DAYS, BASE_STABILITY_DAYS * 2 ** (passes - 1));
+  if (lastFailureMs !== null && lastFailureMs > lastSuccessMs) stabilityDays = BASE_STABILITY_DAYS;
+  stabilityDays = round(stabilityDays, 2);
+  const nextReviewMs = lastSuccessMs + stabilityDays * DAY_MS;
+  return { stabilityDays, nextReview: isoFrom(nextReviewMs), reviewDue: nextReviewMs < nowMs };
 }
 
 function graderWeight(grader) {
@@ -357,7 +487,10 @@ function summarizeAbility(contributions, nowMs) {
   let score = 0;
   let bestWeight = 0;
   let passes = 0;
+  let gradedPasses = 0;
+  let gradedScore = 0;
   let lastSuccessMs = null;
+  let lastGradedMs = null;
   let lastFailureMs = null;
   const evidenceRefs = [];
 
@@ -370,38 +503,34 @@ function summarizeAbility(contributions, nowMs) {
       passes += 1;
       lastSuccessMs = item.issuedMs;
     }
+    // Only a pass somebody else checked lends anything to a prerequisite.
+    if (item.result === 'passed' && item.weight >= GRADED_WEIGHT) {
+      gradedPasses += 1;
+      gradedScore += item.value;
+      lastGradedMs = item.issuedMs;
+    }
     if (item.result === 'failed') lastFailureMs = item.issuedMs;
     if (item.receiptId && !evidenceRefs.includes(item.receiptId)) evidenceRefs.push(item.receiptId);
   }
 
   score = round(score);
 
-  let band = bandForScore(score);
-  if (bestWeight <= WEIGHTS.exposure && bandRank(band) > bandRank('uncertain')) {
-    band = 'uncertain';
-  }
+  const band = bandFor(score, bestWeight);
+  const confidence = confidenceFor(score, bestWeight);
 
-  let confidence = 'low';
-  if (score >= 1.2 && bestWeight >= 0.8) confidence = 'high';
-  else if (score >= 0.6) confidence = 'medium';
-
-  let stabilityDays = null;
-  let nextReview = null;
-  let reviewDue = false;
-  if (lastSuccessMs !== null) {
-    stabilityDays = Math.min(MAX_STABILITY_DAYS, BASE_STABILITY_DAYS * 2 ** (passes - 1));
-    if (lastFailureMs !== null && lastFailureMs > lastSuccessMs) stabilityDays = BASE_STABILITY_DAYS;
-    const nextReviewMs = lastSuccessMs + stabilityDays * DAY_MS;
-    nextReview = isoFrom(nextReviewMs);
-    reviewDue = nextReviewMs < nowMs;
-  }
+  const { stabilityDays, nextReview, reviewDue } = scheduleFor(passes, lastSuccessMs, lastFailureMs, nowMs);
 
   return {
     band,
     score,
     confidence,
     graderWeight: bestWeight,
+    passes,
+    gradedPasses,
+    gradedScore: round(gradedScore),
     lastSuccess: lastSuccessMs === null ? null : isoFrom(lastSuccessMs),
+    lastGradedPass: lastGradedMs === null ? null : isoFrom(lastGradedMs),
+    lastFailure: lastFailureMs === null ? null : isoFrom(lastFailureMs),
     stabilityDays,
     nextReview,
     reviewDue,
@@ -495,6 +624,174 @@ function isReviewDue(entry, nowMs) {
   return entry.reviewDue === true;
 }
 
+/* ------------------------------------------- the encompassing graph */
+
+/**
+ * The prerequisites one concept implicitly practises, and by how much.
+ *
+ * Every direct prerequisite is in, at `concept.encompasses[prereq]` or 0.5.
+ * A second level is in only where the registry marked the first hop with
+ * `encompasses`, and it is worth the square of that fraction. A direct
+ * prerequisite always keeps its own fraction, so a concept reached both ways
+ * is counted once, at the level that is closer.
+ *
+ * @param {object} def a concept from the registry
+ * @param {Map<string, object>} registry
+ * @returns {Map<string, {fraction: number, level: number}>}
+ */
+export function encompassedPrereqs(def, registry) {
+  const out = new Map();
+  if (!def) return out;
+  const declared = def.encompasses && typeof def.encompasses === 'object' ? def.encompasses : {};
+  const prereqs = Array.isArray(def.prereqs) ? def.prereqs : [];
+
+  for (const prereq of prereqs) {
+    if (typeof prereq !== 'string' || prereq === def.id) continue;
+    const stated = declared[prereq];
+    const fraction = typeof stated === 'number' && stated > 0 ? Math.min(1, stated) : IMPLICIT_FRACTION;
+    const current = out.get(prereq);
+    if (!current || current.fraction < fraction) out.set(prereq, { fraction, level: 1 });
+  }
+
+  for (const prereq of prereqs) {
+    const stated = declared[prereq];
+    if (typeof stated !== 'number' || !(stated > 0)) continue;
+    const fraction = Math.min(1, stated) ** 2;
+    const parent = registry.get(prereq);
+    for (const grandparent of (parent && Array.isArray(parent.prereqs) ? parent.prereqs : [])) {
+      if (typeof grandparent !== 'string' || grandparent === def.id) continue;
+      const current = out.get(grandparent);
+      if (current && current.level === 1) continue;
+      if (!current || current.fraction < fraction) out.set(grandparent, { fraction, level: 2 });
+    }
+  }
+  return out;
+}
+
+/**
+ * Fractional implicit repetition over the encompassing graph, contract 30.
+ *
+ * Returns a state where every prerequisite has been credited for the graded
+ * passes of the concepts above it: a fraction of their score, half a pass each
+ * for the schedule, and their date as a new `lastSuccess` when it is later than
+ * the one the prerequisite earned itself. The input is never mutated, and a
+ * call with no registry returns the state it was given.
+ *
+ * Nothing here invents a claim. Implicit repetition only reaches an ability the
+ * learner already has evidence for, so the set of concepts and abilities in the
+ * result is exactly the set that went in.
+ *
+ * @param {object} state derived state
+ * @param {{ concepts?: Array, now?: string|number }} [options]
+ * @returns {object} state with the implicit evidence folded in
+ */
+export function applyImplicitRepetition(state, options = {}) {
+  const nowMs = resolveNow(options);
+  const source = state && typeof state === 'object' ? state : {};
+  const concepts = Array.isArray(options.concepts) ? options.concepts : [];
+  if (concepts.length === 0) return source;
+
+  const registry = new Map();
+  for (const concept of concepts) {
+    if (concept && typeof concept.id === 'string') registry.set(concept.id, concept);
+  }
+
+  // conceptId -> ability -> { score, weight, passes, atMs, from: Set }
+  const credit = new Map();
+  const creditFor = (conceptId, ability) => {
+    if (!credit.has(conceptId)) credit.set(conceptId, new Map());
+    const abilities = credit.get(conceptId);
+    if (!abilities.has(ability)) {
+      abilities.set(ability, { score: 0, weight: 0, passes: 0, atMs: null, from: new Set() });
+    }
+    return abilities.get(ability);
+  };
+
+  for (const [conceptId, conceptState] of Object.entries(source)) {
+    const def = registry.get(conceptId);
+    if (!def || !conceptState || typeof conceptState !== 'object') continue;
+    const edges = encompassedPrereqs(def, registry);
+    if (edges.size === 0) continue;
+
+    for (const [ability, entry] of Object.entries(conceptState)) {
+      if (!entry || !(entry.gradedPasses > 0)) continue;
+      const gradedAtMs = toMs(entry.lastGradedPass);
+
+      for (const [prereqId, edge] of edges) {
+        const prereqState = source[prereqId];
+        // Implicit repetition is repetition: it strengthens what the learner has
+        // already been asked for, it never opens a new ability.
+        if (!prereqState || !prereqState[ability]) continue;
+
+        const bucket = creditFor(prereqId, ability);
+        bucket.score += edge.fraction * entry.gradedScore;
+        bucket.weight = Math.max(bucket.weight, edge.fraction * entry.graderWeight);
+        bucket.from.add(conceptId);
+
+        // The schedule only moves for practice newer than the prerequisite's own
+        // last success. Anything older is already inside the interval that
+        // success set.
+        const ownSuccessMs = toMs(prereqState[ability].lastSuccess);
+        if (gradedAtMs === null) continue;
+        if (ownSuccessMs !== null && gradedAtMs <= ownSuccessMs) continue;
+        bucket.passes += entry.gradedPasses * IMPLICIT_PASS ** edge.level;
+        if (bucket.atMs === null || gradedAtMs > bucket.atMs) bucket.atMs = gradedAtMs;
+      }
+    }
+  }
+
+  if (credit.size === 0) return source;
+
+  const result = {};
+  for (const conceptId of Object.keys(source)) {
+    const conceptState = source[conceptId];
+    const abilities = credit.get(conceptId);
+    if (!abilities) {
+      result[conceptId] = conceptState;
+      continue;
+    }
+    const next = {};
+    for (const [ability, entry] of Object.entries(conceptState)) {
+      const bucket = abilities.get(ability);
+      next[ability] = bucket ? creditedEntry(entry, bucket, nowMs) : entry;
+    }
+    result[conceptId] = next;
+  }
+  return result;
+}
+
+/** One ability's entry with its implicit credit folded in. */
+function creditedEntry(entry, bucket, nowMs) {
+  const score = round(entry.score + bucket.score);
+  const graderWeight = Math.max(entry.graderWeight, round(bucket.weight));
+  const passes = round(entry.passes + bucket.passes, 3);
+
+  const ownSuccessMs = toMs(entry.lastSuccess);
+  const lastSuccessMs = bucket.atMs !== null && (ownSuccessMs === null || bucket.atMs > ownSuccessMs)
+    ? bucket.atMs
+    : ownSuccessMs;
+
+  const schedule = scheduleFor(passes, lastSuccessMs, toMs(entry.lastFailure), nowMs);
+
+  return {
+    ...entry,
+    band: bandFor(score, graderWeight),
+    score,
+    confidence: confidenceFor(score, graderWeight),
+    graderWeight,
+    passes,
+    lastSuccess: lastSuccessMs === null ? null : isoFrom(lastSuccessMs),
+    stabilityDays: schedule.stabilityDays,
+    nextReview: schedule.nextReview,
+    reviewDue: schedule.reviewDue,
+    implicit: {
+      score: round(bucket.score),
+      passes: round(bucket.passes, 3),
+      from: [...bucket.from].sort()
+    }
+  };
+}
+
 /* ------------------------------------------------------------ needs */
 
 /**
@@ -507,7 +804,7 @@ function isReviewDue(entry, nowMs) {
  */
 export function computeNeeds(state, options = {}) {
   const nowMs = resolveNow(options);
-  const source = state && typeof state === 'object' ? state : {};
+  const ledgerState = state && typeof state === 'object' ? state : {};
   const concepts = Array.isArray(options.concepts) ? options.concepts : [];
   const goals = Array.isArray(options.goals) ? options.goals : [];
   const misconceptions = Array.isArray(options.misconceptions) ? options.misconceptions : [];
@@ -516,6 +813,9 @@ export function computeNeeds(state, options = {}) {
   for (const concept of concepts) {
     if (concept && typeof concept.id === 'string') registry.set(concept.id, concept);
   }
+
+  // What the learner practised implicitly counts before anything is planned.
+  const source = applyImplicitRepetition(ledgerState, { concepts, now: nowMs });
 
   const goalConcepts = new Set();
   const goalPrereqs = new Set();
@@ -541,6 +841,7 @@ export function computeNeeds(state, options = {}) {
 
   const ids = [...new Set([...registry.keys(), ...Object.keys(source)])].sort();
   const needs = [];
+  const redirected = new Map();
 
   for (const conceptId of ids) {
     const def = registry.get(conceptId) || null;
@@ -549,15 +850,24 @@ export function computeNeeds(state, options = {}) {
     const band = (ability) => bandAt(source, conceptId, ability);
     const context = { conceptId, def, goalConcepts, goalPrereqs };
 
-    // retrieve: something is due for review.
+    // retrieve: a review is due, or the only evidence is somebody reading.
+    // Both are one need per concept, so they share a reason list.
     const overdue = worstOverdue(conceptState, nowMs);
-    if (overdue !== null) {
-      const days = Math.max(0, Math.round(overdue.days * 10) / 10);
-      needs.push(buildNeed(context, 'retrieve', {
-        ability: overdue.ability,
-        urgency: Math.min(1, 0.6 + (0.4 * overdue.days) / 7),
-        reason: ['spaced_review_is_due', `overdue_by_${days}_days`]
-      }));
+    const exposureOnly = hasEvidence && bestGraderWeight(conceptState) <= WEIGHTS['self-report'];
+    if (overdue !== null || exposureOnly) {
+      const reason = [];
+      let urgency = NEED_URGENCY.retrieve;
+      let ability = NEED_ABILITY.retrieve;
+      if (overdue !== null) {
+        const days = Math.max(0, Math.round(overdue.days * 10) / 10);
+        reason.push('spaced_review_is_due', `overdue_by_${days}_days`);
+        urgency = Math.min(1, 0.6 + (0.4 * overdue.days) / 7);
+        ability = overdue.ability;
+      }
+      // The illusion of understanding: rereading measures recognition, and only
+      // retrieval measures memory.
+      if (exposureOnly) reason.push('exposure_only');
+      needs.push(buildNeed(context, 'retrieve', { ability, urgency, reason }));
     }
 
     // apply: can explain it, cannot yet use it.
@@ -567,44 +877,80 @@ export function computeNeeds(state, options = {}) {
       }));
     }
 
-    // discriminate: strong enough to be confused with a neighbour.
+    // discriminate: strong enough to be confused with a neighbour. When that
+    // neighbour is strong too the confusion is live rather than hypothetical,
+    // and telling them apart is as urgent as repairing a misconception.
     const confusable = firstConfusable(def);
     const strongEnough = bandRank(band('apply')) >= bandRank('usable')
       || bandRank(band('explain')) >= bandRank('usable');
     if (confusable && strongEnough && !conceptState.discriminate) {
+      const neighbourIsStrong = bandRank(bestBand(source[confusable])) >= bandRank('usable');
       needs.push(buildNeed(context, 'discriminate', {
-        reason: ['application_is_strong', 'no_discrimination_evidence'],
+        reason: neighbourIsStrong
+          ? ['application_is_strong', 'no_discrimination_evidence', 'confusable_neighbour_is_strong']
+          : ['application_is_strong', 'no_discrimination_evidence'],
+        urgency: neighbourIsStrong ? 0.8 : NEED_URGENCY.discriminate,
         confusableWith: confusable
       }));
     }
 
-    // acquire: a goal depends on it and there is nothing at all.
+    // acquire: a goal depends on it and there is nothing at all. Only at the
+    // edge of mastery, which means every prerequisite is already usable.
     const inGoalScope = goalConcepts.has(conceptId) || goalPrereqs.has(conceptId);
     const allUnknown = bandRank(bestBand(conceptState)) === 0;
     if (inGoalScope && allUnknown) {
-      needs.push(buildNeed(context, 'acquire', {
-        reason: ['goal_depends_on_this_concept', 'no_evidence_yet']
-      }));
+      const blocking = weakestPrerequisite(conceptId, registry, source);
+      if (blocking === null) {
+        needs.push(buildNeed(context, 'acquire', {
+          reason: ['goal_depends_on_this_concept', 'no_evidence_yet']
+        }));
+      } else {
+        // The work is the prerequisite. The goal keeps a quarter urgency need so
+        // it stays visible, and never outranks the thing that unblocks it.
+        if (!redirected.has(blocking)) redirected.set(blocking, new Set());
+        redirected.get(blocking).add(conceptId);
+        needs.push(buildNeed(context, 'acquire', {
+          urgency: NEED_URGENCY.acquire / 2,
+          reason: [
+            'goal_depends_on_this_concept',
+            'prerequisites_are_not_ready',
+            `start_with_${plainId(blocking)}`
+          ]
+        }));
+      }
     }
 
     // repair_misconception: the learner said something wrong and we kept it.
     // Every misconception recorded for the concept goes into one repair need,
-    // so none is silently dropped by the needId hash.
+    // so none is silently dropped by the needId hash. A failed claim with
+    // nothing after it lands here too: an error is a node that needs an
+    // intervention, not one point off.
+    const unrepaired = unrepairedFailure(conceptState);
     const recorded = misconceptionsByConcept.get(conceptId);
     if (recorded && recorded.length > 0) {
       needs.push(buildNeed(context, 'repair_misconception', {
-        reason: ['recorded_misconception', ...recorded.map((item) => item.id || 'unnamed_misconception')],
+        ability: unrepaired ? unrepaired.ability : undefined,
+        reason: [
+          'recorded_misconception',
+          ...recorded.map((item) => item.id || 'unnamed_misconception'),
+          ...(unrepaired ? ['failed_claim_on_record'] : [])
+        ],
         misconceptions: recorded
       }));
     }
 
-    // reassess: the only evidence is weakly graded.
+    // reassess: the only evidence is weakly graded, or something failed and
+    // nothing has confirmed or dropped it since.
     if (hasEvidence) {
-      const weight = bestGraderWeight(conceptState);
-      if (weight < 0.6) {
+      const weakGrader = bestGraderWeight(conceptState) < GRADED_WEIGHT;
+      const needsRepair = unrepaired && !(recorded && recorded.length > 0);
+      if (weakGrader || needsRepair) {
+        const reason = [];
+        if (weakGrader) reason.push('evidence_is_weakly_graded', 'no_strong_grader_on_record');
+        if (needsRepair) reason.push('failed_claim_on_record', 'nothing_has_confirmed_it_since');
         needs.push(buildNeed(context, 'reassess', {
-          reason: ['evidence_is_weakly_graded', 'no_strong_grader_on_record'],
-          ability: highestAbilityWithEvidence(conceptState)
+          reason,
+          ability: needsRepair ? unrepaired.ability : highestAbilityWithEvidence(conceptState)
         }));
       }
     }
@@ -617,6 +963,30 @@ export function computeNeeds(state, options = {}) {
     }
   }
 
+  // A goal concept that is blocked names the prerequisite that unblocks it, and
+  // that prerequisite says which goal it is for. When the learner has never
+  // touched it there is nothing to mark yet, so the need is made here.
+  for (const [target, blocked] of redirected) {
+    let need = needs
+      .filter((entry) => entry.concept === target)
+      .sort((a, b) => b.priority - a.priority)[0];
+    if (!need) {
+      need = buildNeed(
+        { conceptId: target, def: registry.get(target) || null, goalConcepts, goalPrereqs },
+        'acquire',
+        { reason: ['goal_depends_on_this_concept', 'no_evidence_yet'] }
+      );
+      needs.push(need);
+    }
+    if (!need.reason.includes('prerequisite_first')) need.reason.unshift('prerequisite_first');
+    // The reason names the goal, not every step between here and it.
+    const named = [...blocked].filter((id) => goalConcepts.has(id));
+    for (const id of (named.length > 0 ? named : [...blocked]).sort()) {
+      const token = `before_${plainId(id)}`;
+      if (!need.reason.includes(token)) need.reason.push(token);
+    }
+  }
+
   needs.sort((a, b) => (
     b.priority - a.priority
     || b.urgency - a.urgency
@@ -625,18 +995,138 @@ export function computeNeeds(state, options = {}) {
   ));
 
   const budget = Number(options.budgetMinutes);
-  if (Number.isFinite(budget) && budget > 0) {
-    const picked = [];
-    let remaining = budget;
-    for (const need of needs) {
-      if (need.minutes <= remaining) {
-        picked.push(need);
-        remaining -= need.minutes;
-      }
-    }
-    return picked;
-  }
+  if (Number.isFinite(budget) && budget > 0) return planSession(needs, budget, registry);
   return needs;
+}
+
+/**
+ * Fill a session of `budgetMinutes` and put it in an order worth working
+ * through, contract 30.
+ *
+ * The fill is greedy by priority and keeps scanning after a need does not fit,
+ * so a short need still rides along behind a long one that was skipped. Two
+ * confusable concepts never share a session unless one of them is the
+ * `discriminate` need that exists to tell them apart. The order then avoids
+ * putting two needs on the same concept next to each other and alternates kinds
+ * where it can, because choosing the method is part of the skill.
+ */
+function planSession(needs, budgetMinutes, registry) {
+  const neighbours = confusableIndex(registry);
+  const picked = [];
+  let remaining = budgetMinutes;
+
+  for (const need of needs) {
+    if (need.minutes > remaining) continue;
+    const clash = picked.find((chosen) => (
+      chosen.kind !== 'discriminate'
+      && need.kind !== 'discriminate'
+      && (neighbours.get(chosen.concept) || EMPTY_SET).has(need.concept)
+    ));
+    if (clash) {
+      if (!clash.reason.includes('interference_avoided')) clash.reason.push('interference_avoided');
+      continue;
+    }
+    picked.push({ ...need, reason: [...need.reason] });
+    remaining -= need.minutes;
+  }
+
+  const session = [];
+  const waiting = [...picked];
+  while (waiting.length > 0) {
+    let index = 0;
+    if (session.length > 0) {
+      const previous = session[session.length - 1];
+      const differs = (need) => need.concept !== previous.concept;
+      let found = waiting.findIndex((need) => differs(need) && need.kind !== previous.kind);
+      if (found === -1) found = waiting.findIndex(differs);
+      if (found !== -1) index = found;
+    }
+    const [next] = waiting.splice(index, 1);
+    if (index > 0) next.reason.push('interleaved');
+    session.push(next);
+  }
+  return session;
+}
+
+const EMPTY_SET = new Set();
+
+/** Confusable pairs, both ways round, so the session rule is symmetric. */
+function confusableIndex(registry) {
+  const index = new Map();
+  const link = (a, b) => {
+    if (!index.has(a)) index.set(a, new Set());
+    index.get(a).add(b);
+  };
+  for (const [id, def] of registry) {
+    for (const other of (def && Array.isArray(def.confusableWith) ? def.confusableWith : [])) {
+      if (typeof other !== 'string' || other === id) continue;
+      link(id, other);
+      link(other, id);
+    }
+  }
+  return index;
+}
+
+/**
+ * The prerequisite to work on before this concept, or null when the concept is
+ * already at the edge of mastery.
+ *
+ * Walks down the weakest branch: the prerequisite with the lowest band, ties
+ * broken by the one closest to being ready and then by id, until it reaches a
+ * concept whose own prerequisites are all usable. That is the deepest thing
+ * standing in the way, and the only one worth asking for.
+ */
+function weakestPrerequisite(conceptId, registry, state, depth = MAX_PREREQUISITE_WALK, seen = new Set()) {
+  const def = registry.get(conceptId);
+  const prereqs = def && Array.isArray(def.prereqs) ? def.prereqs : [];
+  const blocking = prereqs
+    .filter((id) => typeof id === 'string' && !seen.has(id))
+    .filter((id) => bandRank(bestBand(state[id])) < bandRank('usable'));
+  if (blocking.length === 0) return null;
+
+  blocking.sort((a, b) => (
+    bandRank(bestBand(state[a])) - bandRank(bestBand(state[b]))
+    || readiness(b, registry, state) - readiness(a, registry, state)
+    || a.localeCompare(b)
+  ));
+
+  const weakest = blocking[0];
+  if (depth <= 0) return weakest;
+  const next = new Set(seen).add(conceptId).add(weakest);
+  const deeper = weakestPrerequisite(weakest, registry, state, depth - 1, next);
+  return deeper === null ? weakest : deeper;
+}
+
+/** How many of a concept's own prerequisites are already usable. */
+function readiness(conceptId, registry, state) {
+  const def = registry.get(conceptId);
+  const prereqs = def && Array.isArray(def.prereqs) ? def.prereqs : [];
+  if (prereqs.length === 0) return Infinity;
+  return prereqs.filter((id) => bandRank(bestBand(state[id])) >= bandRank('usable')).length - prereqs.length;
+}
+
+/**
+ * The highest ability carrying a failure that nothing has answered since. An
+ * error is a node needing an intervention, so the vault asks for one.
+ */
+function unrepairedFailure(conceptState) {
+  let found = null;
+  for (const [ability, entry] of Object.entries(conceptState)) {
+    if (!entry || !entry.lastFailure) continue;
+    const failedMs = toMs(entry.lastFailure);
+    const successMs = toMs(entry.lastSuccess);
+    if (failedMs === null) continue;
+    if (successMs !== null && successMs >= failedMs) continue;
+    if (found === null || abilityOrder(ability) > abilityOrder(found.ability)) {
+      found = { ability, at: entry.lastFailure };
+    }
+  }
+  return found;
+}
+
+/** A concept id as a reason string a person can read. */
+function plainId(conceptId) {
+  return String(conceptId).replace(/^nema:/, '').replace(/-/g, '_');
 }
 
 /**
@@ -705,7 +1195,7 @@ function buildNeed(context, kind, extra = {}) {
 
   const goalRelevance = goalConcepts.has(conceptId) ? 1.5 : (goalPrereqs.has(conceptId) ? 1.2 : 1);
   const urgency = round(Math.min(1, extra.urgency ?? NEED_URGENCY[kind]), 3);
-  const minutes = minutesFor(def, ability);
+  const minutes = minutesFor(def, ability, kind);
   const priority = round((urgency * goalRelevance) / Math.max(2, minutes), 5);
 
   const reason = [...(extra.reason || [])];
@@ -719,6 +1209,7 @@ function buildNeed(context, kind, extra = {}) {
     ability,
     kind,
     reason,
+    note: noteFor(reason),
     urgency,
     minutes,
     confusableWith: extra.confusableWith || null,
@@ -734,9 +1225,23 @@ function buildNeed(context, kind, extra = {}) {
   };
 }
 
-function minutesFor(def, ability) {
-  const minutes = def && def.minutes ? def.minutes[ability] : undefined;
-  return typeof minutes === 'number' && minutes > 0 ? minutes : DEFAULT_MINUTES;
+/**
+ * How long the need takes. The registry decides, with one ceiling: a retrieval
+ * is at most four minutes, so a budget holds several retrievals rather than one
+ * long exercise. Minimum effective dose, contract 30.
+ */
+function minutesFor(def, ability, kind) {
+  const stated = def && def.minutes ? def.minutes[ability] : undefined;
+  const minutes = typeof stated === 'number' && stated > 0 ? stated : DEFAULT_MINUTES;
+  return kind === 'retrieve' ? Math.min(minutes, MAX_RETRIEVE_MINUTES) : minutes;
+}
+
+/** The one sentence a reason gets when a token is not enough. */
+function noteFor(reason) {
+  for (const token of reason) {
+    if (NEED_NOTES[token]) return NEED_NOTES[token];
+  }
+  return null;
 }
 
 /**

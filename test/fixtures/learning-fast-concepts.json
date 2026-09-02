@@ -1,0 +1,114 @@
+[
+  {
+    "id": "nema:ratios",
+    "title": "Cooking ratios",
+    "summary": "The fixed proportions by weight underneath a recipe: 1:1 roux, 3:1 vinaigrette, a 5 percent brine. They scale where a cup measure does not.",
+    "prereqs": [],
+    "confusableWith": [],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "states at least three working ratios by weight and what each one produces"
+      ],
+      "apply": [
+        "scales a 3:1 vinaigrette to four times the volume without tasting it flat"
+      ]
+    },
+    "minutes": { "retrieve": 5, "explain": 4, "apply": 6, "discriminate": 4 }
+  },
+  {
+    "id": "nema:heat-control",
+    "title": "Heat control",
+    "summary": "Matching the energy under the pan to what the food needs, steered by sound, colour and smell rather than a number on a dial.",
+    "prereqs": [],
+    "confusableWith": [],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "distinguishes conduction, convection and radiation and gives one pan example of each"
+      ],
+      "apply": [
+        "preheats a heavy pan for a sear and lets it recover between batches"
+      ]
+    },
+    "minutes": { "retrieve": 5, "explain": 4, "apply": 6, "discriminate": 4 }
+  },
+  {
+    "id": "nema:emulsions",
+    "title": "Emulsions",
+    "summary": "Fat held as droplets in water, or the reverse, kept apart by an emulsifier such as mustard, egg yolk lecithin or the proteins in butter.",
+    "prereqs": ["nema:ratios", "nema:heat-control"],
+    "encompasses": { "nema:ratios": 0.6 },
+    "confusableWith": ["nema:reduction"],
+    "misconceptions": [
+      {
+        "id": "a_sauce_can_be_boiled_once_it_holds",
+        "text": "Once an emulsion holds, it is stable and can be boiled."
+      }
+    ],
+    "rubric": {
+      "explain": [
+        "names the dispersed fat, the continuous water phase and the emulsifier"
+      ],
+      "apply": [
+        "mounts a pan sauce with cold butter off the heat and keeps it glossy"
+      ],
+      "discriminate": [
+        "separates a sauce held by emulsion from one thickened by reduction"
+      ]
+    },
+    "minutes": { "retrieve": 5, "explain": 4, "apply": 6, "discriminate": 4 }
+  },
+  {
+    "id": "nema:reduction",
+    "title": "Reduction",
+    "summary": "Boiling water out of a liquid to concentrate flavour, gelatin and body, which concentrates salt and acid at the same rate.",
+    "prereqs": ["nema:heat-control"],
+    "confusableWith": ["nema:emulsions"],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "explains that a reduction concentrates salt and acid along with the flavour"
+      ],
+      "discriminate": [
+        "separates body that came from gelatin from body that came from butter"
+      ]
+    },
+    "minutes": { "retrieve": 5, "explain": 4, "apply": 5, "discriminate": 4 }
+  },
+  {
+    "id": "nema:deglazing",
+    "title": "Deglazing",
+    "summary": "Lifting the browned fond off the pan with a liquid, so the flavour that stuck to the metal ends up in the sauce.",
+    "prereqs": ["nema:heat-control"],
+    "confusableWith": [],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "says what the fond is and why water alone lifts it"
+      ],
+      "apply": [
+        "deglazes a hot pan without dropping the temperature so far that the sauce stalls"
+      ]
+    },
+    "minutes": { "retrieve": 5, "explain": 4, "apply": 6, "discriminate": 4 }
+  },
+  {
+    "id": "nema:pan-sauces",
+    "title": "Pan sauces",
+    "summary": "The sauce built in the pan the protein just left: fond, a deglazing liquid, a reduction and butter mounted off the heat.",
+    "prereqs": ["nema:deglazing", "nema:reduction", "nema:emulsions"],
+    "encompasses": { "nema:emulsions": 0.8, "nema:deglazing": 0.7 },
+    "confusableWith": [],
+    "misconceptions": [],
+    "rubric": {
+      "explain": [
+        "gives the four steps in order and says what each one is for"
+      ],
+      "apply": [
+        "sends a pan sauce that is still glossy ten minutes after it was made"
+      ]
+    },
+    "minutes": { "retrieve": 5, "explain": 4, "apply": 8, "discriminate": 4 }
+  }
+]

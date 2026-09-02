@@ -118,7 +118,7 @@ Word count: 200.
 
 ## Required answer 4: Implementation approach
 
-Five origins, all plain HTML, CSS and ES modules. No framework, no bundler, no
+Seven origins, all plain HTML, CSS and ES modules. No framework, no bundler, no
 TypeScript. Each is a Cloudflare Worker serving static assets; the two course
 sites add one `/api` route, and the blog adds nothing. Every page loads the
 Chrome Labs WebMCP polyfill first, so tools register with or without Chrome's
@@ -184,6 +184,19 @@ ask a question, and the vault answers with a `ReadinessAssertion`: a signed
 token bound to one audience, valid for 30 minutes, containing only the concepts
 that were asked for and nothing else, released only after the learner approves a
 modal that lists what is shared and what is withheld.
+
+The model inside the vault is not ours either. It follows the principles of
+learning fast that Justin Skycak writes up at justinmath.com and that Kris
+Abdelmessih collects in "The Principles of Learning Fast"
+(https://moontowermeta.com/the-principles-of-learning-fast/). Knowledge is
+hierarchical, so passing something advanced credits every prerequisite under it
+at a fraction and pushes its review date out, which is Math Academy's Fractional
+Implicit Repetition and the reason review in nema costs less the harder you
+work. Needs are proposed at the edge of mastery: the vault asks for a concept
+only when its prerequisites are held, and otherwise names the weakest
+prerequisite and the goal that prerequisite is blocking. And a session
+interleaves, never placing two needs on one concept next to each other and
+keeping confusable concepts apart unless telling them apart is the point.
 
 When you complete an activity, the site signs an `EvidenceReceipt`. Your agent
 carries it back, or you click "Send to vault". The vault verifies the signature,

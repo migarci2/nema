@@ -63,9 +63,9 @@ to an agent. Those tools do not exist on purpose.
 
 A site is not obliged to use `nema:` concept ids. The blog says
 `browning-science`; the registry says `nema:maillard-reaction`. The two
-alignment tools are how an agent closes that gap, and they appeared here with
-no work at all: this package serves whatever `apps/vault/public/tools.js`
-registers, so a tool added for WebMCP is an MCP tool in the same commit.
+alignment tools are how an agent closes that gap, and they needed no work on
+this side: the package serves whatever `apps/vault/public/tools.js` registers,
+so a tool added for WebMCP is an MCP tool in the same commit.
 
 Proposing does not translate anything. It puts the question in the vault's
 Alignments list, and only the learner answers it, in the vault page or the

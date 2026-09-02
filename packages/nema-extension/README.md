@@ -1,9 +1,9 @@
 # nema in your browser
 
 A Chrome extension (Manifest V3) that puts the nema vault in the side panel and
-brokers between it and any page that works with nema. There is no model in the
-loop, no account and no server: the learner approves once per site and answers
-questions, and the extension does the rest.
+brokers between it and any page that works with nema. No model is in the loop,
+and there is no account and no server. The learner approves once per site and
+answers the questions; the extension does the carrying.
 
 ## Load it (30 seconds)
 

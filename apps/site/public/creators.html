@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>nema for creators</title>
-<meta name="description" content="How to install nema on a site you already have: one manifest tag, one script tag, self certified receipts, and two optional upgrades. No backend, no account.">
+<meta name="description" content="How to install nema on a site you already have: one manifest tag, one script tag, self certified receipts, and the upgrades that earn full weight. No backend, no account.">
 <meta name="theme-color" content="#0B1320">
 <meta name="color-scheme" content="dark">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="nema">
 <meta property="og:url" content="https://nema.migarci2.dev/creators.html">
 <meta property="og:title" content="nema for creators">
-<meta property="og:description" content="One manifest tag and one script tag. Keep your site and your voice, and every reader keeps what they learned.">
+<meta property="og:description" content="One manifest tag and one script tag. Your site and your voice stay as they are, and every reader keeps what they learned.">
 <link rel="icon" href="/shared/brand/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/shared/brand/fonts/pixelify-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/shared/brand/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
@@ -41,8 +41,8 @@
       <h1 class="doc__title">How to install nema</h1>
       <p class="lede">
         You already teach something on the web: an article, a set of notes, a course. Two tags let a reader
-        keep what they learned with them, and let the next site recognise it. No backend, no account, no
-        change to your design.
+        keep what they learned and let the next site recognise it. There is no backend to run and no account
+        to make, and your page looks the way it looked before.
       </p>
 
       <h2>What you get</h2>
@@ -50,8 +50,19 @@
         <li>A quiet block on your page. The reader marks the piece read, answers a short check, and receives a signed receipt they can keep.</li>
         <li>Five WebMCP tools for whatever agent the reader brought: <span class="mono">describe_learning_offer</span>, <span class="mono">personalize_learning_path</span>, <span class="mono">start_activity</span>, <span class="mono">get_attempt_status</span>, <span class="mono">issue_evidence_receipt</span>.</li>
         <li>A path that shortens. When a reader presents a vault assertion, the parts they can skip are struck through with the reason beside each one.</li>
-        <li>Your fonts, your colours, your words. The block inherits the page it sits in.</li>
+        <li>The block inherits your fonts and your colours from the page it sits in.</li>
       </ul>
+
+      <h2>Why the check at the end matters</h2>
+      <p>
+        Worth knowing before you write the questions: the argument Justin Skycak makes, and that Kris
+        Abdelmessih collects in
+        <a href="https://moontowermeta.com/the-principles-of-learning-fast/" rel="noopener">The Principles of Learning Fast</a>,
+        is that rereading produces familiarity and retrieval produces memory. Your reader closing the tab with
+        a warm feeling is not the same as your reader knowing anything next month. Two questions they have to
+        answer with the page scrolled away are worth more than another three paragraphs, and nema weights them
+        that way: reading counts 0.1, a graded answer counts 1.0.
+      </p>
 
       <h2>The manifest</h2>
       <pre class="code" data-json>{
@@ -82,6 +93,11 @@
         <li>A <b>quiz</b> renders radio options and a Submit. Each question carries <span class="mono">options</span> and one <span class="mono">answer</span> id, so it grades deterministically in the page.</li>
         <li><b>outcomes</b> are the concept and ability pairs an activity is evidence for. <b>skipIf</b> is what a reader may skip once they present an assertion.</li>
       </ul>
+      <p>
+        Several small quizzes beat one long one. A question after each section is a retrieval attempt while
+        the section is still fresh, and a reader who gets one wrong finds out in four minutes rather than at
+        the end of an exam they will not sit twice.
+      </p>
 
       <h2>The script tag</h2>
       <p class="install__line">&lt;script type="module" src="https://nema.migarci2.dev/nema-provider.js"&gt;&lt;/script&gt;</p>

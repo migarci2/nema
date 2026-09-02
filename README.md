@@ -10,7 +10,7 @@
 
 <p align="center">
   nema is a protocol anyone who teaches on the web can install in a minute,<br>
-  so the web becomes a better place to learn together.
+  so every reader keeps what they learned.
 </p>
 
 ---
@@ -34,6 +34,22 @@ nema is a WebMCP protocol for learning, plus the pages that implement it.
 5. The payoff: a 68 minute course on pan sauces becomes 27, then 21, and a
    second cooking site recognises prerequisites it never taught, with no
    partnership between the two.
+
+**The vault has a learner model, and the ideas in it are not ours.** It follows
+the principles of learning fast that Justin Skycak writes up at
+[justinmath.com](https://www.justinmath.com/the-pedagogically-optimal-way-to-learn-math/)
+and that Kris Abdelmessih collects in
+[The Principles of Learning Fast](https://moontowermeta.com/the-principles-of-learning-fast/).
+Three of them are visible in `shared/inference.js`. Knowledge is hierarchical,
+so a passed claim credits every prerequisite at a fraction and extends its
+stability as half a pass, which is Math Academy's Fractional Implicit
+Repetition and the reason review costs less the harder you work. Learning
+happens at the edge of mastery, so the vault asks for a concept only when its
+prerequisites are usable, and otherwise names the weakest prerequisite and the
+goal it is blocking. Practice interleaves, so a session never puts two needs on
+one concept next to each other and keeps confusable concepts apart unless
+telling them apart is the point. `docs/PHILOSOPHY.md` argues the case;
+`docs/SPEC.md` has the formulas.
 
 **Sites speak their own names.** The concept registry is the anchor and it is
 closed, but a site that already calls something `sugar-browning` is not asked to
@@ -112,7 +128,7 @@ Reload any tab that was open before you loaded the extension. Its own test: `CHR
 
 ## Architecture
 
-Five origins. No shared database, no accounts, no server that sees both sides.
+Seven origins. No shared database, no accounts, no server that sees both sides.
 
 ```
             the reader's own agent: ChatGPT desktop, Chrome 149+,
