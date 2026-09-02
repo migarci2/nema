@@ -248,7 +248,7 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
 
 .lp-believe__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-columns: minmax(0, 1fr);
   gap: clamp(32px, 5vw, 72px);
   align-items: start;
 }
@@ -284,20 +284,6 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
   max-width: 40ch;
 }
 
-.lp-tile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-5);
-  padding: clamp(32px, 4vw, 56px) var(--sp-5);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-3);
-  background: var(--navy-2);
-}
-
-.lp-tile__mark { width: 104px; height: 104px; }
-.lp-tile__word { width: 128px; height: auto; color: var(--ink); }
-.lp-tile__line { font-size: var(--fs-13); color: var(--ink-2); }
 
 /* ------------------------------------- 5. what nema is: cards -- */
 
@@ -792,7 +778,6 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
   .lp-teach__grid,
   .lp-cards { grid-template-columns: minmax(0, 1fr); }
 
-  .lp-tile { padding: var(--sp-6) var(--sp-5); }
   .lp-moments { grid-template-columns: minmax(0, 1fr); }
   .lp-dests { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lp-wordmark { width: min(196px, 56%); }
