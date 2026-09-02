@@ -1210,10 +1210,10 @@ body {
 .course-preview__chrome i { width: 4px; height: 4px; border-radius: 50%; background: rgba(41,40,36,.35); }
 .course-preview__label { position: relative; width: max-content; padding: 4px 7px; border-radius: 999px; background: rgba(255,255,255,.72); font-size: 8px; font-weight: 900; text-transform: uppercase; }
 .course-preview__name { position: relative; margin-top: 8px; font-family: var(--font-display); font-size: 20px; font-weight: 900; line-height: .98; letter-spacing: -.04em; }
-.course-preview__plate { position: absolute; left: 50%; bottom: 22px; width: 112px; height: 112px; border: 9px solid #FFFDF7; border-radius: 50%; background: #FF7429; transform: translateX(-50%) rotate(4deg); box-shadow: 0 9px 0 rgba(105,65,13,.12); }
-.course-preview__plate::before, .course-preview__plate::after { content: ''; position: absolute; top: 43px; width: 16px; height: 8px; border-bottom: 3px solid #292824; border-radius: 50%; }
-.course-preview__plate::before { left: 22px; }
-.course-preview__plate::after { right: 22px; }
+.course-preview__plate { position: absolute; left: 50%; bottom: 22px; width: 112px; height: 112px; border: 9px solid #FFFDF7; border-radius: 50%; background: radial-gradient(circle at 23% 61%, rgba(255,174,132,.72) 0 5px, transparent 6px), radial-gradient(circle at 77% 61%, rgba(255,174,132,.72) 0 5px, transparent 6px), #FF7429; transform: translateX(-50%) rotate(4deg); box-shadow: 0 9px 0 rgba(105,65,13,.12); }
+.course-preview__plate::before, .course-preview__plate::after { content: ''; position: absolute; top: 39px; width: 11px; height: 13px; border-radius: 50%; background: radial-gradient(circle at 35% 28%, #FFFFFF 0 2px, transparent 2.5px), #292824; }
+.course-preview__plate::before { left: 24px; }
+.course-preview__plate::after { right: 24px; }
 .course-preview__plate i { position: absolute; left: 34px; top: 58px; width: 26px; height: 15px; border-bottom: 4px solid #292824; border-radius: 50%; }
 .course-preview__plate b { position: absolute; left: 47px; top: -25px; width: 34px; height: 15px; border-radius: 100% 0 100% 0; background: #3BAA8C; transform: rotate(-18deg); }
 
