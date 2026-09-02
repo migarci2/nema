@@ -1,22 +1,38 @@
-<!doctype html>
-<meta charset="utf-8">
-<title>nema thumbnail</title>
-<link rel="stylesheet" href="http://localhost:8780/shared/brand/tokens.css">
+<!doctype html><meta charset="utf-8"><title>v2</title>
+<link rel="stylesheet" href="http://localhost:8780/shared/brand/tokens.css"><link rel="stylesheet" href="base.css">
 <style>
-  html, body { margin: 0; background: #0B1320; }
-  .card { position: relative; width: 1800px; height: 1200px; overflow: hidden; background: #0B1320 url("ART_URL") right -30px center / auto 100% no-repeat; font-family: var(--font-ui, Inter, sans-serif); color: #F2F6FF; }
-  .card::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, #0B1320 0%, #0B1320 46%, rgba(11,19,32,0.86) 60%, rgba(11,19,32,0.1) 78%); }
-  .copy { position: absolute; left: 110px; top: 50%; transform: translateY(-50%); width: 1200px; }
-  .word { width: 940px; color: #F2F6FF; }
-  .word svg { width: 100%; height: auto; display: block; }
-  .tag { margin: 54px 0 0 10px; font-family: var(--font-mono, "JetBrains Mono", monospace); font-size: 66px; letter-spacing: 0; color: #00E5FF; line-height: 1.15; white-space: nowrap; }
-  .sub { margin: 44px 0 0 12px; font-size: 54px; line-height: 1.2; font-weight: 600; color: #F2F6FF; }
-  .sub .t { color: #15C4B4; } .sub .v { color: #00E5FF; } .sub .a { color: #FFCA2E; }
+.copy { position: absolute; left: 120px; top: 140px; width: 1200px; }
+.word { width: 880px; }
+.tag { margin-top: 40px; font-size: 60px; }
+.diagram { position: absolute; left: 120px; right: 120px; bottom: 110px; height: 440px; }
 </style>
 <div class="card">
   <div class="copy">
     <div class="word">WORDMARK_SVG</div>
     <div class="tag">your learning state, everywhere.</div>
-    <div class="sub"><span class="t">The web teaches.</span> <span class="v">Your vault remembers.</span></div>
   </div>
+  <svg class="diagram" viewBox="0 0 1560 440" fill="none">
+    <!-- bus line behind the cards -->
+    <path d="M 150 250 H 1200" stroke="#00E5FF" stroke-width="3" opacity="0.9"/>
+    <path d="M 1200 250 L 1236 250" stroke="#00E5FF" stroke-width="3"/>
+    <!-- three sites -->
+    <g>
+      <rect x="0" y="60" width="300" height="320" rx="12" fill="#F6F1E7"/>
+      <rect x="380" y="60" width="300" height="320" rx="12" fill="#15171C" stroke="#262A33" stroke-width="2"/>
+      <rect x="760" y="60" width="300" height="320" rx="12" fill="#FFFFFF"/>
+    </g>
+    <g fill="#C9B79A"><rect x="36" y="104" width="180" height="22" rx="4"/><rect x="36" y="150" width="228" height="12" rx="3"/><rect x="36" y="176" width="210" height="12" rx="3"/><rect x="36" y="202" width="228" height="12" rx="3"/><rect x="36" y="250" width="150" height="12" rx="3"/><rect x="36" y="276" width="228" height="12" rx="3"/></g>
+    <g fill="#4ADE80"><rect x="416" y="104" width="150" height="14" rx="3"/><rect x="416" y="134" width="220" height="14" rx="3"/><rect x="416" y="164" width="180" height="14" rx="3"/><rect x="416" y="194" width="240" height="14" rx="3"/><rect x="416" y="244" width="120" height="14" rx="3"/><rect x="416" y="274" width="210" height="14" rx="3"/></g>
+    <g fill="#C8C8C8"><rect x="796" y="104" width="200" height="22" rx="4"/><rect x="796" y="150" width="228" height="12" rx="3"/><rect x="796" y="176" width="228" height="12" rx="3"/><rect x="796" y="202" width="190" height="12" rx="3"/><rect x="796" y="250" width="228" height="12" rx="3"/><rect x="796" y="276" width="160" height="12" rx="3"/></g>
+    <g fill="#00E5FF"><rect x="36" y="316" width="228" height="34" rx="6"/><rect x="416" y="316" width="228" height="34" rx="6"/><rect x="796" y="316" width="228" height="34" rx="6"/></g>
+    <!-- connector dots where the bus leaves each card -->
+    <g fill="#00E5FF"><rect x="292" y="242" width="16" height="16"/><rect x="672" y="242" width="16" height="16"/><rect x="1052" y="242" width="16" height="16"/></g>
+    <!-- the vault -->
+    <g transform="translate(1210,30)">
+      <polygon points="175,10 330,100 330,280 175,370 20,280 20,100" stroke="#00E5FF" stroke-width="4" fill="#0B1320"/>
+      <g fill="#00E5FF"><rect x="163" y="0" width="24" height="24"/><rect x="318" y="88" width="24" height="24"/><rect x="318" y="268" width="24" height="24"/><rect x="8" y="268" width="24" height="24"/><rect x="8" y="88" width="24" height="24"/></g>
+      <rect x="163" y="358" width="24" height="24" fill="#FFCA2E"/>
+      <text x="175" y="202" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="34" fill="#F2F6FF">your vault</text>
+    </g>
+  </svg>
 </div>
