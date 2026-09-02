@@ -1394,3 +1394,33 @@ and interrupts vs system-calls, misconception system-calls
 links stay as they are (it is a mirror of someone else's page). The hub's
 "Try it" lists both real articles under one line: "Two real articles, the
 same page with and without nema".
+
+## 29. Follow ups after the real articles landed (2026-09-02)
+
+- **Provider declared alignments travel with the evidence.** A receipt payload
+  may carry `alignments: [{ providerConcept, concept, relation }]` (the
+  manifest's `alignsTo`, restricted to the concepts the receipt's claims
+  use), signed with the rest, so `stage_evidence_receipt` can call
+  `declareAlignments` for the receipt's issuer before translating claims.
+  A ReadinessRequest may carry the same `alignments` array for the
+  requirements it names, so `create_readiness_assertion` can declare them
+  before translating. `assertShape` allows the key on both; `verifyReceipt`
+  ignores it for trust. The embed includes it in both; the courses do not
+  need it (registry ids). The connect handshake passes it through unchanged
+  (it is inside the token or the request). The vault's tool results say
+  `alignmentsDeclared: n`.
+- Hub "Try it": one line "Two real articles, the same page with and without
+  nema" linking to https://aesgcm.migarci2.dev/compare and
+  https://cpu.migarci2.dev/compare; the Maillard blog stays as "A blog post".
+- protocol.html and any doc that states the registry size: read it from the
+  registry at build or say "about 40" rather than a number that drifts.
+- Embed quiz feedback works for one question quizzes ("Right." / "Not this
+  time, the article's answer is ...") and for many.
+- `diff.txt` is generated without the two mtime header lines
+  (`diff -u a b | tail -n +3`, then prepend stable `--- original.html` and
+  `+++ index.html` lines) so the tracked file only changes when the article
+  changes.
+- The prod run of `golden-connect.mjs` must pass against
+  https://nema-vault.migarci2.dev, https://saucier.migarci2.dev and
+  https://maillard.migarci2.dev; fix the two ledger expectations that only
+  held on localhost.
