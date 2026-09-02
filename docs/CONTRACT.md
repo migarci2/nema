@@ -1346,3 +1346,28 @@ Rules:
   note of what they understood, and any other site can ask about it. Judges
   see the diff: `git show --stat` of the app shows the article files plus
   one manifest block.
+
+### 27b. Make the comparison the point (owner refinement, 2026-09-02)
+
+- `apps/aesgcm/public/original.html`: the article exactly as mirrored,
+  untouched, so the two versions can sit side by side.
+- `apps/aesgcm/public/index.html`: the same article with nema added inside
+  the text, not only at the end: a retrieval question right after the AES
+  section, two after GCM (counter mode; what H is and what GHASH does), two
+  after Nonce Reuse (why reuse leaks H, what a forged tag needs), and the
+  final block after the Conclusion (read, path note, receipt). Each question
+  is its own quiz activity with outcomes at ability `retrieve` (evidence type
+  retrieval) on the local concept of that section, so the vault sees
+  retrieval practice, not a single end quiz. Placement uses
+  `<nema-activities for="<activityId>"></nema-activities>` anchors; the embed
+  renders that activity where the anchor stands and everything else in the
+  main `<nema-activities>` block (the embed gains this `for` attribute; until
+  it lands, anchors without support render inside the main block).
+- `apps/aesgcm/public/compare.html`: two columns, the original on the left
+  and the nema version on the right (both same origin iframes, scrolled
+  together), a header "Same article. 24 lines added." with the real count,
+  and under it the exact diff of index.html against original.html generated
+  at build time by `scripts/build.sh` into `diff.txt` (unified diff, shown in
+  a mono block). The hub's "Try it" list points to compare.html.
+- The count of added lines is the headline: keep the nema additions as small
+  as the embed allows (manifest, one script tag, anchors, attribution).
