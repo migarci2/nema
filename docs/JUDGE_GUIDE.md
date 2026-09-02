@@ -258,6 +258,21 @@ codex exec --dangerously-bypass-approvals-and-sandbox \
 
 Interactive `codex` and Claude Code ask you to approve each nema tool call; `codex exec` needs the bypass flag because its default approval policy is never.
 
+## nema in your browser, optional, 30 seconds to load
+
+The same vault as a Chrome side panel, with a broker that needs no model:
+one click shares bands with the page you are on, one click takes the receipt
+home. Chrome 116 or newer. ChatGPT desktop's browser does not run extensions.
+
+1. `bash scripts/build-extension.sh`
+2. Open `chrome://extensions`, turn on Developer mode, click Load unpacked and choose `packages/nema-extension/dist`.
+3. Pin the nema icon and click it: the vault opens in the side panel. Click "Load demo learner".
+4. Open https://saucier.migarci2.dev. The badge shows how many nema tools the page has; the "This page" strip lists them.
+5. Click "Share bands with this page" and approve: the course rebuilds its path from 68 minutes to 27.
+6. Answer "Which vinaigrette holds" in the page, then click "Take the receipt to my vault": the signed receipt lands in your ledger and the ratios bands move.
+
+Reload any tab that was open before you loaded the extension. Its own test: `CHROME=<chrome> node packages/nema-extension/test/e2e.mjs`.
+
 ## Try to break it
 
 Everything here is meant to be attacked. The apps show you what happened.

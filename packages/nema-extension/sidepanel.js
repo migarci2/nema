@@ -16,6 +16,9 @@ import { escapeHtml } from '/shared/brand/brand.js';
 
 const esc = escapeHtml;
 const strip = document.querySelector('[data-ext-page]');
+if (!strip) {
+  throw new Error('[nema] sidepanel.html has no [data-ext-page] container: run scripts/build-extension.sh');
+}
 
 /** What the panel is looking at: a tab id and that page's reported tools. */
 let current = { tabId: null, page: null };
@@ -159,14 +162,15 @@ function render() {
   const page = current.page;
 
   if (!page || !page.url) {
-    refs.origin.textContent = 'No page open in this window.';
-    refs.state.textContent = 'Open a page that teaches something and this strip fills in.';
+    refs.origin.hidden = true;
+    refs.state.textContent = 'No page open in this window. Open something that teaches and this strip fills in.';
     refs.tools.hidden = true;
     refs.actions.hidden = true;
     setBusy(busy);
     return;
   }
 
+  refs.origin.hidden = false;
   refs.origin.textContent = shortOrigin(page.origin || page.url);
 
   if (!page.worksWithNema) {
