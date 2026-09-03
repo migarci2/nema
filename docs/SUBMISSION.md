@@ -280,7 +280,7 @@ webmcp, javascript, html, css, cloudflare-workers, web-crypto-api, ecdsa, mcp, m
 - https://maillard.migarci2.dev (a blog post with the one tag install)
 - https://aesgcm.migarci2.dev/compare (a real article, with and without nema)
 - https://cpu.migarci2.dev/compare (a second real article, with and without nema)
-- https://nema.migarci2.dev/judges.html (the three minute walkthrough)
+- https://nema.migarci2.dev/judges (the three minute walkthrough)
 - https://github.com/migarci2/nema (repository, MIT)
 - https://github.com/migarci2/nema/releases/tag/v0.1.0 (the Chrome extension, zipped and ready to load unpacked)
 
