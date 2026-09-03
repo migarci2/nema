@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="#F2F6FF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+  <!-- WebMCP mark drawn for nema: a browser window whose content is a tool call. -->
+  <rect x="6" y="10" width="52" height="44" rx="9"/>
+  <path d="M6 22h52"/>
+  <circle cx="14" cy="16" r="1.8" fill="#F2F6FF" stroke="none"/>
+  <circle cx="21" cy="16" r="1.8" fill="#F2F6FF" stroke="none"/>
+  <circle cx="28" cy="16" r="1.8" fill="#F2F6FF" stroke="none"/>
+  <path d="M24 31l-7 7 7 7"/>
+  <path d="M40 31l7 7-7 7"/>
+  <path d="M35 29l-6 18"/>
+</svg>
