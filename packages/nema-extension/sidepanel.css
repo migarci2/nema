@@ -1,16 +1,26 @@
-/* nema extension: the few rules the side panel adds to the vault's own CSS.
+/* nema extension: the few rules that turn the vault page into one calm panel.
  *
- * Everything here is either "this is a 400 px column, not a page" or the
- * "This page" strip. No new colours, no new type scale: tokens.css and
- * brand.css still own the look, and the strip is built from the same
- * components as the panels above and below it.
+ * Three states and nothing else: the hero, the card for the page you are on,
+ * and the Next card. Everything else in the panel, the whole vault page
+ * included, is inside the one closed "Under the hood" block at the bottom.
+ *
+ * No new colours and no new components: tokens.css and brand.css still own the
+ * look. The only thing this file adds is a body size a 400 px column can be
+ * read at, and the air between the three things on screen.
  */
 
-/* ------------------------------------------------------- panel width -- */
+:root {
+  --x-body: 15px;
+  --x-lead: 16px;
+}
 
-/* The hub nav would navigate the vault out of the panel, so the header keeps
- * the wordmark and the line that says where you are. */
-.n-header__nav { display: none; }
+/* ------------------------------------------------------- panel frame -- */
+
+/* The hub nav would navigate the vault out of the panel, and a tools pill and
+ * a footer full of links are machine words in a place that has room for none. */
+.n-header__nav,
+.n-header .n-tools,
+.n-footer { display: none; }
 
 /* brand.css hides the app line on the web, where the nav already says where
  * you are. In the panel it is the only thing that can. */
@@ -26,7 +36,7 @@
 
 .n-app { padding: var(--sp-4); gap: var(--sp-4); }
 .n-app__main { gap: var(--sp-4); }
-.v-main { gap: var(--sp-6); }
+.v-main { gap: var(--sp-5); }
 
 /* A 400 px column has no room for a page's worth of air. */
 @media (max-width: 560px) {
@@ -35,74 +45,276 @@
   .n-footer { flex-wrap: wrap; row-gap: var(--sp-2); }
 }
 
-/* --------------------------------------------------- the page strip -- */
+/* ------------------------------------------------------------ cards -- */
 
-.x-origin {
+.x-card { gap: var(--sp-4); padding: var(--sp-5) var(--sp-4); }
+.x-card[hidden] { display: none; }
+.x-card.n-panel--quiet { padding: var(--sp-2) 0; border-color: transparent; }
+
+/* One label, in the panel's own voice: sentence case, no rule, no tracking. */
+.x-label {
+  margin: 0;
+  font-family: var(--font-ui);
   font-size: var(--fs-13);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-2);
+}
+
+/* -------------------------------------------------------- the hero -- */
+
+.x-hero { gap: var(--sp-3); padding: var(--sp-4) 0 0; }
+
+.x-hero__head {
+  margin: 0;
+  font-size: var(--fs-20);
+  font-weight: 600;
+  line-height: 1.2;
   color: var(--ink);
-  margin: 0;
 }
 
-.x-state {
+.x-hero__lede {
+  margin: 0;
+  font-size: var(--x-body);
+  line-height: var(--lh-body);
+  color: var(--ink-2);
+  max-width: 46ch;
+}
+
+/* ------------------------------------------------- the page you are on -- */
+
+.x-away {
+  margin: 0;
+  font-size: var(--x-body);
+  line-height: var(--lh-body);
+  color: var(--ink-2);
+  max-width: 46ch;
+}
+
+.x-ask { display: flex; flex-direction: column; gap: var(--sp-3); }
+
+.x-ask__head {
+  margin: 0;
+  font-size: var(--x-lead);
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.x-actions { display: flex; align-items: center; gap: var(--sp-4); }
+.x-actions[hidden] { display: none; }
+
+/* A second action a person may want and rarely takes, in the weight it
+ * deserves: a line of text, not a button competing with the primary one. */
+.x-quiet {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: var(--font-ui);
   font-size: var(--fs-13);
   color: var(--ink-2);
-  margin: 0;
-  max-width: 62ch;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--line);
 }
+.x-quiet:hover { color: var(--ink); }
+.x-quiet:disabled { color: var(--ink-3); cursor: default; text-decoration: none; }
 
-.x-tools {
-  font-size: var(--fs-11);
-  color: var(--ink-3);
-  margin: 0;
-  word-spacing: 0.35em;
-  line-height: var(--lh-snug);
-}
-
-.x-actions { flex-wrap: wrap; gap: var(--sp-2); }
-
-.x-result:empty { display: none; }
-
-.x-line {
-  margin: 0 0 var(--sp-2);
-  font-size: var(--fs-13);
-  color: var(--ink-2);
-}
-.x-line:last-child { margin-bottom: 0; }
-.x-line--strong { color: var(--ink); }
-.x-line--warn { color: var(--band-due-ink); }
-
+/* The rows a site asks about, and the rows a page gave back. */
 .x-rows {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-1);
-  margin: var(--sp-2) 0;
+  gap: 0;
 }
 
 .x-row {
   display: flex;
   align-items: baseline;
-  gap: var(--sp-2);
-  padding: var(--sp-1) 0;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
   border-top: 1px solid var(--line-soft, var(--line));
-  font-size: var(--fs-12);
+  font-size: var(--fs-14);
 }
 .x-row:first-child { border-top: 0; }
-.x-row--stacked { flex-wrap: wrap; }
-
 .x-row__main { color: var(--ink); flex: 1 1 auto; }
-.x-row__detail {
-  flex: 1 0 100%;
-  color: var(--ink-2);
-  font-size: var(--fs-12);
+
+.x-row__state { flex: none; font-size: var(--fs-13); color: var(--ink-2); }
+.x-row__state--good { color: var(--teal); }
+.x-row__state--wait { color: var(--band-due-ink); }
+.x-row__state--bad { color: var(--danger); }
+
+/* What the site did with what you shared, and what this page gave back. */
+.x-result:empty { display: none; }
+.x-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
 }
 
-/* The calls the two buttons made, in the same three columns as the vault's
- * tool activity strip at the bottom of the page. */
+.x-lead {
+  margin: 0;
+  font-size: var(--x-lead);
+  line-height: 1.35;
+  color: var(--ink);
+}
+.x-lead--warn { color: var(--band-due-ink); }
+
+.x-did__label {
+  margin: 0;
+  font-size: var(--fs-13);
+  color: var(--ink-2);
+}
+
+.x-did__none,
+.x-did__moved {
+  margin: 0;
+  font-size: var(--fs-13);
+  line-height: var(--lh-snug);
+  color: var(--ink-2);
+}
+
+/* The one alignment line the card is allowed, and only when there is one to
+ * decide. Everything else about names is under the hood. */
+.x-decide {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line-soft, var(--line));
+}
+.x-decide[hidden] { display: none; }
+.x-decide__text { flex: 1 1 100%; font-size: var(--fs-14); color: var(--ink-2); }
+
+/* ------------------------------------------------------ the Next card -- */
+
+.x-next__what {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  margin: 0 0 var(--sp-3);
+}
+
+.x-next__title { flex: 1 1 auto; font-size: var(--x-lead); color: var(--ink); }
+.x-next__minutes { flex: none; font-size: var(--fs-13); color: var(--ink-2); }
+
+.x-next__rubric {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.x-next__rubric .n-check {
+  align-items: flex-start;
+  line-height: var(--lh-snug);
+  font-size: var(--fs-14);
+}
+.x-next__rubric .n-check input { margin-top: 2px; }
+
+.x-next__none {
+  margin: 0;
+  font-size: var(--x-body);
+  color: var(--ink-2);
+}
+
+.x-next__acts {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin-top: var(--sp-4);
+}
+
+.x-next__status {
+  margin: var(--sp-3) 0 0;
+  font-size: var(--fs-13);
+  line-height: var(--lh-snug);
+  color: var(--ink);
+}
+.x-next__status:empty { display: none; }
+
+/* ------------------------------------------- the consent modal as a step -- */
+
+/* CONTRACT 24.2 keeps the vault's own modal as the moment a person says yes.
+ * In a 400 px panel it should read as the card opening up, not as a second
+ * surface floating over a first: no dim, no shadow, the panel's own ground. */
+#consent-modal {
+  padding: var(--sp-4);
+  background: var(--navy);
+  place-items: start stretch;
+  overflow: auto;
+}
+#consent-modal .n-modal__dialog {
+  width: 100%;
+  max-height: none;
+  box-shadow: none;
+  overflow: visible;
+}
+#consent-modal .n-modal__head { padding: var(--sp-4); }
+#consent-modal .n-modal__body { padding: var(--sp-4); gap: var(--sp-3); }
+#consent-modal .n-modal__foot { padding: var(--sp-4); }
+#consent-modal .n-modal__title { font-size: var(--fs-20); }
+#consent-modal .v-consent__purpose { font-size: var(--x-body); }
+
+/* One promise about this site, not two. The vault's hour long auto approval is
+ * the extension's thirty days here, and the extension's line is the one shown. */
+.v-consent__decide > .n-check:not(.x-remember) { display: none; }
+.x-remember { margin: 0; }
+
+/* -------------------------------------------------- under the hood -- */
+
+/* The whole vault page lives in here now. The block itself is the vault's own
+ * component, so only two things change: it is not monospace at the top level,
+ * and it has the air a page needs rather than the air a footnote needs. */
+.x-hood { margin-top: var(--sp-5); }
+.x-hood > .n-under__body {
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  gap: var(--sp-5);
+  padding-top: var(--sp-3);
+}
+.x-hood .v-main { gap: var(--sp-5); }
+
+.x-hood__ext {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.x-hood__label {
+  margin: var(--sp-2) 0 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.x-hood__ext > .x-hood__label:first-child { margin-top: 0; }
+
+.x-hood__acts { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+
+.x-origin { margin: 0; font-size: var(--fs-13); color: var(--ink); }
+.x-state { margin: 0; font-size: var(--fs-13); color: var(--ink-2); }
+.x-tools {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  color: var(--ink-3);
+  word-spacing: 0.35em;
+  line-height: var(--lh-snug);
+}
+
+/* The calls the panel made, in the same three columns as the vault's own
+ * tool activity strip. */
 .x-calls {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin-top: var(--sp-2);
+  margin-top: var(--sp-1);
 }
 
 .x-calls__label {
@@ -132,134 +344,18 @@
 .x-call[data-status="rejected"] .x-call__status,
 .x-call[data-status="denied"] .x-call__status { color: var(--danger); }
 
-/* ---------------------------------------------------- the onboarding -- */
-
-/* A fresh vault has nothing to draw: an empty graph, an empty table and five
- * empty ledgers are noise in a 400 px column. While the panel is on its first
- * run everything but the choices is out of the way. */
-body[data-nema-onboarding='on'] .v-lede,
-body[data-nema-onboarding='on'] .v-summary,
-body[data-nema-onboarding='on'] .v-main > section[aria-labelledby='p-graph'],
-body[data-nema-onboarding='on'] .v-main > section[aria-labelledby='p-state'],
-body[data-nema-onboarding='on'] .v-main > section[aria-labelledby='p-needs'],
-body[data-nema-onboarding='on'] .v-ledgers,
-body[data-nema-onboarding='on'] .v-more,
-body[data-nema-onboarding='on'] .v-activity { display: none; }
-
-.x-onboard__head {
-  margin: 0 0 var(--sp-2);
-  font-size: var(--fs-16);
-  font-weight: 600;
-  line-height: 1.25;
-  color: var(--ink);
-}
-
-.x-onboard__lede {
-  margin: 0;
-  font-size: var(--fs-14);
-  color: var(--ink);
-  max-width: 46ch;
-}
-
-.x-onboard__choices {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--sp-2);
-  margin: var(--sp-3) 0 var(--sp-2);
-}
-
-.x-onboard__note {
-  margin: 0;
-  font-size: var(--fs-12);
-  color: var(--ink-2);
-}
-
-/* ------------------------------------------------------ the Next card -- */
-
-.x-next__what {
-  display: flex;
-  align-items: baseline;
-  gap: var(--sp-2);
-  margin: 0;
-}
-
-.x-next__title { flex: 1 1 auto; font-size: var(--fs-14); color: var(--ink); }
-.x-next__minutes { flex: none; font-size: var(--fs-12); color: var(--ink-2); }
-
-.x-next__why {
-  margin: 2px 0 0;
-  font-size: var(--fs-12);
-  color: var(--ink-2);
-}
-
-.x-next__reason {
-  margin: 2px 0 0;
-  font-size: var(--fs-11);
-  color: var(--ink-label);
-}
-
-.x-next__ask {
-  margin: var(--sp-3) 0 var(--sp-2);
-  font-size: var(--fs-12);
-  color: var(--ink-2);
-}
-
-.x-next__rubric {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
-.x-next__rubric .n-check { align-items: flex-start; line-height: var(--lh-snug); }
-.x-next__rubric .n-check input { margin-top: 2px; }
-
-.x-next__none,
-.x-next__agent {
-  margin: var(--sp-2) 0 0;
-  font-size: var(--fs-12);
-  color: var(--ink-2);
-}
-
-.x-next__acts { flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3); }
-
-.x-next__status {
-  margin: var(--sp-2) 0 0;
-  font-size: var(--fs-12);
-  color: var(--ink);
-}
-.x-next__status:empty { display: none; }
-
 /* ----------------------------------------------------- the alignments -- */
 
 .x-aligns {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  margin-top: var(--sp-3);
-  padding-top: var(--sp-3);
-  border-top: 1px solid var(--line);
+  margin-top: var(--sp-2);
 }
 
-.x-aligns__label {
-  margin: 0;
-  font-size: var(--fs-12);
-  color: var(--ink);
-}
-
-.x-aligns__open {
-  margin: 0;
-  font-size: var(--fs-12);
-  color: var(--ink-2);
-}
-
-.x-aligns__note {
-  margin: 0;
-  font-size: var(--fs-12);
-  color: var(--ink);
-}
+.x-aligns__label { margin: 0; font-size: var(--fs-13); color: var(--ink); }
+.x-aligns__open { margin: 0; font-size: var(--fs-13); color: var(--ink-2); }
+.x-aligns__note { margin: 0; font-size: var(--fs-13); color: var(--ink); }
 
 .x-align {
   display: flex;
@@ -274,11 +370,16 @@ body[data-nema-onboarding='on'] .v-activity { display: none; }
 .x-align__acts { display: flex; gap: var(--sp-2); }
 .x-aligns__done { display: flex; flex-direction: column; gap: var(--sp-1); }
 
-/* The extension's own line in the vault's consent modal. */
-.x-remember { margin-top: var(--sp-1); }
+/* ---------------------------------------------------- the first run -- */
 
-/* The panel's own copy of the block of contract section 26: the tool names and
- * the calls the extension made are the only machine words in the panel, and
- * they live behind one closed summary like everything else. */
-.n-under .x-tools { font-size: var(--fs-13); color: var(--ink-2); }
-.n-under .x-calls { margin-top: 0; }
+/* A fresh vault has nothing to draw: an empty graph, an empty table and five
+ * empty ledgers are noise even inside a closed block. While the panel is on
+ * its first run there is one sentence and one button, and that is all. */
+body[data-nema-onboarding='on'] .v-lede,
+body[data-nema-onboarding='on'] .v-summary,
+body[data-nema-onboarding='on'] .x-hood section[aria-labelledby='p-graph'],
+body[data-nema-onboarding='on'] .x-hood section[aria-labelledby='p-state'],
+body[data-nema-onboarding='on'] .x-hood section[aria-labelledby='p-needs'],
+body[data-nema-onboarding='on'] .v-ledgers,
+body[data-nema-onboarding='on'] .v-more,
+body[data-nema-onboarding='on'] .v-activity { display: none; }

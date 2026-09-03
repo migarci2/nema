@@ -38,11 +38,12 @@ cp "$PKG/sw.js" "$PKG/content.js" "$PKG/bridge.js" \
    "$PKG/sidepanel.js" "$PKG/sidepanel.css" "$PKG/panel-webmcp.js" "$OUT/"
 cp "$PKG"/icons/icon*.png "$OUT/icons/"
 
-# 4. sidepanel.html: the vault page with the hub nav hidden, the extension's
-#    three containers above the summary (onboarding, Next, "This page"), and one
-#    more module. Every anchor is checked, so an edit to index.html that moves
-#    one of them fails the build loudly instead of shipping a panel with no
-#    cards.
+# 4. sidepanel.html: the vault page turned into one calm surface. The extension's
+#    three cards come first (the first run, the open page, Next), and the whole
+#    vault page, which is where every id, token, form and ledger lives, is folded
+#    into the one closed "Under the hood" block at the bottom, contract section
+#    26. Every anchor is checked, so an edit to index.html that moves one of them
+#    fails the build loudly instead of shipping a panel with no cards.
 node - "$OUT" <<'NODE'
 const { readFileSync, writeFileSync } = require('node:fs');
 const out = process.argv[2];
@@ -57,24 +58,44 @@ function replace(find, make, what) {
   html = html.slice(0, at) + make(find) + html.slice(at + find.length);
 }
 
-const STRIP = `<!-- The extension's three cards, all filled by sidepanel.js: the first run
-         choices, the Next card, and the broker strip for the open page. -->
-    <section class="n-panel n-panel--quiet x-onboard" aria-labelledby="p-ext-onboard" data-ext-onboard hidden></section>
-
-    <section class="n-panel n-panel--quiet x-next" aria-labelledby="p-ext-next" data-ext-next hidden></section>
-
-    <section class="n-panel n-panel--quiet x-page" aria-labelledby="p-ext-page" data-ext-page></section>
-
-    `;
-
 replace('<title>nema vault</title>',
   () => '<title>nema in your browser</title>', 'the title');
 replace('<link rel="stylesheet" href="/app.css">',
   (found) => found + '\n<link rel="stylesheet" href="/sidepanel.css">', 'the app.css link');
 replace('<script src="/shared/webmcp-polyfill.js"></script>',
   (found) => '<script src="/panel-webmcp.js"></script>\n' + found, 'the polyfill script');
-replace('<section class="n-panel n-panel--quiet v-summary"',
-  (found) => STRIP + found, 'the summary section');
+
+/* The three cards a person reads, then one closed block with the vault in it. */
+const MAIN_OPEN = '<main class="n-app__main v-main" id="vault">';
+const MAIN_CLOSE = '</main>';
+const opensAt = html.indexOf(MAIN_OPEN);
+const closesAt = html.indexOf(MAIN_CLOSE, opensAt);
+if (opensAt === -1 || closesAt === -1) {
+  console.error("build-extension: the vault's main element not found in index.html");
+  process.exit(1);
+}
+const inside = html.slice(opensAt + MAIN_OPEN.length, closesAt);
+const rebuilt = `
+    <!-- The extension's three cards, all filled by sidepanel.js: the first run,
+         the open page, and what to do next. Nothing else is on screen. -->
+    <section class="n-panel n-panel--quiet x-hero" aria-labelledby="p-ext-onboard" data-ext-onboard hidden></section>
+
+    <section class="n-panel x-card" aria-labelledby="p-ext-page" data-ext-page></section>
+
+    <section class="n-panel x-card" aria-labelledby="p-ext-next" data-ext-next hidden></section>
+
+    <!-- Contract section 26: one block, closed, with everything a machine needs
+         and a person does not. The vault page is inside it, whole and working. -->
+    <details class="n-under x-hood">
+      <summary class="n-under__summary">Under the hood</summary>
+      <div class="n-under__body">
+        <div class="x-hood__ext" data-ext-hood></div>
+${inside}
+      </div>
+    </details>
+  `;
+html = html.slice(0, opensAt + MAIN_OPEN.length) + rebuilt + html.slice(closesAt);
+
 replace('<script type="module" src="/app.js"></script>',
   (found) => found + '\n<script type="module" src="/sidepanel.js"></script>', 'the app.js script');
 

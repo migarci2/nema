@@ -137,7 +137,15 @@ function summarizeManifest(payload) {
   for (const activity of payload.activities || []) {
     for (const entry of activity && activity.outcomes ? activity.outcomes : []) add(teaches, entry);
   }
+  /* Everything the site would ask a vault for: its requirements plus every
+   * pair a skip or an unlock rule reads, which is the set the panel's Share
+   * builds. The card counts these, so it counts what would actually be shared. */
   for (const entry of payload.requirements || []) add(requires, entry);
+  for (const activity of payload.activities || []) {
+    if (!activity) continue;
+    for (const rule of activity.skipIf || []) add(requires, rule);
+    for (const rule of activity.unlock || activity.unlockIf || []) add(requires, rule);
+  }
 
   const local = new Set();
   for (const entry of [...teaches, ...requires]) {

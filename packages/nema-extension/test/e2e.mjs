@@ -6,16 +6,16 @@
  * the Share button in the page's own bar.
  *
  *   1. load the unpacked extension, find its id from the service worker target
- *   2. open the side panel: a fresh profile shows the onboarding, and its own
- *      button loads the demo learner
+ *   2. open the side panel: a fresh profile shows the first run card, and its
+ *      own button loads the demo learner
  *   3. the Next card names a need and lists its rubric as a checklist
- *   4. open Saucier School, wait for the strip and the in page bar
+ *   4. open Saucier School, wait for the hood to see it and for the in page bar
  *   5. Share from the bar, tick "Remember this site for 30 days", approve in
- *      the consent modal, assert 27 minutes of 68 and the 30 day approval
+ *      the consent modal, assert "68 minutes became 27" and the 30 day approval
  *   6. the page itself rebuilds its path around what was shared
  *   7. answer the ratios diagnostic in the page, as the learner
  *   8. the receipt is collected with no click, and the page gets the toast
- *   9. "Check for receipts now" still works and says it is already kept
+ *   9. "Check for receipts now", under the hood, says it is already kept
  *  10. an ordinary page offers nothing
  *  11. the Next card's rubric is ticked and Done records a self check
  *  12. Saucier School again: a remembered site personalises with no consent
@@ -314,10 +314,10 @@ try {
   await panel.evaluate(`document.querySelector('[data-consent-approve]').click(), true`);
 
   const shareResult = await panel.waitFor(
-    `(() => { const t = document.querySelector('[data-ext-result]').textContent; return t.includes('minutes of') || t.includes('rejected') || t.includes('denied') ? t : ''; })()`,
+    `(() => { const t = document.querySelector('[data-ext-result]').textContent; return t.includes('minutes became') || t.includes('did not take it') || t.includes('denied') ? t : ''; })()`,
     { label: 'the share result' }
   );
-  ok(shareResult.includes('27 minutes of 68'), `the strip reports the new path: ${shareResult.trim().slice(0, 120)}`);
+  ok(shareResult.includes('68 minutes became 27'), `the card reports the new path: ${shareResult.trim().slice(0, 120)}`);
   const barAfter = await site.waitFor(
     `(() => { const t = document.getElementById('nema-ext-bar').shadowRoot.querySelector('[data-bar]').textContent.replace(/\\s+/g, ' ').trim();
        return t.includes('Shared with this site') ? t : ''; })()`,

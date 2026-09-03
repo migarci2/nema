@@ -1485,3 +1485,60 @@ happens, why evidence beats grades, why memory needs you to come back, why
 the encompassing graph changes what "review" means, why the agent should
 manage learning rather than explain, and why nema refuses to make effort
 disappear.
+
+## 31. The extension panel is one calm surface (owner decision, 2026-09-04)
+
+Owner: "la extension habria que simplificarla, es demasiado compleja ahora
+mismo." The panel had stacked onboarding, a "This page" strip with tool lists,
+a tool call log, alignments, a Next card with a rubric, requirement rows,
+bands, a "More" section with by hand forms, toasts and folds. It becomes three
+states and nothing else on screen, in the spirit of the three second layer used
+everywhere else ("Learn it once. It counts everywhere.").
+
+The three states, in `packages/nema-extension/sidepanel.js`:
+
+1. **Not a nema page.** The mark, "Learn it once. It counts everywhere.", one
+   sentence ending "Learn anywhere you see the nema mark", and one button,
+   "Load the demo learner". A vault that already holds evidence drops the button
+   and shows the Next card instead. Import a vault file and Start empty move
+   under the hood.
+2. **A nema page, not shared yet.** One card: "<Site> asks to know <n> things",
+   the n rows in plain words with what the vault says about each (verified, not
+   sure yet, not yet), a primary "Share", a quiet "Not now", and the "Remember
+   this site for 30 days" checkbox. Under it, nothing. The vault's own consent
+   modal stays the confirmation step and is restyled in the panel to read as the
+   same card opening up: the panel's ground, no dim, the same rows. The
+   checkbox is one node that moves into the modal and back, so a site is
+   promised one thing, not two: the vault's own hour long auto approval line is
+   hidden in the panel.
+3. **Shared.** One line, "Shared with <Site>. 68 minutes became 27.", then
+   "What you did here", the receipts this page produced as they arrive, one row
+   each with the activity and one word (verified, waiting, already in your
+   vault), and one line naming the bands that moved. Then the Next card, reduced
+   to its title, its minutes, the rubric checklist and Done.
+
+Everything else lives in exactly one closed `<details>` at the bottom of the
+panel, labelled "Under the hood", and stays functional there: the tool names,
+the tool call log with its timings, the alignments with Confirm and Reject,
+"Check for receipts now", the two other first run choices, and the whole vault
+page (lede, summary, graph, learner state, needs, ledgers, the "Do it by hand"
+forms, the tool activity strip). `scripts/build-extension.sh` builds that
+structure by rewriting the vault's `<main>`: the extension's three cards, then
+the block with the vault inside it. The vault files are still copied, never
+edited.
+
+An alignment only the learner can settle surfaces as one quiet line inside
+state 2 or 3, "This site calls Maillard reaction 'browning science'. Confirm",
+and only while there is one to decide.
+
+Two rules the panel keeps for itself:
+
+- `app.js` opens every `<details>` around a panel it flashes. In the vault that
+  is right. In the panel the block holds the whole vault, so the panel closes it
+  again unless a person opened it by hand.
+- The card counts what would actually be shared: `content.js` summarises a
+  manifest's requirements plus every pair a `skipIf` or an `unlock` rule reads,
+  which is the set the panel's Share builds.
+
+Look: the vault's own tokens, navy, one accent, 15 px body, generous spacing,
+sentence case, no pill with a machine word in the three states.
