@@ -1,0 +1,293 @@
+{
+  "total": 120.13333299999998,
+  "clips": [
+    {
+      "name": "slot-A",
+      "kind": "cam",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/final/work/cam-A.mp4",
+      "at": 0.0,
+      "dur": 7.733333
+    },
+    {
+      "name": "01-open-a",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/01-open-a-4k.mp4",
+      "at": 7.733333,
+      "dur": 2.0
+    },
+    {
+      "name": "07-title",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/07-title-4k.mp4",
+      "at": 9.733333,
+      "dur": 3.5
+    },
+    {
+      "name": "09-ch1-ask",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/09-ch1-ask-4k.mp4",
+      "at": 13.233333,
+      "dur": 7.6
+    },
+    {
+      "name": "10-ch1-consent",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/10-ch1-consent-4k.mp4",
+      "at": 20.833333,
+      "dur": 4.4
+    },
+    {
+      "name": "11-ch1-became",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/11-ch1-became-4k.mp4",
+      "at": 25.233333000000002,
+      "dur": 8.6
+    },
+    {
+      "name": "12-webmcp",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/12-webmcp-4k.mp4",
+      "at": 33.833333,
+      "dur": 6.4
+    },
+    {
+      "name": "12b-beat",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/12b-beat-4k.mp4",
+      "at": 40.233333,
+      "dur": 2.0
+    },
+    {
+      "name": "13-ch2-answer",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/13-ch2-answer-4k.mp4",
+      "at": 42.233333,
+      "dur": 4.6
+    },
+    {
+      "name": "14-ch2-receipt",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/14-ch2-receipt-4k.mp4",
+      "at": 46.833333,
+      "dur": 5.4
+    },
+    {
+      "name": "15-ch2-keep",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/15-ch2-keep-4k.mp4",
+      "at": 52.233333,
+      "dur": 2.2
+    },
+    {
+      "name": "16-ch2-ledger",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/16-ch2-ledger-4k.mp4",
+      "at": 54.433333000000005,
+      "dur": 3.4
+    },
+    {
+      "name": "slot-C",
+      "kind": "cam",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/final/work/cam-C.mp4",
+      "at": 57.833333,
+      "dur": 5.766667
+    },
+    {
+      "name": "18-ch3-ask",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/18-ch3-ask-4k.mp4",
+      "at": 63.6,
+      "dur": 3.6
+    },
+    {
+      "name": "19-ch3-consent",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/19-ch3-consent-4k.mp4",
+      "at": 67.2,
+      "dur": 2.2
+    },
+    {
+      "name": "20-ch3-open",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/20-ch3-open-4k.mp4",
+      "at": 69.4,
+      "dur": 5.7
+    },
+    {
+      "name": "21-ch4-ext",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/21-ch4-ext-4k.mp4",
+      "at": 75.10000000000001,
+      "dur": 5.6
+    },
+    {
+      "name": "22-ch4-toast",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/22-ch4-toast-4k.mp4",
+      "at": 80.7,
+      "dur": 3.6
+    },
+    {
+      "name": "23-ch4-article",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/23-ch4-article-4k.mp4",
+      "at": 84.3,
+      "dur": 5.6
+    },
+    {
+      "name": "slot-D",
+      "kind": "cam",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/final/work/cam-D.mp4",
+      "at": 89.89999999999999,
+      "dur": 3.633333
+    },
+    {
+      "name": "25-logos",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/25-logos-4k.mp4",
+      "at": 93.53333299999998,
+      "dur": 7.0
+    },
+    {
+      "name": "26-twotags",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/26-twotags-4k.mp4",
+      "at": 100.53333299999998,
+      "dur": 7.6
+    },
+    {
+      "name": "slot-E",
+      "kind": "cam",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/final/work/cam-E.mp4",
+      "at": 108.13333299999998,
+      "dur": 7.0
+    },
+    {
+      "name": "28-closing",
+      "kind": "seg",
+      "path": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/28-closing-4k.mp4",
+      "at": 115.13333299999998,
+      "dur": 5.0
+    }
+  ],
+  "voice": [
+    {
+      "name": "vo-01",
+      "at": 13.573333,
+      "text": "A cooking course I have never opened. It wants to know three things about me. It asks my nema, not me."
+    },
+    {
+      "name": "vo-02",
+      "at": 22.573332999999998,
+      "text": "I say yes. That is all it gets."
+    },
+    {
+      "name": "vo-03",
+      "at": 26.673333000000003,
+      "text": "68 minutes become 27. It skips what I already know."
+    },
+    {
+      "name": "vo-04",
+      "at": 42.673333,
+      "text": "I do one exercise. The course gives me a note that says I passed. That note is mine. I keep it in my nema."
+    },
+    {
+      "name": "vo-05",
+      "at": 63.92,
+      "text": "A different site. It asks, I say yes, and it already counts what I did before."
+    },
+    {
+      "name": "vo-06a",
+      "at": 70.52000000000001,
+      "text": "Two lessons done before I start. The lab opens."
+    },
+    {
+      "name": "vo-06b",
+      "at": 75.52000000000001,
+      "text": "With the extension it is one click. My notes come home alone."
+    },
+    {
+      "name": "vo-07a",
+      "at": 84.72,
+      "text": "This is a real article, with questions inside the text."
+    },
+    {
+      "name": "vo-07b",
+      "at": 100.88333299999998,
+      "text": "One tag on the page. That is all."
+    },
+    {
+      "name": "vo-08",
+      "at": 104.25333299999998,
+      "text": "If you teach on the web, you can add this in one minute."
+    },
+    {
+      "name": "vo-webmcp-a",
+      "at": 34.383333,
+      "text": "Every page shows what it can do with WebMCP."
+    },
+    {
+      "name": "vo-webmcp-b",
+      "at": 94.08333299999998,
+      "text": "Any agent can use it, and my nema answers only what I approve."
+    }
+  ],
+  "slots": {
+    "A": {
+      "in": 10.898,
+      "dur": 7.731,
+      "lines": [
+        [
+          "C",
+          "Every site you learn from starts from zero."
+        ],
+        [
+          "C",
+          "Nema fixes that. I want to show you three ways I use it."
+        ]
+      ]
+    },
+    "C": {
+      "in": 46.712,
+      "dur": 5.726,
+      "lines": [
+        [
+          "C",
+          "Now a different site. It has never seen the first one."
+        ],
+        [
+          "M",
+          "But it already knows."
+        ]
+      ]
+    },
+    "D": {
+      "in": 85.032,
+      "dur": 3.594,
+      "lines": [
+        [
+          "M",
+          "And which AI is this?"
+        ],
+        [
+          "C",
+          "The one you already use."
+        ]
+      ]
+    },
+    "E": {
+      "in": 276.185,
+      "dur": 6.944,
+      "lines": [
+        [
+          "C",
+          "What you learn is yours. Not the sites'. So, that is nema."
+        ],
+        [
+          "M",
+          "Please try it. We would love your feedback."
+        ]
+      ]
+    }
+  }
+}
