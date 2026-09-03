@@ -756,7 +756,7 @@ export const ACTIVITIES = {
     includeReason: 'Included: this lab is where the unit outcome is earned.',
     skipReason: '',
     unlockReason: 'Unlocked. Prerequisite recognised from another provider.',
-    lockedReason: 'Locked: needs evidence that you can explain emulsions, at least uncertain.',
+    lockedReason: 'Locked: this lab opens once your vault shows you can explain emulsions.',
     ...SERVICE_LOG_LAB
   },
   'incident-triage': {
@@ -784,7 +784,7 @@ export const ACTIVITIES = {
     skipReason: '',
     unlockReason: 'Unlocked. Prerequisite recognised from another provider, all three of them.',
     lockedReason:
-      'Locked: needs emulsions at least uncertain, plus verified food safety and mise en place.',
+      'Locked: this one opens once your vault shows emulsions, food safety and mise en place.',
     ...TRIAGE_LAB
   }
 };

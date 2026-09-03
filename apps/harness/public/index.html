@@ -54,19 +54,27 @@
         </div>
         <p class="unit__banner" data-banner role="status" aria-live="polite" hidden></p>
       </div>
-      <div class="unit-art" aria-hidden="true">
-        <span class="unit-art__spark unit-art__spark--one">✦</span>
-        <span class="unit-art__spark unit-art__spark--two">✦</span>
-        <div class="unit-art__plate">
-          <span class="unit-art__leaf unit-art__leaf--one"></span>
-          <span class="unit-art__leaf unit-art__leaf--two"></span>
-          <span class="unit-art__eye unit-art__eye--left"></span>
-          <span class="unit-art__eye unit-art__eye--right"></span>
-          <span class="unit-art__smile"></span>
+      <figure class="unit-photo">
+        <img class="unit-photo__img" src="/img/hero-pan-sauce.webp" width="900" height="900"
+             alt="Cold butter being swirled into a reduced sauce in a steel skillet." fetchpriority="high" decoding="async">
+        <figcaption class="unit-photo__cap"><b>68 minutes</b>, at your own pace</figcaption>
+        <div class="unit-art" aria-hidden="true">
+          <span class="unit-art__spark unit-art__spark--one">✦</span>
+          <span class="unit-art__spark unit-art__spark--two">✦</span>
+          <div class="unit-art__plate">
+            <span class="unit-art__leaf unit-art__leaf--one"></span>
+            <span class="unit-art__leaf unit-art__leaf--two"></span>
+            <span class="unit-art__eye unit-art__eye--left"></span>
+            <span class="unit-art__eye unit-art__eye--right"></span>
+            <span class="unit-art__smile"></span>
+          </div>
         </div>
-      </div>
+      </figure>
       <div class="lab-hero__reqs">
-        <p class="lab-line" data-req-line></p>
+        <div class="lab-reqs__intro">
+          <h2 class="lab-reqs__title">What this course assumes you can do</h2>
+          <p class="lab-line" data-req-line></p>
+        </div>
         <div class="lab-reqs" data-requirements></div>
 
         <p class="lab-line lab-say">This site can ask what you already know, and remember what you do here. Nothing is shared until you say yes.</p>
@@ -117,6 +125,30 @@
       </div>
     </section>
 
+    <!-- who teaches it, and what to have on the bench before you start ---- -->
+    <section class="course-facts" aria-labelledby="facts-title">
+      <h2 class="sr-only" id="facts-title">Your instructor and your kit</h2>
+      <div class="teacher">
+        <img class="teacher__photo" src="/img/chef-ana-serrano.webp" width="480" height="480" loading="lazy" decoding="async"
+             alt="Chef Ana Serrano in kitchen whites at her sauce station.">
+        <div class="teacher__text">
+          <p class="teacher__role">Your instructor</p>
+          <p class="teacher__name">Chef Ana Serrano</p>
+          <p class="teacher__bio">Twelve years on the sauce station. She teaches the way a good chef does: watch it once, then cook it yourself.</p>
+        </div>
+      </div>
+      <div class="kit">
+        <img class="kit__sticker" src="/img/sticker-whisk.webp" width="220" height="220" loading="lazy" decoding="async" alt="">
+        <h3 class="kit__title">What you need</h3>
+        <ul class="kit__list">
+          <li>A heavy skillet, steel or cast iron</li>
+          <li>Two shallots and a glass of dry white wine</li>
+          <li>Cold butter, cut into cubes</li>
+          <li>A balloon whisk and a small ladle</li>
+        </ul>
+      </div>
+    </section>
+
     <div class="n-grid lab-grid">
 
       <!-- path ---------------------------------------------------------- -->
@@ -151,16 +183,21 @@
 
     </div>
 
-    <!-- tool activity, a quiet strip under the page ---------------------- -->
+    <!-- tool activity, folded away: a learner never needs to read it ------ -->
     <section class="lab-strip" id="tools" aria-labelledby="tools-label">
-      <p class="lab-strip__label" id="tools-label">Tool activity</p>
-      <div data-activity-strip></div>
+      <details class="lab-strip__fold n-under">
+        <summary class="lab-strip__label n-under__summary" id="tools-label">Under the hood</summary>
+        <div class="n-under__body">
+          <p class="n-under__say">Every tool call this page has answered, newest first.</p>
+          <div data-activity-strip></div>
+        </div>
+      </details>
     </section>
 
     <div class="lab-tail">
       <p class="lab-line">
         Taught and graded by <span data-unit-provider>Saucier School</span>.
-        No tool on this page submits an answer, grades one, or writes to your vault.
+        Nothing on this page answers for you, and nothing reaches your vault unless you send it.
       </p>
       <details class="lab-more n-under">
         <summary class="lab-more__summary n-under__summary">Under the hood</summary>

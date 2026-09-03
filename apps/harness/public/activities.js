@@ -146,7 +146,7 @@ function head(activity) {
       'p',
       'stage__meta',
       `${TYPE_LABEL[activity.type] || activity.type}, ${activity.minutes} min. ` +
-        `Worth ${activity.evidenceProduced} evidence, graded in our kitchen.`
+        `Graded here in our kitchen, by the chef who wrote it.`
     )
   );
   return wrap;
@@ -177,7 +177,7 @@ function hintsBlock(activity, attempt, handlers) {
       )
     );
   } else {
-    wrap.append(el('p', 'lab-note', 'Every hint is open. Hints never change the grade, and your vault sees how many you used.'));
+    wrap.append(el('p', 'lab-note', 'Every hint is open. Hints never change your grade, and your vault sees how many you used.'));
   }
   return wrap;
 }
@@ -280,7 +280,7 @@ function renderLesson(activity, attempt, handlers) {
     el(
       'p',
       'lab-note',
-      'Marking this read records exposure evidence, weight 0.1 in your vault. Reading is not cooking.'
+      'Reading is not cooking. Marking this read counts for a little, and your vault knows the difference.'
     )
   );
 
@@ -614,7 +614,7 @@ function renderFreeRecall(activity, attempt, handlers) {
       rubric.append(row);
     }
     rubric.append(
-      el('p', 'lab-note', 'Graded by a keyword rubric in our kitchen, and worth 0.8 of a full assessment in your vault.')
+      el('p', 'lab-note', 'Marked here in our kitchen, against what a chef would want to hear you say.')
     );
   }
   frag.append(rubric);

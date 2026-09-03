@@ -1515,3 +1515,188 @@ button.n-path__row:hover { background: #FFFFFF; transform: translateX(4px); box-
   gap: var(--sp-4);
   max-width: 68ch;
 }
+
+/* ------------------------------------------------------------------------ */
+/* Course photography: the hero shot, the instructor, the kit and the path.  */
+/* The sunny skin owns the colour; the photographs only sit inside it.       */
+/* ------------------------------------------------------------------------ */
+
+.unit-photo {
+  position: relative;
+  align-self: center;
+  margin: 0;
+  z-index: 1;
+}
+.unit-photo__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 28px;
+  border: 9px solid #FFFDF7;
+  box-shadow: 0 18px 40px rgba(128, 91, 19, 0.22);
+  background: #F3E7CE;
+}
+.unit-photo__cap {
+  position: absolute;
+  left: -6px;
+  bottom: -14px;
+  max-width: 92%;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #FFFDF7;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  box-shadow: 0 10px 20px rgba(91, 62, 24, 0.22);
+}
+.unit-photo__cap b { font-weight: 900; }
+
+/* The collaborator's smiley plate stays, now as a sticker on the photograph. */
+.unit-photo .unit-art {
+  position: absolute;
+  right: -14px;
+  top: -18px;
+  z-index: 2;
+  width: 112px;
+  min-height: 0;
+}
+.unit-photo .unit-art__plate { width: 100px; border-width: 9px; }
+.unit-photo .unit-art__plate::before { top: -22px; width: 6px; height: 24px; }
+.unit-photo .unit-art__eye { width: 10px; height: 12px; }
+.unit-photo .unit-art__eye::after { left: 2px; top: 2px; width: 3px; height: 3px; }
+.unit-photo .unit-art__smile { border-bottom-width: 4px; }
+.unit-photo .unit-art__leaf { width: 30px; height: 14px; }
+.unit-photo .unit-art__leaf--one { top: -21px; }
+.unit-photo .unit-art__leaf--two { top: -17px; }
+.unit-photo .unit-art__spark { font-size: 20px; }
+.unit-photo .unit-art__spark--one { top: auto; bottom: -18px; left: -26px; }
+.unit-photo .unit-art__spark--two { right: -18px; bottom: auto; top: 78px; }
+
+/* the sentence over the three assumption cards */
+.lab-reqs__intro { display: flex; flex-direction: column; gap: 4px; }
+.lab-reqs__title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+/* ---- the instructor and the kit ---------------------------------------- */
+
+.course-facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 20px;
+}
+.teacher,
+.kit {
+  padding: 22px;
+  border-radius: 26px;
+  box-shadow: var(--shadow-card);
+}
+.teacher {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: #FFFFFF;
+}
+.teacher__photo {
+  flex: 0 0 96px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid #FFD84A;
+  background: #F3E7CE;
+}
+.teacher__text { display: flex; flex-direction: column; gap: 3px; }
+.teacher__role {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8A7C5F;
+}
+.teacher__name { font-family: var(--font-display); font-size: 21px; font-weight: 900; letter-spacing: -0.03em; }
+.teacher__bio { max-width: 42ch; font-size: 14px; line-height: 1.45; color: #5F5749; }
+
+.kit { position: relative; background: #E8F7F3; overflow: hidden; }
+.kit__sticker {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  opacity: 0.85;
+  pointer-events: none;
+}
+.kit__title { font-family: var(--font-display); font-size: 18px; font-weight: 900; letter-spacing: -0.02em; }
+.kit__list {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  max-width: 30ch;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #3F5B57;
+}
+.kit__list li::marker { color: #3BAA8C; }
+
+/* ---- photographs on the path rows -------------------------------------- */
+
+.lab-path__shot {
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  border-radius: 13px;
+  object-fit: cover;
+  background: #F3E7CE;
+}
+.lab-path .n-path__does {
+  font-size: 12px;
+  line-height: 1.35;
+  color: #6E6555;
+}
+.lab-path .n-path__row--skipped .lab-path__shot { filter: grayscale(0.55); opacity: 0.7; }
+
+/* ---- the tool strip, folded ------------------------------------------- */
+
+.lab-strip__fold { border: 0; }
+.lab-strip__fold .lab-strip__label { cursor: pointer; }
+
+@media (max-width: 900px) {
+  .course-facts { grid-template-columns: minmax(0, 1fr); }
+  .unit-photo .unit-art { width: 84px; right: -10px; top: -14px; }
+  .unit-photo .unit-art__plate { width: 76px; border-width: 7px; }
+}
+
+@media (max-width: 680px) {
+  .unit-photo__img { aspect-ratio: 16 / 10; border-width: 7px; }
+  .unit-photo__cap { font-size: 11px; padding: 7px 12px; }
+  .teacher { flex-direction: column; align-items: flex-start; }
+  .lab-path__shot { flex-basis: 44px; width: 44px; height: 44px; }
+}
+
+/* a little more room for the photograph, and a tidy two line summary */
+.lab-hero { grid-template-columns: minmax(0, 1.22fr) minmax(250px, 0.78fr); }
+.unit-photo__cap { white-space: nowrap; }
+.lab-path .n-path__does {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+@media (max-width: 900px) {
+  .lab-hero { grid-template-columns: minmax(0, 1fr) 200px; }
+  .unit-photo__cap { white-space: normal; }
+}
+@media (max-width: 680px) {
+  .lab-hero { grid-template-columns: 1fr; }
+}

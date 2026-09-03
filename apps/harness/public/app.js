@@ -232,6 +232,18 @@ function shortTime(iso) {
   }
 }
 
+/* A photograph for the steps that have one. The rest keep the numbered chip
+ * on its own, which is what a printed course outline looks like anyway. */
+const ACTIVITY_ART = {
+  'heat-control-primer': { src: '/img/deglazing-the-pan.webp', alt: 'White wine hitting a hot pan and lifting the browned fond.' },
+  'ratios-diagnostic': { src: '/img/vinaigrette-in-a-jar.webp', alt: 'A jar of freshly shaken vinaigrette, still cloudy.' },
+  'ratios-primer': { src: '/img/vinaigrette-in-a-jar.webp', alt: 'A jar of freshly shaken vinaigrette, still cloudy.' },
+  'pan-sauce-anatomy': { src: '/img/beurre-blanc.webp', alt: 'A pale butter sauce thick enough to coat a spoon.' },
+  'fix-the-broken-sauce': { src: '/img/whisking-an-emulsion.webp', alt: 'A balloon whisk beating a glossy sauce in a bowl.' },
+  'explain-without-the-recipe': { src: '/img/beurre-blanc.webp', alt: 'A pale butter sauce thick enough to coat a spoon.' },
+  'knife-skills-refresher': { src: '/img/deglazing-the-pan.webp', alt: 'White wine hitting a hot pan and lifting the browned fond.' }
+};
+
 /* ---------------------------------------------------------- unit panel -- */
 
 function statusMap() {
@@ -262,8 +274,8 @@ function renderUnit({ countMinutesFrom = null } = {}) {
   dom.unitTitle.textContent = MANIFEST.unit.title;
   dom.unitProvider.textContent = MANIFEST.provider.name;
   dom.unitMeta.textContent =
-    `${MANIFEST.activities.length} activities, ${FULL_MINUTES} minutes, ` +
-    `${MANIFEST.unit.price}. Every grade is decided here, in the kitchen.`;
+    `${MANIFEST.activities.length} lessons and labs, ${FULL_MINUTES} minutes, ` +
+    `${MANIFEST.unit.price}. Everything you cook is graded here, in the kitchen.`;
   dom.startLabel.textContent = state.openActivityId ? 'Continue cooking' : 'Start cooking';
   dom.unitIds.textContent =
     `${MANIFEST.unit.id} ${MANIFEST.unit.version} / issuer ${MANIFEST.provider.keyId}`;
@@ -285,7 +297,7 @@ function renderUnit({ countMinutesFrom = null } = {}) {
     dom.reqLine.append(document.createTextNode('.'));
   } else {
     dom.reqLine.textContent =
-      'What this unit assumes you can already do. Nothing is checked until your vault says so.';
+      'Nothing is checked until your vault says so.';
   }
 
   dom.requirements.textContent = '';
@@ -480,9 +492,26 @@ function renderPath() {
     }
 
     row.append(el('span', 'n-path__index', String(index + 1)));
+
+    const art = ACTIVITY_ART[entry.activity.id];
+    if (art) {
+      const shot = document.createElement('img');
+      shot.className = 'lab-path__shot';
+      shot.src = art.src;
+      shot.alt = '';
+      shot.width = 480;
+      shot.height = 480;
+      shot.loading = 'lazy';
+      shot.decoding = 'async';
+      row.append(shot);
+    }
+
     const main = el('span', 'n-path__main');
     main.append(el('span', 'n-path__title', entry.activity.title));
     if (entry.reason) main.append(el('span', 'n-path__reason', entry.reason));
+    else if (entry.activity.whatTheLearnerDoes) {
+      main.append(el('span', 'n-path__does', entry.activity.whatTheLearnerDoes));
+    }
     row.append(main);
     row.append(el('span', 'n-path__minutes', `${entry.activity.minutes} min`));
 
@@ -508,10 +537,10 @@ function renderPath() {
     dom.pathHint.textContent = 'personal path';
     dom.pathNote.textContent =
       `Your path: ${state.path.personalMinutes} of ${FULL_MINUTES} minutes, ` +
-      `from an assertion your vault signed until ${shortTime(state.assertion.payload.expiresAt)}.`;
+      `from what your vault told this kitchen. Good until ${shortTime(state.assertion.payload.expiresAt)}.`;
   } else {
     dom.pathHint.textContent = 'full offer';
-    dom.pathNote.textContent = `The whole unit: ${FULL_MINUTES} minutes, nothing assumed about you yet.`;
+    dom.pathNote.textContent = `The whole course: ${FULL_MINUTES} minutes, nothing assumed about you yet.`;
   }
 }
 
@@ -541,7 +570,7 @@ function renderStagePanel(focusTarget = null) {
     dom.stageHint.textContent = 'nothing open';
     const empty = el('div', 'lab-empty');
     empty.append(
-      el('p', 'lab-line', 'Nothing open. Pick a step from the path to begin.')
+      el('p', 'lab-line', 'Nothing open. Pick a lesson from your path to begin.')
     );
 
     const next = nextActivity();
@@ -1009,7 +1038,7 @@ mountActivityStrip(dom.strip);
 
 const resetButton = el('button', 'lab-reset', 'Clear my progress on this site');
 resetButton.type = 'button';
-resetButton.title = 'Clears the attempts, the assertion and the receipts stored for this origin.';
+resetButton.title = 'Clears everything you have cooked and kept here on this device.';
 resetButton.addEventListener('click', resetLab);
 dom.foot.append(resetButton);
 

@@ -26,7 +26,7 @@
       <span class="lc-mark__text">line-cook.lab</span>
     </a>
     <div class="lc-head__end">
-      <span class="n-tools" data-tools-indicator data-live="false" role="status" aria-live="polite" title="WebMCP tools registered on this page">
+      <span class="n-tools" data-tools-indicator data-live="false" role="status" aria-live="polite" title="What this page can offer an assistant. Nothing runs unless you say yes.">
         <span class="n-tools__dot" aria-hidden="true"></span>
         <span>tools</span>
         <span class="n-tools__count" data-tools-count>0</span>
@@ -58,21 +58,26 @@
         <p class="hero__note" data-hero-note hidden></p>
       </div>
 
-      <div class="hero-art" aria-hidden="true">
-        <span class="hero-art__ping hero-art__ping--one">✦</span>
-        <span class="hero-art__ping hero-art__ping--two">✦</span>
-        <div class="hero-art__cloche">
-          <span class="hero-art__handle"></span>
-          <span class="hero-art__eye hero-art__eye--left"></span>
-          <span class="hero-art__eye hero-art__eye--right"></span>
-          <span class="hero-art__smile"></span>
+      <figure class="hero-photo">
+        <img class="hero-photo__img" src="/img/hero-the-pass.webp" width="900" height="900"
+             alt="Plates waiting under the heat lamps on a restaurant pass during service." fetchpriority="high" decoding="async">
+        <figcaption class="hero-photo__cap"><b>54 minutes</b>, at your own pace</figcaption>
+        <div class="hero-art" aria-hidden="true">
+          <span class="hero-art__ping hero-art__ping--one">✦</span>
+          <span class="hero-art__ping hero-art__ping--two">✦</span>
+          <div class="hero-art__cloche">
+            <span class="hero-art__handle"></span>
+            <span class="hero-art__eye hero-art__eye--left"></span>
+            <span class="hero-art__eye hero-art__eye--right"></span>
+            <span class="hero-art__smile"></span>
+          </div>
+          <span class="hero-art__tray"></span>
         </div>
-        <span class="hero-art__tray"></span>
-      </div>
+      </figure>
 
       <section class="reqs" aria-labelledby="reqs-title">
         <h2 class="reqs__title" id="reqs-title">
-          Requirements
+          What this course assumes you can do
           <span class="n-panel__hint" data-prereq-hint></span>
         </h2>
         <ul class="reqs__list" data-hero-requirements></ul>
@@ -126,6 +131,29 @@
       </section>
     </section>
 
+    <!-- who runs the pass, and what to have on you before service ------- -->
+    <section class="course-facts" aria-labelledby="facts-title">
+      <h2 class="sr-only" id="facts-title">Your instructor and your kit</h2>
+      <div class="teacher">
+        <img class="teacher__photo" src="/img/chef-diego-rey.webp" width="480" height="480" loading="lazy" decoding="async"
+             alt="Chef Diego Rey at his station in a working kitchen.">
+        <div class="teacher__text">
+          <p class="teacher__role">Your instructor</p>
+          <p class="teacher__name">Chef Diego Rey</p>
+          <p class="teacher__bio">Six years on the hot line, three of them running the pass. He teaches the calls you have to make when the tickets are stacked and nobody has time to look anything up.</p>
+        </div>
+      </div>
+      <div class="kit">
+        <h3 class="kit__title">What you need</h3>
+        <ul class="kit__list">
+          <li>A probe thermometer you trust</li>
+          <li>Colour coded boards and a clean sanitiser bucket</li>
+          <li>A timer, and somewhere to write the times down</li>
+          <li>A clean side towel, folded</li>
+        </ul>
+      </div>
+    </section>
+
     <section class="sec" aria-labelledby="path-title">
       <h2 class="n-panel__label" id="path-title">
         Activities
@@ -136,7 +164,7 @@
 
     <section class="sec" aria-labelledby="stage-title" data-stage-panel>
       <h2 class="n-panel__label" id="stage-title">
-        Activity stage
+        At the pass
         <span class="n-panel__hint" data-stage-hint></span>
       </h2>
       <p class="sr-only" data-live-region role="status" aria-live="polite"></p>
@@ -145,15 +173,20 @@
 
     <section class="sec" aria-labelledby="receipt-title" data-receipt-panel>
       <h2 class="n-panel__label" id="receipt-title">
-        Evidence receipt
+        Your receipt
         <span class="n-panel__hint" data-receipt-hint></span>
       </h2>
       <div data-receipt-body></div>
     </section>
 
     <section class="sec sec--strip" aria-labelledby="tools-title">
-      <span class="strip__head" id="tools-title">Tool activity</span>
-      <div data-activity-strip></div>
+      <details class="strip__fold n-under">
+        <summary class="strip__head n-under__summary" id="tools-title">Under the hood</summary>
+        <div class="n-under__body">
+          <p class="n-under__say">Every tool call this page has answered, newest first.</p>
+          <div data-activity-strip></div>
+        </div>
+      </details>
     </section>
 
     <p class="more__origin-note">

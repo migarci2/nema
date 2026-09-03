@@ -278,7 +278,7 @@ function renderHero() {
   for (const requirement of prereq.recognized) {
     const item = el('li', 'reqs__item');
     item.append(dot(requirement.status));
-    item.append(el('code', null, requirementWords(requirement.concept, requirement.ability)));
+    item.append(el('span', 'reqs__name', requirementWords(requirement.concept, requirement.ability)));
     item.append(el('span', 'reqs__status', requirement.status));
     list.append(item);
   }
@@ -441,6 +441,16 @@ async function keepInVault(activityId, button, say) {
   }
 }
 
+/* A photograph per lab or lesson, the way a course outline carries one. */
+const ACTIVITY_ART = {
+  'mise-en-place-intro': { src: '/img/colour-coded-boards.webp', alt: 'A rack of red, blue, green and white cutting boards on a steel bench.' },
+  'food-safety-intro': { src: '/img/probe-in-the-chicken.webp', alt: 'A probe thermometer going into the thickest part of a chicken thigh.' },
+  'heat-control-on-the-line': { src: '/img/the-ticket-rail.webp', alt: 'Dockets hanging from a ticket rail over the pass.' },
+  'pan-sauces-during-service': { src: '/img/hero-the-pass.webp', alt: 'Plates waiting under the heat lamps on the pass.' },
+  'service-log-audit': { src: '/img/the-ticket-rail.webp', alt: 'Dockets hanging from a ticket rail over the pass.' },
+  'incident-triage': { src: '/img/probe-in-the-chicken.webp', alt: 'A probe thermometer going into the thickest part of a chicken thigh.' }
+};
+
 /* ------------------------------------------------------------ activities -- */
 
 function renderPath() {
@@ -463,6 +473,19 @@ function renderPath() {
 
     row.append(el('span', 'act__index', String(index + 1)));
 
+    const art = ACTIVITY_ART[activityId];
+    if (art) {
+      const shot = document.createElement('img');
+      shot.className = 'act__shot';
+      shot.src = art.src;
+      shot.alt = '';
+      shot.width = 480;
+      shot.height = 480;
+      shot.loading = 'lazy';
+      shot.decoding = 'async';
+      row.append(shot);
+    }
+
     const main = el('span', 'act__main');
     const head = el('span', 'act__head');
     head.append(el('span', 'act__title', activity.title));
@@ -480,6 +503,9 @@ function renderPath() {
        skippable is stated once above the list; what a lock is missing is
        spelled out on the activity stage, where the row is expanded. */
     if (locked) main.append(el('span', 'act__reason', plainReason(activity.lockedReason)));
+    else if (activity.whatTheLearnerDoes) {
+      main.append(el('span', 'act__does', activity.whatTheLearnerDoes));
+    }
     row.append(main);
 
     const end = el('span', 'act__end');
@@ -552,7 +578,7 @@ function renderStage() {
   if (!activity) {
     hint.textContent = 'stage clear';
     body.append(
-      el('p', 'empty', 'Nothing on the stage. Open an activity above, or let your agent open one for you.')
+      el('p', 'empty', 'Nothing open yet. Pick a lesson or a lab from the list above to begin.')
     );
     return;
   }
@@ -585,7 +611,7 @@ function renderStage() {
       missing.append(item);
     }
     lock.append(missing);
-    lock.append(el('p', 'lockbox__note', 'Close the gap anywhere, present a fresh assertion, and this lab unlocks.'));
+    lock.append(el('p', 'lockbox__note', 'Close the gap anywhere, ask your vault again, and this lab unlocks.'));
     body.append(lock);
     return;
   }
@@ -716,7 +742,7 @@ function renderLesson(body, activity) {
   /* Once the lesson is read the grader says this better, in the feedback
      under the button, so the standing note goes away with the click. */
   if (attempt.status !== 'passed') {
-    actions.append(el('span', 'dim', 'A lesson records exposure evidence, the lowest weight the vault accepts.'));
+    actions.append(el('span', 'dim', 'Reading counts, but only a little. The cooking is what earns the rest.'));
   }
   wrap.append(actions);
 
@@ -881,7 +907,7 @@ function renderAuditLab(body, activity) {
     retry.addEventListener('click', () => resetAttempt(activity.id));
     actions.append(retry);
   } else {
-    actions.append(el('span', 'dim', 'Graded on this page. No tool can answer for you.'));
+    actions.append(el('span', 'dim', 'Graded on this page. Nobody can make this call for you.'));
   }
   form.append(actions);
 
@@ -1183,7 +1209,7 @@ function resetUnit() {
   save();
   renderAll();
   toast('Unit reset.', 'ok');
-  announce('Unit reset. No assertion, no attempts, no receipts.');
+  announce('Unit reset. Nothing done, nothing kept, nothing signed.');
 }
 
 /** Open an activity in the stage. Navigation only: it never answers anything. */
@@ -1357,10 +1383,10 @@ async function presentAssertion(assertionToken) {
     /* A refused token proves nothing, so it also unproves nothing. The assertion
        already on file stays, no status is recomputed and nothing is written: a
        stale or mistyped retry cannot relock a lab in the middle of the unit. */
-    assertionNote = `Assertion rejected: ${result.reason}. Nothing on this page changed.`;
+    assertionNote = `Your vault answer was refused: ${result.reason}. Nothing on this page changed.`;
     renderPrereq();
     toast('That answer was refused, so nothing changed here.', 'error');
-    announce(`Assertion rejected: ${result.reason}. The page kept the statuses it already had.`);
+    announce(`Your vault answer was refused: ${result.reason}. The page kept what it already had.`);
     return { status: 'rejected', reason: result.reason };
   }
 
@@ -1374,7 +1400,7 @@ async function presentAssertion(assertionToken) {
   renderAll();
   toast('Your vault answered. This unit knows what you already know.', 'ok');
   announce(
-    `Readiness assertion verified. ${prereq.unlocked.length} of ${ACTIVITY_ORDER.length} activities unlocked, ` +
+    `Your vault answered. ${prereq.unlocked.length} of ${ACTIVITY_ORDER.length} activities unlocked, ` +
       `${prereq.skippable.length} already covered by your vault.`
   );
 
@@ -1406,7 +1432,7 @@ function describeOffer() {
   const time = new Date().toLocaleTimeString('en-GB');
   /* The counts are already on screen a line above, so the note only carries
      what is new: the manifest left this page, and when. */
-  offerNote = `Manifest handed to the agent at ${time}.`;
+  offerNote = `An assistant asked what this course covers at ${time}.`;
   renderHero();
   /* A copy, so a tool caller can never reach into the module the grader uses. */
   return { status: 'ok', manifest: JSON.parse(JSON.stringify(MANIFEST)) };
