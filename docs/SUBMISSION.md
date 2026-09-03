@@ -35,6 +35,15 @@ state, everywhere.
 
 ![The protocol in three beats](https://nema.migarci2.dev/press/card-how-it-works-sm.png)
 
+**Why this needs WebMCP.** The tools of a lesson exist only while that page is
+open, and the learner's state exists only where the learner keeps it. WebMCP
+lets the agent already in your browser compose the two at the moment they
+meet: it reads what a page teaches from the page itself, asks your vault for
+the least it needs, waits for you to approve, and carries the signed answer
+back. Without WebMCP this would need a central account, a per site
+integration, or an extension that scrapes pages. With it, any page that
+teaches becomes operable by any agent, at runtime, with the person present.
+
 ## What it does
 
 **A vault you own.** The vault is your own record of what you have learned:
@@ -42,8 +51,10 @@ signed receipts of work you actually did, issued by the sites where you did
 it. From those receipts it derives your state: a band per concept and per
 ability (recognise, retrieve, explain, apply, transfer, discriminate), a memory
 schedule, and a list of what to learn next. It lives with you, in your browser
-or on your disk, not on any site, and there is no account. The demo vault is
-at https://nema-vault.migarci2.dev.
+or on your disk, not on any site, and there is no account. Owning it means
+something concrete: the keys are made in your browser, the ledger exports to
+one file, and you can delete any of it. The demo vault is at
+https://nema-vault.migarci2.dev.
 
 ![A receipt, signed by the course and kept in the vault](https://nema.migarci2.dev/press/story-receipt-sm.gif)
 
@@ -64,7 +75,10 @@ date out, which Math Academy calls Fractional Implicit Repetition. The vault
 asks for a concept only when its prerequisites are held, and otherwise names the
 weakest prerequisite and the goal it is blocking. A session interleaves rather
 than drilling one concept, and keeps confusable concepts apart unless telling
-them apart is the point.
+them apart is the point. It is an inspectable policy, not a psychometric
+model: every weight, decay and threshold is a documented default you can read
+in one file, and a signature proves who issued a receipt, not how hard the
+check was.
 
 **Consent you can see.** A site never reads the vault. It asks one question,
 and the vault shows a modal: what will be shared (three status bands), what
