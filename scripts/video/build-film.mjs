@@ -83,12 +83,13 @@ const VOICEOVER = {
   '14-ch2-receipt': ['The course gives me a note that says I passed. That note is mine. I keep it in my nema.'],
   '18-ch3-ask': ['It asks, I say yes, and it already counts what I did before.'],
   '20-ch3-open': ['Two lessons done before I start. The lab opens.'],
-  '21-ch4-ext': ['Three. With the extension, it is one click. My notes come home alone.'],
-  '22-ch4-article': [
+  '21-ch4-ext': ['Three. With the extension, it is one click.'],
+  '22-ch4-toast': ['My notes come home on their own.'],
+  '23-ch4-article': [
     'And this is a real article, with questions inside the text.',
     'One tag on the page. That is all.'
   ],
-  '25-twotags': ['If you teach on the web, you can add this in one minute.']
+  '26-twotags': ['If you teach on the web, you can add this in one minute.']
 };
 
 const slotQuery = (k) => [
@@ -109,39 +110,42 @@ const SEGMENTS = [
   { name: '05-open-c', kind: 'mograph', page: 'open-c.html', dur: 0.25 },
   { name: '06-open-s3', kind: 'stock', clip: 'reading-long', in: 2.5, dur: 1.30 },
   // 2. title
-  { name: '07-title', chapter: 'Title', kind: 'mograph', page: 'title.html', dur: 3.00 },
+  { name: '07-title', chapter: 'Title', kind: 'mograph', page: 'title.html', dur: 3.50 },
   // 3. chapter one
   { name: '09-ch1-ask', chapter: 'Chapter 1', label: 'One', kind: 'take', take: 'ch1', shot: 'ask', title: 'Saucier School', in: 0.90, dur: 5.40 },
   { name: '10-ch1-consent', kind: 'consent', from: 'ch1', cap: 'You say yes', dur: 2.60 },
-  { name: '11-ch1-became', kind: 'take', take: 'ch1', shot: 'became', title: 'Saucier School', in: 1.40, dur: 7.60, dipOut: 0.20 },
+  { name: '11-ch1-became', kind: 'take', take: 'ch1', shot: 'became', title: 'Saucier School', in: 1.40, dur: 7.10, dipOut: 0.20 },
   // 4. the beat
   { name: '12-beat', chapter: 'Beat', kind: 'stock', clip: 'pan-sauce', in: 4.0, dur: 2.00, dipIn: 0.16, dipOut: 0.16 },
   // 5. chapter two
   /* One recording, two cuts: the answer and the submit, then the signed
    * receipt. What sits between them is a page thinking, and a film cuts it. */
-  { name: '13-ch2-answer', chapter: 'Chapter 2', kind: 'take', take: 'ch2', shot: 'check', title: 'Saucier School', in: 3.80, dur: 4.80, dipIn: 0.16 },
-  { name: '14-ch2-receipt', kind: 'take', take: 'ch2', shot: 'check', title: 'Saucier School', in: 12.30, dur: 5.60 },
+  { name: '13-ch2-answer', chapter: 'Chapter 2', kind: 'take', take: 'ch2', shot: 'check', title: 'Saucier School', in: 4.10, dur: 4.60, dipIn: 0.16 },
+  { name: '14-ch2-receipt', kind: 'take', take: 'ch2', shot: 'check', title: 'Saucier School', in: 12.40, dur: 5.40 },
   { name: '15-ch2-keep', kind: 'take', take: 'ch2', shot: 'keep', title: 'Saucier School', in: 0.50, dur: 2.20 },
   { name: '16-ch2-ledger', kind: 'take', take: 'ch2', shot: 'ledger', title: 'Your vault', in: 0.30, dur: 3.40 },
   // on camera, slot C
   { name: '17-slot-c', chapter: 'Slot C', kind: 'mograph', page: 'slot.html', dur: SLOTS.C.secs, query: slotQuery('C') },
   // 6. chapter three
-  { name: '18-ch3-ask', chapter: 'Chapter 3', label: 'Two', kind: 'take', take: 'ch3', shot: 'lc-ask', title: 'Line Cook Lab', in: 0.60, dur: 3.40 },
+  { name: '18-ch3-ask', chapter: 'Chapter 3', label: 'Two', kind: 'take', take: 'ch3', shot: 'lc-ask', title: 'Line Cook Lab', in: 0.90, dur: 3.60 },
   { name: '19-ch3-consent', kind: 'consent', from: 'ch3', cap: 'A different site. It already knows.', dur: 2.20 },
-  { name: '20-ch3-open', kind: 'take', take: 'ch3', shot: 'lc-open', title: 'Line Cook Lab', in: 2.20, dur: 6.00, dipOut: 0.20 },
+  { name: '20-ch3-open', kind: 'take', take: 'ch3', shot: 'lc-open', title: 'Line Cook Lab', in: 2.20, dur: 5.70, dipOut: 0.20 },
   // 7. chapter four
-  { name: '21-ch4-ext', chapter: 'Chapter 4', label: 'Three', kind: 'ext', take: 'ch4', shot: 'ext', in: 1.10, dur: 5.60, dipIn: 0.16 },
-  { name: '22-ch4-article', kind: 'take', take: 'ch4b', shot: 'article', title: 'AES-GCM, with and without nema', in: 1.60, dur: 4.40, dipOut: 0.20 },
+  /* One window, the page and the side panel both live, cut twice: the
+   * disclosure, then the receipt arriving on its own. */
+  { name: '21-ch4-ext', chapter: 'Chapter 4', label: 'Three', kind: 'take', take: 'ch4', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 1.30, dur: 5.60, dipIn: 0.16 },
+  { name: '22-ch4-toast', kind: 'take', take: 'ch4', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 16.10, dur: 3.60 },
+  { name: '23-ch4-article', kind: 'take', take: 'ch4b', shot: 'article', title: 'AES-GCM, with and without nema', in: 1.60, dur: 4.00, dipOut: 0.20 },
   // on camera, slot D
-  { name: '23-slot-d', chapter: 'Slot D', kind: 'mograph', page: 'slot.html', dur: SLOTS.D.secs, query: slotQuery('D') },
+  { name: '24-slot-d', chapter: 'Slot D', kind: 'mograph', page: 'slot.html', dur: SLOTS.D.secs, query: slotQuery('D') },
   // 8. the logos
-  { name: '24-logos', chapter: 'Logos', kind: 'mograph', page: 'logos.html', dur: 6.00 },
+  { name: '25-logos', chapter: 'Logos', kind: 'mograph', page: 'logos.html', dur: 6.00 },
   // 9. two tags
-  { name: '25-twotags', chapter: 'Two tags', kind: 'mograph', page: 'twotags.html', dur: 3.00 },
+  { name: '26-twotags', chapter: 'Two tags', kind: 'mograph', page: 'twotags.html', dur: 3.00 },
   // on camera, slot E
-  { name: '26-slot-e', chapter: 'Slot E', kind: 'mograph', page: 'slot.html', dur: SLOTS.E.secs, query: slotQuery('E') },
+  { name: '27-slot-e', chapter: 'Slot E', kind: 'mograph', page: 'slot.html', dur: SLOTS.E.secs, query: slotQuery('E') },
   // 10. the close
-  { name: '27-closing', chapter: 'Closing', kind: 'mograph', page: 'closing.html', dur: 5.00 }
+  { name: '28-closing', chapter: 'Closing', kind: 'mograph', page: 'closing.html', dur: 5.00 }
 ];
 
 const raw4k = (s) => path.join(WORK, s.name + '-raw.mp4');
@@ -214,15 +218,14 @@ if (STEPS.has('compose')) {
       say('compose  ' + s.take + '/' + s.shot);
       execFileSync('node', [path.join(HERE, 'studio-ffmpeg.mjs'), dir,
         '--events', events, '--video', path.join(dir, s.shot + '.mp4'),
-        '--out', WORK, '--out-name', stem, '--title', s.title, '--gif', '2'], { stdio: 'inherit' });
+        '--out', WORK, '--out-name', stem, '--title', s.title, '--gif', '2',
+        /* The extension chapter is one long take with five moves in it, which
+         * thins to more pointer keyframes than ffmpeg will evaluate. Its camera
+         * is told exactly where to look, too: the disclosure and the toast are
+         * both places polish would rather cluster with the click before them. */
+        '--cursor-max', '80', ...(s.anchors ? ['--anchors', s.anchors] : [])], { stdio: 'inherit' });
     } else say('compose  ' + s.take + '/' + s.shot + ': already composited');
     fs.copyFileSync(made, raw4k(s));
-  }
-  for (const s of SEGMENTS.filter((x) => x.kind === 'ext' && wanted(x))) {
-    const src = path.join(TAKES, s.take, s.shot + '.mp4');
-    if (!fs.existsSync(src)) { say('compose  ' + s.name + ': no extension take, skipped'); continue; }
-    say('compose  ' + s.name + ' (already a frame, only conformed)');
-    ff(['-i', src, '-vf', `fps=${FPS},scale=3840:2160:force_original_aspect_ratio=decrease,pad=3840:2160:(ow-iw)/2:(oh-ih)/2:color=${NAVY},setsar=1,format=yuv420p`, ...enc4k, raw4k(s)]);
   }
 }
 

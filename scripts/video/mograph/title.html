@@ -1,113 +1,136 @@
 <meta charset="utf-8"><title>nema title</title>
 <link rel="stylesheet" href="film.css">
-<div class="stage">
-  <svg id="dia" viewBox="0 0 1920 1080" width="1920" height="1080" style="position:absolute;inset:0">
+<style>
+  /* The composition is the approved thumbnail, docs/assets/devpost-thumbnail.html,
+     laid out at its own 1800x1200 and scaled to the film's 1920 wide frame. The
+     100 px trimmed off the top and the bottom carry nothing. */
+  #fit { position: absolute; left: 0; top: -100px; width: 1920px; height: 1280px; }
+  #art { width: 1800px; height: 1200px; transform: scale(1.0666667); transform-origin: 0 0; position: relative; }
+  .fade { position: absolute; inset: 0; background: linear-gradient(90deg, #0B1320 0%, #0B1320 42%, rgba(11,19,32,0.82) 56%, rgba(11,19,32,0) 70%); }
+  .word { position: absolute; left: 120px; top: 310px; width: 760px; color: #F2F6FF; }
+  .word svg { width: 100%; height: auto; display: block; }
+  .sub { position: absolute; left: 120px; top: 590px; font-size: 72px; line-height: 1.2; font-weight: 600; white-space: nowrap; }
+  .sub .t { color: #15C4B4; } .sub .v { color: #00E5FF; } .sub .a { color: #FFCA2E; }
+  .head { position: absolute; left: 120px; top: 590px; font-size: 72px; line-height: 1.2; font-weight: 600;
+    color: #F2F6FF; white-space: nowrap; letter-spacing: -0.015em; }
+</style>
+<div class="stage"><div id="fit"><div id="art">
+  <svg class="diagram" viewBox="0 0 1800 1200" width="1800" height="1200" fill="none" style="position:absolute;inset:0">
     <defs>
-      <linearGradient id="edge" x1="960" y1="360" x2="1120" y2="660" gradientUnits="userSpaceOnUse">
+      <linearGradient id="edge" x1="1355" y1="420" x2="1500" y2="580" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#00E5FF"/><stop offset="0.5" stop-color="#15C4B4"/><stop offset="1" stop-color="#3A78FF"/>
       </linearGradient>
     </defs>
-    <g id="wires" fill="none" stroke="#1E2C42" stroke-width="3"></g>
-    <g id="live" fill="none" stroke="var(--cyan)" stroke-width="3" stroke-linecap="round"></g>
-    <g id="sites"></g>
-    <g id="vault" transform="translate(1620 540)">
-      <path id="hex" d="M0 -132 L114 -66 L114 66 L0 132 L-114 66 L-114 -66 Z" fill="rgba(11,19,32,0.9)" stroke="url(#edge)" stroke-width="4"/>
-      <g id="nodes" shape-rendering="crispEdges">
-        <rect x="-15" y="-147" width="30" height="30" fill="url(#edge)"/>
-        <rect x="99" y="-81" width="30" height="30" fill="url(#edge)"/>
-        <rect x="99" y="51" width="30" height="30" fill="url(#edge)"/>
-        <rect x="-15" y="117" width="30" height="30" fill="#FFCA2E"/>
-        <rect x="-129" y="51" width="30" height="30" fill="url(#edge)"/>
-        <rect x="-129" y="-81" width="30" height="30" fill="url(#edge)"/>
+    <g transform="translate(-480 86) scale(1.3)">
+      <g class="site" id="site0">
+        <rect x="1010" y="100" width="200" height="250" rx="10" fill="#EDE6D8"/>
+        <g fill="#B9A688"><rect x="1034" y="128" width="150" height="18" rx="4"/><rect x="1034" y="160" width="120" height="12" rx="3"/><rect x="1034" y="196" width="64" height="64" rx="4"/><rect x="1110" y="196" width="76" height="12" rx="3"/><rect x="1110" y="220" width="76" height="12" rx="3"/><rect x="1110" y="244" width="76" height="12" rx="3"/><rect x="1034" y="282" width="152" height="12" rx="3"/><rect x="1034" y="306" width="120" height="12" rx="3"/></g>
       </g>
-      <text x="0" y="20" text-anchor="middle" class="pixel" fill="#F2F6FF" font-size="56">nema</text>
+      <g class="site" id="site1">
+        <rect x="1250" y="120" width="210" height="200" rx="10" fill="#101216" stroke="#2A2F3A" stroke-width="2"/>
+        <g fill="#4ADE80"><rect x="1276" y="150" width="96" height="12" rx="3"/><rect x="1276" y="172" width="120" height="12" rx="3"/><rect x="1276" y="194" width="150" height="12" rx="3"/><rect x="1276" y="216" width="80" height="12" rx="3"/><rect x="1276" y="238" width="130" height="12" rx="3"/><rect x="1276" y="260" width="160" height="12" rx="3"/><rect x="1276" y="282" width="90" height="12" rx="3"/></g>
+      </g>
+      <g class="site" id="site2">
+        <rect x="1500" y="110" width="200" height="240" rx="10" fill="#FAFAFA"/>
+        <g fill="#C6C6C6"><rect x="1524" y="140" width="152" height="18" rx="4"/><rect x="1524" y="172" width="90" height="12" rx="3"/><rect x="1524" y="208" width="152" height="12" rx="3"/><rect x="1524" y="232" width="152" height="12" rx="3"/><rect x="1524" y="256" width="152" height="12" rx="3"/><rect x="1524" y="292" width="70" height="12" rx="3"/><rect x="1606" y="292" width="70" height="12" rx="3"/><rect x="1524" y="316" width="120" height="12" rx="3"/></g>
+      </g>
+      <g id="wires" stroke="#00E5FF" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M 1110 350 V 395 L 1245 485"/>
+        <path d="M 1355 320 V 420"/>
+        <path d="M 1600 350 V 395 L 1465 485"/>
+      </g>
+      <g id="pulses"></g>
+      <g id="mark" transform="translate(1195 390) scale(5)">
+        <path id="hex" d="M32 6 L54 19 L54 45 L32 58 L10 45 L10 19 Z" fill="#0B1320" stroke="url(#edge)" stroke-width="0.8" stroke-linejoin="miter"/>
+        <g id="nodes" shape-rendering="crispEdges">
+          <rect x="29" y="3" width="6" height="6" fill="url(#edge)"/>
+          <rect x="51" y="16" width="6" height="6" fill="url(#edge)"/>
+          <rect x="51" y="42" width="6" height="6" fill="url(#edge)"/>
+          <rect x="29" y="55" width="6" height="6" fill="#FFCA2E"/>
+          <rect x="7" y="42" width="6" height="6" fill="url(#edge)"/>
+          <rect x="7" y="16" width="6" height="6" fill="url(#edge)"/>
+        </g>
+        <g fill="#F2F6FF" shape-rendering="crispEdges">
+          <rect x="24" y="24" width="16" height="4"/><rect x="24" y="28" width="4" height="12"/><rect x="36" y="28" width="4" height="12"/>
+        </g>
+      </g>
     </g>
-    <g id="pulses"></g>
   </svg>
-  <div id="card" style="position:absolute;left:0;right:0;top:0;bottom:0"></div>
-  <div id="mark" style="position:absolute;left:160px;top:312px;width:300px;height:82px"></div>
-  <div id="head" class="kin" style="position:absolute;left:160px;top:446px;width:860px;font-size:86px"></div>
-  <div id="head2" class="kin" style="position:absolute;left:160px;top:556px;width:860px;font-size:86px"></div>
-</div>
+  <div class="fade"></div>
+  <div class="word"><svg viewBox="0 0 88 24" shape-rendering="crispEdges"><g fill="#F2F6FF">
+    <rect x="0" y="0" width="16" height="4"/><rect x="0" y="4" width="4" height="20"/><rect x="12" y="4" width="4" height="20"/>
+    <rect x="20" y="0" width="16" height="4"/><rect x="20" y="4" width="4" height="20"/><rect x="32" y="4" width="4" height="4"/>
+    <rect x="20" y="8" width="16" height="4"/><rect x="20" y="20" width="16" height="4"/>
+    <rect x="40" y="0" width="28" height="4"/><rect x="40" y="4" width="4" height="20"/><rect x="52" y="4" width="4" height="20"/><rect x="64" y="4" width="4" height="20"/>
+    <rect x="72" y="0" width="16" height="4"/><rect x="84" y="4" width="4" height="20"/><rect x="72" y="8" width="16" height="4"/>
+    <rect x="72" y="12" width="4" height="8"/><rect x="72" y="20" width="16" height="4"/></g></svg></div>
+  <div class="sub" id="sub"><span class="t">The web teaches</span><br><span class="v">Your vault remembers</span><br><span class="a">Your agent connects the two</span></div>
+  <div class="head" id="head" style="opacity:0">Learn it once.<br>It counts everywhere.</div>
+</div></div></div>
 <script type="module">
-import { span, ease, words, kinetic, fade } from './film.js';
+import { span, ease, easeInOut } from './film.js';
 
-/* The three demo sites, in their own colours, feeding one vault. */
-const SITES = [
-  { y: 300, c: '#FF7429', label: 'Saucier School' },
-  { y: 540, c: '#4ADE80', label: 'Line Cook Lab' },
-  { y: 780, c: '#FFCA2E', label: 'Maillard, an article' }
-];
 const svgns = 'http://www.w3.org/2000/svg';
-const wires = document.getElementById('wires');
-const live = document.getElementById('live');
-const sites = document.getElementById('sites');
-const pulses = document.getElementById('pulses');
-const paths = [];
-const chips = [];
-SITES.forEach((s, i) => {
-  const d = `M 1250 ${s.y} C 1370 ${s.y}, 1410 540, 1488 540`;
-  for (const [g, cls] of [[wires, 'wire'], [live, 'live']]) {
-    const p = document.createElementNS(svgns, 'path');
-    p.setAttribute('d', d);
-    g.appendChild(p);
-    if (cls === 'live') paths.push(p);
-  }
-  const g = document.createElementNS(svgns, 'g');
-  g.innerHTML = `<rect x="970" y="${s.y - 46}" width="280" height="92" rx="14" fill="#111C2E" stroke="#1E2C42" stroke-width="3"/>
-    <circle cx="1016" cy="${s.y}" r="13" fill="${s.c}"/>
-    <text x="1048" y="${s.y + 10}" fill="#A9BCD8" font-family="Inter" font-size="27" font-weight="500">${s.label}</text>`;
-  sites.appendChild(g);
-  chips.push(g);
-  const dot = document.createElementNS(svgns, 'circle');
-  dot.setAttribute('r', '9'); dot.setAttribute('fill', '#00E5FF');
-  pulses.appendChild(dot);
+const sites = [0, 1, 2].map((i) => document.getElementById('site' + i));
+const wires = [...document.getElementById('wires').children];
+const lens = wires.map((w) => w.getTotalLength());
+wires.forEach((w, i) => { w.style.strokeDasharray = lens[i]; });
+const pulses = wires.map(() => {
+  const c = document.createElementNS(svgns, 'circle');
+  c.setAttribute('r', '7'); c.setAttribute('fill', '#FFCA2E');
+  document.getElementById('pulses').appendChild(c);
+  return c;
 });
-const lens = paths.map((p) => p.getTotalLength());
-paths.forEach((p, i) => { p.style.strokeDasharray = lens[i]; });
-
-document.getElementById('mark').innerHTML =
-  `<svg viewBox="0 0 88 24" width="300" height="82" shape-rendering="crispEdges"><g fill="#F2F6FF">
-   <rect x="0" y="0" width="16" height="4"/><rect x="0" y="4" width="4" height="20"/><rect x="12" y="4" width="4" height="20"/>
-   <rect x="20" y="0" width="16" height="4"/><rect x="20" y="4" width="4" height="20"/><rect x="32" y="4" width="4" height="4"/>
-   <rect x="20" y="8" width="16" height="4"/><rect x="20" y="20" width="16" height="4"/>
-   <rect x="40" y="0" width="28" height="4"/><rect x="40" y="4" width="4" height="20"/><rect x="52" y="4" width="4" height="20"/><rect x="64" y="4" width="4" height="20"/>
-   <rect x="72" y="0" width="16" height="4"/><rect x="84" y="4" width="4" height="20"/><rect x="72" y="8" width="16" height="4"/>
-   <rect x="72" y="12" width="4" height="8"/><rect x="72" y="20" width="16" height="4"/></g></svg>`;
-
+const mark = document.getElementById('mark');
+const hex = document.getElementById('hex');
+const nodes = [...document.getElementById('nodes').children];
+/* Round the hexagon, then the five gradient nodes, and the yellow one last:
+   a learner is never finished, so that node is where the sequence lands. */
+const NODE_ORDER = [0, 1, 2, 4, 5, 3];
+const sub = document.getElementById('sub');
 const head = document.getElementById('head');
-const head2 = document.getElementById('head2');
-const spans = words(head, 'Learn it once.');
-const spans2 = words(head2, 'It counts everywhere.');
-const dia = document.getElementById('dia');
-const vault = document.getElementById('vault');
-const markEl = document.getElementById('mark');
+
+const SITE_AT = 0.10, SITE_STAGGER = 0.06, SITE_FOR = 0.44;
+const WIRE_AT = 0.62, WIRE_STAGGER = 0.06, WIRE_FOR = 0.60;
+const HEX_AT = 1.14, NODE_AT = 1.38, NODE_STEP = 0.075, NODE_FOR = 0.22;
+const PULSE_AT = 1.98, PULSE_STAGGER = 0.06, PULSE_FOR = 0.62;
+const BEAT_AT = 2.62, SWAP_AT = 2.66;
 
 window.renderAt = (t) => {
-  /* The diagram builds behind the words and never competes with them. */
-  dia.style.opacity = (0.62 * ease(span(t, 0.0, 0.5))).toFixed(3);
-  chips.forEach((g, i) => {
-    const u = ease(span(t, 0.05 + i * 0.11, 0.32));
-    g.style.opacity = u.toFixed(3);
-    g.style.transform = `translateX(${((1 - u) * -34).toFixed(1)}px)`;
+  /* The pages settle in from a little above, one after another. */
+  sites.forEach((el, i) => {
+    const u = ease(span(t, SITE_AT + i * SITE_STAGGER, SITE_FOR));
+    el.style.opacity = u.toFixed(4);
+    el.style.transform = `translateY(${((1 - u) * -34).toFixed(2)}px)`;
   });
-  paths.forEach((p, i) => {
-    const u = ease(span(t, 0.34 + i * 0.11, 0.5));
-    p.style.strokeDashoffset = (lens[i] * (1 - u)).toFixed(1);
+  /* The lines draw downward, into the mark. */
+  wires.forEach((w, i) => {
+    const u = easeInOut(span(t, WIRE_AT + i * WIRE_STAGGER, WIRE_FOR));
+    w.style.strokeDashoffset = (lens[i] * (1 - u)).toFixed(1);
   });
-  [...pulses.children].forEach((dot, i) => {
-    const u = span(t, 0.78 + i * 0.12, 0.72);
-    const pt = paths[i].getPointAtLength(lens[i] * ease(u));
-    dot.setAttribute('cx', pt.x); dot.setAttribute('cy', pt.y);
-    dot.style.opacity = (u > 0 && u < 1 ? 1 : 0).toFixed(2);
+  const hexU = ease(span(t, HEX_AT, 0.40));
+  hex.style.opacity = hexU.toFixed(4);
+  nodes.forEach((n, i) => {
+    const order = NODE_ORDER.indexOf(i);
+    n.style.opacity = ease(span(t, NODE_AT + order * NODE_STEP, NODE_FOR)).toFixed(4);
   });
-  const vin = ease(span(t, 0.5, 0.42));
-  vault.style.opacity = vin.toFixed(3);
-  const lit = ease(span(t, 1.5, 0.5));
-  vault.style.transform = `translate(1620px, 540px) scale(${(0.94 + 0.06 * vin + 0.02 * lit).toFixed(4)})`;
-
-  fade(markEl, ease(span(t, 0.35, 0.36)), 18);
-  kinetic(spans, t, { start: 0.62, stagger: 0.05, dur: 0.24 });
-  kinetic(spans2, t, { start: 0.62 + spans.length * 0.05, stagger: 0.05, dur: 0.24 });
+  /* One yellow receipt down each line, once. */
+  pulses.forEach((c, i) => {
+    const u = span(t, PULSE_AT + i * PULSE_STAGGER, PULSE_FOR);
+    const p = wires[i].getPointAtLength(lens[i] * easeInOut(u));
+    c.setAttribute('cx', p.x); c.setAttribute('cy', p.y);
+    c.style.opacity = (u > 0.001 && u < 0.999 ? 1 : 0).toFixed(2);
+  });
+  /* The mark takes one breath as the last receipt lands. */
+  const beat = span(t, BEAT_AT, 0.42);
+  const pulse = Math.sin(Math.PI * ease(beat)) * 0.045;
+  mark.setAttribute('transform', `translate(1195 390) scale(${(5 * (0.965 + 0.035 * hexU + pulse)).toFixed(4)})`);
+  /* The thesis hands over to the headline. */
+  const outU = ease(span(t, SWAP_AT, 0.30));
+  const inU = ease(span(t, SWAP_AT + 0.18, 0.34));
+  sub.style.opacity = (1 - outU).toFixed(4);
+  sub.style.transform = `translateY(${(outU * -22).toFixed(2)}px)`;
+  head.style.opacity = inU.toFixed(4);
+  head.style.transform = `translateY(${((1 - inU) * 24).toFixed(2)}px)`;
 };
 </script>

@@ -36,9 +36,11 @@ card come from Simple Icons (https://simpleicons.org), CC0 1.0 Universal, via
 https://cdn.simpleicons.org. They are used as masks and painted in the nema ink
 colour, so every mark carries the same weight. The files live in
 docs/assets/press/logos. Codex and WebMCP have no mark in that set and are set
-in JetBrains Mono instead; Firefox and Safari are marked "soon" because WebMCP
-is not in them yet. Every brand belongs to its owner and none of them endorse
-this project.
+in JetBrains Mono instead. The Model Context Protocol mark is the official one,
+also from Simple Icons, and the full official lockup is kept beside it as
+docs/assets/press/logos/mcp-official.svg. The three demo sites wear their own
+marks, drawn from their own stylesheets, in their own colours. Every brand
+belongs to its owner and none of them endorse this project.
 
 ## Music
 

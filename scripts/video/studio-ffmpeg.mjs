@@ -19,13 +19,20 @@
 //                        events.jsonl is there) asks polish.zoom_regions, which
 //                        frames the clicked element's box and clusters clicks
 //                        that belong together; 'events' uses one anchor per
-//                        click and zoom, which is what this did before
+//                        click and zoom, which is what this did before;
+//                        'zooms' uses only the zooms the take asked for
 //   --speedup recast     adaptive speed segments instead of polish's --speedup
 //   --dry-run            print the graph and the command, render nothing
 //   --no-camera          leave the camera at rest (the source already moves it)
 //   --no-cursor          do not draw a pointer (the source already has one)
 //   --polish-meta <p>    polish's zoom map, so a ripple drawn here follows the
 //                        content the polished video has already moved
+//   --cursor-tol <px>    how far the drawn pointer may stray from the logged
+//                        path (default 0.5)
+//   --cursor-max <n>     ceiling on pointer keyframes; the tolerance is loosened
+//                        until the track fits. Off by default. A long take with
+//                        many moves needs it: ffmpeg will not evaluate an
+//                        expression that deep
 //
 // Output: <out>/<stem>-4k.mp4 (3840x2160) and <out>/<stem>-1080.mp4, from one
 // ffmpeg invocation with a split.
@@ -327,9 +334,15 @@ if (wantPolish) {
 }
 if (!anchors.length) {
   for (const z of zooms) anchors.push({ t: z.t, p: toScene(z), scale: z.scale || ZOOM, hold: (z.holdMs == null ? 1800 : z.holdMs) / 1000 });
-  for (const c of clicks) {
-    if (zooms.some((z) => Math.abs(z.t - c.t) < 0.45)) continue;
-    anchors.push({ t: c.t, p: toScene(c), scale: ZOOM, hold: HOLD_MS });
+  /* 'zooms' takes the take at its word and looks only where it asked. A long
+   * take with a click every couple of seconds otherwise builds a camera track
+   * ffmpeg will not evaluate, and every push but the two the film uses is
+   * thrown away in the cut anyway. The ripples still land on every click. */
+  if (opt.anchors !== 'zooms') {
+    for (const c of clicks) {
+      if (zooms.some((z) => Math.abs(z.t - c.t) < 0.45)) continue;
+      anchors.push({ t: c.t, p: toScene(c), scale: ZOOM, hold: HOLD_MS });
+    }
   }
 }
 anchors.sort((a, b) => a.t - b.t);
@@ -416,10 +429,20 @@ if (track.length) {
    * expression ends up thirteen hundred if() deep, which its parser does not
    * survive: the whole render died with no message until this pass went in. */
   const dense = catmullRom(track, 60);
-  const thin = simplify(dense, 0.5);
+  /* Half a pixel is the right tolerance for a take with one or two moves in it.
+   * A long take with a move every few seconds thins to more keyframes than
+   * ffmpeg's expression parser will evaluate, and the render dies on the
+   * overlay rather than on the parse, so --cursor-max lets a caller name a
+   * ceiling and the tolerance is loosened until the track fits under it.
+   * Without the option nothing changes: the tolerance stays at half a pixel. */
+  let tol = Number(opt['cursor-tol'] || 0.5);
+  const cap = Number(opt['cursor-max'] || 0);
+  let thin = simplify(dense, tol);
+  while (cap > 0 && thin.length > cap && tol < 64) { tol *= 1.6; thin = simplify(dense, tol); }
   cursorKfs.push([0, [thin[0].x, thin[0].y]]);
   for (const p of thin) cursorKfs.push([p.t, [p.x, p.y]]);
-  console.log(`cursor: ${track.length} samples, ${dense.length} on the spline, ${thin.length} keyframes`);
+  console.log(`cursor: ${track.length} samples, ${dense.length} on the spline, ${thin.length} keyframes` +
+    (tol === 0.5 ? '' : ` at ${tol.toFixed(2)} px`));
 }
 
 /* Captions cut where a person would breathe, and, when asked, an adaptive speed

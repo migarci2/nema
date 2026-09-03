@@ -99,9 +99,11 @@ if (creditsAt) {
   lines.push('https://cdn.simpleicons.org. They are used as masks and painted in the nema ink');
   lines.push('colour, so every mark carries the same weight. The files live in');
   lines.push('docs/assets/press/logos. Codex and WebMCP have no mark in that set and are set');
-  lines.push('in JetBrains Mono instead; Firefox and Safari are marked "soon" because WebMCP');
-  lines.push('is not in them yet. Every brand belongs to its owner and none of them endorse');
-  lines.push('this project.');
+  lines.push('in JetBrains Mono instead. The Model Context Protocol mark is the official one,');
+  lines.push('also from Simple Icons, and the full official lockup is kept beside it as');
+  lines.push('docs/assets/press/logos/mcp-official.svg. The three demo sites wear their own');
+  lines.push('marks, drawn from their own stylesheets, in their own colours. Every brand');
+  lines.push('belongs to its owner and none of them endorse this project.');
   lines.push('');
   lines.push('## Music');
   lines.push('');

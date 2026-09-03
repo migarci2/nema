@@ -1,83 +1,83 @@
-<meta charset="utf-8"><title>any agent</title>
+<meta charset="utf-8"><title>works with</title>
 <link rel="stylesheet" href="film.css">
 <style>
-  .tile { position: absolute; width: 300px; height: 180px; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 22px; will-change: transform, opacity; }
-  /* Every logo is painted, not drawn: the svg is a mask and the ink is ours,
-     so a brand that ships a coloured file still lands at the same weight. */
+  /* One field, no categories and no labels above it. Two rows that drift past
+     each other the way a "works with" wall does, then everything comes home. */
+  .tile { position: absolute; width: 200px; margin-left: -100px; display: flex; flex-direction: column;
+    align-items: center; gap: 20px; will-change: transform, opacity; }
   .icon { width: 64px; height: 64px; background: var(--ink); display: block;
     -webkit-mask-size: contain; -webkit-mask-position: center; -webkit-mask-repeat: no-repeat;
     mask-size: contain; mask-position: center; mask-repeat: no-repeat; }
-  .glyph { width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;
-    font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 27px; color: var(--ink);
-    border: 3px solid var(--ink); border-radius: 12px; letter-spacing: -0.02em; }
-  .dot { width: 64px; height: 64px; border-radius: 50%; border: 3px solid #43536F; display: flex;
-    align-items: center; justify-content: center; }
-  .dot i { width: 26px; height: 26px; border-radius: 50%; display: block; }
-  .lab { font-size: 27px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
-  .soon { font-family: 'JetBrains Mono', monospace; font-size: 19px; color: var(--yellow);
-    letter-spacing: .14em; text-transform: uppercase; margin-top: -12px; }
-  .rowtag { position: absolute; font-family: 'JetBrains Mono', monospace; font-size: 23px;
-    letter-spacing: .2em; text-transform: uppercase; color: #4E6389; }
+  .art { width: 64px; height: 64px; display: grid; place-items: center; }
+  .monoword { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 34px;
+    color: var(--ink); letter-spacing: -0.02em; }
+  .serif { font-family: Georgia, 'Times New Roman', serif; font-size: 54px; line-height: 1;
+    color: #F4F1EA; }
+  .lab { font-size: 26px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
 </style>
 <div class="stage">
-  <div id="grid"></div>
-  <div id="markwrap" style="position:absolute;left:790px;top:300px;width:340px;height:340px;opacity:0"></div>
-  <div id="line" class="kin" style="position:absolute;left:0;right:0;top:834px;text-align:center;font-size:72px"></div>
+  <div id="field"></div>
+  <div id="markwrap" style="position:absolute;left:790px;top:327px;width:340px;height:340px;opacity:0"></div>
+  <div id="line" class="kin" style="position:absolute;left:0;right:0;top:742px;text-align:center;font-size:70px"></div>
 </div>
 <script type="module">
-import { span, ease, words, kinetic, fade } from './film.js';
+import { span, ease, easeInOut, words, kinetic } from './film.js';
 
 const L = '../../../docs/assets/press/logos/';
+const mask = (f) => `<div class="icon" style="-webkit-mask-image:url(${L}${f});mask-image:url(${L}${f})"></div>`;
+/* The three sites wear their own marks, drawn from their own stylesheets:
+   Saucier School's yellow disc inside an orange ring (apps/harness, .ss-brand__square),
+   Line Cook Lab's green caret (apps/security, .lc-mark__caret), and the blog's
+   serif initial, which is all the blog has. */
+const SAUCIER = `<div class="art"><svg width="56" height="56" viewBox="0 0 56 56">
+  <g transform="rotate(-8 28 28)"><circle cx="28" cy="28" r="27" fill="#FF7429"/><circle cx="28" cy="28" r="15.5" fill="#FFD34D"/></g></svg></div>`;
+const LINECOOK = `<div class="art"><svg width="56" height="56" viewBox="0 0 56 56">
+  <rect x="23" y="8" width="10" height="40" rx="2" fill="#4ADE80"/></svg></div>`;
+const MAILLARD = `<div class="art"><span class="serif">M</span></div>`;
+
+/* Two rows, staggered by half a step so nothing lines up in a column. */
 const ROWS = [
-  { tag: 'agents', y: 150, items: [
-    { img: L + 'openai.svg', lab: 'ChatGPT' },
-    { img: L + 'googlegemini.svg', lab: 'Gemini' },
-    { img: L + 'claude.svg', lab: 'Claude' },
-    { img: L + 'claude.svg', lab: 'Claude Code' },
-    { glyph: '{ }', lab: 'Codex' }
+  { y: 330, dir: -1, items: [
+    { art: mask('openai.svg'), lab: 'ChatGPT' },
+    { art: mask('googlechrome.svg'), lab: 'Chrome' },
+    { art: mask('claude.svg'), lab: 'Claude Code' },
+    { art: mask('modelcontextprotocol.svg'), lab: 'MCP' },
+    { art: mask('googlegemini.svg'), lab: 'Gemini' },
+    { art: SAUCIER, lab: 'Saucier School' },
+    { art: mask('firefoxbrowser.svg'), lab: 'Firefox' }
   ] },
-  { tag: 'the browser, the platform', y: 366, items: [
-    { img: L + 'googlechrome.svg', lab: 'Chrome' },
-    { img: L + 'firefoxbrowser.svg', lab: 'Firefox', soon: true },
-    { img: L + 'safari.svg', lab: 'Safari', soon: true },
-    { glyph: 'MCP', lab: 'WebMCP' },
-    { img: L + 'cloudflare.svg', lab: 'Cloudflare Workers' }
-  ] },
-  { tag: 'and the sites', y: 582, items: [
-    { dot: '#FF7429', lab: 'Saucier School' },
-    { dot: '#4ADE80', lab: 'Line Cook Lab' },
-    { dot: '#FFCA2E', lab: 'Maillard, an article' }
+  { y: 580, dir: 1, items: [
+    { art: mask('openai.svg'), lab: 'Codex' },
+    { art: mask('cloudflare.svg'), lab: 'Cloudflare' },
+    { art: mask('safari.svg'), lab: 'Safari' },
+    { art: '<div class="art"><span class="monoword">MCP</span></div>', lab: 'WebMCP' },
+    { art: LINECOOK, lab: 'Line Cook Lab' },
+    { art: MAILLARD, lab: 'Maillard' }
   ] }
 ];
 
-const grid = document.getElementById('grid');
+const STEP = 220, CX = 960, CY = 497;
+const field = document.getElementById('field');
 const tiles = [];
-const rowTags = [];
 ROWS.forEach((row, ri) => {
   const n = row.items.length;
-  const left = (1920 - (n * 300 + (n - 1) * 24)) / 2;
-  const tag = document.createElement('div');
-  tag.className = 'rowtag';
-  tag.textContent = row.tag;
-  tag.style.left = left + 'px';
-  tag.style.top = (row.y - 36) + 'px';
-  grid.appendChild(tag);
-  rowTags.push(tag);
+  /* Half a step apart, one row each way, so no mark sits above another. */
+  const first = CX - ((n - 1) * STEP) / 2 + (ri === 0 ? -STEP / 4 : STEP / 4);
   row.items.forEach((it, i) => {
     const el = document.createElement('div');
     el.className = 'tile';
-    el.style.left = (left + i * 324) + 'px';
+    const x = first + i * STEP;
+    el.style.left = x + 'px';
     el.style.top = row.y + 'px';
-    const art = it.img ? `<div class="icon" style="-webkit-mask-image:url(${it.img});mask-image:url(${it.img})"></div>`
-      : it.glyph ? `<div class="glyph">${it.glyph}</div>`
-      : `<div class="dot"><i style="background:${it.dot}"></i></div>`;
-    el.innerHTML = art + `<div class="lab">${it.lab}</div>` + (it.soon ? '<div class="soon">soon</div>' : '');
-    grid.appendChild(el);
-    tiles.push({ el, cx: left + i * 324 + 150, cy: row.y + 86, soon: !!it.soon,
-      order: ri * 5 + i, soonEl: el.querySelector('.soon') });
+    el.innerHTML = it.art + `<div class="lab">${it.lab}</div>`;
+    field.appendChild(el);
+    tiles.push({ el, x, y: row.y + 42, dir: row.dir, order: tiles.length });
   });
 });
+/* Farthest from the centre leaves first, so the field contracts evenly from
+   its edges instead of emptying one side before the other. */
+const dist = (t) => Math.hypot(t.x - 960, t.y - 497);
+tiles.slice().sort((a, b) => dist(b) - dist(a)).forEach((t, i) => { t.order = i; });
 
 document.getElementById('markwrap').innerHTML =
   `<svg viewBox="0 0 64 64" width="340" height="340"><defs>
@@ -93,26 +93,46 @@ document.getElementById('markwrap').innerHTML =
    <g fill="#F2F6FF" shape-rendering="crispEdges">
      <rect x="24" y="24" width="16" height="4"/><rect x="24" y="28" width="4" height="12"/><rect x="36" y="28" width="4" height="12"/>
    </g></svg>`;
-
 const markwrap = document.getElementById('markwrap');
 const spans = words(document.getElementById('line'), 'Any agent. Any browser. Any site.');
-const CX = 960, CY = 470;
-const PULL_AT = 3.30, PULL_FOR = 0.80;
+
+const IN_AT = 0.05, IN_STEP = 0.06, IN_FOR = 0.34;
+const DRIFT_FOR = 3.2, DRIFT_PX = 74;
+const HOME_AT = 3.20, HOME_STEP = 0.045, HOME_FOR = 0.85;
+const LAST_HOME = HOME_AT + (tiles.length - 1) * HOME_STEP + HOME_FOR;
+const LINE_AT = 4.60;
 
 window.renderAt = (t) => {
-  const pull = ease(span(t, PULL_AT, PULL_FOR));
+  /* The drift eases the whole way, so it never reads as a loop pushed by a
+     constant. It has come to rest by the time the field starts coming home. */
+  const drift = easeInOut(span(t, 0, DRIFT_FOR)) * DRIFT_PX;
   tiles.forEach((tile) => {
-    const u = ease(span(t, 0.08 + tile.order * 0.06, 0.24));
-    const dx = (CX - tile.cx) * pull, dy = (CY - tile.cy) * pull;
-    const s = 1 - 0.72 * pull;
-    tile.el.style.opacity = (u * (1 - pull)).toFixed(4);
-    tile.el.style.transform = `translate(${dx.toFixed(1)}px, ${((1 - u) * 22 + dy).toFixed(1)}px) scale(${s.toFixed(4)})`;
-    if (tile.soonEl) tile.soonEl.style.opacity = span(t, 2.0, 0.3).toFixed(3);
+    const appear = ease(span(t, IN_AT + tile.order * IN_STEP, IN_FOR));
+    const u = easeInOut(span(t, HOME_AT + tile.order * HOME_STEP, HOME_FOR));
+    /* Home along a curve, not a straight line: the control point is pushed off
+       the chord, so a mark on the left arrives sweeping rather than sliding. */
+    const x0 = tile.x + tile.dir * drift, y0 = tile.y;
+    const mx = (x0 + CX) / 2, my = (y0 + CY) / 2;
+    const nx = -(CY - y0), ny = (CX - x0);
+    const nlen = Math.hypot(nx, ny) || 1;
+    const bow = 0.16 * Math.hypot(CX - x0, CY - y0) * tile.dir;
+    const cxp = mx + (nx / nlen) * bow, cyp = my + (ny / nlen) * bow;
+    const k = (1 - u);
+    const px = k * k * x0 + 2 * k * u * cxp + u * u * CX;
+    const py = k * k * y0 + 2 * k * u * cyp + u * u * CY;
+    const s = 1 - 0.78 * u;
+    /* Gone before it reaches the middle, so nothing piles up there. */
+    tile.el.style.opacity = (appear * (1 - Math.min(1, Math.max(0, (u - 0.28) / 0.52)))).toFixed(4);
+    tile.el.style.transform =
+      `translate(${(px - tile.x).toFixed(1)}px, ${(py - tile.y + (1 - appear) * 18).toFixed(1)}px) scale(${s.toFixed(4)})`;
   });
-  rowTags.forEach((tag, i) => fade(tag, span(t, 0.24 + i * 0.34, 0.28) * (1 - pull)));
-  const m = ease(span(t, PULL_AT + 0.34, 0.5));
-  markwrap.style.opacity = m.toFixed(3);
-  markwrap.style.transform = `scale(${(0.55 + 0.45 * m).toFixed(4)})`;
-  kinetic(spans, t, { start: PULL_AT + 0.72, stagger: 0.05, dur: 0.24 });
+  /* The mark grows in while the field is still arriving, and takes one breath
+     as the last one lands. */
+  const grow = ease(span(t, HOME_AT + 0.9, 0.6));
+  const beat = span(t, LAST_HOME - 0.12, 0.44);
+  const pulse = Math.sin(Math.PI * ease(beat)) * 0.06;
+  markwrap.style.opacity = grow.toFixed(3);
+  markwrap.style.transform = `scale(${(0.6 + 0.4 * grow + pulse).toFixed(4)})`;
+  kinetic(spans, t, { start: LINE_AT, stagger: 0.05, dur: 0.26 });
 };
 </script>
