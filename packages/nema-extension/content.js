@@ -49,6 +49,8 @@ let manifest = null;
 /** Activity ids this page has already graded as passed. */
 const passed = new Set();
 let toolNames = [];
+/** Which WebMCP this page runs: what the bridge saw, not what we assume. */
+let transport = '';
 
 function nextId() {
   sequence += 1;
@@ -95,12 +97,14 @@ function pageInfo(tools) {
     worksWithNema: names.some((name) => KEY_TOOLS.has(name)),
     visible: document.visibilityState === 'visible',
     passed: [...passed],
+    transport,
     manifest
   };
 }
 
 function report(data) {
   if (Array.isArray(data.tools)) toolNames = data.tools.map((tool) => tool.name).filter(Boolean);
+  if (typeof data.transport === 'string' && data.transport) transport = data.transport;
   const info = pageInfo(Array.isArray(data.tools) ? data.tools : []);
   const fingerprint = JSON.stringify(info);
   if (fingerprint === lastReport) return info;

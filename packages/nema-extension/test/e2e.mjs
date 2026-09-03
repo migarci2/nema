@@ -390,8 +390,8 @@ try {
   const ledger = await panel.evaluate(`document.querySelector('[data-evidence-ledger]').textContent.includes('Which vinaigrette holds')`);
   ok(ledger, 'the evidence ledger shows the new receipt');
   const result = await panel.evaluate(`document.querySelector('[data-ext-result]').textContent`);
-  ok(result.includes('Cooking ratios, apply') && !/nema:|rcpt_|nema1\./.test(result),
-    `the strip says which band moved, in words: ${result.replace(/\s+/g, ' ').slice(0, 120)}`);
+  ok(result.includes('Cooking ratios is now usable') && !/nema:|rcpt_|nema1\./.test(result),
+    `the card says which band moved, in one sentence: ${result.replace(/\s+/g, ' ').slice(0, 120)}`);
   console.log('shot ' + await panel.shot('11-panel-receipt'));
 
   /* 9. the manual button is still there, and is honest about the duplicate */

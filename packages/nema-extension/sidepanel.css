@@ -84,7 +84,18 @@
 
 /* ------------------------------------------------- the page you are on -- */
 
-.x-away {
+.x-away { display: flex; flex-direction: column; gap: var(--sp-2); }
+.x-away[hidden] { display: none; }
+
+.x-away__head {
+  margin: 0;
+  font-size: var(--fs-20);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.x-away__line {
   margin: 0;
   font-size: var(--x-body);
   line-height: var(--lh-body);
@@ -140,7 +151,7 @@
 .x-row:first-child { border-top: 0; }
 .x-row__main { color: var(--ink); flex: 1 1 auto; }
 
-.x-row__state { flex: none; font-size: var(--fs-13); color: var(--ink-2); }
+.x-row__state { flex: none; font-size: var(--fs-13); color: var(--ink-2); text-align: right; }
 .x-row__state--good { color: var(--teal); }
 .x-row__state--wait { color: var(--band-due-ink); }
 .x-row__state--bad { color: var(--danger); }
@@ -284,10 +295,12 @@
 #consent-modal .n-modal__foot .n-btn--primary { margin-left: 0; order: 1; }
 #consent-modal [data-consent-deny] { order: 2; }
 
-/* One promise about this site, not two. The vault's hour long auto approval is
- * the extension's thirty days here, and the extension's line is the one shown. */
-.v-consent__decide > .n-check:not(.x-remember) { display: none; }
-.x-remember { margin: 0; }
+/* One promise about this site, not two. An answer good for thirty minutes and
+ * an approval good for thirty days read as one thing to a person meeting nema
+ * for the first time, so the vault's hour long auto approval and the
+ * extension's thirty days both live in the block under the hood. */
+#consent-modal .v-consent__decide { display: none; }
+.x-remember { margin: 0; font-family: var(--font-ui); }
 
 /* -------------------------------------------------- under the hood -- */
 
@@ -320,6 +333,13 @@
 .x-hood__ext > .x-hood__label:first-child { margin-top: 0; }
 
 .x-hood__acts { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+
+.x-hood__line { margin: 0; font-size: var(--fs-13); color: var(--ink-2); }
+.x-hood__line[hidden] { display: none; }
+
+/* The Next card is under the hood, so it is quiet there and not a card. */
+.x-hood .x-card { gap: var(--sp-3); }
+.x-hood .x-label { color: var(--ink-3); }
 
 .x-origin { margin: 0; font-size: var(--fs-13); color: var(--ink); }
 .x-state { margin: 0; font-size: var(--fs-13); color: var(--ink-2); }

@@ -8,15 +8,17 @@
  * Three states, and nothing else on screen (CONTRACT 22, 24, 26):
  *
  *   away    not a nema page: the mark, "Learn it once. It counts everywhere.",
- *           one sentence, and a way in (the demo learner, or what is next)
- *   asks    a nema page, not shared yet: "<Site> asks to know 3 things", the
- *           rows in plain words, Share, Not now, remember for 30 days
- *   shared  "Shared with <Site>. 68 minutes became 27.", what you did here as
- *           the receipts arrive, and the Next card
+ *           and one sentence, or the demo learner while the vault is empty
+ *   asks    a nema page, not shared yet: "<Site> asks about 3 things you may
+ *           already know", the rows in plain words, Review request, Not on
+ *           this visit
+ *   shared  "Shared with <Site>. 68 minutes became 27.", and what you did here
+ *           as the receipts arrive
  *
  * Everything a machine needs and a person does not (tool names, the call log,
- * timings, alignments to decide, the manual paths, the whole vault page) lives
- * in the one closed "Under the hood" block at the bottom, built by
+ * timings, the transports, the alignments, the thirty day approval, the Next
+ * card and its self check, the manual paths, the whole vault page) lives in the
+ * one closed "Under the hood" block at the bottom, built by
  * scripts/build-extension.sh and filled from here.
  *
  * It imports '/vault.js' with the same absolute specifier app.js uses, so both
@@ -35,6 +37,11 @@ const REMEMBER_DAYS = 30;
 const MANIFEST_KEY = 'nema:manifests';
 const AUTO_APPROVE_KEY = 'nema:autoApprove';
 const ONBOARDED_KEY = 'nema:onboarded';
+/* A side panel is closed and reopened all the time, and a reopened panel that
+ * has forgotten it already shared would ask a second time for the same visit.
+ * These two live in session storage, which Chrome clears when the browser does. */
+const SHARED_KEY = 'nema:sharedWith';
+const DECLINED_KEY = 'nema:declined';
 
 const onboard = document.querySelector('[data-ext-onboard]');
 const card = document.querySelector('[data-ext-page]');
@@ -67,11 +74,41 @@ let alignNote = '';
 /** One line over the card: the share result, or what went wrong. */
 let notice = '';
 let noticeKind = '';
-/** Origins that have shared this session, and origins told "not now". */
-const sharedWith = new Set();
-const declined = new Set();
-/** What this page gave back, by origin: one row per receipt, and the bands. */
+/**
+ * This visit, by origin: what the site did with the bands, what it gave back,
+ * and the sites told "not on this visit".
+ */
+const sharedWith = new Map();
 const collected = new Map();
+const declined = new Set();
+
+/**
+ * A side panel is closed and reopened constantly, and the module starts again
+ * every time. Without this a reopened panel forgets it already shared with the
+ * page in front of it and asks a second time for the same visit. Session
+ * storage is the right shelf: Chrome empties it when the browser closes, which
+ * is exactly how long "this visit" lasts.
+ */
+function rememberVisits() {
+  const shared = {};
+  for (const [origin, line] of sharedWith) shared[origin] = line;
+  const kept = {};
+  for (const [origin, rows] of collected) kept[origin] = rows;
+  chrome.storage.session.set({
+    [SHARED_KEY]: { shared, kept },
+    [DECLINED_KEY]: [...declined]
+  }).catch(() => {});
+}
+
+async function readVisits() {
+  try {
+    const store = await chrome.storage.session.get([SHARED_KEY, DECLINED_KEY]);
+    const held = (store && store[SHARED_KEY]) || {};
+    for (const [origin, line] of Object.entries(held.shared || {})) sharedWith.set(origin, line);
+    for (const [origin, rows] of Object.entries(held.kept || {})) collected.set(origin, rows);
+    for (const origin of (store && store[DECLINED_KEY]) || []) declined.add(origin);
+  } catch { /* no session storage, so the panel asks again: the safe way round */ }
+}
 const calls = [];
 const refs = {};
 
@@ -86,14 +123,16 @@ onboard.innerHTML = `
 
 card.innerHTML = `
   <h2 class="sr-only" id="p-ext-page">This page</h2>
-  <p class="x-away" data-ext-away hidden></p>
+  <div class="x-away" data-ext-away hidden>
+    <p class="x-away__head">Learn it once. It counts everywhere.</p>
+    <p class="x-away__line" data-ext-away-line></p>
+  </div>
   <div class="x-ask" data-ext-ask hidden>
     <p class="x-ask__head" data-ext-ask-head></p>
     <div class="x-rows" data-ext-ask-rows></div>
-    <div class="x-ask__slot" data-ext-remember-slot></div>
     <div class="x-actions" data-ext-actions hidden>
-      <button class="n-btn n-btn--primary" type="button" data-ext-share>Share</button>
-      <button class="x-quiet" type="button" data-ext-notnow>Not now</button>
+      <button class="n-btn n-btn--primary" type="button" data-ext-share>Review request</button>
+      <button class="x-quiet" type="button" data-ext-notnow>Not on this visit</button>
     </div>
   </div>
   <div class="x-decide" data-ext-decide hidden></div>
@@ -108,6 +147,10 @@ hood.innerHTML = `
   <p class="x-origin" data-ext-origin>Looking for the page you are on.</p>
   <p class="x-state" data-ext-state aria-live="polite"></p>
   <p class="x-tools" data-ext-tools hidden></p>
+  <p class="x-hood__line" data-ext-moved hidden></p>
+  <p class="x-hood__label">Transport</p>
+  <p class="x-hood__line" data-ext-transport-page>Page transport: not read yet</p>
+  <p class="x-hood__line">Panel transport: extension broker</p>
   <div class="x-aligns" data-ext-aligns hidden></div>
   <div class="x-calls" data-ext-calls hidden></div>
   <p class="x-hood__label">Do it by hand</p>
@@ -118,10 +161,10 @@ hood.innerHTML = `
   </div>`;
 
 refs.away = card.querySelector('[data-ext-away]');
+refs.awayLine = card.querySelector('[data-ext-away-line]');
 refs.ask = card.querySelector('[data-ext-ask]');
 refs.askHead = card.querySelector('[data-ext-ask-head]');
 refs.askRows = card.querySelector('[data-ext-ask-rows]');
-refs.rememberSlot = card.querySelector('[data-ext-remember-slot]');
 refs.actions = card.querySelector('[data-ext-actions]');
 refs.share = card.querySelector('[data-ext-share]');
 refs.notNow = card.querySelector('[data-ext-notnow]');
@@ -131,19 +174,25 @@ refs.next = nextCard.querySelector('[data-ext-next-body]');
 refs.origin = hood.querySelector('[data-ext-origin]');
 refs.state = hood.querySelector('[data-ext-state]');
 refs.tools = hood.querySelector('[data-ext-tools]');
+refs.moved = hood.querySelector('[data-ext-moved]');
+refs.transport = hood.querySelector('[data-ext-transport-page]');
 refs.aligns = hood.querySelector('[data-ext-aligns]');
 refs.calls = hood.querySelector('[data-ext-calls]');
 refs.receipt = hood.querySelector('[data-ext-receipt]');
 
 /* The "Remember this site for 30 days" checkbox of CONTRACT 24.2. It belongs to
- * the extension, not to the vault, so it lives in the card while the site is
- * asking, and moves into the vault's own consent modal while that modal is the
- * card's confirmation step. One node, one state, two places. */
+ * the extension, not to the vault, so the panel adds it to the vault's own
+ * consent modal. It sits in that modal's block under the hood: an answer good
+ * for thirty minutes and an approval good for thirty days are two different
+ * promises, and a person meeting nema for the first time reads them as one. */
 refs.rememberWrap = document.createElement('label');
 refs.rememberWrap.className = 'n-check x-remember';
 refs.rememberWrap.innerHTML = '<input type="checkbox" data-ext-remember><span>Remember this site for 30 days</span>';
 refs.remember = refs.rememberWrap.querySelector('[data-ext-remember]');
-refs.rememberSlot.appendChild(refs.rememberWrap);
+(function mountRemember() {
+  const under = document.querySelector('#consent-modal .n-under__body');
+  if (under) under.appendChild(refs.rememberWrap);
+})();
 
 /* app.js opens every <details> around a panel it flashes: a demo seed import, a
  * self check, an alignment confirmed. In the vault that is right, it shows the
@@ -170,7 +219,7 @@ refs.consent.className = 'x-consent';
 refs.consent.hidden = true;
 refs.consent.innerHTML = `
   <div class="x-rows" data-ext-consent-rows></div>
-  <p class="x-consent__line">Shared for 30 minutes. Nothing else leaves.</p>`;
+  <p class="x-consent__line">This answer will be valid for 30 minutes. Nothing else will leave.</p>`;
 refs.consentRows = refs.consent.querySelector('[data-ext-consent-rows]');
 (function mountConsent() {
   const body = document.querySelector('#consent-modal .n-modal__body');
@@ -189,13 +238,7 @@ function showConsentRows(requirements, audience) {
   refs.consent.hidden = rows.length === 0;
 }
 
-/** Move the checkbox into the modal while the modal is asking, and back after. */
-function rememberInModal(inModal) {
-  const decide = document.querySelector('.v-consent__decide');
-  if (inModal && decide) decide.appendChild(refs.rememberWrap);
-  else refs.rememberSlot.appendChild(refs.rememberWrap);
-  if (!inModal) refs.consent.hidden = true;
-}
+
 
 /* The panel is not the web: the header nav and the footer would navigate the
  * vault out of the panel, so the nav is hidden by sidepanel.css and every link
@@ -394,8 +437,10 @@ function teacherFor(need) {
 
 function renderNext() {
   if (!vaultLive) return;
-  /* While a site is asking, the card is the only thing on screen. */
-  if (isFresh() || stateName() === 'asks') {
+  /* The card is under the hood now (a self reported Done next to a signed
+   * receipt reads as the same kind of evidence, and it is not), so the only
+   * reason to hide it is a vault with nothing in it yet. */
+  if (isFresh()) {
     nextCard.hidden = true;
     return;
   }
@@ -666,18 +711,30 @@ const STATUS_WORDS = {
   missing: 'not yet'
 };
 
-/** One thing a site asks about: its name in words, and what your vault says. */
-function askRow(row) {
-  return `
-    <div class="x-row">
-      <span class="x-row__main">${esc(conceptWords(row.concept))}, ${esc(row.ability)}</span>
-      ${statusPill(row.status)}
-    </div>`;
+/* The protocol's abilities, said the way a person would say them. The words
+ * themselves are the vocabulary of the ladder, and they belong under the hood:
+ * "Ratios, in practice" is the same claim as "nema:ratios, apply". */
+const ABILITY_WORDS = {
+  recognize: 'recognise',
+  retrieve: 'from memory',
+  explain: 'in your own words',
+  apply: 'in practice',
+  transfer: 'in a new situation',
+  discriminate: 'tell apart'
+};
+
+function abilityWords(ability) {
+  return ABILITY_WORDS[ability] || String(ability || '');
 }
 
-function statusPill(status) {
-  const kind = status === 'verified' ? 'durable' : status === 'uncertain' ? 'uncertain' : 'unknown';
-  return `<span class="n-pill n-pill--nodot n-pill--${kind}">${esc(STATUS_WORDS[status] || status)}</span>`;
+/** One thing a site asks about: its name in words, and what your vault says. */
+function askRow(row) {
+  const kind = row.status === 'verified' ? 'good' : '';
+  return `
+    <div class="x-row">
+      <span class="x-row__main">${esc(conceptWords(row.concept))}, ${esc(abilityWords(row.ability))}</span>
+      <span class="x-row__state${kind ? ' x-row__state--' + kind : ''}">${esc(STATUS_WORDS[row.status] || row.status)}</span>
+    </div>`;
 }
 
 /** The rows the site asks about, in plain words, with what your vault says. */
@@ -695,8 +752,8 @@ function renderAsk() {
   refs.askHead.textContent = !read
     ? `${site} works with nema. Reading what it asks about you.`
     : pairs.length === 0
-      ? `${site} asks to know nothing about you.`
-      : `${site} asks to know ${pairs.length} thing${pairs.length === 1 ? '' : 's'}.`;
+      ? `${site} asks nothing about you.`
+      : `${site} asks about ${pairs.length} thing${pairs.length === 1 ? '' : 's'} you may already know.`;
   refs.askRows.innerHTML = rows.map(askRow).join('');
 }
 
@@ -707,12 +764,14 @@ function renderResult() {
   const rows = (page && collected.get(page.origin)) || null;
   const parts = [];
 
-  if (notice) parts.push(`<p class="x-lead${noticeKind ? ' x-lead--' + noticeKind : ''}">${esc(notice)}</p>`);
+  /* What is happening now wins; otherwise the line this visit already earned. */
+  const lead = notice || (state === 'shared' && page ? sharedWith.get(page.origin) || '' : '');
+  if (lead) parts.push(`<p class="x-lead${notice && noticeKind ? ' x-lead--' + noticeKind : ''}">${esc(lead)}</p>`);
 
   if (state === 'shared' || (rows && rows.list.length > 0)) {
     parts.push('<p class="x-did__label">What you did here</p>');
     if (!rows || rows.list.length === 0) {
-      parts.push('<p class="x-did__none">Nothing yet. Pass something on this page and it lands in your vault on its own.</p>');
+      parts.push('<p class="x-did__none">Nothing yet. Pass something here and nema will keep the receipt.</p>');
     } else {
       parts.push(`<div class="x-rows">${rows.list.map((row) => `
         <div class="x-row">
@@ -735,6 +794,14 @@ function render() {
 
   /* The hood always tells the whole truth about the page, whatever the card
    * is showing. CONTRACT 26: the tool names live here and nowhere else. */
+  const holds = page && collected.get(page.origin);
+  refs.moved.hidden = !(holds && holds.detail);
+  if (holds && holds.detail) refs.moved.textContent = holds.detail;
+  refs.transport.textContent = 'Page transport: ' + (
+    !page || !page.worksWithNema ? 'no nema tools on this page'
+      : page.transport === 'polyfill' ? 'WebMCP polyfill'
+        : page.transport === 'native' ? 'native WebMCP' : 'not read yet');
+
   if (!page || !page.url) {
     refs.origin.hidden = true;
     refs.state.textContent = 'No page open in this window. Open something that teaches and this fills in.';
@@ -762,9 +829,9 @@ function render() {
   refs.ask.hidden = state !== 'asks';
   refs.actions.hidden = state !== 'asks';
   if (state === 'away') {
-    refs.away.textContent = page && page.worksWithNema && declined.has(page.origin)
-      ? `Nothing was shared with ${siteName(page)}. Reload the page to offer again.`
-      : 'Learn anywhere you see the nema mark. When a site works with nema, it asks here.';
+    refs.awayLine.textContent = page && page.worksWithNema && declined.has(page.origin)
+      ? `Nothing was shared with ${siteName(page)} on this visit. Reload the page to see the request again.`
+      : 'Open a page with the nema mark. It will ask here before anything is shared.';
   }
   if (state === 'asks') renderAsk();
 
@@ -952,7 +1019,6 @@ async function shareBands({ fromBar = false } = {}) {
 
     refs.remember.checked = false;
     showConsentRows(requirements, audience);
-    rememberInModal(true);
 
     let assertion;
     try {
@@ -961,11 +1027,12 @@ async function shareBands({ fromBar = false } = {}) {
         () => vault.createAssertion({ audience, purpose, requirements })
       );
     } finally {
-      rememberInModal(false);
+      refs.consent.hidden = true;
     }
 
     if (assertion.status === 'denied') {
       declined.add(audience);
+      rememberVisits();
       say('You denied the request. Nothing was shared.', 'warn');
       if (fromBar) {
         toPage(tabId, {
@@ -1016,11 +1083,15 @@ async function shareBands({ fromBar = false } = {}) {
     if (!result && lastError) throw lastError;
 
     if (!result || result.status !== 'rejected') {
-      sharedWith.add(audience);
+      sharedWith.set(audience, sharedLine(result, current.page));
       declined.delete(audience);
+      rememberVisits();
+      notice = '';
+      noticeKind = '';
+    } else {
+      notice = sharedLine(result, current.page);
+      noticeKind = 'warn';
     }
-    notice = sharedLine(result, current.page);
-    noticeKind = result && result.status === 'rejected' ? 'warn' : '';
     render();
     if (fromBar) {
       toPage(tabId, {
@@ -1065,6 +1136,24 @@ function bandsMoved(changes) {
     .map(({ change, lower }) => `${conceptWords(change.concept)}, ${change.ability}: ${change.from} to ${change.to}`
       + (lower > 0 ? `, and ${lower} below it` : ''))
     .join('; ');
+}
+
+/**
+ * The one sentence the card gets: the furthest band each concept reached.
+ * "Cooking ratios is now usable." The ability by ability transition is true and
+ * technical, so it goes under the hood next to the tool calls.
+ */
+function bandSentence(changes) {
+  if (!Array.isArray(changes) || changes.length === 0) return '';
+  const best = new Map();
+  for (const change of changes) {
+    const rank = ABILITY_LADDER.indexOf(change.ability);
+    const held = best.get(change.concept);
+    if (!held || rank > held.rank) best.set(change.concept, { to: change.to, rank });
+  }
+  return [...best.entries()]
+    .map(([concept, reached]) => `${conceptWords(concept)} is now ${reached.to}.`)
+    .join(' ');
 }
 
 /** The toast wording of CONTRACT 24.3: the bands that moved, in words. */
@@ -1155,7 +1244,8 @@ async function collect({ manual }) {
     if (staged.status === 'accepted') {
       kept += 1;
       for (const change of staged.changes || []) moved.push(change);
-      rows.push({ title, status: 'verified', kind: 'good' });
+      /* "kept", not "verified": nema verified a signature, not the learner. */
+      rows.push({ title, status: 'kept', kind: 'good' });
     } else if (staged.status === 'pending') {
       rows.push({ title, status: 'waiting', kind: 'wait' });
     } else if (staged.status === 'rejected' && staged.reason === 'duplicate') {
@@ -1167,10 +1257,12 @@ async function collect({ manual }) {
 
   /* By hand replaces the list; on its own it adds to it, so a page a person
    * works through fills the card one line at a time. */
-  const held = collected.get(page.origin) || { list: [], moved: '' };
+  const held = collected.get(page.origin) || { list: [], moved: '', detail: '' };
   const list = manual ? rows : held.list.concat(rows);
-  const movedLine = moved.length > 0 ? bandsMoved(moved) + '.' : (manual ? '' : held.moved);
-  collected.set(page.origin, { list, moved: movedLine });
+  const movedLine = moved.length > 0 ? bandSentence(moved) : (manual ? '' : held.moved);
+  const detail = moved.length > 0 ? bandsMoved(moved) + '.' : (manual ? '' : held.detail);
+  collected.set(page.origin, { list, moved: movedLine, detail });
+  rememberVisits();
   if (manual) say('');
   else renderResult();
 
@@ -1220,6 +1312,7 @@ refs.notNow.addEventListener('click', () => {
   const page = current.page;
   if (!page) return;
   declined.add(page.origin);
+  rememberVisits();
   say('');
   render();
 });
@@ -1244,5 +1337,8 @@ vaultReady().then(() => {
   mirrorAutoApprovals();
   render();
 });
-refresh();
+readVisits().then(() => {
+  render();
+  refresh();
+});
 setInterval(refresh, 4000);

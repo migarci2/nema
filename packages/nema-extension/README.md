@@ -13,6 +13,18 @@ answers the questions; the extension does the carrying.
 
 ## Load it (30 seconds)
 
+Two things to know before Chrome asks you to confirm the permissions.
+
+> **This prototype runs on all pages so it can detect published nema tools.**
+> Before you choose Review request, it reads only the tool list those pages
+> publish to any agent, and the learning offer those tools describe. Nothing
+> about you leaves the vault until you approve a request.
+
+> **The extension keeps a local vault for this browser profile.** Load the demo
+> learner inside the panel. The web vault at nema.migarci2.dev and the
+> extension's vault are two documents and they do not sync: use Export and
+> Import, under the hood, to move one to the other.
+
 ```bash
 bash scripts/build-extension.sh
 ```
@@ -43,27 +55,41 @@ on the web.
 
 **1. Not a nema page.** The mark, "Learn it once. It counts everywhere.", one
 sentence ending "Learn anywhere you see the nema mark", and one button, **Load
-the demo learner**. A vault that already has evidence drops the button and shows
-the Next card instead. Import a vault file and Start empty are under the hood.
+the demo learner**. A vault that already has evidence drops the button and reads
+"Open a page with the nema mark. It will ask here before anything is shared."
+Import a vault file and Start empty are under the hood, and so is the Next
+card.
 
-**2. A nema page, not shared yet.** One card: "Saucier School asks to know 5
-things", those five in plain words with what your vault says about each
-(verified, not sure yet, not yet), **Share**, a quiet **Not now**, and the
-**Remember this site for 30 days** checkbox. Under it, nothing. Share opens the
-vault's own consent modal, which in the panel is that same card with the buttons
-swapped: the panel's ground, no dim, the same five rows in the same words, one
-line "Shared for 30 minutes. Nothing else leaves." in place of the withheld
-list, the expiry sentence and the countdown, the same checkbox, then **Approve**
-and **Deny**. app.js still owns the modal and still settles the promise; the
-panel adds the rows and the line, and the CSS hides the page width copy. The
-checkbox is one node that moves into the modal and back, so there is one promise
-about the site, not two.
+**2. A nema page, not shared yet.** One card: "Saucier School asks about 5
+things you may already know", those five in plain words with what your vault
+says about each. The ability is said the way a person says it, so a row reads
+"Cooking ratios, in practice   not sure yet", and the status is quiet text, not
+a pill. Then **Review request** and a quiet **Not on this visit**. Under it,
+nothing.
+
+Review request opens the vault's own consent modal, which in the panel is that
+same card with the buttons swapped: the panel's ground, no dim, the same five
+rows in the same words, one line "This answer will be valid for 30 minutes.
+Nothing else will leave." in place of the withheld list, the expiry sentence and
+the countdown, then **Approve** and **Deny**. app.js still owns the modal and
+still settles the promise; the panel adds the rows and the line, and the CSS
+hides the page width copy.
+
+**Remember this site for 30 days** lives in that modal's own block under the
+hood. An answer good for thirty minutes and an approval good for thirty days are
+two different promises, and side by side they read as one.
 
 **3. Shared.** One line, "Shared with Saucier School. 68 minutes became 27.",
 then **What you did here**: the receipts this page produced as they arrive, one
-row each, activity and one word (verified, waiting, already in your vault), and
-one line naming the bands that moved. Then the Next card: the concept and
-ability, the minutes, the rubric as a checklist, and **Done**.
+row each, activity and one word (kept, waiting, already in your vault), and one
+plain sentence for what moved, "Cooking ratios is now usable." The word is
+"kept", not "verified": nema verified a signature, not the learner. The ability
+by ability transition, "Cooking ratios, apply: uncertain to usable, and 3 below
+it", is under the hood.
+
+The card is the visit, not the tab: sharing and declining are written to
+`chrome.storage.session`, so closing the side panel and opening it again does
+not ask the same site twice.
 
 An alignment only a person can settle surfaces as one quiet line in states 2 and
 3 ("This site calls Maillard reaction \"browning science\". Confirm"), and only
@@ -103,9 +129,11 @@ the same moment. Failures, duplicates and pending issuers are quiet: they show
 as a word on the row, never in the page. The manual button, **Check for receipts
 now**, is under the hood and asks the page about every activity.
 
-**4. Next.** The most urgent need from `getNeeds(5)`: the concept and ability,
-the minutes, the rubric as a checklist, and a **Done** button that calls the
-vault's `recordSelfCheck` at the self report weight. When the vault has no
+**4. Next.** Under the hood, because a self reported Done next to a signed
+receipt reads as the same kind of evidence and it is not. The most urgent need
+from `getNeeds(5)`: the concept and ability, the minutes, the rubric as a
+checklist, and a **Done** button that calls the vault's `recordSelfCheck` at the
+self report weight. When the vault has no
 `recordSelfCheck` the button says what an agent would do instead. When a site
 seen this session teaches that concept, one quiet line links to it (the
 manifests are cached by origin in `chrome.storage.session`).
@@ -121,6 +149,13 @@ with **Confirm** and **Reject** wired to `confirmAlignment` and
 hood, in the vault page's own blocks, where a token can still be pasted or
 copied by hand.
 
+**7. Transports**, under the hood, two lines. "Page transport: native WebMCP"
+is read from the tab itself: `bridge.js` reports whether the polyfill installed
+itself there or the browser already had WebMCP. "Panel transport: extension
+broker" is how the panel reaches that page. The panel's own
+`chrome-extension://` document is always polyfilled (see the caveat below), and
+that is not what the page in the tab is doing.
+
 ## How it is put together
 
 | file | what it does |
@@ -128,7 +163,7 @@ copied by hand.
 | `manifest.json` | MV3: side panel, one content script pair, the action badge |
 | `sw.js` | opens the panel on the action click and on the bar's Share, keeps one record per tab, caches the session's manifests, holds intents for the panel, relays messages, sets the badge |
 | `content.js` | isolated world: asks the bridge what the page offers, owns the in page bar and toast in a shadow root, polls the page's attempts every four seconds while it is visible, forwards tool calls |
-| `bridge.js` | MAIN world: the only file that touches `document.modelContext`. Lists tools and executes one, with a JSON string in and a parsed result out |
+| `bridge.js` | MAIN world: the only file that touches `document.modelContext`. Lists tools and executes one, with a JSON string in and a parsed result out, and reports whether that page runs native WebMCP or the polyfill |
 | `sidepanel.js` | the three states, the Next card, the alignments, the share and the receipt collection, and what goes under the hood. Imports `/vault.js` so it is the same vault module app.js runs |
 | `sidepanel.css` | the panel width, the three cards, the consent modal as a step. No new colours |
 | `panel-webmcp.js` | hides native WebMCP on the panel's own page, see the caveat below |
