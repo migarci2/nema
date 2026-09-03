@@ -1,92 +1,109 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>nema story card, how it works</title>
+<title>nema story card, learn it once</title>
 <link rel="stylesheet" href="card.css">
 <style>
-  .row { display: flex; align-items: center; justify-content: center; }
-  .item { width: 400px; flex: none; text-align: center; }
-  .art { height: 400px; display: flex; align-items: center; justify-content: center; }
-  .item .lbl { margin-top: 36px; font-size: 34px; color: #F2F6FF; }
-  .arrow { width: 120px; flex: none; height: 400px; display: flex; align-items: center; justify-content: center; }
+  .card { padding: 80px; }
+
+  .band { position: relative; width: 1440px; height: 460px; }
+  .band > svg { position: absolute; inset: 0; }
+  .band > span { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; }
+
+  /* The estimate on the second site: struck, then what is left. */
+  .was { font-size: 30px; font-weight: 500; color: #6E6E6E;
+         text-decoration: line-through; text-decoration-thickness: 3px; text-decoration-color: #9A9A9A; }
+  .now { font-size: 30px; font-weight: 600; color: #0B8CA3; }
+
+  /* The consent, said on the way out of the vault. */
+  .yes { font-size: 30px; color: #F2F6FF; }
+
+  .caps { position: relative; height: 46px; margin-top: 46px; }
+  .caps span { position: absolute; transform: translateX(-50%);
+               font-size: 32px; font-weight: 500; color: #F2F6FF; white-space: nowrap; }
 </style>
 
 <div class="card">
-  <div class="row">
 
-    <div class="item">
-      <div class="art">
-        <svg width="300" height="360" viewBox="0 0 300 360" fill="none">
-          <rect width="300" height="360" rx="14" fill="#EDE6D8"/>
-          <g fill="#B9A688">
-            <rect x="36" y="42" width="200" height="24" rx="6"/>
-            <rect x="36" y="86" width="150" height="16" rx="5"/>
-            <rect x="36" y="140" width="92" height="92" rx="6"/>
-            <rect x="148" y="140" width="116" height="16" rx="5"/>
-            <rect x="148" y="172" width="116" height="16" rx="5"/>
-            <rect x="148" y="204" width="80" height="16" rx="5"/>
-            <rect x="36" y="262" width="228" height="16" rx="5"/>
-          </g>
-          <rect x="0" y="340" width="300" height="20" fill="#00E5FF"/>
-        </svg>
-      </div>
-      <p class="lbl">a site asks</p>
-    </div>
+  <div class="band">
+    <svg width="1440" height="460" viewBox="0 0 1440 460" fill="none">
+      <defs>
+        <linearGradient id="hw-edge" x1="32" y1="4" x2="58" y2="34" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#00E5FF"/><stop offset="0.5" stop-color="#15C4B4"/><stop offset="1" stop-color="#3A78FF"/>
+        </linearGradient>
+      </defs>
 
-    <div class="arrow">
-      <svg width="100" height="34" viewBox="0 0 100 34" fill="none">
-        <path d="M0 17 H78" stroke="#00E5FF" stroke-width="6"/>
-        <path d="M66 5 L84 17 L66 29" stroke="#00E5FF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
+      <!-- the first site: a page you actually worked through -->
+      <rect x="0" y="40" width="340" height="400" rx="14" fill="#EDE6D8"/>
+      <rect x="32" y="76" width="200" height="22" rx="6" fill="#B9A688"/>
+      <rect x="32" y="114" width="128" height="12" rx="4" fill="#CDC0A7"/>
 
-    <div class="item">
-      <div class="art">
-        <svg width="280" height="280" viewBox="0 0 64 64" fill="none">
-          <defs>
-            <linearGradient id="hw-edge" x1="32" y1="4" x2="58" y2="34" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stop-color="#00E5FF"/><stop offset="0.5" stop-color="#15C4B4"/><stop offset="1" stop-color="#3A78FF"/>
-            </linearGradient>
-          </defs>
-          <path d="M32 6 L54 19 L54 45 L32 58 L10 45 L10 19 Z" fill="#101B2D" stroke="url(#hw-edge)" stroke-width="1.6" stroke-linejoin="miter"/>
-          <g shape-rendering="crispEdges">
-            <rect x="29" y="3" width="6" height="6" fill="url(#hw-edge)"/>
-            <rect x="51" y="16" width="6" height="6" fill="url(#hw-edge)"/>
-            <rect x="51" y="42" width="6" height="6" fill="url(#hw-edge)"/>
-            <rect x="29" y="55" width="6" height="6" fill="#FFCA2E"/>
-            <rect x="7" y="42" width="6" height="6" fill="url(#hw-edge)"/>
-            <rect x="7" y="16" width="6" height="6" fill="url(#hw-edge)"/>
-          </g>
-          <g fill="#F2F6FF" shape-rendering="crispEdges">
-            <rect x="24" y="24" width="16" height="4"/><rect x="24" y="28" width="4" height="12"/><rect x="36" y="28" width="4" height="12"/>
-          </g>
-        </svg>
-      </div>
-      <p class="lbl">you say yes</p>
-    </div>
+      <rect x="32" y="166" width="28" height="28" rx="5" fill="none" stroke="#B9A688" stroke-width="3"/>
+      <rect x="80" y="173" width="190" height="14" rx="4" fill="#B9A688"/>
 
-    <div class="arrow">
-      <svg width="100" height="34" viewBox="0 0 100 34" fill="none">
-        <path d="M0 17 H78" stroke="#00E5FF" stroke-width="6"/>
-        <path d="M66 5 L84 17 L66 29" stroke="#00E5FF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
+      <rect x="32" y="246" width="28" height="28" rx="5" fill="#00E5FF"/>
+      <path d="M39 260 L45.5 267 L55 253" stroke="#0B1320" stroke-width="4" fill="none"
+            stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="80" y="253" width="190" height="14" rx="4" fill="#8E7C5C"/>
 
-    <div class="item">
-      <div class="art">
-        <svg width="300" height="360" viewBox="0 0 300 360" fill="none">
-          <rect x="1" y="1" width="298" height="358" rx="14" fill="#101B2D" stroke="#1E3050" stroke-width="2"/>
-          <g fill="#3E5273">
-            <rect x="36" y="48" width="160" height="16" rx="5"/>
-            <rect x="36" y="82" width="228" height="16" rx="5"/>
-            <rect x="36" y="116" width="190" height="16" rx="5"/>
-          </g>
-          <rect x="36" y="168" width="228" height="2" fill="#1E3050"/>
-          <circle cx="150" cy="252" r="46" fill="none" stroke="#00E5FF" stroke-width="7"/>
-          <path d="M128 252 L144 270 L174 233" stroke="#00E5FF" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <p class="lbl">it counts next time</p>
-    </div>
+      <rect x="32" y="326" width="28" height="28" rx="5" fill="none" stroke="#B9A688" stroke-width="3"/>
+      <rect x="80" y="333" width="190" height="14" rx="4" fill="#B9A688"/>
 
+      <!-- the vault -->
+      <g transform="translate(590 130) scale(4.0625)">
+        <path d="M32 6 L54 19 L54 45 L32 58 L10 45 L10 19 Z" fill="#0B1320" stroke="url(#hw-edge)"
+              stroke-width="1.6" stroke-linejoin="miter"/>
+        <g shape-rendering="crispEdges">
+          <rect x="29" y="3" width="6" height="6" fill="url(#hw-edge)"/>
+          <rect x="51" y="16" width="6" height="6" fill="url(#hw-edge)"/>
+          <rect x="51" y="42" width="6" height="6" fill="url(#hw-edge)"/>
+          <rect x="29" y="55" width="6" height="6" fill="#FFCA2E"/>
+          <rect x="7" y="42" width="6" height="6" fill="url(#hw-edge)"/>
+          <rect x="7" y="16" width="6" height="6" fill="url(#hw-edge)"/>
+        </g>
+        <g fill="#F2F6FF" shape-rendering="crispEdges">
+          <rect x="24" y="24" width="16" height="4"/><rect x="24" y="28" width="4" height="12"/><rect x="36" y="28" width="4" height="12"/>
+        </g>
+      </g>
+
+      <!-- the signed receipt leaving the page and going into the vault -->
+      <rect x="352" y="257" width="272" height="6" fill="#FFCA2E"/>
+      <path d="M618 246 L648 260 L618 274 Z" fill="#FFCA2E"/>
+      <rect x="420" y="232" width="120" height="56" rx="10" fill="#FFCA2E"/>
+      <g fill="#0B1320">
+        <rect x="440" y="248" width="66" height="7" rx="3"/>
+        <rect x="440" y="265" width="44" height="7" rx="3"/>
+      </g>
+
+      <!-- the vault's answer, on its way to the second site -->
+      <rect x="816" y="257" width="244" height="6" fill="#00E5FF"/>
+      <path d="M1056 246 L1086 260 L1056 274 Z" fill="#00E5FF"/>
+
+      <!-- the second site: a different page, shorter than it was -->
+      <rect x="1100" y="40" width="340" height="400" rx="14" fill="#FAFAFA"/>
+      <rect x="1132" y="76" width="200" height="22" rx="6" fill="#3A3A3A"/>
+
+      <rect x="1231" y="127" width="34" height="6" fill="#0B8CA3"/>
+      <path d="M1262 121 L1281 130 L1262 139 Z" fill="#0B8CA3"/>
+
+      <rect x="1132" y="193" width="210" height="14" rx="4" fill="#D6D6D6"/>
+      <rect x="1122" y="197" width="230" height="5" rx="3" fill="#6B6B6B"/>
+
+      <rect x="1132" y="251" width="210" height="14" rx="4" fill="#D6D6D6"/>
+      <rect x="1122" y="255" width="230" height="5" rx="3" fill="#6B6B6B"/>
+
+      <rect x="1132" y="309" width="210" height="14" rx="4" fill="#9E9E9E"/>
+      <rect x="1132" y="367" width="210" height="14" rx="4" fill="#9E9E9E"/>
+    </svg>
+
+    <span class="was" style="left: 1176px; top: 130px">68 min</span>
+    <span class="now" style="left: 1335px; top: 130px">27 min</span>
+    <span class="yes" style="left: 958px; top: 210px">you say yes</span>
   </div>
+
+  <div class="caps">
+    <span style="left: 170px">You learn it here</span>
+    <span style="left: 720px">Your vault keeps it</span>
+    <span style="left: 1270px">The next site skips it</span>
+  </div>
+
 </div>
