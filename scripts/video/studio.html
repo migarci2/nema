@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>nema studio compositor</title>
+<!--
+  The compositor page. studio.mjs serves this over a local http server, hands it
+  a config with the raw screencast and its event log, then steps time frame by
+  frame: renderAt(t) is a pure function of t, so the same log always renders the
+  same film. Nothing here animates on its own, and nothing uses a CSS transition:
+  every position, scale and opacity is written by renderAt.
+-->
+<style>
+  :root {
+    --navy: #0B1320;
+    --navy-2: #101B2D;
+    --cyan: #00E5FF;
+    --ink: #F2F6FF;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #000; }
+  body { font-family: Inter, "Inter Display", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+  #frame { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+
+  /* Everything the camera can see. Transformed as one, origin at 0 0, so the
+     maths in renderAt is a plain q -> q * s + t. */
+  #scene {
+    position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+    transform-origin: 0 0; will-change: transform;
+  }
+
+  #wall {
+    position: absolute; inset: 0;
+    background-color: #0B1320;
+    background-size: cover; background-position: center;
+    /* Replaced by the wallpaper image when one is given. */
+    background-image:
+      radial-gradient(1200px 800px at 22% 14%, rgba(0, 229, 255, 0.16), transparent 62%),
+      radial-gradient(1000px 900px at 84% 88%, rgba(21, 196, 180, 0.14), transparent 60%),
+      linear-gradient(160deg, #0d1a2e 0%, #0B1320 46%, #070d17 100%);
+  }
+  /* A touch of shade under the window keeps a bright wallpaper from flattening
+     the frame. */
+  #vignette {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(120% 80% at 50% 45%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.34) 100%);
+  }
+
+  #win {
+    position: absolute; border-radius: 14px; overflow: hidden;
+    background: var(--navy);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+    /* A hairline keeps the rounded edge crisp against a light wallpaper. */
+    outline: 1px solid rgba(255, 255, 255, 0.09); outline-offset: -1px;
+  }
+  #bar {
+    position: relative; height: 36px; display: flex; align-items: center;
+    background: linear-gradient(180deg, #2a2f37 0%, #22262d 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+  }
+  #lights { display: flex; gap: 8px; padding-left: 14px; }
+  #lights i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+  #lights i:nth-child(1) { background: #ff5f57; box-shadow: inset 0 0 0 0.5px rgba(0,0,0,.22); }
+  #lights i:nth-child(2) { background: #febc2e; box-shadow: inset 0 0 0 0.5px rgba(0,0,0,.22); }
+  #lights i:nth-child(3) { background: #28c840; box-shadow: inset 0 0 0 0.5px rgba(0,0,0,.22); }
+  #wintitle {
+    position: absolute; left: 0; right: 0; text-align: center;
+    font-size: 13px; font-weight: 500; letter-spacing: 0.01em; color: #c9cfd8;
+  }
+  #screen { position: relative; background: #fff; overflow: hidden; }
+  #vid { display: block; width: 100%; height: 100%; object-fit: fill; }
+
+  /* Cursor and ripples live inside the scene so they track page pixels exactly,
+     and are counter scaled by renderAt so they keep their on screen size. */
+  #cursor { position: absolute; left: 0; top: 0; transform-origin: 0 0; pointer-events: none; }
+  #cursor svg { display: block; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)); }
+  /* Two tone so a click reads on a cream page and on a dark one alike: a white
+     core with a soft dark ring around it. */
+  .ripple {
+    position: absolute; width: 40px; height: 40px; margin: -20px 0 0 -20px;
+    /* 40 px at rest, opening to about 90: big enough to read at 640 px wide. */
+    border-radius: 50%; transform-origin: 50% 50%; pointer-events: none; opacity: 0;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.3) 46%, rgba(255,255,255,0) 68%);
+    box-shadow: 0 0 0 2.5px rgba(11, 19, 32, 0.4), 0 0 16px 4px rgba(255, 255, 255, 0.35);
+  }
+
+  /* The caption is on the frame, not in the scene: the camera never moves it. */
+  #caption {
+    position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%);
+    display: flex; align-items: center; opacity: 0;
+    font-size: 34px; line-height: 1.12; font-weight: 500; letter-spacing: -0.011em;
+    color: #F2F6FF; background: rgba(11, 19, 32, 0.92);
+    border: 1px solid rgba(0, 229, 255, 0.28);
+    border-radius: 999px; padding: 11px 30px 13px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+    max-width: 1520px; text-align: center; white-space: pre-wrap;
+  }
+</style>
+</head>
+<body>
+<div id="frame">
+  <div id="scene">
+    <div id="wall"></div>
+    <div id="vignette"></div>
+    <div id="win">
+      <div id="bar"><span id="lights"><i></i><i></i><i></i></span><span id="wintitle"></span></div>
+      <div id="screen"><video id="vid" muted playsinline preload="auto"></video></div>
+    </div>
+    <div id="ripples"></div>
+    <div id="cursor">
+      <!-- macOS arrow: the tip is the origin, so translate(x, y) is the hotspot. -->
+      <svg width="24" height="29" viewBox="0 0 24 29">
+        <path d="M1 1 L1 22.2 L6.4 17.1 L9.9 25.6 L13.6 24.1 L10.2 15.8 L17.6 15.5 Z"
+              fill="#ffffff" stroke="#0d0d0d" stroke-width="1.4" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </div>
+  <div id="caption"><span id="capText"></span></div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ------------------------------------------------------------ easing -- */
+
+  function bezier(x1, y1, x2, y2) {
+    const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+    const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+    const fx = (t) => ((ax * t + bx) * t + cx) * t;
+    const dfx = (t) => (3 * ax * t + 2 * bx) * t + cx;
+    return (x) => {
+      if (x <= 0) return 0;
+      if (x >= 1) return 1;
+      let t = x;
+      for (let i = 0; i < 8; i++) {
+        const err = fx(t) - x;
+        if (Math.abs(err) < 1e-6) break;
+        const d = dfx(t);
+        if (Math.abs(d) < 1e-6) break;
+        t -= err / d;
+      }
+      if (t < 0 || t > 1) { // fall back to bisection when Newton wanders off
+        let lo = 0, hi = 1; t = x;
+        for (let i = 0; i < 24; i++) { t = (lo + hi) / 2; if (fx(t) < x) lo = t; else hi = t; }
+      }
+      return ((ay * t + by) * t + cy) * t;
+    };
+  }
+
+  const easeCamera = bezier(0.2, 0.7, 0.2, 1);      // the push and the pull back
+  const easeCursor = bezier(0.42, 0.0, 0.22, 1);    // ease in out, no overshoot
+  const easeFade = bezier(0.4, 0.0, 0.2, 1);
+  const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+  const lerp = (a, b, u) => a + (b - a) * u;
+
+  /* ------------------------------------------------------------- state -- */
+
+  const el = {
+    scene: document.getElementById('scene'),
+    wall: document.getElementById('wall'),
+    win: document.getElementById('win'),
+    bar: document.getElementById('bar'),
+    screen: document.getElementById('screen'),
+    vid: document.getElementById('vid'),
+    title: document.getElementById('wintitle'),
+    cursor: document.getElementById('cursor'),
+    ripples: document.getElementById('ripples'),
+    caption: document.getElementById('caption'),
+    capText: document.getElementById('capText')
+  };
+
+  const S = {
+    frameW: 1920, frameH: 1080,
+    winX: 240, winY: 40, pageW: 1440, pageH: 900, barH: 36,
+    zoomIn: 0.6, zoomHold: 1.8, zoomOut: 0.7, zoomScale: 1.6,
+    fadeMs: 0.24,
+    moves: [], clicks: [], captions: [], segments: [], ripples: []
+  };
+  const winH = () => S.pageH + S.barH;
+  const home = () => ({ s: 1, tx: 0, ty: 0 });
+
+  /* A page point in scene coordinates: the page starts under the title bar. */
+  const toScene = (p) => ({ x: S.winX + p.x, y: S.winY + S.barH + p.y });
+
+  /**
+   * Where the camera has to sit for a focus point to be centred at a scale,
+   * clamped so the view never runs off the window into the wallpaper. Both the
+   * window clamp and the wider scene clamp are linear in (scale, translate), so
+   * easing between two clamped states can never open a gap at the edge.
+   */
+  function cameraFor(focus, s) {
+    const axis = (c, f, w0, wlen, frame) => {
+      let t = c - f * s;
+      const lo = frame - (w0 + wlen) * s, hi = -w0 * s;          // stay inside the window
+      if (lo <= hi) return Math.min(Math.max(t, lo), hi);
+      const slo = frame - frame * s, shi = 0;                     // at least cover the frame
+      return Math.min(Math.max(t, slo), shi);
+    };
+    return {
+      s,
+      tx: axis(S.frameW / 2, focus.x, S.winX, S.pageW, S.frameW),
+      ty: axis(S.frameH / 2, focus.y, S.winY, winH(), S.frameH)
+    };
+  }
+
+  /** The camera state at time t, walking the anchors in order. */
+  function cameraAt(t) {
+    let c = home();
+    for (const seg of S.segments) {
+      if (t < seg.t) break;
+      const inEnd = seg.t + S.zoomIn;
+      const holdEnd = inEnd + seg.hold;
+      const outEnd = holdEnd + S.zoomOut;
+      if (t < inEnd) {
+        const e = easeCamera((t - seg.t) / S.zoomIn);
+        c = { s: lerp(seg.from.s, seg.to.s, e), tx: lerp(seg.from.tx, seg.to.tx, e), ty: lerp(seg.from.ty, seg.to.ty, e) };
+      } else if (t < holdEnd) {
+        c = seg.to;
+      } else if (t < outEnd) {
+        const e = easeCamera((t - holdEnd) / S.zoomOut);
+        const h = home();
+        c = { s: lerp(seg.to.s, h.s, e), tx: lerp(seg.to.tx, h.tx, e), ty: lerp(seg.to.ty, h.ty, e) };
+      } else {
+        c = home();
+      }
+    }
+    return c;
+  }
+
+  function cursorAt(t) {
+    if (!S.moves.length) return null;
+    const first = S.moves[0];
+    if (t < first.t) return first.from;
+    let m = first;
+    for (const move of S.moves) { if (move.t <= t) m = move; else break; }
+    const dur = Math.max(0.001, m.ms / 1000);
+    if (t >= m.t + dur) return m.to;
+    const e = easeCursor((t - m.t) / dur);
+    return { x: lerp(m.from.x, m.to.x, e), y: lerp(m.from.y, m.to.y, e) };
+  }
+
+  /* The hand presses: a 160 ms dip on the arrow, the size of a real click. */
+  function pressAt(t) {
+    for (const c of S.clicks) {
+      const u = (t - c.t) / 0.16;
+      if (u >= 0 && u <= 1) return 1 - 0.14 * Math.sin(Math.PI * u);
+    }
+    return 1;
+  }
+
+  function captionAt(t) {
+    let cur = null, nextT = Infinity;
+    for (let i = 0; i < S.captions.length; i++) {
+      const c = S.captions[i];
+      if (c.t <= t) { cur = c; nextT = i + 1 < S.captions.length ? S.captions[i + 1].t : Infinity; }
+      else break;
+    }
+    if (!cur || !cur.text) return null;
+    let a = clamp01((t - cur.t) / S.fadeMs);
+    if (nextT !== Infinity) a = Math.min(a, clamp01((nextT - t) / S.fadeMs));
+    return { text: cur.text, alpha: easeFade(a) };
+  }
+
+  /* -------------------------------------------------------------- init -- */
+
+  function layout() {
+    el.win.style.left = S.winX + 'px';
+    el.win.style.top = S.winY + 'px';
+    el.win.style.width = S.pageW + 'px';
+    el.win.style.height = winH() + 'px';
+    el.bar.style.height = S.barH + 'px';
+    el.screen.style.width = S.pageW + 'px';
+    el.screen.style.height = S.pageH + 'px';
+  }
+
+  function buildTimeline(events) {
+    S.moves = events.filter((e) => e.type === 'move').map((e) => ({ t: e.t, ms: e.ms, from: toScene(e.from), to: toScene(e.to) }));
+    S.clicks = events.filter((e) => e.type === 'click').map((e) => ({ t: e.t, p: toScene(e) }));
+    S.captions = events.filter((e) => e.type === 'caption').map((e) => ({ t: e.t, text: e.text }));
+
+    const zooms = events.filter((e) => e.type === 'zoom');
+    const anchors = zooms.map((z) => ({ t: z.t, p: toScene(z), scale: z.scale || S.zoomScale, hold: (z.holdMs == null ? 1800 : z.holdMs) / 1000 }));
+    for (const c of S.clicks) {
+      // An explicit zoom next to a click is the shot the take asked for.
+      if (zooms.some((z) => Math.abs(z.t - c.t) < 0.45)) continue;
+      anchors.push({ t: c.t, p: c.p, scale: S.zoomScale, hold: S.zoomHold });
+    }
+    anchors.sort((a, b) => a.t - b.t);
+
+    S.segments = [];
+    for (const a of anchors) {
+      const from = cameraAt(a.t);            // uses the segments built so far
+      S.segments.push({ t: a.t, hold: a.hold, from, to: cameraFor(a.p, a.scale) });
+    }
+
+    el.ripples.textContent = '';
+    S.ripples = S.clicks.map((c) => {
+      const d = document.createElement('div');
+      d.className = 'ripple';
+      d.style.left = c.p.x + 'px';
+      d.style.top = c.p.y + 'px';
+      el.ripples.appendChild(d);
+      return { t: c.t, node: d };
+    });
+  }
+
+  /** Position everything for time t. Pure: same t, same frame, every time. */
+  window.renderAt = function renderAt(t) {
+    const cam = cameraAt(t);
+    el.scene.style.transform = 'translate(' + cam.tx.toFixed(3) + 'px,' + cam.ty.toFixed(3) + 'px) scale(' + cam.s.toFixed(5) + ')';
+
+    const inv = 1 / cam.s;
+    const cur = cursorAt(t);
+    if (cur) {
+      el.cursor.style.opacity = '1';
+      el.cursor.style.transform = 'translate(' + cur.x.toFixed(2) + 'px,' + cur.y.toFixed(2) + 'px) scale(' + (inv * pressAt(t)).toFixed(5) + ')';
+    } else {
+      el.cursor.style.opacity = '0';
+    }
+
+    for (const r of S.ripples) {
+      const u = (t - r.t) / 0.4;
+      if (u < 0 || u > 1) { r.node.style.opacity = '0'; continue; }
+      const e = easeFade(u);
+      r.node.style.opacity = String((1 - e) * 0.95);
+      r.node.style.transform = 'scale(' + ((0.75 + e * 1.5) * inv).toFixed(4) + ')';
+    }
+
+    const cap = captionAt(t);
+    if (cap) { el.capText.textContent = cap.text; el.caption.style.opacity = cap.alpha.toFixed(3); }
+    else { el.caption.style.opacity = '0'; }
+    return true;
+  };
+
+  /** Seek the raw screencast to t and resolve once the frame is really there. */
+  window.seekTo = function seekTo(t) {
+    const v = el.vid;
+    const target = Math.max(0, Math.min(t, (v.duration || t) - 0.001));
+    if (v.readyState >= 2 && Math.abs(v.currentTime - target) < 1e-4) return Promise.resolve(v.currentTime);
+    return new Promise((resolve) => {
+      let done = false;
+      const finish = () => { if (done) return; done = true; v.removeEventListener('seeked', finish); resolve(v.currentTime); };
+      v.addEventListener('seeked', finish);
+      v.currentTime = target;
+      setTimeout(finish, 4000);
+    });
+  };
+
+  window.studioInit = function studioInit(cfg) {
+    if (cfg.window) Object.assign(S, cfg.window);
+    if (typeof cfg.zoomScale === 'number') S.zoomScale = cfg.zoomScale;
+    S.pageW = cfg.pageW || S.pageW;
+    S.pageH = cfg.pageH || S.pageH;
+    S.winX = Math.round((S.frameW - S.pageW) / 2);
+    layout();
+    el.title.textContent = cfg.title || '';
+    if (cfg.wallpaper) el.wall.style.backgroundImage = 'url("' + cfg.wallpaper + '")';
+    buildTimeline(cfg.events || []);
+
+    const v = el.vid;
+    return new Promise((resolve, reject) => {
+      const ready = () => resolve({ duration: v.duration, videoWidth: v.videoWidth, videoHeight: v.videoHeight });
+      v.addEventListener('loadeddata', ready, { once: true });
+      v.addEventListener('error', () => reject(new Error('video failed: ' + (v.error && v.error.code))), { once: true });
+      v.src = cfg.video;
+      v.load();
+      setTimeout(() => reject(new Error('video timeout, readyState ' + v.readyState)), 30000);
+    });
+  };
+})();
+</script>
+</body>
+</html>
