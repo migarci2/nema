@@ -314,7 +314,19 @@ export async function openRecorder({
       const x = offset ? got.x - got.w / 2 + offset[0] : Math.min(got.x, got.x - got.w / 2 + 220);
       const y = offset ? got.y - got.h / 2 + offset[1] : got.y;
       const r1 = (v) => Math.round(v * 10) / 10;
-      return { x: r1(x), y: r1(y), bbox: [r1(got.left), r1(got.top), r1(got.w), r1(got.h)] };
+      /* Aim inside the box, not at its middle. Ported from ghost-cursor's
+       * getRandomBoxPoint and its paddingPercentage option: a padding of 60 per
+       * cent keeps the point in the middle two fifths of the element, so two
+       * clicks on the same button never land on the same pixel and none of them
+       * lands on its edge. */
+      let px = x, py = y;
+      if (!offset && got.w > 24 && got.h > 12) {
+        const padW = got.w * 0.6, padH = got.h * 0.6;
+        px = got.left + padW / 2 + Math.random() * (got.w - padW);
+        py = got.top + padH / 2 + Math.random() * (got.h - padH);
+        if (got.w > 440) px = Math.min(px, got.left + 220);   // wide banners: land near the words
+      }
+      return { x: r1(px), y: r1(py), bbox: [r1(got.left), r1(got.top), r1(got.w), r1(got.h)] };
     },
 
     /**
@@ -411,8 +423,13 @@ export async function openRecorder({
       restBy = Math.max(restBy, Date.now() + 1800 + CAMERA_TAIL);
       await sleep(pressMs);
       await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: p.x, y: p.y, button: 'left', buttons: 0, clickCount: 1 });
-      await sleep(settleMs);
+      /* Straight after the release, before any pause: a click that disables its
+       * own button changes the pointer within a frame or two, and waiting out a
+       * settle first leaves the hand hanging there for the best part of a
+       * second. Then keep watching while the page's answer is still coming. */
       await rec.nudge(opts.contextId).catch(() => {});
+      // a click's own consequences land in the first second: watch it closely
+      await rec.settle(Math.max(settleMs, 900), { every: 150 });
       return p;
     },
 
@@ -427,9 +444,10 @@ export async function openRecorder({
       await installProbe(contextId);
       await rec.eval('window.__nemaCursor.log.length = 0; true', contextId).catch(() => {});
       await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: cursor.x, y: cursor.y, buttons: 0 });
-      const when = await settled(contextId);
       let seen = [];
       try { seen = JSON.parse(await rec.eval('JSON.stringify(window.__nemaCursor.log)', contextId) || '[]'); } catch { seen = []; }
+      // stamped when the page handled the move, not when the read came back
+      const when = seen.length ? seen[seen.length - 1][0] : Date.now();
       const kind = seen.length ? cursorKind(seen[seen.length - 1][3]) : lastKind;
       if (kind !== lastKind) {
         lastKind = kind;
@@ -455,10 +473,20 @@ export async function openRecorder({
     },
 
     /** Hold still for a beat. The only thing a take needs between moments. */
-    async settle(ms = 800) {
-      await sleep(ms);
-      // A long pause is where a page rebuilds itself under a resting pointer.
-      if (ms >= 600) await rec.nudge().catch(() => {});
+    /**
+     * Hold still for a beat, watching the pointer. A page that rebuilds itself
+     * during the pause, a button going disabled, a popup taking the front, gets
+     * the pointer it deserves within a quarter second rather than at the end of
+     * the pause: on a Mac the hand does not sit frozen on a button that has
+     * stopped being a button.
+     */
+    async settle(ms = 800, { watch = true, every = 250 } = {}) {
+      const until = Date.now() + ms;
+      if (!watch || ms < every) { await sleep(ms); return; }
+      while (Date.now() < until) {
+        await sleep(Math.min(every, until - Date.now()));
+        await rec.nudge().catch(() => {});
+      }
     },
 
     /**

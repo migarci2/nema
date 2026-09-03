@@ -15,6 +15,12 @@
 //   --crf <n>            x264 quality for the 4K master (default 16)
 //   --keep-assets        leave the pre rendered pngs behind for inspection
 //   --gif <seconds>      length of the preview gif (default 6)
+//   --anchors <how>      where the camera looks: 'polish' (default when an
+//                        events.jsonl is there) asks polish.zoom_regions, which
+//                        frames the clicked element's box and clusters clicks
+//                        that belong together; 'events' uses one anchor per
+//                        click and zoom, which is what this did before
+//   --speedup recast     adaptive speed segments instead of polish's --speedup
 //   --dry-run            print the graph and the command, render nothing
 //   --no-camera          leave the camera at rest (the source already moves it)
 //   --no-cursor          do not draw a pointer (the source already has one)
@@ -31,6 +37,8 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { captionPlan } from './captions.mjs';
+import { speedPlan } from './speed-plan.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SCRATCH = '/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad';
@@ -199,6 +207,74 @@ if (opt.speedup) {
   }
 }
 
+
+
+/**
+ * Thin a path to the fewest points whose straight line joins stay within `tol`
+ * pixels of it. Greedy, single pass, and it always keeps the ends, so the
+ * pointer still passes exactly through the first and last logged sample.
+ */
+function simplify(points, tol = 0.5) {
+  if (points.length < 3) return points.slice();
+  const out = [points[0]];
+  let anchor = 0;
+  for (let i = 2; i < points.length; i++) {
+    const a = points[anchor], b = points[i];
+    let worst = 0;
+    for (let k = anchor + 1; k < i; k++) {
+      const p = points[k];
+      const u = (p.t - a.t) / ((b.t - a.t) || 1e-6);
+      worst = Math.max(worst, Math.hypot(a.x + (b.x - a.x) * u - p.x, a.y + (b.y - a.y) * u - p.y));
+      if (worst > tol) break;
+    }
+    if (worst > tol) { out.push(points[i - 1]); anchor = i - 1; }
+  }
+  out.push(points[points.length - 1]);
+  return out;
+}
+
+/**
+ * Centripetal Catmull-Rom through the logged samples, resampled to `hz`.
+ *
+ * The samples are 20 Hz, so joining them with straight lines leaves a visible
+ * corner at every one. This is the shape OpenScreen uses for the same job
+ * (github.com/getopenscreen/openscreen, MIT, src/lib/cursor/cursorPathSmoothing.ts):
+ * precompute the whole path once, offline, so the preview and the export agree.
+ * Its own smoother is a spring damper, which suits a native recording full of
+ * hand tremor; ours is synthesised and carries none, and a spring would trail
+ * the true position, which that file warns offsets clicks. A centripetal spline
+ * passes exactly through every sample instead, so the click still lands where
+ * the log says it did. See scripts/video/THIRD_PARTY.md.
+ */
+function catmullRom(points, hz = 60) {
+  if (points.length < 3) return points.slice();
+  const out = [];
+  const at = (i) => points[Math.max(0, Math.min(points.length - 1, i))];
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = at(i - 1), p1 = at(i), p2 = at(i + 1), p3 = at(i + 2);
+    const span = p2.t - p1.t;
+    const steps = Math.max(1, Math.round(span * hz));
+    // centripetal parameterisation: knots by the square root of the distance,
+    // which is what keeps the curve from looping on a sharp corner
+    const d = (a, b) => Math.sqrt(Math.hypot(b.x - a.x, b.y - a.y)) || 1e-4;
+    const t0 = 0, t1 = t0 + d(p0, p1), t2 = t1 + d(p1, p2), t3 = t2 + d(p2, p3);
+    for (let s = 0; s < steps; s++) {
+      const u = s / steps;
+      const t = t1 + (t2 - t1) * u;
+      const a1 = mix(p0, p1, (t1 - t) / (t1 - t0 || 1e-4), (t - t0) / (t1 - t0 || 1e-4));
+      const a2 = mix(p1, p2, (t2 - t) / (t2 - t1 || 1e-4), (t - t1) / (t2 - t1 || 1e-4));
+      const a3 = mix(p2, p3, (t3 - t) / (t3 - t2 || 1e-4), (t - t2) / (t3 - t2 || 1e-4));
+      const b1 = mix(a1, a2, (t2 - t) / (t2 - t0 || 1e-4), (t - t0) / (t2 - t0 || 1e-4));
+      const b2 = mix(a2, a3, (t3 - t) / (t3 - t1 || 1e-4), (t - t1) / (t3 - t1 || 1e-4));
+      const c = mix(b1, b2, (t2 - t) / (t2 - t1 || 1e-4), (t - t1) / (t2 - t1 || 1e-4));
+      out.push({ t: p1.t + span * u, x: c.x, y: c.y });
+    }
+  }
+  out.push({ ...points[points.length - 1] });
+  return out;
+}
+const mix = (a, b, wa, wb) => ({ x: a.x * wa + b.x * wb, y: a.y * wa + b.y * wb });
+
 /* -------------------------------------------------------------- timeline -- */
 
 const events = (log.events || []).slice().sort((a, b) => a.t - b.t)
@@ -221,13 +297,58 @@ function cameraFor(focus, s) {
   return [s, axis(FW / 2, focus.x, WIN.x, WIN.w, FW), axis(FH / 2, focus.y, WIN.y, WIN.h, FH)];
 }
 
-const anchors = [];
-for (const z of zooms) anchors.push({ t: z.t, p: toScene(z), scale: z.scale || ZOOM, hold: (z.holdMs == null ? 1800 : z.holdMs) / 1000 });
-for (const c of clicks) {
-  if (zooms.some((z) => Math.abs(z.t - c.t) < 0.45)) continue;
-  anchors.push({ t: c.t, p: toScene(c), scale: ZOOM, hold: HOLD_MS });
+/* Where the camera looks. The default asks the polish stage: its zoom_regions
+ * clusters clicks that belong to one moment and frames the clicked element's
+ * box rather than a point, which is the one thing our own anchors could not do.
+ * Falling back to one anchor per event keeps a take without a jsonl working. */
+let anchors = [];
+const jsonlPath = path.join(takeDir, 'events.jsonl');
+const wantPolish = (opt.anchors || 'polish') === 'polish' && fs.existsSync(jsonlPath) && !opt.speedup;
+if (wantPolish) {
+  try {
+    const out = execFileSync('python3', [path.join(HERE, 'polish-anchors.py'), jsonlPath,
+      String(probe0.width), String(probe0.height), String(ZOOM), String(opt['zoom-cap'] || 1.8)], { encoding: 'utf8' });
+    const regions = JSON.parse(out).regions || [];
+    /* polish decides where to look and which events belong to one moment; the
+     * take decides how long to look. Its region span is built from its own pre
+     * and post margins, so taking the duration from it would quietly halve a
+     * hold the take asked for. */
+    anchors = regions.map((r) => {
+      const own = [...zooms, ...clicks].find((e) => e.t >= r.t0 - 0.1 && e.t <= r.t1);
+      const hold = own && own.type === 'zoom' ? (own.holdMs == null ? 1800 : own.holdMs) / 1000
+        : own ? HOLD_MS
+        : Math.max(0.4, r.t1 - r.t0 - IN_MS - OUT_MS);
+      return { t: own ? own.t : r.t0, p: toScene({ x: r.cx, y: r.cy }), scale: r.z, hold };
+    });
+    console.log(`camera: ${anchors.length} anchors from polish.zoom_regions (element framed)`);
+  } catch (e) {
+    console.warn('polish anchors unavailable, falling back to one per event: ' + e.message.split('\n')[0]);
+  }
+}
+if (!anchors.length) {
+  for (const z of zooms) anchors.push({ t: z.t, p: toScene(z), scale: z.scale || ZOOM, hold: (z.holdMs == null ? 1800 : z.holdMs) / 1000 });
+  for (const c of clicks) {
+    if (zooms.some((z) => Math.abs(z.t - c.t) < 0.45)) continue;
+    anchors.push({ t: c.t, p: toScene(c), scale: ZOOM, hold: HOLD_MS });
+  }
 }
 anchors.sort((a, b) => a.t - b.t);
+
+/* Ported from OpenScreen (github.com/getopenscreen/openscreen, MIT),
+ * src/lib/ai-edition/timeline/zoom-suggestions.ts: keep accepted pushes at least
+ * SUGGESTION_SPACING_MS apart and drop any that overlaps one already accepted.
+ * Two pushes closer than that read as a camera that cannot make up its mind. */
+const SPACING = 1.8;
+anchors = anchors.filter((a, i, all) => {
+  const prev = all[i - 1];
+  if (!prev) return true;
+  const prevEnd = prev.t + IN_MS + prev.hold + OUT_MS;
+  if (a.t - prev.t < SPACING || a.t < prevEnd - OUT_MS) {
+    console.log(`camera: dropped the push at ${a.t.toFixed(2)}s, too close to the one at ${prev.t.toFixed(2)}s`);
+    return false;
+  }
+  return true;
+});
 
 const HOME = [1, 0, 0];
 const cam = [[0, HOME]];
@@ -273,19 +394,44 @@ const camY = `(0-(${expr(camKfs, 2, T)}))/(${camZ})`;
 /* The pointer replays the samples the recorder dispatched: its path and speed
  * are the page's own record, and each sample carries the pointer the page asked
  * for at that point, so the arrow becomes a hand where the hover began. */
-const cursorKfs = [];
+const track = [];
 const kindRuns = [];      // [{ kind, t0, t1 }] runs of one pointer, for the overlays
 for (const m of (opt['no-cursor'] ? [] : moves)) {
   for (const [t, x, y, kind] of m.samples || []) {
     const p = toScene({ x, y });
-    if (!cursorKfs.length) cursorKfs.push([0, [p.x, p.y]]);
-    cursorKfs.push([t, [p.x, p.y]]);
+    track.push({ t, x: p.x, y: p.y });
+    /* A run lasts until the pointer next changes, not until its own last
+     * sample. The samples are sparse, so ending a run at its last sample left
+     * the hand on screen for fifty milliseconds and drew an arrow over a button
+     * for the second the pointer was resting on it. */
     const run = kindRuns[kindRuns.length - 1];
-    if (run && run.kind === (kind || 'arrow')) run.t1 = t;
-    else kindRuns.push({ kind: kind || 'arrow', t0: run ? run.t1 : 0, t1: t });
+    if (!run || run.kind !== (kind || 'arrow')) kindRuns.push({ kind: kind || 'arrow', t0: run ? t : 0 });
   }
 }
-if (kindRuns.length) kindRuns[kindRuns.length - 1].t1 = Infinity;
+kindRuns.forEach((r, i) => { r.t1 = kindRuns[i + 1] ? kindRuns[i + 1].t0 : Infinity; });
+const cursorKfs = [];
+if (track.length) {
+  /* The spline is sampled densely and then thinned back to the fewest points
+   * that still describe it to within half a pixel. Without this an ffmpeg
+   * expression ends up thirteen hundred if() deep, which its parser does not
+   * survive: the whole render died with no message until this pass went in. */
+  const dense = catmullRom(track, 60);
+  const thin = simplify(dense, 0.5);
+  cursorKfs.push([0, [thin[0].x, thin[0].y]]);
+  for (const p of thin) cursorKfs.push([p.t, [p.x, p.y]]);
+  console.log(`cursor: ${track.length} samples, ${dense.length} on the spline, ${thin.length} keyframes`);
+}
+
+/* Captions cut where a person would breathe, and, when asked, an adaptive speed
+ * plan. Both are ports; see scripts/video/THIRD_PARTY.md. */
+const CAPTIONS = captionPlan(events, DUR);
+if (opt.speedup === 'recast') {
+  const plan = speedPlan(events, SRC_DUR);
+  console.log(`speed plan: ${plan.segments.length} segments, ${plan.saved.toFixed(2)}s saved ` +
+    `(${plan.segments.map((s2) => s2[2] + 'x').join(' ')})`);
+  fs.writeFileSync(path.join(outDir, stem + '-speed-plan.json'), JSON.stringify(plan, null, 2));
+  console.log('  written next to the render; not applied, the retime is polish\'s job');
+}
 
 /* ------------------------------------------------------- pre rendered art -- */
 
@@ -293,7 +439,7 @@ const assetDir = path.join(outDir, '.studio-assets');
 const spec = {
   dir: assetDir, u: U, capU: OUT_U, frame: [FW, FH], out: [OW, OH], win: WIN, title,
   rippleFrames: Math.round(RIPPLE_S * fps),
-  captions: captions.filter((c) => c.text).map((c) => c.text)
+  captions: CAPTIONS.map((c) => c.text)
 };
 const py = spawnSync('python3', [path.join(HERE, 'studio-assets.py')], { input: JSON.stringify(spec), encoding: 'utf8' });
 if (py.status !== 0) { console.error(py.stderr); process.exit(1); }
@@ -379,12 +525,9 @@ clicks.forEach((c, i) => {
 fc.push(`[${node}]zoompan=z='${camZ}':x='${camX}':y='${camY}':d=1:s=${OW}x${OH}:fps=${fps}[cam]`);
 node = 'cam';
 
-let capIndex = 0;
-captions.forEach((c, i) => {
-  if (!c.text) return;
-  const art_c = art.captions[capIndex++];
-  const next = captions[i + 1] ? captions[i + 1].t : DUR;
-  const span = Math.max(0.3, next - c.t);
+CAPTIONS.forEach((c, i) => {
+  const art_c = art.captions[i];
+  const span = Math.max(0.3, c.until - c.t);
   const idx = still(art_c.path, span);
   const x = Math.round((OW - art_c.w) / 2);
   const y = Math.round(OH - 22 * OUT_U - art_c.pillBottom);
