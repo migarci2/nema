@@ -1,5 +1,10 @@
 # nema protocol 0.1
 
+**Prove it once. Skip it everywhere.** A site asks your vault what you already
+know, you say yes, and the site adapts. When you pass something, it signs a
+receipt that any other site can ask about. The picture is on
+[the hub](https://nema.migarci2.dev/).
+
 Status: draft, implemented by the reference apps in this repository.
 Protocol identifier: `nema/0.1`. Concept namespace: `nema:`.
 

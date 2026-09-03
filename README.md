@@ -5,6 +5,19 @@
 <p align="center"><code>your learning state, everywhere.</code></p>
 
 <p align="center">
+  <b>Prove it once. Skip it everywhere.</b>
+</p>
+
+<p align="center">
+  A site asks your vault what you already know, you say yes, and the site adapts.<br>
+  When you pass something, it signs a receipt that any other site can ask about.
+</p>
+
+<p align="center">
+  <img src="apps/site/public/press/card-how-it-works.png" alt="page asks, vault answers, page signs" width="720">
+</p>
+
+<p align="center">
   <b>The web teaches. Your vault remembers. Your agent connects the two.</b>
 </p>
 

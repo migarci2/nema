@@ -1,5 +1,17 @@
 # Judge guide
 
+**Prove it once. Skip it everywhere.**
+
+A site asks your vault what you already know, you say yes, and the site adapts.
+When you pass something, it signs a receipt that any other site can ask about.
+
+![page asks, vault answers, page signs](../apps/site/public/press/card-how-it-works-sm.png)
+
+**If you only have three minutes**, do
+[step 1 of the golden path](#step-1-a-course-site-asks-what-you-know-and-68-minutes-become-27).
+It is the whole idea end to end: a course asks, your vault answers, 68 minutes
+become 27.
+
 Three minutes to see the whole thing. Sixty seconds if you are behind schedule.
 
 > nema is a protocol anyone who teaches on the web can install in a minute, so

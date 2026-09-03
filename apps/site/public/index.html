@@ -50,12 +50,59 @@
           <span class="hl-yellow">Your agent connects the two.</span>
         </p>
 
-        <p class="lp-lede">A protocol anyone who teaches on the web can install in a minute, so readers keep what they learned.</p>
+        <p class="lp-lede">A site asks your vault what you already know, you say yes, and the site adapts. When you pass something, it signs a receipt that any other site can ask about.</p>
 
         <p class="lp-actions">
           <a class="n-btn n-btn--primary lp-btn" href="https://nema-vault.migarci2.dev/" data-app-link="vault">Open your vault</a>
           <a class="lp-link" href="/creators.html">Install it on your site</a>
         </p>
+
+        <!-- The whole protocol, in the three beats the story card draws:
+             the site card, the nema mark, the receipt. One line each. -->
+        <ul class="lp-beats" aria-label="How nema works, in three beats">
+          <li class="lp-beat">
+            <span class="lp-beat__glyph lp-beat__glyph--paper" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none" focusable="false">
+                <rect x="1" y="3" width="30" height="26" rx="3" fill="#EDE6D8"/>
+                <g fill="#B9A688">
+                  <rect x="6" y="8" width="15" height="3" rx="1.2"/>
+                  <rect x="6" y="14" width="9" height="2" rx="1"/>
+                  <rect x="6" y="19" width="7" height="6" rx="1.2"/>
+                  <rect x="16" y="19" width="10" height="2" rx="1"/>
+                  <rect x="16" y="23" width="10" height="2" rx="1"/>
+                </g>
+              </svg>
+            </span>
+            <b class="lp-beat__name">Page asks</b>
+            <span class="lp-beat__text">A site says what it teaches, and what it needs to know first.</span>
+          </li>
+          <li class="lp-beat">
+            <span class="lp-beat__glyph" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none" focusable="false">
+                <defs>
+                  <linearGradient id="lp-beat-edge" x1="32" y1="4" x2="58" y2="34" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#00E5FF"/><stop offset="0.5" stop-color="#15C4B4"/><stop offset="1" stop-color="#3A78FF"/>
+                  </linearGradient>
+                </defs>
+                <path d="M32 6 L54 19 L54 45 L32 58 L10 45 L10 19 Z" fill="#0B1320" stroke="url(#lp-beat-edge)" stroke-width="3.4" stroke-linejoin="miter"/>
+                <g shape-rendering="crispEdges">
+                  <rect x="29" y="3" width="6" height="6" fill="url(#lp-beat-edge)"/><rect x="51" y="16" width="6" height="6" fill="url(#lp-beat-edge)"/><rect x="51" y="42" width="6" height="6" fill="url(#lp-beat-edge)"/>
+                  <rect x="29" y="55" width="6" height="6" fill="#FFCA2E"/><rect x="7" y="42" width="6" height="6" fill="url(#lp-beat-edge)"/><rect x="7" y="16" width="6" height="6" fill="url(#lp-beat-edge)"/>
+                </g>
+                <g fill="#F2F6FF" shape-rendering="crispEdges"><rect x="24" y="24" width="16" height="4"/><rect x="24" y="28" width="4" height="12"/><rect x="36" y="28" width="4" height="12"/></g>
+              </svg>
+            </span>
+            <b class="lp-beat__name">Vault answers</b>
+            <span class="lp-beat__text">You see the request, you say yes, and only that much leaves.</span>
+          </li>
+          <li class="lp-beat">
+            <span class="lp-beat__glyph" aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" focusable="false"><path d="M2.5 2.5h11v11l-2-1.2-2 1.2-2-1.2-2 1.2-2-1.2z"/><path d="M5 6h6M5 9h4"/></svg>
+            </span>
+            <b class="lp-beat__name">Page signs</b>
+            <span class="lp-beat__text">You do the work, and the page signs a receipt you keep.</span>
+          </li>
+        </ul>
       </div>
 
       <figure class="lp-shot">

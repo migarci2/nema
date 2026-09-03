@@ -1,5 +1,11 @@
 # Philosophy
 
+> **Prove it once. Skip it everywhere.**
+>
+> A site asks your vault what you already know, you say yes, and the site
+> adapts. When you pass something, it signs a receipt that any other site can
+> ask about. The picture is on [the hub](https://nema.migarci2.dev/).
+
 > The web teaches. Your vault remembers. Your agent connects the two.
 
 Most of what I know came from pages that will never know me again. A blog post

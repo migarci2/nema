@@ -146,6 +146,14 @@ body[data-nema-onboarding='on'] .v-ledgers,
 body[data-nema-onboarding='on'] .v-more,
 body[data-nema-onboarding='on'] .v-activity { display: none; }
 
+.x-onboard__head {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-16);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
 .x-onboard__lede {
   margin: 0;
   font-size: var(--fs-14);

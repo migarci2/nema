@@ -62,7 +62,8 @@ const refs = {};
 onboard.innerHTML = `
   <h2 class="n-panel__label" id="p-ext-onboard">Start</h2>
   <div class="n-panel__body">
-    <p class="x-onboard__lede">Learn anywhere you see the nema mark. What you pass is kept here, and only shared when you say so.</p>
+    <p class="x-onboard__head">Prove it once. Skip it everywhere.</p>
+    <p class="x-onboard__lede">A site asks your vault what you already know, you say yes, and the site adapts. When you pass something, it signs a receipt that any other site can ask about. Learn anywhere you see the nema mark.</p>
     <div class="x-onboard__choices">
       <button class="n-btn n-btn--primary n-btn--sm" type="button" data-ext-onboard-demo>Load the demo learner</button>
       <button class="n-btn n-btn--secondary n-btn--sm" type="button" data-ext-onboard-import>Import a vault file</button>

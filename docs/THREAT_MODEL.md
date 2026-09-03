@@ -1,5 +1,10 @@
 # Threat model
 
+**Prove it once. Skip it everywhere.** A site asks your vault what you already
+know, you say yes, and the site adapts. When you pass something, it signs a
+receipt that any other site can ask about. The picture is on
+[the hub](https://nema.migarci2.dev/).
+
 nema moves claims about a person between origins that do not trust each other,
 with an LLM in the middle. This document lists what can go wrong, what the
 implementation does about it, and what it honestly does not do.

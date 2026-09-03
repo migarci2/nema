@@ -427,6 +427,9 @@
 }
 .lab-connect .lab-note { margin: 0; }
 
+/* The one line a stranger reads before the button: what this block is for. */
+.lab-say { max-width: 52ch; padding-top: var(--sp-2); }
+
 /* Hand delivery sits under the requirements as one line until it is wanted:
  * the block it opens is a field and a button, no panel and no border. */
 .lab-paste { max-width: 52ch; }

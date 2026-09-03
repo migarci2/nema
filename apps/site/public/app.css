@@ -229,6 +229,33 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
 
 .lp-link:hover { border-bottom-color: var(--ink); }
 
+/* Directly under the actions: the whole protocol in the three beats the story
+ * card draws, with the same three glyphs the rest of the page uses. Labels
+ * first, one plain line each, and nothing named that a stranger would have to
+ * look up. */
+.lp-beats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-5);
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--line-soft);
+  max-width: 640px;
+}
+
+@media (max-width: 640px) {
+  .lp-beats { grid-template-columns: minmax(0, 1fr); gap: var(--sp-4); }
+}
+
+.lp-beat { display: flex; flex-direction: column; gap: 6px; }
+
+.lp-beat__glyph { width: 30px; height: 30px; color: var(--cyan); }
+.lp-beat__glyph svg { display: block; width: 100%; height: 100%; }
+.lp-beat__glyph--paper { width: 32px; height: 32px; }
+
+.lp-beat__name { font-size: var(--fs-13); font-weight: 600; color: var(--ink); }
+.lp-beat__text { font-size: var(--fs-13); line-height: var(--lh-body); color: var(--ink-2); }
+
 /* The one photograph of the page: the real product, in a window. */
 .lp-shot { margin: 0; display: flex; flex-direction: column; gap: var(--sp-3); }
 
@@ -873,6 +900,39 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
 }
 
 .callout__title { font-size: var(--fs-13); color: var(--ink); font-weight: 600; }
+
+/* The three second layer. The same two lines open every page: what nema does,
+ * in one headline and one sentence, before any of the machinery is named. On
+ * the judge guide it carries the picture too. */
+.layer {
+  border-left: 2px solid var(--cyan);
+  padding-left: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  max-width: 72ch;
+}
+
+.layer__head {
+  font-size: clamp(20px, 2vw, 26px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.layer__say { font-size: var(--fs-16); color: var(--ink-2); max-width: 66ch; }
+.layer__say b { color: var(--ink); font-weight: 600; }
+
+.layer__fig { margin: var(--sp-1) 0 0; max-width: 560px; }
+
+.layer__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-3);
+}
 
 /* --------------------------------------------- 12. tools dock -- */
 

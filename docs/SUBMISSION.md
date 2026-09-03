@@ -20,6 +20,13 @@ proof of what they learned in a vault they own, and any agent connects the two.
 
 ## Project Story (About the project)
 
+**Prove it once. Skip it everywhere.**
+
+A site asks your vault what you already know, you say yes, and the site adapts.
+When you pass something, it signs a receipt that any other site can ask about.
+
+![page asks, vault answers, page signs](https://nema.migarci2.dev/press/card-how-it-works-sm.png)
+
 ## Inspiration
 
 Most of what we know we learned on the web, one page at a time: a blog post
@@ -33,8 +40,6 @@ could declare what it teaches, ask a reader's own vault what they already know,
 and hand back a signed note of what they did? That is nema: your learning
 state, everywhere.
 
-![The protocol in three beats](https://nema.migarci2.dev/press/card-how-it-works-sm.png)
-
 **Why this needs WebMCP.** The tools of a lesson exist only while that page is
 open, and the learner's state exists only where the learner keeps it. WebMCP
 lets the agent already in your browser compose the two at the moment they
@@ -45,6 +50,17 @@ integration, or an extension that scrapes pages. With it, any page that
 teaches becomes operable by any agent, at runtime, with the person present.
 
 ## What it does
+
+**Page asks.** You open a page that teaches something, and before it teaches
+you anything it asks your vault for the few things it needs to know about you.
+
+**Vault answers.** Your vault shows you exactly what was asked, you say yes,
+and it sends back a signed answer that carries only that much.
+
+**Page signs.** You do the work that is left, and the page signs a receipt for
+what you passed, which lands in your vault for the next site to ask about.
+
+Everything below is that loop at full size.
 
 **A vault you own.** The vault is your own record of what you have learned:
 signed receipts of work you actually did, issued by the sites where you did

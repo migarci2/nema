@@ -561,6 +561,7 @@ const STYLE = `
 .nema-embed p{margin:0 0 .75em}
 .nema-embed ol,.nema-embed ul{margin:0;padding:0;list-style:none}
 .nema-embed-sub{opacity:.7;font-size:.9em}
+.nema-embed-lede{margin:0 0 1em;max-width:62ch}
 .nema-embed-section{margin:0 0 1.75rem}
 .nema-embed-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:.75rem}
 .nema-embed-btn{display:inline-block;font:inherit;font-size:.95em;color:inherit;background:transparent;
@@ -1140,6 +1141,17 @@ function conceptWords(id) {
  */
 function connectSection(app) {
   const section = el('div', { class: 'nema-embed-section', 'data-nema-connect': '' });
+  /* The three second line. Before any of this names a vault, a receipt or a
+   * token, one sentence tells the reader what this block is for. */
+  section.appendChild(
+    el('p', {
+      class: 'nema-embed-lede',
+      'data-nema-connect-lede': '',
+      text:
+        'This site can ask your nema vault what you already know, and sign what you do here. ' +
+        'Nothing leaves your vault until you say yes.'
+    })
+  );
   const connected = Boolean(app.assertion);
   const button = el('button', {
     class: 'nema-embed-btn',
