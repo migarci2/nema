@@ -247,7 +247,7 @@ if 'audio' in steps:
             dedup.append(k)
 
     inputs, fc, mixes = [], [], []
-    inputs += ['-i', os.path.join(FOOT, 'music-banjos-unite.mp3')]
+    inputs += ['-i', os.path.join(FOOT, 'music-bright-stripes.mp3')]
     fc.append("[0:a]atrim=0:%.3f,asetpts=PTS-STARTPTS,aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo,"
               "volume=eval=frame:volume='%s'[music]" % (TOTAL, kf_expr(dedup)))
     mixes.append('[music]')

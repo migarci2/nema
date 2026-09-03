@@ -16,9 +16,6 @@
   <div id="url" class="mono" style="position:absolute;left:0;right:0;top:582px;text-align:center;font-size:44px;color:var(--cyan)">nema.migarci2.dev</div>
   <div id="built" style="position:absolute;left:0;right:0;top:672px;text-align:center;font-size:32px;color:var(--ink-2);font-weight:500">Built for the WebMCP Challenge</div>
   <div class="strip" id="strip"></div>
-  <div id="credit" class="mono" style="position:absolute;left:0;right:0;top:906px;text-align:center;font-size:19px;line-height:1.5;color:#4E6389">
-    Music: "Banjos, Unite!" by Alexander Nakarada, creatorchords.com<br>Licensed under Creative Commons BY-SA 3.0
-  </div>
   <div id="veil" style="position:absolute;inset:0;background:var(--navy);opacity:0"></div>
 </div>
 <script type="module">
@@ -42,7 +39,6 @@ document.getElementById('mark').innerHTML =
 const spans = words(document.getElementById('head'), 'Learn it once. It counts everywhere.');
 const mark = document.getElementById('mark'), url = document.getElementById('url');
 const built = document.getElementById('built'), strip = document.getElementById('strip');
-const credit = document.getElementById('credit');
 const veil = document.getElementById('veil');
 window.renderAt = (t) => {
   fade(mark, span(t, 0.1, 0.3), 16);
@@ -50,7 +46,6 @@ window.renderAt = (t) => {
   fade(url, span(t, 1.05, 0.3), 14);
   fade(built, span(t, 1.3, 0.3), 12);
   fade(strip, span(t, 1.55, 0.36), 10);
-  fade(credit, span(t, 1.85, 0.36), 8);
   /* Hold, then out to navy: the last thing the film does. */
   veil.style.opacity = span(t, 4.1, 0.85).toFixed(4);
 };

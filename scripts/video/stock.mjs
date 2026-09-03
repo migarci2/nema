@@ -107,13 +107,11 @@ if (creditsAt) {
   lines.push('');
   lines.push('## Music');
   lines.push('');
-  lines.push('"Banjos, Unite!" by Alexander Nakarada (https://creatorchords.com/), licensed');
-  lines.push('under Creative Commons Attribution ShareAlike 3.0');
-  lines.push('(https://creativecommons.org/licenses/by-sa/3.0/), sourced through');
-  lines.push('BreakingCopyright (https://breakingcopyright.com). The credit is on the closing');
-  lines.push('card of the film as well as here, which is what the BY part of that licence');
-  lines.push('asks for. The SA part is a decision for the owner: sharing a film that carries');
-  lines.push('this track may oblige the film itself to go out under BY-SA 3.0.');
+  lines.push('"Bright Stripes" by MokkaMusic, supplied by the owner as');
+  lines.push('music-bright-stripes.mp3, the cut without the intro. It plays as a bed under');
+  lines.push('the whole film from the first frame of the cold open, ducked under every voice.');
+  lines.push('No licence document came with the file: confirm the terms MokkaMusic grants');
+  lines.push('for this track before the film is published anywhere.');
   lines.push('');
   fs.mkdirSync(path.dirname(creditsAt), { recursive: true });
   fs.writeFileSync(creditsAt, lines.join('\n'));
