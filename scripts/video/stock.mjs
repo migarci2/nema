@@ -107,10 +107,13 @@ if (creditsAt) {
   lines.push('');
   lines.push('## Music');
   lines.push('');
-  lines.push('None supplied. The edit list leaves a `music` slot and the first two seconds of');
-  lines.push('the screen part are silent on purpose: that is the cross from the filmed intro.');
-  lines.push('MoneyPrinterTurbo\'s storage/bgm was checked and is empty, so nothing was taken');
-  lines.push('from it.');
+  lines.push('"Banjos, Unite!" by Alexander Nakarada (https://creatorchords.com/), licensed');
+  lines.push('under Creative Commons Attribution ShareAlike 3.0');
+  lines.push('(https://creativecommons.org/licenses/by-sa/3.0/), sourced through');
+  lines.push('BreakingCopyright (https://breakingcopyright.com). The credit is on the closing');
+  lines.push('card of the film as well as here, which is what the BY part of that licence');
+  lines.push('asks for. The SA part is a decision for the owner: sharing a film that carries');
+  lines.push('this track may oblige the film itself to go out under BY-SA 3.0.');
   lines.push('');
   fs.mkdirSync(path.dirname(creditsAt), { recursive: true });
   fs.writeFileSync(creditsAt, lines.join('\n'));

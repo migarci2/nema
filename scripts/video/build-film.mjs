@@ -112,9 +112,9 @@ const SEGMENTS = [
   // 2. title
   { name: '07-title', chapter: 'Title', kind: 'mograph', page: 'title.html', dur: 3.50 },
   // 3. chapter one
-  { name: '09-ch1-ask', chapter: 'Chapter 1', label: 'One', kind: 'take', take: 'ch1', shot: 'ask', title: 'Saucier School', in: 0.90, dur: 5.40 },
-  { name: '10-ch1-consent', kind: 'consent', from: 'ch1', cap: 'You say yes', dur: 2.60 },
-  { name: '11-ch1-became', kind: 'take', take: 'ch1', shot: 'became', title: 'Saucier School', in: 1.40, dur: 7.10, dipOut: 0.20 },
+  { name: '09-ch1-ask', chapter: 'Chapter 1', label: 'One', kind: 'take', take: 'ch1', shot: 'ask', title: 'Saucier School', in: 0.55, dur: 7.60 },
+  { name: '10-ch1-consent', kind: 'consent', from: 'ch1', cap: 'You say yes', dur: 4.40 },
+  { name: '11-ch1-became', kind: 'take', take: 'ch1', shot: 'became', title: 'Saucier School', in: 1.40, dur: 8.60, dipOut: 0.20 },
   // 4. the beat
   { name: '12-beat', chapter: 'Beat', kind: 'stock', clip: 'pan-sauce', in: 4.0, dur: 2.00, dipIn: 0.16, dipOut: 0.16 },
   // 5. chapter two
@@ -135,13 +135,13 @@ const SEGMENTS = [
    * disclosure, then the receipt arriving on its own. */
   { name: '21-ch4-ext', chapter: 'Chapter 4', label: 'Three', kind: 'take', take: 'ch4', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 1.30, dur: 5.60, dipIn: 0.16 },
   { name: '22-ch4-toast', kind: 'take', take: 'ch4', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 16.10, dur: 3.60 },
-  { name: '23-ch4-article', kind: 'take', take: 'ch4b', shot: 'article', title: 'AES-GCM, with and without nema', in: 1.60, dur: 4.00, dipOut: 0.20 },
+  { name: '23-ch4-article', kind: 'take', take: 'ch4b', shot: 'article', title: 'AES-GCM, with and without nema', in: 1.60, dur: 5.60, dipOut: 0.20 },
   // on camera, slot D
   { name: '24-slot-d', chapter: 'Slot D', kind: 'mograph', page: 'slot.html', dur: SLOTS.D.secs, query: slotQuery('D') },
   // 8. the logos
   { name: '25-logos', chapter: 'Logos', kind: 'mograph', page: 'logos.html', dur: 6.00 },
   // 9. two tags
-  { name: '26-twotags', chapter: 'Two tags', kind: 'mograph', page: 'twotags.html', dur: 3.00 },
+  { name: '26-twotags', chapter: 'Two tags', kind: 'mograph', page: 'twotags.html', dur: 7.60 },
   // on camera, slot E
   { name: '27-slot-e', chapter: 'Slot E', kind: 'mograph', page: 'slot.html', dur: SLOTS.E.secs, query: slotQuery('E') },
   // 10. the close

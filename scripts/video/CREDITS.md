@@ -44,7 +44,10 @@ belongs to its owner and none of them endorse this project.
 
 ## Music
 
-None supplied. The edit list leaves a `music` slot and the first two seconds of
-the screen part are silent on purpose: that is the cross from the filmed intro.
-MoneyPrinterTurbo's storage/bgm was checked and is empty, so nothing was taken
-from it.
+"Banjos, Unite!" by Alexander Nakarada (https://creatorchords.com/), licensed
+under Creative Commons Attribution ShareAlike 3.0
+(https://creativecommons.org/licenses/by-sa/3.0/), sourced through
+BreakingCopyright (https://breakingcopyright.com). The credit is on the closing
+card of the film as well as here, which is what the BY part of that licence
+asks for. The SA part is a decision for the owner: sharing a film that carries
+this track may oblige the film itself to go out under BY-SA 3.0.
