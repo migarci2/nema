@@ -46,3 +46,47 @@ takes with the intro filmed by the team and the closing card.
 alternative editor for screen demos with its own JSON project format and a CLI
 export. It records through PipeWire; use it if a take is easier to shoot by
 hand than to script.
+
+## The demo film
+
+The screen part of the submission film, everything after the filmed intro, is
+built by one script from parts that can each be rebuilt on their own:
+
+```
+CHROME=<chrome with WebMCP> node scripts/video/build-film.mjs [--steps a,b,c]
+```
+
+Steps, in the order they run: `mograph` (the navy cards), `stock` (the Pexels
+cuts, graded), `consent` (the vault's question, pushed), `compose` (the takes
+into the macOS window), `finalize` (trim, dip, one encoder setting for every
+segment), `cut` (this directory's `cut.json`), `assemble` (screen-1080.mp4 then
+screen-4k.mp4) and `sheet` (one frame per chapter).
+
+The parts it builds on:
+
+- `scripts/video/take-film.mjs <chapter>` records the product chapters, clean,
+  with an event log: `ch1` the handshake on Saucier School, `ch2` the check and
+  the receipt and the vault ledger, `ch3` Line Cook Lab, `ch4b` the AES-GCM
+  compare page. It also captures the vault's consent window as a still, because
+  the course tab is frozen while that window is up and a film should not sit on
+  a frozen tab.
+- `scripts/video/take-film-ext.mjs` records the extension chapter: the side
+  panel and the page, side by side, in one browser.
+- `scripts/video/mograph.mjs <page.html>` renders a motion graphics page frame
+  by frame. The page exposes `window.renderAt(seconds)` and draws nothing on a
+  timer, so a 4K render is exact however slow the machine is. The pages live in
+  `scripts/video/mograph`.
+- `scripts/video/stock.mjs` fetches the Pexels clips and writes
+  `scripts/video/CREDITS.md`.
+- `scripts/video/crop-consent.py`, `pill.py` and `contact-sheet.py` are the
+  small pieces: the consent card cropped out of its window, one caption pill
+  drawn the way the studio draws it, and the contact sheet.
+
+`docs/video/cut.json` is the edit list. Every clip in it is already trimmed and
+dipped, so `scripts/video/edit.mjs` and Shotcut both see a plain sequence of
+hard cuts. The on camera slots are in there too: slot A is the filmed intro
+and has no clip, C, D and E are placeholder cards carrying the lines the team
+says, so the cut plays now and their footage drops straight in. The counted
+labels One, Two and Three are drawn on the first clip of each way by
+`scripts/video/label.py`, and Carmen's voice over is on the clips it belongs to
+and again as one `voiceover` track, with the music ducked 10 dB under it.

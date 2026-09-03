@@ -1,0 +1,113 @@
+<meta charset="utf-8"><title>nema title</title>
+<link rel="stylesheet" href="film.css">
+<div class="stage">
+  <svg id="dia" viewBox="0 0 1920 1080" width="1920" height="1080" style="position:absolute;inset:0">
+    <defs>
+      <linearGradient id="edge" x1="960" y1="360" x2="1120" y2="660" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#00E5FF"/><stop offset="0.5" stop-color="#15C4B4"/><stop offset="1" stop-color="#3A78FF"/>
+      </linearGradient>
+    </defs>
+    <g id="wires" fill="none" stroke="#1E2C42" stroke-width="3"></g>
+    <g id="live" fill="none" stroke="var(--cyan)" stroke-width="3" stroke-linecap="round"></g>
+    <g id="sites"></g>
+    <g id="vault" transform="translate(1620 540)">
+      <path id="hex" d="M0 -132 L114 -66 L114 66 L0 132 L-114 66 L-114 -66 Z" fill="rgba(11,19,32,0.9)" stroke="url(#edge)" stroke-width="4"/>
+      <g id="nodes" shape-rendering="crispEdges">
+        <rect x="-15" y="-147" width="30" height="30" fill="url(#edge)"/>
+        <rect x="99" y="-81" width="30" height="30" fill="url(#edge)"/>
+        <rect x="99" y="51" width="30" height="30" fill="url(#edge)"/>
+        <rect x="-15" y="117" width="30" height="30" fill="#FFCA2E"/>
+        <rect x="-129" y="51" width="30" height="30" fill="url(#edge)"/>
+        <rect x="-129" y="-81" width="30" height="30" fill="url(#edge)"/>
+      </g>
+      <text x="0" y="20" text-anchor="middle" class="pixel" fill="#F2F6FF" font-size="56">nema</text>
+    </g>
+    <g id="pulses"></g>
+  </svg>
+  <div id="card" style="position:absolute;left:0;right:0;top:0;bottom:0"></div>
+  <div id="mark" style="position:absolute;left:160px;top:312px;width:300px;height:82px"></div>
+  <div id="head" class="kin" style="position:absolute;left:160px;top:446px;width:860px;font-size:86px"></div>
+  <div id="head2" class="kin" style="position:absolute;left:160px;top:556px;width:860px;font-size:86px"></div>
+</div>
+<script type="module">
+import { span, ease, words, kinetic, fade } from './film.js';
+
+/* The three demo sites, in their own colours, feeding one vault. */
+const SITES = [
+  { y: 300, c: '#FF7429', label: 'Saucier School' },
+  { y: 540, c: '#4ADE80', label: 'Line Cook Lab' },
+  { y: 780, c: '#FFCA2E', label: 'Maillard, an article' }
+];
+const svgns = 'http://www.w3.org/2000/svg';
+const wires = document.getElementById('wires');
+const live = document.getElementById('live');
+const sites = document.getElementById('sites');
+const pulses = document.getElementById('pulses');
+const paths = [];
+const chips = [];
+SITES.forEach((s, i) => {
+  const d = `M 1250 ${s.y} C 1370 ${s.y}, 1410 540, 1488 540`;
+  for (const [g, cls] of [[wires, 'wire'], [live, 'live']]) {
+    const p = document.createElementNS(svgns, 'path');
+    p.setAttribute('d', d);
+    g.appendChild(p);
+    if (cls === 'live') paths.push(p);
+  }
+  const g = document.createElementNS(svgns, 'g');
+  g.innerHTML = `<rect x="970" y="${s.y - 46}" width="280" height="92" rx="14" fill="#111C2E" stroke="#1E2C42" stroke-width="3"/>
+    <circle cx="1016" cy="${s.y}" r="13" fill="${s.c}"/>
+    <text x="1048" y="${s.y + 10}" fill="#A9BCD8" font-family="Inter" font-size="27" font-weight="500">${s.label}</text>`;
+  sites.appendChild(g);
+  chips.push(g);
+  const dot = document.createElementNS(svgns, 'circle');
+  dot.setAttribute('r', '9'); dot.setAttribute('fill', '#00E5FF');
+  pulses.appendChild(dot);
+});
+const lens = paths.map((p) => p.getTotalLength());
+paths.forEach((p, i) => { p.style.strokeDasharray = lens[i]; });
+
+document.getElementById('mark').innerHTML =
+  `<svg viewBox="0 0 88 24" width="300" height="82" shape-rendering="crispEdges"><g fill="#F2F6FF">
+   <rect x="0" y="0" width="16" height="4"/><rect x="0" y="4" width="4" height="20"/><rect x="12" y="4" width="4" height="20"/>
+   <rect x="20" y="0" width="16" height="4"/><rect x="20" y="4" width="4" height="20"/><rect x="32" y="4" width="4" height="4"/>
+   <rect x="20" y="8" width="16" height="4"/><rect x="20" y="20" width="16" height="4"/>
+   <rect x="40" y="0" width="28" height="4"/><rect x="40" y="4" width="4" height="20"/><rect x="52" y="4" width="4" height="20"/><rect x="64" y="4" width="4" height="20"/>
+   <rect x="72" y="0" width="16" height="4"/><rect x="84" y="4" width="4" height="20"/><rect x="72" y="8" width="16" height="4"/>
+   <rect x="72" y="12" width="4" height="8"/><rect x="72" y="20" width="16" height="4"/></g></svg>`;
+
+const head = document.getElementById('head');
+const head2 = document.getElementById('head2');
+const spans = words(head, 'Learn it once.');
+const spans2 = words(head2, 'It counts everywhere.');
+const dia = document.getElementById('dia');
+const vault = document.getElementById('vault');
+const markEl = document.getElementById('mark');
+
+window.renderAt = (t) => {
+  /* The diagram builds behind the words and never competes with them. */
+  dia.style.opacity = (0.62 * ease(span(t, 0.0, 0.5))).toFixed(3);
+  chips.forEach((g, i) => {
+    const u = ease(span(t, 0.05 + i * 0.11, 0.32));
+    g.style.opacity = u.toFixed(3);
+    g.style.transform = `translateX(${((1 - u) * -34).toFixed(1)}px)`;
+  });
+  paths.forEach((p, i) => {
+    const u = ease(span(t, 0.34 + i * 0.11, 0.5));
+    p.style.strokeDashoffset = (lens[i] * (1 - u)).toFixed(1);
+  });
+  [...pulses.children].forEach((dot, i) => {
+    const u = span(t, 0.78 + i * 0.12, 0.72);
+    const pt = paths[i].getPointAtLength(lens[i] * ease(u));
+    dot.setAttribute('cx', pt.x); dot.setAttribute('cy', pt.y);
+    dot.style.opacity = (u > 0 && u < 1 ? 1 : 0).toFixed(2);
+  });
+  const vin = ease(span(t, 0.5, 0.42));
+  vault.style.opacity = vin.toFixed(3);
+  const lit = ease(span(t, 1.5, 0.5));
+  vault.style.transform = `translate(1620px, 540px) scale(${(0.94 + 0.06 * vin + 0.02 * lit).toFixed(4)})`;
+
+  fade(markEl, ease(span(t, 0.35, 0.36)), 18);
+  kinetic(spans, t, { start: 0.62, stagger: 0.05, dur: 0.24 });
+  kinetic(spans2, t, { start: 0.62 + spans.length * 0.05, stagger: 0.05, dur: 0.24 });
+};
+</script>

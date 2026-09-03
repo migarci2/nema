@@ -1,0 +1,8 @@
+[
+  { "name": "laptop-night",  "query": "man learning laptop night dark room", "pick": 0, "minSeconds": 6 },
+  { "name": "reading-long",  "query": "person reading article on screen", "pick": 0, "minSeconds": 6 },
+  { "name": "student-screen","query": "student studying computer screen light face", "pick": 0, "minSeconds": 6 },
+  { "name": "pan-sauce",     "query": "sauce pan cooking closeup sizzling", "pick": 0, "minSeconds": 5 },
+  { "name": "restaurant-pass","query": "busy restaurant kitchen chefs plating", "pick": 0, "minSeconds": 5 },
+  { "name": "hands-writing", "query": "hands writing notes notebook close", "pick": 0, "minSeconds": 5 }
+]

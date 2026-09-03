@@ -1,0 +1,36 @@
+<meta charset="utf-8"><title>the consent question</title>
+<link rel="stylesheet" href="film.css">
+<style>
+  /* The caption pill, in the same shape studio-assets.py draws for the takes,
+     so a card and a screen recording carry the same voice. */
+  .pill { position: absolute; left: 50%; transform: translateX(-50%); bottom: 44px;
+    background: rgba(11, 19, 32, 0.92); border: 2px solid rgba(0, 229, 255, 0.28);
+    border-radius: 999px; padding: 11px 30px 13px; font-size: 34px; font-weight: 500;
+    color: var(--ink); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45); white-space: nowrap; }
+  .shotwrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-bottom: 112px; }
+  .shot { border-radius: 18px; border: 2px solid #22344F; box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+    display: block; will-change: transform; }
+</style>
+<div class="stage">
+  <div class="shotwrap"><img id="shot" class="shot" alt=""></div>
+  <div id="cap" class="pill"></div>
+</div>
+<script type="module">
+import { span, ease, fade } from './film.js';
+const q = new URLSearchParams(location.search);
+const img = document.getElementById('shot');
+const cap = document.getElementById('cap');
+cap.textContent = q.get('cap') || '';
+img.src = q.get('shot') || '';
+/* Whatever the popup handed back, fitted to a tall card with room around it. */
+const H = Number(q.get('h') || 900);
+img.style.height = H + 'px';
+window.renderAt = (t) => {
+  const u = ease(span(t, 0, 0.42));
+  /* A slow push, and nothing else: the question is the shot. */
+  const s = 0.985 + 0.055 * Math.min(1, t / 2.6) + 0.015 * (1 - u);
+  img.style.opacity = u.toFixed(3);
+  img.style.transform = `scale(${s.toFixed(4)})`;
+  fade(cap, span(t, 0.3, 0.26));
+};
+</script>

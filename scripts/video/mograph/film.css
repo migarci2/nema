@@ -1,0 +1,41 @@
+/* The film's motion graphics ground. One design size, 1920x1080, captured at
+ * scale 2 for the 4K master. Self hosted brand faces, so a frame is never drawn
+ * in a fallback. */
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 100 900; font-display: block;
+  src: url('../../../shared/brand/fonts/inter-latin-var.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 100 800; font-display: block;
+  src: url('../../../shared/brand/fonts/jetbrains-mono-latin-var.woff2') format('woff2'); }
+@font-face { font-family: 'Pixelify Sans'; font-style: normal; font-weight: 400 700; font-display: block;
+  src: url('../../../shared/brand/fonts/pixelify-sans-latin-var.woff2') format('woff2'); }
+
+:root {
+  --navy: #0B1320;
+  --navy-2: #111C2E;
+  --line: #1E2C42;
+  --ink: #F2F6FF;
+  --ink-2: #A9BCD8;
+  --cyan: #00E5FF;
+  --teal: #15C4B4;
+  --yellow: #FFCA2E;
+  --amber: #FF7429;
+  --green: #4ADE80;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; }
+body {
+  background: var(--navy);
+  color: var(--ink);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-feature-settings: 'ss01', 'cv05';
+  -webkit-font-smoothing: antialiased;
+}
+body.alpha { background: transparent; }
+
+.stage { position: absolute; inset: 0; }
+
+/* Kinetic type. Nothing on this film carries a drop shadow. */
+.kin { font-weight: 600; letter-spacing: -0.022em; line-height: 1.04; }
+.word { display: inline-block; white-space: pre; will-change: transform, opacity; }
+.mono { font-family: 'JetBrains Mono', ui-monospace, monospace; letter-spacing: 0.01em; }
+.pixel { font-family: 'Pixelify Sans', 'JetBrains Mono', monospace; }

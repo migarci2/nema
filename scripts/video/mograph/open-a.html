@@ -1,0 +1,19 @@
+<meta charset="utf-8"><title>Every site</title>
+<link rel="stylesheet" href="film.css">
+<div class="stage">
+  <div id="line" class="kin" style="position:absolute;left:200px;top:470px;font-size:132px"></div>
+  <div id="rule" style="position:absolute;left:200px;top:646px;height:4px;background:var(--cyan);width:0"></div>
+</div>
+<script type="module">
+import { span, ease, words, kinetic } from './film.js';
+const line = document.getElementById('line');
+const rule = document.getElementById('rule');
+const spans = words(line, 'Every site');
+window.renderAt = (t) => {
+  kinetic(spans, t, { start: 0.12, stagger: 0.07, dur: 0.24 });
+  rule.style.width = (ease(span(t, 0.34, 0.34)) * 268).toFixed(1) + 'px';
+  /* The card leaves on the cut, so the last two frames darken rather than
+   * dissolve: a hard cut wants no half image on either side of it. */
+  document.body.style.opacity = (1 - 0.0 * span(t, 99, 1)).toFixed(3);
+};
+</script>
