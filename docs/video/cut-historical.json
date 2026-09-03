@@ -1,5 +1,5 @@
 {
-  "title": "nema demo, the screen part",
+  "title": "nema demo, the screen part (historical: superseded by running-order.json)",
   "profile": "uhd_2160p_30",
   "note": "This is the part after the filmed intro. SLOT A is that intro and is not a clip here: it runs 8 s before clip 1 and its lines are in slots.A below. Every clip is already trimmed, dipped and encoded the same way, so the assembly is a straight concat. Dips to navy only happen at chapter borders and are baked into the clips.",
   "slots": {
@@ -72,73 +72,73 @@
     "note": "One track, recorded down the whole screen part. Miguel speaks only in the on camera slots.",
     "lines": [
       {
-        "at": "00:00:10.033",
+        "at": "00:00:07.000",
         "clip": "09-ch1-ask",
         "speaker": "Carmen",
         "text": "One. I open a cooking course I have never seen."
       },
       {
-        "at": "00:00:10.033",
+        "at": "00:00:07.000",
         "clip": "09-ch1-ask",
         "speaker": "Carmen",
         "text": "It asks my nema what I already know."
       },
       {
-        "at": "00:00:10.033",
+        "at": "00:00:07.000",
         "clip": "09-ch1-ask",
         "speaker": "Carmen",
         "text": "I say yes, and it adapts. Sixty eight minutes become twenty seven."
       },
       {
-        "at": "00:00:27.133",
+        "at": "00:00:36.000",
         "clip": "13-ch2-answer",
         "speaker": "Carmen",
         "text": "I do one exercise."
       },
       {
-        "at": "00:00:31.733",
+        "at": "00:00:40.600",
         "clip": "14-ch2-receipt",
         "speaker": "Carmen",
         "text": "The course gives me a note that says I passed. That note is mine. I keep it in my nema."
       },
       {
-        "at": "00:00:46.733",
+        "at": "00:00:55.600",
         "clip": "18-ch3-ask",
         "speaker": "Carmen",
         "text": "It asks, I say yes, and it already counts what I did before."
       },
       {
-        "at": "00:00:52.533",
+        "at": "00:01:02.400",
         "clip": "20-ch3-open",
         "speaker": "Carmen",
         "text": "Two lessons done before I start. The lab opens."
       },
       {
-        "at": "00:00:58.233",
+        "at": "00:01:08.100",
         "clip": "21-ch4-ext",
         "speaker": "Carmen",
         "text": "Three. With the extension, it is one click."
       },
       {
-        "at": "00:01:03.833",
+        "at": "00:01:13.700",
         "clip": "22-ch4-toast",
         "speaker": "Carmen",
         "text": "My notes come home on their own."
       },
       {
-        "at": "00:01:07.433",
+        "at": "00:01:17.300",
         "clip": "23-ch4-article",
         "speaker": "Carmen",
         "text": "And this is a real article, with questions inside the text."
       },
       {
-        "at": "00:01:07.433",
+        "at": "00:01:17.300",
         "clip": "23-ch4-article",
         "speaker": "Carmen",
         "text": "One tag on the page. That is all."
       },
       {
-        "at": "00:01:20.433",
+        "at": "00:01:32.899",
         "clip": "26-twotags",
         "speaker": "Carmen",
         "text": "If you teach on the web, you can add this in one minute."
@@ -149,52 +149,28 @@
     {
       "name": "01-open-a",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/01-open-a-4k.mp4",
-      "duration": "00:00:01.300",
+      "duration": "00:00:02.000",
       "at": "00:00:00.000",
       "note": "Cold open"
     },
     {
-      "name": "02-open-s1",
-      "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/02-open-s1-4k.mp4",
-      "duration": "00:00:01.500",
-      "at": "00:00:01.300"
-    },
-    {
-      "name": "03-open-b",
-      "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/03-open-b-4k.mp4",
-      "duration": "00:00:00.666",
-      "at": "00:00:02.800"
-    },
-    {
-      "name": "04-open-s2",
-      "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/04-open-s2-4k.mp4",
-      "duration": "00:00:01.500",
-      "at": "00:00:03.466"
-    },
-    {
-      "name": "05-open-c",
-      "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/05-open-c-4k.mp4",
-      "duration": "00:00:00.266",
-      "at": "00:00:04.966"
-    },
-    {
-      "name": "06-open-s3",
-      "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/06-open-s3-4k.mp4",
-      "duration": "00:00:01.300",
-      "at": "00:00:05.233"
+      "name": "01b-open-b",
+      "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/01b-open-b-4k.mp4",
+      "duration": "00:00:02.000",
+      "at": "00:00:02.000"
     },
     {
       "name": "07-title",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/07-title-4k.mp4",
-      "duration": "00:00:03.500",
-      "at": "00:00:06.533",
+      "duration": "00:00:03.000",
+      "at": "00:00:04.000",
       "note": "Title"
     },
     {
       "name": "09-ch1-ask",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/09-ch1-ask-4k.mp4",
-      "duration": "00:00:05.400",
-      "at": "00:00:10.033",
+      "duration": "00:00:07.600",
+      "at": "00:00:07.000",
       "note": "Chapter 1",
       "voiceover": [
         "One. I open a cooking course I have never seen.",
@@ -205,27 +181,34 @@
     {
       "name": "10-ch1-consent",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/10-ch1-consent-4k.mp4",
-      "duration": "00:00:02.600",
-      "at": "00:00:15.433"
+      "duration": "00:00:04.400",
+      "at": "00:00:14.600"
     },
     {
       "name": "11-ch1-became",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/11-ch1-became-4k.mp4",
-      "duration": "00:00:07.100",
-      "at": "00:00:18.033"
+      "duration": "00:00:08.600",
+      "at": "00:00:19.000"
     },
     {
-      "name": "12-beat",
-      "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/12-beat-4k.mp4",
+      "name": "12-webmcp",
+      "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/12-webmcp-4k.mp4",
+      "duration": "00:00:06.400",
+      "at": "00:00:27.600",
+      "note": "WebMCP"
+    },
+    {
+      "name": "12b-beat",
+      "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/12b-beat-4k.mp4",
       "duration": "00:00:02.000",
-      "at": "00:00:25.133",
+      "at": "00:00:34.000",
       "note": "Beat"
     },
     {
       "name": "13-ch2-answer",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/13-ch2-answer-4k.mp4",
       "duration": "00:00:04.600",
-      "at": "00:00:27.133",
+      "at": "00:00:36.000",
       "note": "Chapter 2",
       "voiceover": [
         "I do one exercise."
@@ -235,7 +218,7 @@
       "name": "14-ch2-receipt",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/14-ch2-receipt-4k.mp4",
       "duration": "00:00:05.400",
-      "at": "00:00:31.733",
+      "at": "00:00:40.600",
       "voiceover": [
         "The course gives me a note that says I passed. That note is mine. I keep it in my nema."
       ]
@@ -244,26 +227,26 @@
       "name": "15-ch2-keep",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/15-ch2-keep-4k.mp4",
       "duration": "00:00:02.200",
-      "at": "00:00:37.133"
+      "at": "00:00:46.000"
     },
     {
       "name": "16-ch2-ledger",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/16-ch2-ledger-4k.mp4",
       "duration": "00:00:03.400",
-      "at": "00:00:39.333"
+      "at": "00:00:48.200"
     },
     {
       "name": "17-slot-c",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/17-slot-c-4k.mp4",
       "duration": "00:00:04.000",
-      "at": "00:00:42.733",
+      "at": "00:00:51.600",
       "note": "Slot C | ON CAMERA, SLOT C: placeholder, 4 s, a cut in between chapter two and chapter three. Hard cut in and out, no dissolve. | Lines: M: \"Two. A different site.\"  C: \"This one has never seen the first one.\""
     },
     {
       "name": "18-ch3-ask",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/18-ch3-ask-4k.mp4",
       "duration": "00:00:03.600",
-      "at": "00:00:46.733",
+      "at": "00:00:55.600",
       "note": "Chapter 3",
       "voiceover": [
         "It asks, I say yes, and it already counts what I did before."
@@ -272,14 +255,14 @@
     {
       "name": "19-ch3-consent",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/19-ch3-consent-4k.mp4",
-      "duration": "00:00:02.200",
-      "at": "00:00:50.333"
+      "duration": "00:00:03.200",
+      "at": "00:00:59.200"
     },
     {
       "name": "20-ch3-open",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/20-ch3-open-4k.mp4",
       "duration": "00:00:05.700",
-      "at": "00:00:52.533",
+      "at": "00:01:02.400",
       "voiceover": [
         "Two lessons done before I start. The lab opens."
       ]
@@ -288,7 +271,7 @@
       "name": "21-ch4-ext",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/21-ch4-ext-4k.mp4",
       "duration": "00:00:05.600",
-      "at": "00:00:58.233",
+      "at": "00:01:08.100",
       "note": "Chapter 4",
       "voiceover": [
         "Three. With the extension, it is one click."
@@ -298,7 +281,7 @@
       "name": "22-ch4-toast",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/22-ch4-toast-4k.mp4",
       "duration": "00:00:03.600",
-      "at": "00:01:03.833",
+      "at": "00:01:13.700",
       "voiceover": [
         "My notes come home on their own."
       ]
@@ -306,8 +289,8 @@
     {
       "name": "23-ch4-article",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/23-ch4-article-4k.mp4",
-      "duration": "00:00:04.000",
-      "at": "00:01:07.433",
+      "duration": "00:00:05.600",
+      "at": "00:01:17.300",
       "voiceover": [
         "And this is a real article, with questions inside the text.",
         "One tag on the page. That is all."
@@ -317,21 +300,21 @@
       "name": "24-slot-d",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/24-slot-d-4k.mp4",
       "duration": "00:00:03.000",
-      "at": "00:01:11.433",
+      "at": "00:01:22.899",
       "note": "Slot D | ON CAMERA, SLOT D: placeholder, 3 s, a cut in before the logo section. Hard cut in and out, no dissolve. | Lines: M: \"And which AI is this?\"  C: \"The one you already use.\""
     },
     {
       "name": "25-logos",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/25-logos-4k.mp4",
-      "duration": "00:00:06.000",
-      "at": "00:01:14.433",
+      "duration": "00:00:07.000",
+      "at": "00:01:25.899",
       "note": "Logos"
     },
     {
       "name": "26-twotags",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/26-twotags-4k.mp4",
-      "duration": "00:00:03.000",
-      "at": "00:01:20.433",
+      "duration": "00:00:07.600",
+      "at": "00:01:32.899",
       "note": "Two tags",
       "voiceover": [
         "If you teach on the web, you can add this in one minute."
@@ -341,14 +324,14 @@
       "name": "27-slot-e",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/27-slot-e-4k.mp4",
       "duration": "00:00:06.000",
-      "at": "00:01:23.433",
+      "at": "00:01:40.499",
       "note": "Slot E | ON CAMERA, SLOT E: placeholder, 6 s, the closing words, before the closing card. Hard cut in and out, no dissolve. | Lines: C: \"What you learn is yours. Not the sites'. So, that is nema.\"  M: \"Please try it. We would love your feedback.\""
     },
     {
       "name": "28-closing",
       "src": "/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad/film/segments/28-closing-4k.mp4",
       "duration": "00:00:05.000",
-      "at": "00:01:29.433",
+      "at": "00:01:46.499",
       "note": "Closing"
     }
   ]

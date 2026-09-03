@@ -9,10 +9,6 @@
     -webkit-mask-size: contain; -webkit-mask-position: center; -webkit-mask-repeat: no-repeat;
     mask-size: contain; mask-position: center; mask-repeat: no-repeat; }
   .art { width: 64px; height: 64px; display: grid; place-items: center; }
-  .monoword { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 34px;
-    color: var(--ink); letter-spacing: -0.02em; }
-  .serif { font-family: Georgia, 'Times New Roman', serif; font-size: 54px; line-height: 1;
-    color: #F4F1EA; }
   .lab { font-size: 26px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
 </style>
 <div class="stage">
@@ -25,16 +21,6 @@ import { span, ease, easeInOut, words, kinetic } from './film.js';
 
 const L = '../../../docs/assets/press/logos/';
 const mask = (f) => `<div class="icon" style="-webkit-mask-image:url(${L}${f});mask-image:url(${L}${f})"></div>`;
-/* The three sites wear their own marks, drawn from their own stylesheets:
-   Saucier School's yellow disc inside an orange ring (apps/harness, .ss-brand__square),
-   Line Cook Lab's green caret (apps/security, .lc-mark__caret), and the blog's
-   serif initial, which is all the blog has. */
-const SAUCIER = `<div class="art"><svg width="56" height="56" viewBox="0 0 56 56">
-  <g transform="rotate(-8 28 28)"><circle cx="28" cy="28" r="27" fill="#FF7429"/><circle cx="28" cy="28" r="15.5" fill="#FFD34D"/></g></svg></div>`;
-const LINECOOK = `<div class="art"><svg width="56" height="56" viewBox="0 0 56 56">
-  <rect x="23" y="8" width="10" height="40" rx="2" fill="#4ADE80"/></svg></div>`;
-const MAILLARD = `<div class="art"><span class="serif">M</span></div>`;
-
 /* Two rows, staggered by half a step so nothing lines up in a column. */
 const ROWS = [
   { y: 330, dir: -1, items: [
@@ -42,17 +28,14 @@ const ROWS = [
     { art: mask('googlechrome.svg'), lab: 'Chrome' },
     { art: mask('claude.svg'), lab: 'Claude Code' },
     { art: mask('modelcontextprotocol.svg'), lab: 'MCP' },
-    { art: mask('googlegemini.svg'), lab: 'Gemini' },
-    { art: SAUCIER, lab: 'Saucier School' },
-    { art: mask('firefoxbrowser.svg'), lab: 'Firefox' }
+    { art: mask('googlegemini.svg'), lab: 'Gemini' }
   ] },
   { y: 580, dir: 1, items: [
-    { art: mask('openai.svg'), lab: 'Codex' },
+    { art: mask('firefoxbrowser.svg'), lab: 'Firefox' },
+    { art: mask('codex.svg'), lab: 'Codex' },
     { art: mask('cloudflare.svg'), lab: 'Cloudflare' },
     { art: mask('safari.svg'), lab: 'Safari' },
-    { art: '<div class="art"><span class="monoword">MCP</span></div>', lab: 'WebMCP' },
-    { art: LINECOOK, lab: 'Line Cook Lab' },
-    { art: MAILLARD, lab: 'Maillard' }
+    { art: mask('webmcp.svg'), lab: 'WebMCP' }
   ] }
 ];
 

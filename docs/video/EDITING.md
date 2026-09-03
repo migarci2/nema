@@ -9,8 +9,8 @@ duration, an optional music bed). `scripts/video/edit.mjs` turns it into a
 Shotcut project, a plain MLT XML file, and renders it with `melt`:
 
 ```
-node scripts/video/edit.mjs docs/video/cut.json                  # writes cut.mlt
-node scripts/video/edit.mjs docs/video/cut.json --render out.mp4 # and renders it
+node scripts/video/edit.mjs docs/video/cut-historical.json                  # writes the mlt
+node scripts/video/edit.mjs docs/video/cut-historical.json --render out.mp4 # and renders it
 ```
 
 Profiles: `atsc_1080p_30` (default) and `uhd_2160p_30` for the 4K masters.
@@ -27,7 +27,7 @@ which writes its own `.llc` project next to the video.
 
 ## For an agent: melt
 
-An agent edits `cut.json` (or the `.mlt` XML itself, Shotcut keeps it readable)
+An agent edits the edit list (or the `.mlt` XML itself, Shotcut keeps it readable)
 and renders with `melt <project.mlt> -silent -consumer avformat:out.mp4
 vcodec=libx264 crf=18 preset=medium pix_fmt=yuv420p acodec=aac ab=192k`.
 `melt -query filters` lists the effects available for XML edits (volume,
@@ -59,7 +59,7 @@ CHROME=<chrome with WebMCP> node scripts/video/build-film.mjs [--steps a,b,c]
 Steps, in the order they run: `mograph` (the navy cards), `stock` (the Pexels
 cuts, graded), `consent` (the vault's question, pushed), `compose` (the takes
 into the macOS window), `finalize` (trim, dip, one encoder setting for every
-segment), `cut` (this directory's `cut.json`), `assemble` (screen-1080.mp4 then
+segment), `cut` (this directory's `cut-historical.json`), `assemble` (screen-1080.mp4 then
 screen-4k.mp4) and `sheet` (one frame per chapter).
 
 The parts it builds on:
@@ -82,7 +82,12 @@ The parts it builds on:
   small pieces: the consent card cropped out of its window, one caption pill
   drawn the way the studio draws it, and the contact sheet.
 
-`docs/video/cut.json` is the edit list. Every clip in it is already trimmed and
+`docs/video/cut-historical.json` is a readable edit list of the screen part as
+it stood before the filmed scenes were cut in. It is history: the finished film
+is assembled by `scripts/video/final-cut.py`, which reads the segments on disk
+and writes `docs/video/running-order.json` beside the masters as the record of
+what was built. Nothing rebuilds from the edit list, so an old line in it cannot
+come back. Every clip in it is already trimmed and
 dipped, so `scripts/video/edit.mjs` and Shotcut both see a plain sequence of
 hard cuts. The on camera slots are in there too: slot A is the filmed intro
 and has no clip, C, D and E are placeholder cards carrying the lines the team

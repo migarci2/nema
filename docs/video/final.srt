@@ -7,74 +7,74 @@ Every site you learn from starts from zero.
 Nema fixes that. I want to show you three ways I use it.
 
 3
-00:00:13,573 --> 00:00:22,233
+00:00:15,073 --> 00:00:23,733
 A cooking course I have never opened. It wants to know three things about me. It asks my nema, not me.
 
 4
-00:00:22,573 --> 00:00:25,093
+00:00:24,073 --> 00:00:26,593
 I say yes. That is all it gets.
 
 5
-00:00:26,673 --> 00:00:31,493
+00:00:28,173 --> 00:00:32,993
 68 minutes become 27. It skips what I already know.
 
 6
-00:00:34,383 --> 00:00:38,933
+00:00:35,883 --> 00:00:40,433
 Every page shows what it can do with WebMCP.
 
 7
-00:00:42,673 --> 00:00:51,323
+00:00:44,173 --> 00:00:52,823
 I do one exercise. The course gives me a note that says I passed. That note is mine. I keep it in my nema.
 
 8
-00:00:58,233 --> 00:01:00,717
+00:00:59,733 --> 00:01:02,217
 Now a different site. It has never seen the first one.
 
 9
-00:01:00,717 --> 00:01:03,200
+00:01:02,217 --> 00:01:04,700
 But it already knows.
 
 10
-00:01:03,920 --> 00:01:09,680
+00:01:05,420 --> 00:01:11,180
 A different site. It asks, I say yes, and it already counts what I did before.
 
 11
-00:01:10,520 --> 00:01:14,220
+00:01:13,020 --> 00:01:16,720
 Two lessons done before I start. The lab opens.
 
 12
-00:01:15,520 --> 00:01:20,410
+00:01:18,020 --> 00:01:22,910
 With the extension it is one click. My notes come home alone.
 
 13
-00:01:24,720 --> 00:01:28,740
+00:01:27,220 --> 00:01:31,240
 This is a real article, with questions inside the text.
 
 14
-00:01:30,300 --> 00:01:31,717
+00:01:32,800 --> 00:01:34,217
 And which AI is this?
 
 15
-00:01:31,717 --> 00:01:33,133
+00:01:34,217 --> 00:01:35,633
 The one you already use.
 
 16
-00:01:34,083 --> 00:01:38,733
+00:01:36,583 --> 00:01:41,233
 Any agent can use it, and my nema answers only what I approve.
 
 17
-00:01:40,883 --> 00:01:43,923
+00:01:43,383 --> 00:01:46,423
 One tag on the page. That is all.
 
 18
-00:01:44,253 --> 00:01:47,853
+00:01:46,753 --> 00:01:50,353
 If you teach on the web, you can add this in one minute.
 
 19
-00:01:48,533 --> 00:01:51,633
+00:01:51,033 --> 00:01:54,133
 What you learn is yours. Not the sites'. So, that is nema.
 
 20
-00:01:51,633 --> 00:01:54,733
+00:01:54,133 --> 00:01:57,233
 Please try it. We would love your feedback.
 

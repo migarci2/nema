@@ -1,0 +1,22 @@
+<meta charset="utf-8"><title>cold open beat</title>
+<link rel="stylesheet" href="film.css">
+<div class="stage">
+  <div id="line" class="kin" style="position:absolute;left:200px;top:436px;width:1560px;font-size:104px"></div>
+  <div id="rule" style="position:absolute;left:200px;top:640px;height:4px;background:var(--cyan);width:0"></div>
+</div>
+<script type="module">
+import { span, ease, words, kinetic } from './film.js';
+/* One line, one beat. Two of these open the film: the problem, then the answer.
+ * The accent word is the one the sentence turns on. */
+const q = new URLSearchParams(location.search);
+const text = q.get('line') || 'Every site starts from zero.';
+const accent = q.get('accent') || 'last';
+const spans = words(document.getElementById('line'), text);
+if (accent === 'first') spans[0].style.color = 'var(--cyan)';
+else if (accent === 'last') spans[spans.length - 1].style.color = 'var(--cyan)';
+const rule = document.getElementById('rule');
+window.renderAt = (t) => {
+  kinetic(spans, t, { start: 0.06, stagger: 0.05, dur: 0.24 });
+  rule.style.width = (ease(span(t, 0.34, 0.40)) * 320).toFixed(1) + 'px';
+};
+</script>

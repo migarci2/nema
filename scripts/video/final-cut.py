@@ -146,7 +146,7 @@ if 'audio' in steps or 'master' in steps:
 # ------------------------------------------------------------------ the order --
 
 ORDER = [
-    ('slot-A', 'cam'), ('01-open-a', 'seg'), ('07-title', 'seg'),
+    ('slot-A', 'cam'), ('01-open-a', 'seg'), ('01b-open-b', 'seg'), ('07-title', 'seg'),
     ('09-ch1-ask', 'seg'), ('10-ch1-consent', 'seg'), ('11-ch1-became', 'seg'),
     ('12-webmcp', 'seg'), ('12b-beat', 'seg'),
     ('13-ch2-answer', 'seg'), ('14-ch2-receipt', 'seg'), ('15-ch2-keep', 'seg'), ('16-ch2-ledger', 'seg'),

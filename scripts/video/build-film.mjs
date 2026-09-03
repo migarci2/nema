@@ -11,7 +11,9 @@
 //   consent   the vault's question, pushed, from the still each take captured
 //   compose   the takes into the macOS window at 4K (slow: the whole graph)
 //   finalize  trim, dip to navy, one encoder setting for every segment
-//   cut       docs/video/cut.json, the edit list, with the on camera slots noted
+//   cut       docs/video/cut-historical.json, the edit list, kept for reading
+//             and for Shotcut. It is not an input: final-cut.py assembles from
+//             SEGMENTS and writes running-order.json as the record
 //   assemble  screen-1080.mp4 then screen-4k.mp4
 //   sheet     contact-sheet.png, one frame per chapter
 import fs from 'node:fs';
@@ -106,17 +108,20 @@ const SEGMENTS = [
    * across navy dips, which was six and a half seconds and pushed the first
    * frame of the product to almost eighteen. Devpost wants the thing working
    * inside fifteen. One card says the same sentence in two seconds. */
-  { name: '01-open-a', chapter: 'Cold open', kind: 'mograph', page: 'open-one.html', dur: 2.00 },
+  { name: '01-open-a', chapter: 'Cold open', kind: 'mograph', page: 'open-beat.html', dur: 2.00,
+    query: ['line=' + encodeURIComponent('Your learning is scattered across the web.'), 'accent=last'] },
+  { name: '01b-open-b', kind: 'mograph', page: 'open-beat.html', dur: 2.00,
+    query: ['line=' + encodeURIComponent('nema keeps it in one place you own.'), 'accent=first'] },
   // 2. title
-  { name: '07-title', chapter: 'Title', kind: 'mograph', page: 'title.html', dur: 3.50 },
+  { name: '07-title', chapter: 'Title', kind: 'mograph', page: 'title.html', dur: 3.00 },
   // 3. chapter one
   /* Chapters one and four are two cuts of one recording of the same window:
    * the course on the left, the nema side panel on the right, both live. The
    * consent is no longer a card of its own; it happens in the panel, in the
    * window, which is what it does for a person. */
   { name: '09-ch1-ask', chapter: 'Chapter 1', label: 'One', kind: 'take', take: 'panel', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 0.60, dur: 7.60 },
-  { name: '10-ch1-consent', kind: 'take', take: 'panel', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 8.00, dur: 4.40 },
-  { name: '11-ch1-became', kind: 'take', take: 'panel', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 13.00, dur: 8.60, dipOut: 0.20 },
+  { name: '10-ch1-consent', kind: 'take', take: 'panel', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 8.40, dur: 4.40 },
+  { name: '11-ch1-became', kind: 'take', take: 'panel', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 13.40, dur: 8.60, dipOut: 0.20 },
   // 4. the beat
   /* The one thing the audio never said: where WebMCP is in this. The slot holds
    * the caption and waits for Carmen's line. */
@@ -132,14 +137,16 @@ const SEGMENTS = [
   // on camera, slot C
   { name: '17-slot-c', chapter: 'Slot C', kind: 'mograph', page: 'slot.html', dur: SLOTS.C.secs, query: slotQuery('C') },
   // 6. chapter three
-  { name: '18-ch3-ask', chapter: 'Chapter 3', label: 'Two', kind: 'take', take: 'ch3', shot: 'lc-ask', title: 'Line Cook Lab', in: 0.90, dur: 3.60 },
-  { name: '19-ch3-consent', kind: 'consent', from: 'ch3', cap: 'A different site. It already knows.', dur: 2.20 },
-  { name: '20-ch3-open', kind: 'take', take: 'ch3', shot: 'lc-open', title: 'Line Cook Lab', in: 2.20, dur: 5.70, dipOut: 0.20 },
+  /* The lab goes through the same window as the course, so all three consents
+   * are the same card in the same panel. */
+  { name: '18-ch3-ask', chapter: 'Chapter 3', label: 'Two', kind: 'take', take: 'panel3', shot: 'ext', title: 'Line Cook Lab', anchors: 'zooms', in: 1.40, dur: 3.60 },
+  { name: '19-ch3-consent', kind: 'take', take: 'panel3', shot: 'ext', title: 'Line Cook Lab', anchors: 'zooms', in: 6.60, dur: 3.20 },
+  { name: '20-ch3-open', kind: 'take', take: 'panel3', shot: 'ext', title: 'Line Cook Lab', anchors: 'zooms', in: 11.60, dur: 5.70, dipOut: 0.20 },
   // 7. chapter four
   /* One window, the page and the side panel both live, cut twice: the
    * disclosure, then the receipt arriving on its own. */
-  { name: '21-ch4-ext', chapter: 'Chapter 4', label: 'Three', kind: 'take', take: 'panel', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 21.90, dur: 5.60, dipIn: 0.16 },
-  { name: '22-ch4-toast', kind: 'take', take: 'panel', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 28.60, dur: 3.60 },
+  { name: '21-ch4-ext', chapter: 'Chapter 4', label: 'Three', kind: 'take', take: 'panel', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 22.40, dur: 5.60, dipIn: 0.16 },
+  { name: '22-ch4-toast', kind: 'take', take: 'panel', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 34.00, dur: 3.60 },
   { name: '23-ch4-article', kind: 'take', take: 'ch4b', shot: 'article', title: 'AES-GCM, with and without nema', in: 1.60, dur: 5.60, dipOut: 0.20 },
   // on camera, slot D
   { name: '24-slot-d', chapter: 'Slot D', kind: 'mograph', page: 'slot.html', dur: SLOTS.D.secs, query: slotQuery('D') },
@@ -299,7 +306,7 @@ if (STEPS.has('cut')) {
     at += d;
   }
   const cut = {
-    title: 'nema demo, the screen part',
+    title: 'nema demo, the screen part (historical: superseded by running-order.json)',
     profile: 'uhd_2160p_30',
     note: [
       'This is the part after the filmed intro. SLOT A is that intro and is not a clip here:',
@@ -322,7 +329,12 @@ if (STEPS.has('cut')) {
       lines: voLines },
     clips
   };
-  const at2 = path.join(REPO, 'docs/video/cut.json');
+  /* History, not an input. The film is assembled by scripts/video/final-cut.py
+   * from this file's SEGMENTS and the clips on disk, and it writes
+   * running-order.json as the record of what was built. This edit list is kept
+   * for Shotcut and for reading, under a name that cannot be mistaken for the
+   * thing a rebuild reads. */
+  const at2 = path.join(REPO, 'docs/video/cut-historical.json');
   fs.mkdirSync(path.dirname(at2), { recursive: true });
   fs.writeFileSync(at2, JSON.stringify(cut, null, 2) + '\n');
   say(`cut      ${at2}  ${clips.length} clips, ${at.toFixed(2)}s`);

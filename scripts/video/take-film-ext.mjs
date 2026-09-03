@@ -36,7 +36,12 @@ const CHROME = process.env.CHROME;
 if (!CHROME) { console.error('set CHROME'); process.exit(2); }
 const SCRATCH = '/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa4e872e169/scratchpad';
 const out = process.argv[2] || path.join(SCRATCH, 'film/takes/ch4');
+/* Two sites go through this same window: the course that asks first, and the
+ * lab that has never met it. The flow after Approve is the only difference. */
+const SITE = (process.argv[3] || 'saucier').toLowerCase();
 const SAUCIER = process.env.SAUCIER || 'https://saucier.migarci2.dev';
+const LINECOOK = process.env.LINECOOK || 'https://linecook.migarci2.dev';
+const PAGE_URL = SITE === 'linecook' ? LINECOOK : SAUCIER;
 
 /* The window's inside, in CSS pixels. The hairline is one pixel of it. */
 const PAGE_W = 1440, PANEL_W = 400, RULE = 1, H = 900;
@@ -197,6 +202,10 @@ async function boxIn(tab, find) {
   return got;
 }
 
+/** A button found by its words, so a relabelled panel still gets clicked. */
+const byTextAny = (sel, texts) =>
+  `[...document.querySelectorAll(${JSON.stringify(sel)})].find(x => ${JSON.stringify(texts)}.some(t => x.textContent.includes(t)))`;
+
 /** A human move to a point in one tab, logged in strip coordinates. */
 async function moveTo(tab, which, target, ms = 640) {
   const to = { x: target.x + OFFSET[which], y: target.y };
@@ -273,12 +282,14 @@ const seeded = await panel.waitFor(
   { label: 'the demo learner' });
 console.log('  vault seeded, ' + seeded + ' receipts');
 
-const siteTarget = await send('Target.createTarget', { url: SAUCIER + '/' });
+const siteTarget = await send('Target.createTarget', { url: PAGE_URL + '/' });
 const site = await attach(siteTarget.targetId, { width: PAGE_W, height: H });
 /* The page keeps the front for the whole take: a screencast only runs on the
  * tab in front, and the panel does not need the front to be screenshotted. */
 await send('Page.bringToFront', {}, site.sessionId);
-await site.waitFor(`Boolean(document.querySelector('[data-path-list] .n-path__row'))`, { label: 'Saucier School' });
+await site.waitFor(SITE === 'linecook'
+  ? `Boolean(document.querySelector('[data-prereq-body]'))`
+  : `Boolean(document.querySelector('[data-path-list] .n-path__row'))`, { label: 'the page' });
 const strip = await panel.waitFor(
   `(() => { const t = document.querySelector('[data-ext-state]').textContent;
      const tools = document.querySelector('[data-ext-tools]').textContent;
@@ -325,8 +336,8 @@ const hold = (s) => sleep(s * 1000);
 /* One take serves two chapters: chapter one is the ask, the disclosure and the
  * counter; chapter four is the same window while the receipt comes home. Both
  * sets of captions are logged here and each cut takes the window it wants. */
-caption('A site asks');
-await hold(5.0);
+caption(SITE === 'linecook' ? 'A different site. It already knows.' : 'A site asks');
+await hold(SITE === 'linecook' ? 3.6 : 5.0);
 
 /* Share, from the page's own bar. The bar is a shadow root, so the pointer is
  * aimed with the host's own geometry and the press goes to the real button. */
@@ -353,6 +364,28 @@ const modalBox = await boxIn(panel, `document.querySelector('#consent-modal .n-m
 zoomAt('panel', modalBox, { scale: 1.7, holdMs: 2400 });
 await hold(2.8);
 await clickIn(panel, 'panel', `document.querySelector('[data-consent-approve]')`, { ms: 620 });
+
+if (SITE === 'linecook') {
+  /* The lab has never spoken to the course, and it opens anyway. That is the
+   * whole chapter, so the take stops once it has been seen. */
+  const note = await site.waitFor(
+    `(() => { const t = (document.querySelector('[data-prereq-body]')?.textContent || '');
+       return /vouched|already know|recognis|verified/i.test(t) ? t : ''; })()`,
+    { label: 'Line Cook Lab to recognise the vault' });
+  console.log('  lab: ' + note.replace(/\s+/g, ' ').trim().slice(0, 110));
+  console.log('  status: ' + String(await site.evaluate(`document.querySelector('[data-connect-status]')?.textContent || ''`)));
+  await hold(0.8);
+  const prereq = await boxIn(site, `document.querySelector('[data-prereq-body]')`);
+  zoomAt('site', prereq, { scale: 1.45, holdMs: 3000 });
+  await hold(5.6);
+  caption('');
+  await hold(0.6);
+  polling = false;
+  await poll;
+  await send('Page.stopScreencast', {}, site.sessionId);
+  await sleep(300);
+  await finish();
+}
 
 const pathNote = await site.waitFor(
   `(() => { const t = document.querySelector('[data-path-note]').textContent; return t.includes('27') ? t : ''; })()`,
@@ -412,6 +445,25 @@ const toastBox = await site.evaluate(`(() => { const b = document.getElementById
   return { x: b.left + b.width / 2, y: b.top + b.height / 2, left: b.left, top: b.top, w: b.width, h: b.height }; })()`);
 zoomAt('site', toastBox, { scale: 1.55, holdMs: 1900 });
 await hold(3.2);
+
+/* The 21. The receipt is in the vault now, so the same request asked a second
+ * time gets a better answer and the course drops again. Asked from the panel,
+ * so the consent stays in the one window like every other ask in the film. */
+caption('Ask again. 27 becomes 21.');
+await clickIn(panel, 'panel', byTextAny('button', ['Review request', 'Share what you know', 'Share']), { ms: 600 }).catch((e) => console.log('  no review button: ' + e.message.slice(0, 60)));
+const asked2 = await panel.waitFor(`document.querySelector('#consent-modal').hidden === false`, { timeoutMs: 25000, label: 'the second request' }).catch(() => false);
+if (asked2) {
+  await hold(1.2);
+  await clickIn(panel, 'panel', `document.querySelector('[data-consent-approve]')`, { ms: 560 });
+}
+const note21 = await site.waitFor(
+  `(() => { const t = document.querySelector('[data-path-note]').textContent; return /\b21\b/.test(t) ? t : ''; })()`,
+  { timeoutMs: 25000, label: 'the course to drop to 21' }).catch(() => '');
+console.log('  second ask: ' + String(note21).replace(/\s+/g, ' ').trim().slice(0, 90));
+await hold(0.6);
+const note21Box = await boxIn(site, `document.querySelector('[data-path-note]')`);
+zoomAt('site', note21Box, { scale: 1.5, holdMs: 2800 });
+await hold(4.6);
 caption('');
 await hold(0.6);
 
@@ -419,62 +471,69 @@ polling = false;
 await poll;
 await send('Page.stopScreencast', {}, site.sessionId);
 await sleep(300);
-const total = now();
-ws.close(); chrome.kill();
+await finish();
+/* Both flows end here: encode the two surfaces, stack them, write the log,
+ * and stop. A function so the shorter chapter can finish early. */
+async function finish() {
+  const total = now();
+  ws.close(); chrome.kill();
 
-/* -------------------------------------------------------- encode -- */
+  /* -------------------------------------------------------- encode -- */
 
-/* Each surface is written with its own stamps and a held first frame, so both
- * videos start at zero and the hstack needs no offset. */
-function encode(frames, w, h, name) {
-  if (!frames.length) throw new Error('no frames for ' + name);
-  const list = path.join(out, name + '.txt');
-  let txt = '';
-  if (frames[0].t > 0.001) txt += `file '${frames[0].file}'\nduration ${frames[0].t.toFixed(3)}\n`;
-  for (let i = 0; i < frames.length; i++) {
-    const dur = i + 1 < frames.length ? Math.max(1 / (FPS * 2), frames[i + 1].t - frames[i].t) : Math.max(0.3, total - frames[i].t);
-    txt += `file '${frames[i].file}'\nduration ${dur.toFixed(3)}\n`;
+  /* Each surface is written with its own stamps and a held first frame, so both
+   * videos start at zero and the hstack needs no offset. */
+  function encode(frames, w, h, name) {
+    if (!frames.length) throw new Error('no frames for ' + name);
+    const list = path.join(out, name + '.txt');
+    let txt = '';
+    if (frames[0].t > 0.001) txt += `file '${frames[0].file}'\nduration ${frames[0].t.toFixed(3)}\n`;
+    for (let i = 0; i < frames.length; i++) {
+      const dur = i + 1 < frames.length ? Math.max(1 / (FPS * 2), frames[i + 1].t - frames[i].t) : Math.max(0.3, total - frames[i].t);
+      txt += `file '${frames[i].file}'\nduration ${dur.toFixed(3)}\n`;
+    }
+    txt += `file '${frames[frames.length - 1].file}'\n`;
+    fs.writeFileSync(list, txt);
+    const mp4 = path.join(out, name + '.mp4');
+    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', list,
+      '-vf', `fps=${FPS},scale=${w}:${h}:flags=lanczos,format=yuv444p`,
+      '-g', String(Math.round(FPS / 2)), '-keyint_min', '1', '-sc_threshold', '0',
+      '-c:v', 'libx264', '-preset', 'fast', '-crf', '12', '-t', total.toFixed(2), mp4]);
+    return mp4;
   }
-  txt += `file '${frames[frames.length - 1].file}'\n`;
-  fs.writeFileSync(list, txt);
-  const mp4 = path.join(out, name + '.mp4');
-  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', list,
-    '-vf', `fps=${FPS},scale=${w}:${h}:flags=lanczos,format=yuv444p`,
-    '-g', String(Math.round(FPS / 2)), '-keyint_min', '1', '-sc_threshold', '0',
-    '-c:v', 'libx264', '-preset', 'fast', '-crf', '12', '-t', total.toFixed(2), mp4]);
-  return mp4;
+  const pageMp4 = encode(siteRec.frames, px(PAGE_W), px(H), 'page');
+  const panelMp4 = encode(panelFrames, px(PANEL_W), px(H), 'panel');
+
+  /* One strip: the page, a one pixel hairline, the panel. Nothing is resampled. */
+  const ext = path.join(out, 'ext.mp4');
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', pageMp4, '-i', panelMp4,
+    '-filter_complex',
+    `color=c=${HAIRLINE}:s=${px(RULE)}x${px(H)}:r=${FPS}:d=${total.toFixed(2)}[rule];` +
+    `[0:v][rule][1:v]hstack=inputs=3,format=yuv420p[v]`,
+    '-map', '[v]', '-c:v', 'libx264', '-preset', 'slow', '-crf', '14',
+    '-profile:v', 'high', '-level', '5.1', '-pix_fmt', 'yuv420p', '-t', total.toFixed(2), ext]);
+
+  /* The log studio-ffmpeg reads, in the strip's own coordinate space. */
+  const meta = {
+    take: 'ext',
+    capture: { w: px(STRIP_W), h: px(H) },
+    width: STRIP_W, height: H, deviceScaleFactor: DSF, fps: FPS,
+    epoch: t0 / 1000, latency: 0,
+    duration: Number(total.toFixed(3)),
+    video: ext,
+    title: 'Saucier School',
+    events: events.slice().sort((a, b) => a.t - b.t)
+  };
+  fs.writeFileSync(path.join(out, 'ext.events.json'), JSON.stringify(meta, null, 2));
+  fs.writeFileSync(path.join(out, 'events.json'), JSON.stringify(meta, null, 2));
+  const jsonl = toJsonl(meta);
+  fs.writeFileSync(path.join(out, 'ext.events.jsonl'), jsonl);
+  fs.writeFileSync(path.join(out, 'events.jsonl'), jsonl);
+
+  console.log(`page   ${siteRec.frames.length} frames, panel ${panelFrames.length} frames, ${total.toFixed(1)}s`);
+  console.log(`strip  ${ext} at ${px(STRIP_W)}x${px(H)}`);
+  console.log('events ' + path.join(out, 'ext.events.json'));
+  /* Last, and never fatal: Chrome may still be flushing its profile. */
+  try { fs.rmSync(profile, { recursive: true, force: true }); } catch { /* it can wait for /tmp */ }
+
+  process.exit(0);
 }
-const pageMp4 = encode(siteRec.frames, px(PAGE_W), px(H), 'page');
-const panelMp4 = encode(panelFrames, px(PANEL_W), px(H), 'panel');
-
-/* One strip: the page, a one pixel hairline, the panel. Nothing is resampled. */
-const ext = path.join(out, 'ext.mp4');
-execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', pageMp4, '-i', panelMp4,
-  '-filter_complex',
-  `color=c=${HAIRLINE}:s=${px(RULE)}x${px(H)}:r=${FPS}:d=${total.toFixed(2)}[rule];` +
-  `[0:v][rule][1:v]hstack=inputs=3,format=yuv420p[v]`,
-  '-map', '[v]', '-c:v', 'libx264', '-preset', 'slow', '-crf', '14',
-  '-profile:v', 'high', '-level', '5.1', '-pix_fmt', 'yuv420p', '-t', total.toFixed(2), ext]);
-
-/* The log studio-ffmpeg reads, in the strip's own coordinate space. */
-const meta = {
-  take: 'ext',
-  capture: { w: px(STRIP_W), h: px(H) },
-  width: STRIP_W, height: H, deviceScaleFactor: DSF, fps: FPS,
-  epoch: t0 / 1000, latency: 0,
-  duration: Number(total.toFixed(3)),
-  video: ext,
-  title: 'Saucier School',
-  events: events.slice().sort((a, b) => a.t - b.t)
-};
-fs.writeFileSync(path.join(out, 'ext.events.json'), JSON.stringify(meta, null, 2));
-fs.writeFileSync(path.join(out, 'events.json'), JSON.stringify(meta, null, 2));
-const jsonl = toJsonl(meta);
-fs.writeFileSync(path.join(out, 'ext.events.jsonl'), jsonl);
-fs.writeFileSync(path.join(out, 'events.jsonl'), jsonl);
-
-console.log(`page   ${siteRec.frames.length} frames, panel ${panelFrames.length} frames, ${total.toFixed(1)}s`);
-console.log(`strip  ${ext} at ${px(STRIP_W)}x${px(H)}`);
-console.log('events ' + path.join(out, 'ext.events.json'));
-/* Last, and never fatal: Chrome may still be flushing its profile. */
-try { fs.rmSync(profile, { recursive: true, force: true }); } catch { /* it can wait for /tmp */ }

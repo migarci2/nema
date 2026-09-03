@@ -22,12 +22,11 @@
 import { span, words, kinetic, fade } from './film.js';
 const L = '../../../docs/assets/press/logos/';
 document.getElementById('strip').innerHTML =
-  [`${L}modelcontextprotocol.svg`, `${L}cloudflare.svg`]
+  [`${L}modelcontextprotocol.svg`, `${L}webmcp.svg`, `${L}cloudflare.svg`]
     .map((s) => `<div class="icon" style="-webkit-mask-image:url(${s});mask-image:url(${s})"></div>`).join('') +
   `<div class="sep"></div>` +
-  [`${L}openai.svg`, `${L}googlechrome.svg`, `${L}googlegemini.svg`, `${L}claude.svg`]
-    .map((s) => `<div class="icon" style="-webkit-mask-image:url(${s});mask-image:url(${s})"></div>`).join('') +
-  `<div class="g">{ }</div>`;
+  [`${L}openai.svg`, `${L}googlechrome.svg`, `${L}googlegemini.svg`, `${L}claude.svg`, `${L}codex.svg`]
+    .map((s) => `<div class="icon" style="-webkit-mask-image:url(${s});mask-image:url(${s})"></div>`).join('');
 document.getElementById('mark').innerHTML =
   `<svg viewBox="0 0 88 24" width="352" height="96" shape-rendering="crispEdges"><g fill="#F2F6FF">
    <rect x="0" y="0" width="16" height="4"/><rect x="0" y="4" width="4" height="20"/><rect x="12" y="4" width="4" height="20"/>
