@@ -181,7 +181,7 @@ receipt or how much the evidence weighs.
 - `packages/nema-extension` is Manifest V3: the vault page as the side panel,
   a MAIN world bridge that is the only code touching `document.modelContext`,
   and a service worker that relays tool calls per tab.
-- Verification, frozen at commit `03c14aa`: `npm test` reports 267 passing unit
+- Verification, frozen at commit `77ca78f`: `npm test` reports 267 passing unit
   tests. Separate native end to end suites cover the browser flow, the connect
   handshake, the extension, tampering, replay, wrong audience and expiry on
   Chrome for Testing 154, against the live origins.

@@ -105,7 +105,7 @@ The seven live origins, by role:
 | mirrored article | https://aesgcm.migarci2.dev |
 | mirrored article | https://cpu.migarci2.dev |
 
-Submission commit: `03c14aa`.
+Submission commit: `77ca78f`.
 
 ## Before you start
 
