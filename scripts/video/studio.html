@@ -80,11 +80,16 @@
   /* Cursor and ripples live inside the scene so they track page pixels exactly,
      and are counter scaled by renderAt so they keep their on screen size. */
   #cursor { position: absolute; left: 0; top: 0; transform-origin: 0 0; pointer-events: none; }
+  /* One size rule per pointer, because the three viewBoxes differ and the ink
+     inside them differs again: the arrow's ink is 24 px tall at 1x, the hand's
+     26, the I beam's 24, which is the weight they have on a real Mac. */
   #cursor svg {
-    display: block;
-    width: calc(36.92px * var(--u)); height: calc(36.92px * var(--u));
+    display: block; position: absolute; left: 0; top: 0;
     filter: drop-shadow(0 calc(2px * var(--u)) calc(4px * var(--u)) rgba(0, 0, 0, 0.35));
   }
+  #cursor svg[data-kind="arrow"] { width: calc(36.92px * var(--u)); height: calc(36.92px * var(--u)); }
+  #cursor svg[data-kind="hand"]  { width: calc(52px * var(--u));    height: calc(52px * var(--u)); }
+  #cursor svg[data-kind="text"]  { width: calc(9.6px * var(--u));   height: calc(25.92px * var(--u)); }
   /* Two tone so a click reads on a cream page and on a dark one alike: a white
      core with a soft dark ring around it. */
   .ripple {
@@ -122,16 +127,39 @@
     </div>
     <div id="ripples"></div>
     <div id="cursor">
-      <!-- The macOS arrow from scripts/video/assets/cursor-arrow.svg
-           (github.com/sawyerh/cursor.in). The viewBox starts at the tip, 8.2 4.9,
-           so the element's own origin is the hotspot and translate(x, y) lands it
-           on the event point. Ink is 18.2 units tall, which at this size is 24 px
-           at 1x and 48 px in the 4K frame. -->
-      <svg viewBox="8.2 4.9 28 28">
+      <!-- The three pointers, from scripts/video/assets and the same art the
+           polish stage and the ffmpeg compositor use. Each viewBox starts at
+           that pointer's hotspot, so the element origin is the hotspot and
+           translate(x, y) lands it on the event point whichever one is showing.
+           macOS swaps instantly, so renderAt toggles visibility, never fades. -->
+      <svg data-kind="arrow" viewBox="8.2 4.9 28 28">
         <polygon fill="#FFFFFF" points="8.2,20.9 8.2,4.9 19.8,16.5 13,16.5 12.6,16.6"/>
         <polygon fill="#FFFFFF" points="17.3,21.6 13.7,23.1 9,12 12.7,10.5"/>
         <polygon points="11.03,14.293 12.875,13.519 15.971,20.895 14.127,21.67"/>
         <polygon points="9.2,7.3 9.2,18.5 12.2,15.6 12.6,15.5 17.4,15.5"/>
+      </svg>
+      <svg data-kind="hand" viewBox="12.4 8 32 32" hidden>
+        <path fill="#FFFFFF" d="M11.3,20.4c-0.3-0.4-0.6-1.1-1.2-2c-0.3-0.5-1.2-1.5-1.5-1.9c-0.2-0.4-0.2-0.6-0.1-1c0.1-0.6,0.7-1.1,1.4-1.1c0.5,0,1,0.4,1.4,0.7c0.2,0.2,0.5,0.6,0.7,0.8c0.2,0.2,0.2,0.3,0.4,0.5c0.2,0.3,0.3,0.5,0.2,0.1c-0.1-0.5-0.2-1.3-0.4-2.1c-0.1-0.6-0.2-0.7-0.3-1.1c-0.1-0.5-0.2-0.8-0.3-1.3c-0.1-0.3-0.2-1.1-0.3-1.5c-0.1-0.5-0.1-1.4,0.3-1.8c0.3-0.3,0.9-0.4,1.3-0.2c0.5,0.3,0.8,1,0.9,1.3c0.2,0.5,0.4,1.2,0.5,2c0.2,1,0.5,2.5,0.5,2.8c0-0.4-0.1-1.1,0-1.5c0.1-0.3,0.3-0.7,0.7-0.8c0.3-0.1,0.6-0.1,0.9-0.1c0.3,0.1,0.6,0.3,0.8,0.5c0.4,0.6,0.4,1.9,0.4,1.8c0.1-0.4,0.1-1.2,0.3-1.6c0.1-0.2,0.5-0.4,0.7-0.5c0.3-0.1,0.7-0.1,1,0c0.2,0,0.6,0.3,0.7,0.5c0.2,0.3,0.3,1.3,0.4,1.7c0,0.1,0.1-0.4,0.3-0.7c0.4-0.6,1.8-0.8,1.9,0.6c0,0.7,0,0.6,0,1.1c0,0.5,0,0.8,0,1.2c0,0.4-0.1,1.3-0.2,1.7c-0.1,0.3-0.4,1-0.7,1.4c0,0-1.1,1.2-1.2,1.8c-0.1,0.6-0.1,0.6-0.1,1c0,0.4,0.1,0.9,0.1,0.9s-0.8,0.1-1.2,0c-0.4-0.1-0.9-0.8-1-1.1c-0.2-0.3-0.5-0.3-0.7,0c-0.2,0.4-0.7,1.1-1.1,1.1c-0.7,0.1-2.1,0-3.1,0c0,0,0.2-1-0.2-1.4c-0.3-0.3-0.8-0.8-1.1-1.1L11.3,20.4z"/>
+        <path fill="none" stroke="#000000" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round" d="M11.3,20.4c-0.3-0.4-0.6-1.1-1.2-2c-0.3-0.5-1.2-1.5-1.5-1.9c-0.2-0.4-0.2-0.6-0.1-1c0.1-0.6,0.7-1.1,1.4-1.1c0.5,0,1,0.4,1.4,0.7c0.2,0.2,0.5,0.6,0.7,0.8c0.2,0.2,0.2,0.3,0.4,0.5c0.2,0.3,0.3,0.5,0.2,0.1c-0.1-0.5-0.2-1.3-0.4-2.1c-0.1-0.6-0.2-0.7-0.3-1.1c-0.1-0.5-0.2-0.8-0.3-1.3c-0.1-0.3-0.2-1.1-0.3-1.5c-0.1-0.5-0.1-1.4,0.3-1.8c0.3-0.3,0.9-0.4,1.3-0.2c0.5,0.3,0.8,1,0.9,1.3c0.2,0.5,0.4,1.2,0.5,2c0.2,1,0.5,2.5,0.5,2.8c0-0.4-0.1-1.1,0-1.5c0.1-0.3,0.3-0.7,0.7-0.8c0.3-0.1,0.6-0.1,0.9-0.1c0.3,0.1,0.6,0.3,0.8,0.5c0.4,0.6,0.4,1.9,0.4,1.8c0.1-0.4,0.1-1.2,0.3-1.6c0.1-0.2,0.5-0.4,0.7-0.5c0.3-0.1,0.7-0.1,1,0c0.2,0,0.6,0.3,0.7,0.5c0.2,0.3,0.3,1.3,0.4,1.7c0,0.1,0.1-0.4,0.3-0.7c0.4-0.6,1.8-0.8,1.9,0.6c0,0.7,0,0.6,0,1.1c0,0.5,0,0.8,0,1.2c0,0.4-0.1,1.3-0.2,1.7c-0.1,0.3-0.4,1-0.7,1.4c0,0-1.1,1.2-1.2,1.8c-0.1,0.6-0.1,0.6-0.1,1c0,0.4,0.1,0.9,0.1,0.9s-0.8,0.1-1.2,0c-0.4-0.1-0.9-0.8-1-1.1c-0.2-0.3-0.5-0.3-0.7,0c-0.2,0.4-0.7,1.1-1.1,1.1c-0.7,0.1-2.1,0-3.1,0c0,0,0.2-1-0.2-1.4c-0.3-0.3-0.8-0.8-1.1-1.1L11.3,20.4z"/>
+        <line fill="none" stroke="#000000" stroke-width="0.75" stroke-linecap="round" x1="19.6" y1="20.7" x2="19.6" y2="17.3"/>
+        <line fill="none" stroke="#000000" stroke-width="0.75" stroke-linecap="round" x1="17.6" y1="20.7" x2="17.5" y2="17.3"/>
+        <line fill="none" stroke="#000000" stroke-width="0.75" stroke-linecap="round" x1="15.6" y1="17.3" x2="15.6" y2="20.7"/>
+      </svg>
+      <!-- The I beam, drawn here rather than taken from cursor.in, which ships
+           no text pointer. Same proportions as the one cursors.py draws for the
+           other two stages: a 1.6 unit bar with 6.4 unit serifs, 25 tall. The
+           viewBox starts at its centre, which is its hotspot. -->
+      <svg data-kind="text" viewBox="4 12.5 10 27" hidden>
+        <g fill="#FFFFFF">
+          <rect x="2.7" y="-0.6" width="2.6" height="26.2"/>
+          <rect x="0.2" y="-0.6" width="7.6" height="2.6"/>
+          <rect x="0.2" y="23" width="7.6" height="2.6"/>
+        </g>
+        <g fill="#000000">
+          <rect x="3.2" y="0" width="1.6" height="25"/>
+          <rect x="0.8" y="0" width="6.4" height="1.4"/>
+          <rect x="0.8" y="23.6" width="6.4" height="1.4"/>
+        </g>
       </svg>
     </div>
   </div>
@@ -186,6 +214,7 @@
     vid: document.getElementById('vid'),
     title: document.getElementById('wintitle'),
     cursor: document.getElementById('cursor'),
+    sprites: {},
     ripples: document.getElementById('ripples'),
     caption: document.getElementById('caption'),
     capText: document.getElementById('capText')
@@ -199,7 +228,7 @@
     fadeMs: 0.24,
     cameraOff: false, cursorOff: false,      // the polished source owns both
     polish: null,                            // polish's zoom map, in video pixels
-    moves: [], clicks: [], captions: [], segments: [], ripples: []
+    moves: [], track: [], clicks: [], captions: [], segments: [], ripples: []
   };
   const winH = () => S.pageH + S.barH;
   const home = () => ({ s: 1, tx: 0, ty: 0 });
@@ -254,16 +283,24 @@
     return c;
   }
 
+  /* The pointer replays the samples the recorder really dispatched, so its path,
+     its speed and the moment it becomes a hand are the page's own account of
+     what happened, not a curve fitted afterwards. Between two moves the last
+     sample and the next move's first sample are the same point, so holding
+     still falls out of the same interpolation. */
   function cursorAt(t) {
-    if (!S.moves.length) return null;
-    const first = S.moves[0];
-    if (t < first.t) return first.from;
-    let m = first;
-    for (const move of S.moves) { if (move.t <= t) m = move; else break; }
-    const dur = Math.max(0.001, m.ms / 1000);
-    if (t >= m.t + dur) return m.to;
-    const e = easeCursor((t - m.t) / dur);
-    return { x: lerp(m.from.x, m.to.x, e), y: lerp(m.from.y, m.to.y, e) };
+    const track = S.track;
+    if (!track.length) return null;
+    if (t <= track[0].t) return { x: track[0].x, y: track[0].y, kind: track[0].kind };
+    if (t >= track[track.length - 1].t) {
+      const last = track[track.length - 1];
+      return { x: last.x, y: last.y, kind: last.kind };
+    }
+    let lo = 0, hi = track.length - 1;
+    while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (track[mid].t <= t) lo = mid; else hi = mid; }
+    const a = track[lo], b = track[hi];
+    const u = b.t > a.t ? (t - a.t) / (b.t - a.t) : 0;
+    return { x: lerp(a.x, b.x, u), y: lerp(a.y, b.y, u), kind: a.kind };
   }
 
   /* The hand presses: a 160 ms dip on the arrow, the size of a real click. */
@@ -338,6 +375,7 @@
   /* -------------------------------------------------------------- init -- */
 
   function layout() {
+    for (const svg of el.cursor.querySelectorAll('svg[data-kind]')) el.sprites[svg.dataset.kind] = svg;
     document.documentElement.style.setProperty('--u', String(S.u));
     for (const node of [document.documentElement, document.body, el.frame, el.scene]) {
       node.style.width = S.frameW + 'px';
@@ -354,6 +392,15 @@
 
   function buildTimeline(events) {
     S.moves = events.filter((e) => e.type === 'move').map((e) => ({ t: e.t, ms: e.ms, from: toScene(e.from), to: toScene(e.to) }));
+    S.track = [];
+    for (const e of events) {
+      if (e.type !== 'move') continue;
+      for (const [t, x, y, kind] of e.samples || []) {
+        const p = S.polish ? polishMap({ x, y }, t) : toScene({ x, y });
+        S.track.push({ t, x: p.x, y: p.y, kind: kind || 'arrow' });
+      }
+    }
+    S.track.sort((a, b) => a.t - b.t);
     S.clicks = events.filter((e) => e.type === 'click').map((e) => ({ t: e.t, p: toScene(e), page: { x: e.x, y: e.y } }));
     S.captions = events.filter((e) => e.type === 'caption').map((e) => ({ t: e.t, text: e.text }));
 
@@ -393,6 +440,8 @@
     if (cur) {
       el.cursor.style.opacity = '1';
       el.cursor.style.transform = 'translate(' + cur.x.toFixed(2) + 'px,' + cur.y.toFixed(2) + 'px) scale(' + (inv * pressAt(t)).toFixed(5) + ')';
+      // macOS swaps the pointer in one frame, so this is a switch, never a fade
+      for (const kind in el.sprites) el.sprites[kind].hidden = kind !== cur.kind;
     } else {
       el.cursor.style.opacity = '0';
     }

@@ -10,9 +10,11 @@ with a `# nema:` comment at the site.
 Local changes:
   1. Cursor artwork. render_cursor_track drew a hand rolled polygon at a fixed
      size in video pixels, which comes out half size on 2x footage and is not
-     the macOS pointer. It now stamps one pre rendered sprite of the same macOS
-     arrow the nema compositor draws (black fill, white outline, soft shadow),
-     scaled from display points to video pixels.
+     the macOS pointer. It now stamps pre rendered sprites from
+     scripts/video/cursors.py, the same art both nema compositors draw, scaled
+     from display points to video pixels, and it follows the `cursor` field the
+     event log carries on every move sample, so the arrow becomes the pointing
+     hand over a link or a button exactly where the page said it did.
   2. --cursor-scale. Overrides that display to video factor when the footage is
      not the same scale as the event log.
   3. --zoom-cap. level_cap was a keyword argument no caller could reach, so a
@@ -112,6 +114,7 @@ def load_events(path, vid):
     (None where the click had no element); `key_bbox` is the element being typed into
     (carried on the first key that has one), used for the typing-burst zoom."""
     header, moves, clicks, click_bbox, keys, key_bbox = None, [], [], [], [], None
+    move_kind = []          # nema: the pointer the page asked for at each sample
     with open(path) as f:
         for line in f:
             line = line.strip()
@@ -119,7 +122,9 @@ def load_events(path, vid):
             e = json.loads(line)
             if e.get("type") == "header": header = e; continue
             t = e.get("t")
-            if e.get("type") == "move":  moves.append((t, e["x"], e["y"]))
+            if e.get("type") == "move":
+                moves.append((t, e["x"], e["y"]))
+                move_kind.append(e.get("cursor") or "arrow")     # nema
             elif e.get("type") == "down":
                 clicks.append((t, e["x"], e["y"]))
                 click_bbox.append(e.get("bbox"))
@@ -138,6 +143,7 @@ def load_events(path, vid):
     click_bbox = [scale_bbox(b) for b in click_bbox]
     return {"moves":moves, "clicks":clicks, "click_bbox":click_bbox,
             "keys":keys, "key_bbox":scale_bbox(key_bbox),
+            "move_kind": move_kind,    # nema
             "scale": (sx+sy)/2.0}      # nema: display points -> video px, for the cursor
 
 # ---------------------------------------------------------------- speedup
@@ -505,49 +511,42 @@ def smooth_positions(moves, fps, dur, sigma_frames=4, rest_px=2.0):
             xs[i], ys[i] = xs[i-1], ys[i-1]
     return xs, ys
 
-# nema: the macOS pointer, traced from scripts/video/assets/cursor-arrow.svg
-# (github.com/sawyerh/cursor.in) so this stage and the compositor draw one shape.
-# Coordinates are that file's 28x28 viewBox user units. The tip, which is the
-# hotspot, is at (8.2, 4.9); the ink box is 11.6 x 18.2 units.
-ARROW_TIP = (8.2, 4.9)
-ARROW_INK_H = 18.2                       # units, so a scale can be read as "px tall"
-ARROW_WHITE = [[(8.2,20.9),(8.2,4.9),(19.8,16.5),(13,16.5),(12.6,16.6)],
-               [(17.3,21.6),(13.7,23.1),(9,12),(12.7,10.5)]]
-# the svg's rotated <rect>, resolved through its matrix() into four corners
-ARROW_BLACK = [[(11.03,14.293),(12.875,13.519),(15.971,20.895),(14.127,21.67)],
-               [(9.2,7.3),(9.2,18.5),(12.2,15.6),(12.6,15.5),(17.4,15.5)]]
+# nema: the three pointers live in scripts/video/cursors.py so this stage, the
+# browser compositor and the ffmpeg compositor draw the same art. Falls back to
+# the arrow alone if that module is not next to this one.
+ARROW_INK_H = 18.15
 
-def cursor_sprite(scale):
-    """nema: one RGBA tile of the macOS arrow at `scale` video px per svg unit,
-    plus its hotspot offset. Stamped per frame instead of redrawn, so the shadow
-    blur is paid once. Shadow is 0 2px 4px rgba(0,0,0,.35), as in the compositor."""
-    from PIL import Image, ImageDraw, ImageFilter
-    pad = int(round(6*scale))
-    w = int(round(12.0*scale)) + 2*pad
-    h = int(round(19.0*scale)) + 2*pad
-    def at(poly, dx=0.0, dy=0.0):
-        return [(pad + (x-ARROW_TIP[0]+dx)*scale, pad + (y-ARROW_TIP[1]+dy)*scale) for x,y in poly]
-    k = scale / (24.0/ARROW_INK_H)        # 1.0 when the ink is 24 px tall
-    shadow = Image.new("L", (w,h), 0)
-    sd = ImageDraw.Draw(shadow)
-    for poly in ARROW_WHITE: sd.polygon(at(poly, 0, 2.0*k/scale), fill=89)
-    shadow = shadow.filter(ImageFilter.GaussianBlur(2.0*k))
-    tile = Image.new("RGBA", (w,h), (0,0,0,0))
-    tile.paste(Image.new("RGBA", (w,h), (0,0,0,255)), (0,0), shadow)
-    d = ImageDraw.Draw(tile)
-    for poly in ARROW_WHITE: d.polygon(at(poly), fill=(255,255,255,255))
-    for poly in ARROW_BLACK: d.polygon(at(poly), fill=(0,0,0,255))
-    return tile, pad, pad
+def cursor_sprite(scale, kind="arrow"):
+    """nema: one RGBA tile of a macOS pointer plus its hotspot, where `scale` is
+    the arrow's own 1x size. Stamped per frame rather than redrawn, so the shadow
+    blur is paid once."""
+    import importlib.util
+    here = os.path.dirname(os.path.abspath(__file__))
+    mod = os.path.join(here, "..", "cursors.py")
+    spec = importlib.util.spec_from_file_location("cursors", mod)
+    cursors = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cursors)
+    return cursors.sprite(kind, scale / (24.0 / ARROW_INK_H))
 
-def render_cursor_track(moves, vid, tmp, idle_fade=1.5, scale=1.32):
-    """PNG sequence of just the cursor (transparent), eased + fading when idle."""
+def render_cursor_track(moves, vid, tmp, idle_fade=1.5, scale=1.32, kinds=None):
+    """PNG sequence of just the cursor (transparent), eased + fading when idle.
+
+    nema: the pointer changes with the page. `kinds` is one name per move sample,
+    arrow, hand or text; the frame grid inherits the kind of the last sample at
+    or before it, and macOS swaps in a single frame, so there is no crossfade."""
     from PIL import Image
     fps, dur = vid["fps"], vid["dur"]
     xs, ys = smooth_positions(moves, fps, dur)
     n = len(xs)
     cdir = os.path.join(tmp,"cursor"); os.makedirs(cdir, exist_ok=True)
-    tile, hx, hy = cursor_sprite(scale)                       # nema: one sprite, stamped
-    alpha_full = tile.getchannel("A")
+    sprites = {k: cursor_sprite(scale, k) for k in ("arrow","hand","text")}   # nema
+    per_frame = ["arrow"] * n                                                # nema
+    if kinds and moves:
+        j = 0
+        for i in range(n):
+            t = i / fps
+            while j < len(moves) - 1 and moves[j + 1][0] <= t: j += 1
+            per_frame[i] = kinds[min(j, len(kinds) - 1)] if kinds else "arrow"
     idle = 0.0
     for i in range(n):
         moving = i>0 and (abs(xs[i]-xs[i-1])>0.5 or abs(ys[i]-ys[i-1])>0.5)
@@ -555,11 +554,12 @@ def render_cursor_track(moves, vid, tmp, idle_fade=1.5, scale=1.32):
         alpha = 255 if idle < idle_fade else max(0, int(255*(1-(idle-idle_fade)/0.5)))
         img = Image.new("RGBA",(vid["w"],vid["h"]),(0,0,0,0))
         if alpha > 0:
+            tile, hx, hy = sprites.get(per_frame[i], sprites["arrow"])
             stamp = tile
             if alpha < 255:
                 stamp = tile.copy()
-                stamp.putalpha(alpha_full.point(lambda v, a=alpha: v*a//255))
-            img.alpha_composite(stamp, (int(round(xs[i]))-hx, int(round(ys[i]))-hy))
+                stamp.putalpha(tile.getchannel("A").point(lambda v, a=alpha: v*a//255))
+            img.alpha_composite(stamp, (int(round(xs[i]-hx)), int(round(ys[i]-hy))))
         img.save(f"{cdir}/c{i:05d}.png")
     return cdir
 
@@ -603,7 +603,7 @@ def main():
     if a.smooth_cursor and ev:
         # nema: the arrow is drawn in display points, so it scales with the footage
         cscale = a.cursor_scale if a.cursor_scale else (24.0/ARROW_INK_H)*ev.get("scale", 1.0)
-        cdir = render_cursor_track(ev["moves"], vid, tmp, scale=cscale)
+        cdir = render_cursor_track(ev["moves"], vid, tmp, scale=cscale, kinds=ev.get("move_kind"))
         stage_a = os.path.join(tmp,"a.mp4")
         run(["ffmpeg","-y","-loglevel","error","-i",stage,
              "-framerate",str(vid["fps"]),"-i",f"{cdir}/c%05d.png",

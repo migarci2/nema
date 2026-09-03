@@ -10,3 +10,4 @@ dist/
 .dev-logs/
 packages/nema-extension/dist/
 guion.txt
+__pycache__/

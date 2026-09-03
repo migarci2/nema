@@ -21,6 +21,7 @@
 import { spawn, execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { path as ghostPath } from 'ghost-cursor';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -35,28 +36,79 @@ const CAPTION_CSS = `
 const CURSOR_SVG = `<svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 2 L20 12 L12 13.5 L9 21 Z" fill="#F2F6FF" stroke="#0B1320" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
 
 
-/* --------------------------------------------------------------- jsonl -- */
+/* --------------------------------------------------------- the pointer -- */
 
-// The event log in the shape scripts/video/polish/polish.py reads: a header, then
-// 60 Hz cursor samples and down/up pairs. Two rules its loader depends on, both
-// of which cost a run of zero zoom-ins when they are broken: `t` is seconds since
-// the header epoch, never an absolute epoch time, and x/y are display points, the
-// same units as `display`, which the loader scales to video pixels itself.
-const easeCursorJs = (() => {
-  // cubic-bezier(.42, 0, .22, 1), the same curve the compositor eases a move with
-  const x1 = 0.42, y1 = 0, x2 = 0.22, y2 = 1;
-  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
-  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
-  const fx = (t) => ((ax * t + bx) * t + cx) * t;
-  return (x) => {
-    if (x <= 0) return 0;
-    if (x >= 1) return 1;
-    let lo = 0, hi = 1, t = x;
-    for (let i = 0; i < 30; i++) { t = (lo + hi) / 2; if (fx(t) < x) lo = t; else hi = t; }
-    return ((ay * t + by) * t + cy) * t;
-  };
-})();
+/* The page's own account of the pointer. Every mouse move we dispatch lands here
+ * with the element it actually hit and the cursor that element asks for, on the
+ * page's clock, so the film can swap the arrow for the hand exactly where a
+ * person would see it swap. The mapping mirrors css_to_kind in cursors.py. */
+const CURSOR_PROBE = `(() => {
+  if (window.__nemaCursor) return true;
+  const state = { log: [] };
+  window.__nemaCursor = state;
+  const textish = (el) => el.tagName === 'TEXTAREA' ||
+    (el.tagName === 'INPUT' && !/^(button|submit|checkbox|radio|range|color|file|reset|image)$/i.test(el.type || 'text'));
+  addEventListener('mousemove', (e) => {
+    const el = document.elementFromPoint(e.clientX, e.clientY) || e.target;
+    let css = 'auto';
+    if (el && el.nodeType === 1) {
+      css = getComputedStyle(el).cursor;
+      if (css === 'auto' && textish(el)) css = 'text';
+    }
+    state.log.push([performance.timeOrigin + performance.now(), e.clientX, e.clientY, css]);
+    if (state.log.length > 6000) state.log.splice(0, 3000);
+  }, true);
+  return true;
+})()`;
 
+/** A CSS cursor keyword as one of the three pointers we draw. */
+function cursorKind(css) {
+  const c = String(css || '').split(',').pop().trim().toLowerCase();
+  if (c === 'pointer' || c === 'grab' || c === 'grabbing') return 'hand';
+  if (c === 'text' || c === 'vertical-text') return 'text';
+  return 'arrow';
+}
+
+/**
+ * ghost-cursor's path, resampled onto a 20 Hz grid and scaled to the duration a
+ * take asks for. Scaling is uniform, so the velocity profile it computed, slow
+ * at both ends, fast in the middle, with the overshoot near the target, is kept
+ * exactly; only the total length changes.
+ */
+function humanPath(from, to, ms, { hz = 20, moveSpeed, spread } = {}) {
+  let pts;
+  try {
+    pts = ghostPath({ x: from.x, y: from.y }, { x: to.x, y: to.y }, {
+      useTimestamps: true,
+      ...(moveSpeed ? { moveSpeed } : {}),
+      ...(spread != null ? { spreadOverride: spread } : {})
+    });
+  } catch {
+    pts = null;
+  }
+  if (!pts || pts.length < 2) {
+    pts = [{ x: from.x, y: from.y, timestamp: 0 }, { x: to.x, y: to.y, timestamp: ms }];
+  }
+  const t0 = pts[0].timestamp;
+  const span = pts[pts.length - 1].timestamp - t0 || 1;
+  const total = ms || span;
+  const k = total / span;
+  const n = Math.max(2, Math.round((total / 1000) * hz));
+  const out = [];
+  let j = 0;
+  for (let i = 0; i <= n; i++) {
+    const t = (i / n) * total;
+    const src = t / k + t0;
+    while (j < pts.length - 2 && pts[j + 1].timestamp <= src) j += 1;
+    const a = pts[j], b = pts[j + 1] || pts[j];
+    const d = (b.timestamp - a.timestamp) || 1;
+    const f = Math.max(0, Math.min(1, (src - a.timestamp) / d));
+    out.push({ t, x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f });
+  }
+  const end = out[out.length - 1];
+  end.x = to.x; end.y = to.y;
+  return out;
+}
 
 /** Pixel size of a png or jpeg buffer, read from the header. */
 function frameSize(buf) {
@@ -74,28 +126,33 @@ function frameSize(buf) {
   return null;
 }
 
-export function toJsonl(log, { hz = 60, pressMs = 60 } = {}) {
+
+/* --------------------------------------------------------------- jsonl -- */
+
+// The event log in the shape scripts/video/polish/polish.py reads: a header, then
+// 60 Hz cursor samples and down/up pairs. Two rules its loader depends on, both
+// of which cost a run of zero zoom-ins when they are broken: `t` is seconds since
+// the header epoch, never an absolute epoch time, and x/y are display points, the
+// same units as `display`, which the loader scales to video pixels itself.
+export function toJsonl(log, { pressMs = 100 } = {}) {
   const lines = [JSON.stringify({ type: 'header', epoch: log.epoch || 0, display: { w: log.width, h: log.height } })];
   const r3 = (v) => Number(v.toFixed(3));
   const push = (o) => lines.push(JSON.stringify(o));
-  const tap = (t, x, y, bbox) => {
-    push({ t: r3(t), type: 'down', x: r3(x), y: r3(y), button: 'left', ...(bbox ? { bbox } : {}) });
+  const tap = (t, x, y, bbox, cursor) => {
+    push({ t: r3(t), type: 'down', x: r3(x), y: r3(y), button: 'left', ...(cursor ? { cursor } : {}), ...(bbox ? { bbox } : {}) });
     push({ t: r3(t + pressMs / 1000), type: 'up', x: r3(x), y: r3(y), button: 'left' });
   };
   for (const e of log.events) {
     if (e.type === 'move') {
-      const dur = Math.max(1 / hz, e.ms / 1000);
-      const n = Math.max(2, Math.round(dur * hz));
-      for (let i = 0; i <= n; i++) {
-        const u = i / n; const k = easeCursorJs(u);
-        push({ t: r3(e.t + u * dur), type: 'move', x: r3(e.from.x + (e.to.x - e.from.x) * k), y: r3(e.from.y + (e.to.y - e.from.y) * k) });
-      }
+      // the samples that were really dispatched, with the pointer the page
+      // asked for at each one
+      for (const [t, x, y, kind] of e.samples || []) push({ t: r3(t), type: 'move', x, y, cursor: kind });
     } else if (e.type === 'click') {
-      tap(e.t, e.x, e.y, e.bbox);
+      tap(e.t, e.x, e.y, e.bbox, e.cursor);
     } else if (e.type === 'zoom') {
       // An explicit zoom is a place the film should look at, which is exactly
       // what a click means to the polish stage.
-      tap(e.t, e.x, e.y, e.bbox);
+      tap(e.t, e.x, e.y, e.bbox, null);
     }
   }
   return lines.join('\n') + '\n';
@@ -134,11 +191,15 @@ export async function openRecorder({
   const ws = new WebSocket(target.webSocketDebuggerUrl);
   let id = 0; const pending = new Map();
   const frames = []; let recording = false; let t0 = 0; let wallStart = 0; let wallEnd = 0;
+  const probe = []; let probing = false; let latency = 0;
   ws.onmessage = (ev) => {
     const m = JSON.parse(ev.data);
     if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); return; }
     if (m.method === 'Page.screencastFrame') {
       const { data, sessionId, metadata } = m.params;
+      // A byte size is enough to find a frame that went black, which is how the
+      // screencast's own delay gets measured. No decoding, no dependency.
+      if (probing) probe.push({ ts: metadata.timestamp, size: data.length });
       if (recording) {
         const ts = metadata.timestamp;
         if (!t0) t0 = ts;
@@ -161,15 +222,36 @@ export async function openRecorder({
   // seconds since the epoch, so an event stamped from Date.now() lands on the
   // same timeline as the frame that was on screen when it happened.
   let events = [];
-  const clockNow = () => (t0 ? Math.max(0, Date.now() / 1000 - t0) : 0);
-  const logEvent = (type, data = {}) => {
-    const e = { t: Number(clockNow().toFixed(3)), type, ...data };
+  // One clock for everything: the screencast stamps each frame with seconds
+  // since the epoch, the page reports performance.timeOrigin + performance.now()
+  // in the same units, and Node's Date.now() is the same clock again. Events are
+  // logged raw here and shifted by the measured screencast delay when the log is
+  // written, so an overlay lands on the frame that actually shows the effect.
+  const clockAt = (wallMs) => (t0 ? Math.max(0, wallMs / 1000 - t0) : 0);
+  const logEventAt = (wallMs, type, data = {}) => {
+    const e = { t: Number(clockAt(wallMs).toFixed(3)), type, ...data };
     if (recording) events.push(e);
     return e;
   };
+  const logEvent = (type, data = {}) => logEventAt(Date.now(), type, data);
   let captureSize = null; // what the screencast actually delivered, in pixels
   let cursor = null; // last known cursor point, page CSS pixels
   let lastBox = null; // box of the element the cursor last moved to
+  let lastKind = 'arrow'; // the pointer the page last asked for
+
+  /* The renderer has drained its input queue and painted when two animation
+   * frames have gone by. Every place the take needs the page to have caught up,
+   * a scroll, the end of a move, the press, waits on this rather than a guess,
+   * and it returns the page's own clock so the moment can be logged. */
+  const settled = async (contextId) => {
+    const v = await rec.eval(`new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(() => done(performance.timeOrigin + performance.now()))))`, contextId)
+      .catch(() => null);
+    return Number(v) || Date.now();
+  };
+
+  const installProbe = async (contextId) => {
+    await send('Runtime.evaluate', { expression: CURSOR_PROBE, ...(contextId ? { contextId } : {}), returnByValue: true });
+  };
 
   const installOverlay = async (contextId) => {
     if (!overlays) return;
@@ -182,7 +264,7 @@ export async function openRecorder({
     targetId: target.id,
     send,
     get events() { return events; },
-    async goto(url, waitMs = 2500) { await send('Page.navigate', { url }); await sleep(waitMs); await installOverlay(); },
+    async goto(url, waitMs = 2500) { await send('Page.navigate', { url }); await sleep(waitMs); await installOverlay(); await installProbe(); },
     async eval(expression, contextId) {
       const r = await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true, userGesture: true, ...(contextId ? { contextId } : {}) });
       if (r.result?.exceptionDetails) throw new Error(r.result.exceptionDetails.exception?.description || r.result.exceptionDetails.text);
@@ -219,8 +301,9 @@ export async function openRecorder({
     async point(target, { contextId = null, offset = null } = {}) {
       if (target && typeof target === 'object' && typeof target.x === 'number') return { x: target.x, y: target.y, bbox: target.bbox || null };
       const sel = String(target);
-      const got = await rec.eval(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return null; el.scrollIntoView({ block: 'center', behavior: 'instant' }); const b = el.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2, w: b.width, h: b.height, left: b.left, top: b.top }; })()`, contextId);
+      const got = await rec.eval(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return null; const was = window.scrollY; el.scrollIntoView({ block: 'center', behavior: 'instant' }); const b = el.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2, w: b.width, h: b.height, left: b.left, top: b.top, scrolled: Math.abs(window.scrollY - was) > 1 }; })()`, contextId);
       if (!got) throw new Error('no element for ' + sel);
+      if (got.scrolled) await settled(contextId);   // a scroll repaints everything
       // Wide elements read better with the cursor a little left of centre, the
       // way a hand lands on a button rather than dead centre of a banner.
       const x = offset ? got.x - got.w / 2 + offset[0] : Math.min(got.x, got.x - got.w / 2 + 220);
@@ -229,29 +312,98 @@ export async function openRecorder({
       return { x: r1(x), y: r1(y), bbox: [r1(got.left), r1(got.top), r1(got.w), r1(got.h)] };
     },
 
-    /** Eased cursor move. Records the endpoints; the compositor draws the path. */
+    /**
+     * A human move. ghost-cursor builds the shape, a Bezier with Fitts's law
+     * timing and a little overshoot, and every point on it is dispatched as a
+     * real CDP mouse move at 60 Hz, so the page runs its own hover styles, its
+     * button lift and its cursor changes exactly as it would under a hand. The
+     * samples that come back, with the pointer the page asked for at each one,
+     * are what the compositors replay.
+     */
     async moveTo(target, ms = 620, opts = {}) {
       const to = await rec.point(target, opts);
       const from = cursor || { x: Math.max(24, to.x - 260), y: Math.min(height - 24, to.y + 190) };
       lastBox = to.bbox || null;
-      logEvent('move', { from: { x: from.x, y: from.y }, to: { x: to.x, y: to.y }, ms });
-      if (overlays) {
-        await installOverlay(opts.contextId);
-        await rec.eval(`(() => { const k = document.getElementById('nema-cur'); k.style.transitionDuration = '${ms}ms'; k.style.left = '${to.x}px'; k.style.top = '${to.y}px'; return true; })()`, opts.contextId);
+      await installProbe(opts.contextId);
+      await rec.eval('window.__nemaCursor.log.length = 0; true', opts.contextId);
+
+      /* Sent on the clock, not on the ack. Awaiting each dispatch costs about
+       * 88 ms a move on this machine, which stretches a 900 ms move to five
+       * seconds; sending them paced and awaiting the batch at the end delivers
+       * the same 54 events in 885 ms, all of them processed. */
+      const samples = humanPath(from, to, ms, opts);
+      const startWall = Date.now();
+      const dispatched = [];
+      const inFlight = [];
+      for (const s of samples) {
+        const wait = startWall + s.t - Date.now();
+        if (wait > 1) await sleep(wait);
+        dispatched.push({ w: Date.now(), x: s.x, y: s.y });
+        inFlight.push(send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: s.x, y: s.y, buttons: 0 }));
       }
+      await Promise.all(inFlight);
+      await settled(opts.contextId);   // the hover the last sample asked for is on screen
       cursor = { x: to.x, y: to.y };
-      await sleep(ms + 60);
+
+      /* What the page saw, matched back to what we sent on the shared clock. */
+      let seen = [];
+      try { seen = JSON.parse(await rec.eval('JSON.stringify(window.__nemaCursor.log)', opts.contextId) || '[]'); } catch { seen = []; }
+      /* Matched by order, not by clock. Each dispatch produces exactly one
+       * mousemove and they arrive in order, while the page may run a couple of
+       * hundred milliseconds behind on its own event loop; matching on
+       * timestamps therefore reads the pointer from a point the cursor has
+       * already left, and the hand appears late. */
+      /* Each sample is stamped with the moment the page handled it, not the
+       * moment it was sent. Under a software raster at this size the renderer
+       * runs a few hundred milliseconds behind a burst of mouse moves, and a
+       * pointer drawn on the send times arrives on a button whose hover has not
+       * painted yet, which is exactly the lag the film showed. On the page's own
+       * times the drawn pointer and the page's reaction are the same event. */
+      let kind = lastKind;
+      const byIndex = seen.length === dispatched.length;
+      const out = dispatched.map((d, i) => {
+        let hit = null;
+        if (byIndex) hit = seen[i];
+        else {
+          let bestGap = Infinity;
+          for (const e of seen) {
+            const gap = Math.abs(e[1] - d.x) + Math.abs(e[2] - d.y);
+            if (gap < bestGap) { bestGap = gap; hit = e; }
+          }
+          if (bestGap > 6) hit = null;
+        }
+        if (hit) kind = cursorKind(hit[3]);
+        const when = hit ? hit[0] : d.w;
+        return [Number(clockAt(when).toFixed(3)), Math.round(d.x * 10) / 10, Math.round(d.y * 10) / 10, kind];
+      });
+      lastKind = kind;
+      const first = dispatched[0] ? dispatched[0].w : startWall;
+      const last = dispatched[dispatched.length - 1] ? dispatched[dispatched.length - 1].w : startWall;
+      logEventAt(first, 'move', {
+        from: { x: from.x, y: from.y }, to: { x: to.x, y: to.y },
+        ms: Math.round(last - first), cursor: kind, samples: out
+      });
       return to;
     },
 
-    /** Move, then a real input event so the page reacts the way a click does. */
-    async click(target, { ms = 620, settleMs = 380, ...opts } = {}) {
+    /**
+     * Move, settle, then a real press. The pause before the press and the press
+     * itself are long enough to land in frames: a click that is dispatched and
+     * released inside one frame is invisible, however correct it is.
+     */
+    async click(target, { ms = 620, settleMs = 380, pressMs = 100, preSettleMs = 80, ...opts } = {}) {
       const p = await rec.moveTo(target, ms, opts);
-      await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: p.x, y: p.y, buttons: 0 });
-      await sleep(70);
-      logEvent('click', { x: p.x, y: p.y, bbox: p.bbox || lastBox || null });
+      await sleep(preSettleMs);
       await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: p.x, y: p.y, button: 'left', buttons: 1, clickCount: 1 });
-      await sleep(60);
+      /* The click is stamped when the press is on screen, not when it was sent.
+       * Two animation frames after the dispatch the renderer has committed the
+       * frame carrying the pressed state, and the page's own clock at that
+       * moment is the frame the ripple belongs on. Measured on this page it is
+       * about 30 ms, one frame, after the dispatch; the screencast itself adds
+       * nothing measurable on top. */
+      const shown = await settled(opts.contextId);
+      logEventAt(shown, 'click', { x: p.x, y: p.y, bbox: p.bbox || lastBox || null, cursor: lastKind });
+      await sleep(pressMs);
       await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: p.x, y: p.y, button: 'left', buttons: 0, clickCount: 1 });
       await sleep(settleMs);
       return p;
@@ -281,10 +433,52 @@ export async function openRecorder({
       return p;
     },
 
+    /**
+     * How long the screencast runs behind the page, measured rather than
+     * assumed: flash the page to solid black, note the page's own clock at that
+     * moment, and find the first frame whose bytes collapse. The gap is added to
+     * every event time when the log is written, so a ripple drawn at the click
+     * lands on the frame that shows the button pressed instead of two frames
+     * early. Run it once, on the page and at the scale about to be recorded.
+     */
+    async measureLatency({ tries = 3 } = {}) {
+      const got = [];
+      for (let i = 0; i < tries; i++) {
+        probe.length = 0; probing = true;
+        await send('Page.startScreencast', {
+          format: captureFormat, ...(captureFormat === 'jpeg' ? { quality: captureQuality } : {}),
+          maxWidth: Math.round(width * deviceScaleFactor), maxHeight: Math.round(height * deviceScaleFactor),
+          everyNthFrame: 1
+        });
+        await sleep(500);
+        const baseline = probe.length ? probe.map((f) => f.size).sort((a, b) => a - b)[probe.length >> 1] : 0;
+        const marked = probe.length;
+        /* The clock is read after two animation frames, which is when the
+         * renderer has committed the frame carrying the change. Reading it at
+         * the DOM write instead would fold the page's own paint cost into the
+         * number, and a full screen repaint at this size costs far more than the
+         * small repaints a real take makes: it measured 142 ms that way against
+         * 29 ms for an actual button press. */
+        const at = await rec.eval(`new Promise((done) => { const d = document.createElement('div'); d.id = 'nema-flash'; d.style.cssText = 'position:fixed;inset:0;background:#000;z-index:2147483647'; document.body.appendChild(d); requestAnimationFrame(() => requestAnimationFrame(() => done(performance.timeOrigin + performance.now()))); })`);
+        await sleep(700);
+        await send('Page.stopScreencast'); probing = false;
+        await rec.eval(`(() => { const d = document.getElementById('nema-flash'); if (d) d.remove(); return true; })()`);
+        const hit = probe.slice(marked).find((f) => baseline && f.size < baseline * 0.5);
+        if (hit && at) got.push(hit.ts - at / 1000);
+        await sleep(250);
+      }
+      got.sort((a, b) => a - b);
+      latency = got.length ? Math.max(0, Number(got[got.length >> 1].toFixed(3))) : 0;
+      return { latency, samples: got.map((v) => Number(v.toFixed(3))) };
+    },
+    get latency() { return latency; },
+
     async start(name) {
       takeName = name; framesDir = path.join(out, name + '-frames');
       fs.rmSync(framesDir, { recursive: true, force: true }); fs.mkdirSync(framesDir);
-      frames.length = 0; events = []; cursor = null; lastBox = null; captureSize = null; t0 = 0; recording = true; wallStart = Date.now();
+      // cursor and lastKind survive a take boundary on purpose: the pointer is
+      // where the last shot left it, and it should not teleport between takes.
+      frames.length = 0; events = []; lastBox = null; captureSize = null; t0 = 0; recording = true; wallStart = Date.now();
       await send('Page.startScreencast', {
         format: captureFormat, ...(captureFormat === 'jpeg' ? { quality: captureQuality } : {}),
         maxWidth: Math.round(width * deviceScaleFactor), maxHeight: Math.round(height * deviceScaleFactor),
@@ -318,14 +512,20 @@ export async function openRecorder({
         '-g', String(Math.round(fps / 2)), '-keyint_min', '1', '-sc_threshold', '0',
         '-c:v', 'libx264', '-preset', rawPreset, '-crf', String(rawCrf), '-r', String(fps), mp4]);
 
+      const shift = (e) => {
+        const moved = { ...e, t: Number((e.t + latency).toFixed(3)) };
+        if (e.samples) moved.samples = e.samples.map(([t, x, y, k]) => [Number((t + latency).toFixed(3)), x, y, k]);
+        return moved;
+      };
       const log = {
         take: name,
         capture: captureSize,
         width, height, deviceScaleFactor, fps,
         epoch: Number(t0.toFixed(3)),
+        latency,
         duration: Number(Math.max(total, frames[frames.length - 1].t + 0.5).toFixed(3)),
         video: mp4,
-        events: events.slice().sort((a, b) => a.t - b.t)
+        events: events.slice().sort((a, b) => a.t - b.t).map(shift)
       };
       fs.writeFileSync(path.join(out, name + '.events.json'), JSON.stringify(log, null, 2));
       fs.writeFileSync(path.join(out, 'events.json'), JSON.stringify(log, null, 2));

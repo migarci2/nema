@@ -18,10 +18,10 @@ import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-# The pointer is drawn by the polish stage too; one definition, imported.
-_spec = importlib.util.spec_from_file_location("polish", os.path.join(HERE, "polish", "polish.py"))
-polish = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(polish)
+# The pointers are shared with the polish stage; one definition, imported.
+_spec = importlib.util.spec_from_file_location("cursors", os.path.join(HERE, "cursors.py"))
+cursors = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(cursors)
 
 FONTS = [
     "/usr/share/fonts/opentype/inter/Inter-%s.otf",
@@ -158,11 +158,13 @@ def main():
     sh.save(os.path.join(out, "shadow.png"))
     man["shadow"] = {"path": os.path.join(out, "shadow.png"), "x": win["x"] - sp, "y": win["y"] - sp}
 
-    scale = (24.0 / polish.ARROW_INK_H) * u
-    tile, hx, hy = polish.cursor_sprite(scale)
-    tile.save(os.path.join(out, "cursor.png"))
-    man["cursor"] = {"path": os.path.join(out, "cursor.png"), "hx": hx, "hy": hy,
-                     "w": tile.size[0], "h": tile.size[1]}
+    man["cursor"] = {}
+    for kind in cursors.KINDS:
+        tile, hx, hy = cursors.sprite(kind, u)
+        path = os.path.join(out, "cursor-%s.png" % kind)
+        tile.save(path)
+        man["cursor"][kind] = {"path": path, "hx": round(hx, 2), "hy": round(hy, 2),
+                               "w": tile.size[0], "h": tile.size[1]}
 
     names, size = ripple_frames(u, spec.get("rippleFrames", 12), out)
     man["ripple"] = {"pattern": os.path.join(out, "ripple-%02d.png"), "n": len(names), "size": size}

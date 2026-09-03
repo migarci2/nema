@@ -69,7 +69,8 @@ async function waitForGone(port, targetId, maxMs = 10000) {
   return false;
 }
 
-/* 1440x900 at deviceScaleFactor 3: the raw frames are 4320x2700, so the 4K
+/* 1440x900 at deviceScaleFactor 2 by default: the raw frames are 2880x1800.
+ * DSF=3 gives 4320x2700, so the 4K
  * compositor shows the page at a 1.5x downscale at rest and lands at about 1:1
  * native pixels at the 1.55 push, never upscaled. The price is frame rate: the
  * page is rastered in software at that size, which this machine sustains at
@@ -77,7 +78,7 @@ async function waitForGone(port, targetId, maxMs = 10000) {
  * the captions, is drawn by the compositor at 30 fps regardless; what runs at
  * the capture rate is the page's own animation. DSF=2 buys 9 fps if a take
  * leans on page motion. */
-const DSF = Number(process.env.DSF || 3);
+const DSF = Number(process.env.DSF || 2);
 const r = await openRecorder({
   chrome, out, width: 1440, height: 900, deviceScaleFactor: DSF, fps: 30,
   captureFormat: 'png', rawCrf: 12, rawPreset: 'fast', rawPix: 'yuv444p',
@@ -105,11 +106,19 @@ try {
   for (let i = 0; i < 40; i++) { if (await r.eval(`Boolean(document.querySelector('[data-connect-vault]'))`)) break; await sleep(250); }
   console.log('course line:', await r.eval(`document.querySelector('[data-req-line]').textContent.replace(/\\s+/g,' ').trim()`));
 
+  /* How far the screencast runs behind the page, on this page at this scale.
+   * Every event time in the log is shifted by it, so the ripple lands on the
+   * frame that shows the button pressed. */
+  const lat = await r.measureLatency();
+  console.log(`latency     ${(lat.latency * 1000).toFixed(0)} ms (samples ${lat.samples.map((v) => (v * 1000).toFixed(0)).join(', ')} ms)`);
+
   const mp4 = await r.take('raw', async () => {
     await r.caption('Nothing is checked yet. 68 minutes.');
     await r.settle(2600);
 
-    await r.click('[data-connect-vault]', { ms: 700 });
+    /* The move ends on the button, so the page swaps the pointer to the hand
+     * and lifts the button before the press, the way it does under a hand. */
+    await r.click('[data-connect-vault]', { ms: 900 });
     await r.caption('Approve in your vault');
 
     const popup = await waitForPopup(r.port);
@@ -144,6 +153,9 @@ try {
   const meta = JSON.parse(fs.readFileSync(path.join(out, 'events.json'), 'utf8'));
   const shot = meta.capture ? `${meta.capture.w}x${meta.capture.h}` : 'unknown';
   console.log(`capture     ${shot} at deviceScaleFactor ${DSF}`);
+  const kinds = meta.events.filter((e) => e.type === 'move').flatMap((e) => (e.samples || []).map((sm) => sm[3]));
+  console.log(`pointer     ${[...new Set(kinds)].join(', ') || 'none'} over ${kinds.length} samples; click on ` +
+    (meta.events.find((e) => e.type === 'click') || {}).cursor);
   console.log('event log   ' + path.join(out, 'events.json'));
   console.log('composite with: CHROME=$CHROME node scripts/video/studio.mjs ' + out);
 } finally {

@@ -242,15 +242,22 @@ const camZ = expr(cam, 0, T);
 const camX = `(0-(${expr(cam, 1, T)}))/(${camZ})`;
 const camY = `(0-(${expr(cam, 2, T)}))/(${camZ})`;
 
-/* cursor: eased between the logged endpoints, held in between */
+/* The pointer replays the samples the recorder dispatched: its path and speed
+ * are the page's own record, and each sample carries the pointer the page asked
+ * for at that point, so the arrow becomes a hand where the hover began. */
 const cursorKfs = [];
+const kindRuns = [];      // [{ kind, t0, t1 }] runs of one pointer, for the overlays
 for (const m of (opt['no-cursor'] ? [] : moves)) {
-  const from = toScene(m.from), to = toScene(m.to);
-  const dur = Math.max(1 / 60, m.ms / 1000);
-  if (!cursorKfs.length) cursorKfs.push([0, [from.x, from.y]]);
-  cursorKfs.push([m.t, [from.x, from.y]]);
-  ramp(cursorKfs, m.t, m.t + dur, [from.x, from.y], [to.x, to.y], easeCursor);
+  for (const [t, x, y, kind] of m.samples || []) {
+    const p = toScene({ x, y });
+    if (!cursorKfs.length) cursorKfs.push([0, [p.x, p.y]]);
+    cursorKfs.push([t, [p.x, p.y]]);
+    const run = kindRuns[kindRuns.length - 1];
+    if (run && run.kind === (kind || 'arrow')) run.t1 = t;
+    else kindRuns.push({ kind: kind || 'arrow', t0: run ? run.t1 : 0, t1: t });
+  }
 }
+if (kindRuns.length) kindRuns[kindRuns.length - 1].t1 = Infinity;
 
 /* ------------------------------------------------------- pre rendered art -- */
 
@@ -282,7 +289,6 @@ const iWall = wallpaper ? still(wallpaper, DUR) : null;
 const iBar = still(art.titlebar, DUR);
 const iMask = still(art.mask, DUR);
 const iShadow = still(art.shadow.path, DUR);
-const iCursor = still(art.cursor.path, DUR);
 
 const fc = [];
 fc.push(iWall === null
@@ -302,10 +308,24 @@ fc.push(`[bg1][win]overlay=${WIN.x}:${WIN.y}:format=auto[sc0]`);
 
 let node = 'sc0';
 if (cursorKfs.length) {
+  // One overlay per pointer, each enabled only on the runs where the page asked
+  // for it. Three inputs and three enable windows keep the graph readable; a
+  // sprite sheet with an animated crop would need one more moving part for
+  // nothing, since the runs are a handful.
   const cx = expr(cursorKfs, 0), cy = expr(cursorKfs, 1);
-  fc.push(`[${node}][${iCursor}:v]overlay=x='(${cx})-${art.cursor.hx}':y='(${cy})-${art.cursor.hy}'` +
-    `:eval=frame:enable='gte(t,${cursorKfs[0][0].toFixed(3)})':format=auto[cur]`);
-  node = 'cur';
+  const start = cursorKfs[0][0];
+  for (const kind of Object.keys(art.cursor)) {
+    const runs = kindRuns.filter((r) => r.kind === kind);
+    if (!runs.length) continue;
+    const art_k = art.cursor[kind];
+    const idx = still(art_k.path, DUR);
+    const enable = runs.map((r) => (r.t1 === Infinity
+      ? `gte(t,${Math.max(start, r.t0).toFixed(3)})`
+      : `between(t,${Math.max(start, r.t0).toFixed(3)},${r.t1.toFixed(3)})`)).join('+');
+    fc.push(`[${node}][${idx}:v]overlay=x='(${cx})-${art_k.hx}':y='(${cy})-${art_k.hy}'` +
+      `:eval=frame:enable='${enable}':format=auto[cur_${kind}]`);
+    node = `cur_${kind}`;
+  }
 }
 
 clicks.forEach((c, i) => {
