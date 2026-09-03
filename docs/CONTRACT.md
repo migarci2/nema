@@ -1506,11 +1506,19 @@ The three states, in `packages/nema-extension/sidepanel.js`:
    the n rows in plain words with what the vault says about each (verified, not
    sure yet, not yet), a primary "Share", a quiet "Not now", and the "Remember
    this site for 30 days" checkbox. Under it, nothing. The vault's own consent
-   modal stays the confirmation step and is restyled in the panel to read as the
-   same card opening up: the panel's ground, no dim, the same rows. The
-   checkbox is one node that moves into the modal and back, so a site is
-   promised one thing, not two: the vault's own hour long auto approval line is
-   hidden in the panel.
+   modal stays the confirmation step, and in the panel it is that same card with
+   the buttons swapped: the panel's ground, no dim, the same rows in the same
+   words (name, ability, the plain status word, no subtitle), one line "Shared
+   for 30 minutes. Nothing else leaves." in place of the withheld list, the
+   expiry sentence and the countdown, the same checkbox, then Approve and Deny.
+   `app.js` still owns the modal and still settles the promise: `sidepanel.js`
+   renders the rows and the line into the modal body, and `sidepanel.css` hides
+   the page width copy. `#consent-modal`, `[data-consent-approve]` and
+   `[data-consent-deny]` are unchanged, and the origin, the purpose string and
+   the learner id stay in the modal's own block under the hood. The checkbox is
+   one node that moves into the modal and back, so a site is promised one thing,
+   not two: the vault's own hour long auto approval line is hidden in the
+   panel.
 3. **Shared.** One line, "Shared with <Site>. 68 minutes became 27.", then
    "What you did here", the receipts this page produced as they arrive, one row
    each with the activity and one word (verified, waiting, already in your

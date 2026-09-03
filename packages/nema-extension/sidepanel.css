@@ -260,6 +260,30 @@
 #consent-modal .n-modal__title { font-size: var(--fs-20); }
 #consent-modal .v-consent__purpose { font-size: var(--x-body); }
 
+/* The card's own rows, put back into the modal by sidepanel.js, and the one
+ * line that replaces the withheld list, the expiry and the countdown. */
+.x-consent { display: flex; flex-direction: column; gap: var(--sp-3); }
+.x-consent[hidden] { display: none; }
+.x-consent__line {
+  margin: 0;
+  font-size: var(--fs-13);
+  color: var(--ink-2);
+}
+
+/* What the vault says at page width and the panel has no room for: the two
+ * disclosure lists with a subtitle under every line, the expiry sentence and
+ * the countdown. Every one of them is still in the document, and the block
+ * under the hood still carries the origin, the purpose and the learner id. */
+#consent-modal .v-consent__block,
+#consent-modal .v-consent__expiry,
+#consent-modal .v-consent__timer { display: none; }
+
+/* Approve is the answer a person came to give, so it leads. */
+#consent-modal .n-modal__foot { gap: var(--sp-3); }
+#consent-modal .v-consent__decide { padding-bottom: var(--sp-3); }
+#consent-modal .n-modal__foot .n-btn--primary { margin-left: 0; order: 1; }
+#consent-modal [data-consent-deny] { order: 2; }
+
 /* One promise about this site, not two. The vault's hour long auto approval is
  * the extension's thirty days here, and the extension's line is the one shown. */
 .v-consent__decide > .n-check:not(.x-remember) { display: none; }

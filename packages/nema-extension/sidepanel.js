@@ -160,11 +160,41 @@ if (hoodBox) {
   }).observe(hoodBox, { attributes: true, attributeFilter: ['open'] });
 }
 
+/* The consent modal, in the panel, is the same card with the buttons swapped.
+ * app.js still owns the modal and still settles the promise: the panel only
+ * adds the rows it already showed and one line about how long the answer
+ * lasts, and sidepanel.css hides the longer copy underneath. The vault's own
+ * page is untouched, and so is every selector the modal is driven by. */
+refs.consent = document.createElement('div');
+refs.consent.className = 'x-consent';
+refs.consent.hidden = true;
+refs.consent.innerHTML = `
+  <div class="x-rows" data-ext-consent-rows></div>
+  <p class="x-consent__line">Shared for 30 minutes. Nothing else leaves.</p>`;
+refs.consentRows = refs.consent.querySelector('[data-ext-consent-rows]');
+(function mountConsent() {
+  const body = document.querySelector('#consent-modal .n-modal__body');
+  if (body) body.insertBefore(refs.consent, body.firstChild);
+})();
+
+/** The same rows the card showed, so approving reads as the card going on. */
+function showConsentRows(requirements, audience) {
+  let rows = [];
+  if (typeof vault.previewDisclosure === 'function') {
+    try {
+      rows = vault.previewDisclosure(requirements, audience);
+    } catch { rows = []; }
+  }
+  refs.consentRows.innerHTML = rows.map(askRow).join('');
+  refs.consent.hidden = rows.length === 0;
+}
+
 /** Move the checkbox into the modal while the modal is asking, and back after. */
 function rememberInModal(inModal) {
   const decide = document.querySelector('.v-consent__decide');
   if (inModal && decide) decide.appendChild(refs.rememberWrap);
   else refs.rememberSlot.appendChild(refs.rememberWrap);
+  if (!inModal) refs.consent.hidden = true;
 }
 
 /* The panel is not the web: the header nav and the footer would navigate the
@@ -636,6 +666,15 @@ const STATUS_WORDS = {
   missing: 'not yet'
 };
 
+/** One thing a site asks about: its name in words, and what your vault says. */
+function askRow(row) {
+  return `
+    <div class="x-row">
+      <span class="x-row__main">${esc(conceptWords(row.concept))}, ${esc(row.ability)}</span>
+      ${statusPill(row.status)}
+    </div>`;
+}
+
 function statusPill(status) {
   const kind = status === 'verified' ? 'durable' : status === 'uncertain' ? 'uncertain' : 'unknown';
   return `<span class="n-pill n-pill--nodot n-pill--${kind}">${esc(STATUS_WORDS[status] || status)}</span>`;
@@ -658,11 +697,7 @@ function renderAsk() {
     : pairs.length === 0
       ? `${site} asks to know nothing about you.`
       : `${site} asks to know ${pairs.length} thing${pairs.length === 1 ? '' : 's'}.`;
-  refs.askRows.innerHTML = rows.map((row) => `
-    <div class="x-row">
-      <span class="x-row__main">${esc(conceptWords(row.concept))}, ${esc(row.ability)}</span>
-      ${statusPill(row.status)}
-    </div>`).join('');
+  refs.askRows.innerHTML = rows.map(askRow).join('');
 }
 
 /** The receipts this page gave back, as they arrive. */
@@ -916,6 +951,7 @@ async function shareBands({ fromBar = false } = {}) {
     say('Waiting for you to approve.');
 
     refs.remember.checked = false;
+    showConsentRows(requirements, audience);
     rememberInModal(true);
 
     let assertion;

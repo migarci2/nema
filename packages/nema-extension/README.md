@@ -50,8 +50,12 @@ the Next card instead. Import a vault file and Start empty are under the hood.
 things", those five in plain words with what your vault says about each
 (verified, not sure yet, not yet), **Share**, a quiet **Not now**, and the
 **Remember this site for 30 days** checkbox. Under it, nothing. Share opens the
-vault's own consent modal, restyled in the panel to read as the same card
-opening up: the panel's ground, no dim, the same rows, Approve and Deny. The
+vault's own consent modal, which in the panel is that same card with the buttons
+swapped: the panel's ground, no dim, the same five rows in the same words, one
+line "Shared for 30 minutes. Nothing else leaves." in place of the withheld
+list, the expiry sentence and the countdown, the same checkbox, then **Approve**
+and **Deny**. app.js still owns the modal and still settles the promise; the
+panel adds the rows and the line, and the CSS hides the page width copy. The
 checkbox is one node that moves into the modal and back, so there is one promise
 about the site, not two.
 
