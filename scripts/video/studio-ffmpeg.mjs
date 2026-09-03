@@ -74,8 +74,15 @@ if (!fs.existsSync(videoPath)) { console.error('no video at ' + videoPath); proc
 // lands on a 3840x2160 output, which is a 1.5x downscale at rest (2880/4320 =
 // 0.6667) and about 1:1 at the 1.55 push. Everything drawn on the frame rather
 // than in the scene, which is the captions, is made at the output scale.
-const probe0 = JSON.parse(execFileSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0',
-  '-show_entries', 'stream=width,height', '-of', 'json', videoPath], { encoding: 'utf8' })).streams[0];
+/* Every film ends on the window at rest, held for a beat. The camera is forced
+ * home before the source runs out and the last frame is cloned for REST_S, so a
+ * take that stopped mid push still lands somewhere to look at. */
+const REST_S = 1.0;
+const probed = JSON.parse(execFileSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0',
+  '-show_entries', 'stream=width,height', '-show_entries', 'format=duration', '-of', 'json', videoPath], { encoding: 'utf8' }));
+const probe0 = probed.streams[0];
+const SRC_DUR = Number(probed.format.duration);
+const DUR = SRC_DUR + REST_S;      // the source, plus a held rest frame
 const SRC_W = log.width || 1440, SRC_H = log.height || 900;
 const OUT_U = 2;                                        // 3840x2160
 const OW = 1920 * OUT_U, OH = 1080 * OUT_U;
@@ -234,13 +241,34 @@ for (const a of (opt['no-camera'] ? [] : anchors)) {
   ramp(cam, holdEnd, holdEnd + OUT_MS, target, HOME, easeCamera);
   state = HOME;
 }
+/* The camera must be home by the time the source ends. If the last ease out
+ * would run past it, the whole tail is rebuilt to finish there instead: better a
+ * quicker pull back than a film that freezes zoomed in. */
+function forceRest(kfs, endAt) {
+  const last = kfs[kfs.length - 1];
+  if (!last || last[0] <= endAt) return kfs;
+  const cut = Math.max(0.1, endAt - OUT_MS);
+  const kept = kfs.filter((k) => k[0] < cut);
+  const at = (t) => {
+    let a = kfs[0];
+    for (const k of kfs) { if (k[0] <= t) a = k; else break; }
+    return a[1];
+  };
+  const from = at(cut);
+  kept.push([cut, from]);
+  ramp(kept, cut, endAt, from, HOME, easeCamera);
+  console.warn(`camera was still pushed in at the end, pulled back over the last ${OUT_MS}s`);
+  return kept;
+}
+
 // zoompan works in output frame numbers, and its x/y are the top left of the
 // crop in input pixels: the camera maps scene q to q*s + t, so the crop starts
 // at -t/s and is 1/s of the frame.
 const T = `(on/${fps})`;
-const camZ = expr(cam, 0, T);
-const camX = `(0-(${expr(cam, 1, T)}))/(${camZ})`;
-const camY = `(0-(${expr(cam, 2, T)}))/(${camZ})`;
+const camKfs = forceRest(cam, SRC_DUR);
+const camZ = expr(camKfs, 0, T);
+const camX = `(0-(${expr(camKfs, 1, T)}))/(${camZ})`;
+const camY = `(0-(${expr(camKfs, 2, T)}))/(${camZ})`;
 
 /* The pointer replays the samples the recorder dispatched: its path and speed
  * are the page's own record, and each sample carries the pointer the page asked
@@ -282,9 +310,6 @@ const addInput = (args) => { inputs.push(args); return inputs.length - 1; };
 const still = (file, t) => addInput(['-loop', '1', '-framerate', String(fps), ...(t ? ['-t', String(t)] : []), '-i', file]);
 
 const iVideo = addInput(['-i', videoPath]);
-const probeFull = JSON.parse(execFileSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0',
-  '-show_entries', 'stream=width,height', '-show_entries', 'format=duration', '-of', 'json', videoPath], { encoding: 'utf8' }));
-const DUR = Number(probeFull.format.duration);
 const iWall = wallpaper ? still(wallpaper, DUR) : null;
 const iBar = still(art.titlebar, DUR);
 const iMask = still(art.mask, DUR);
@@ -298,7 +323,8 @@ fc.push(iWall === null
 // window: title bar on top of the recording, then rounded off with the mask
 fc.push(`[${iBar}:v]format=rgba,fps=${fps}[tb]`);
 fc.push(`[${iVideo}:v]format=rgba,setsar=1,fps=${fps}` +
-  (probe0.width === PAGE_W && probe0.height === PAGE_H ? '' : `,scale=${PAGE_W}:${PAGE_H}:flags=lanczos`) + `[rv]`);
+  (probe0.width === PAGE_W && probe0.height === PAGE_H ? '' : `,scale=${PAGE_W}:${PAGE_H}:flags=lanczos`) +
+  `,tpad=stop_mode=clone:stop_duration=${REST_S}[rv]`);
 fc.push(`[tb][rv]vstack=inputs=2[win0]`);
 fc.push(`[${iMask}:v]format=gray[wm]`);
 fc.push(`[win0][wm]alphamerge[win]`);

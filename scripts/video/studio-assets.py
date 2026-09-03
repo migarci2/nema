@@ -113,13 +113,22 @@ def ripple_frames(u, n, out_dir):
 
 
 def caption_pill(text, u, max_w):
-    """One caption, pill and text together, so the graph only has to fade it."""
-    f = font(34 * u, "Medium")
-    pad_x, pad_top, pad_bottom = 30 * u, 11 * u, 13 * u
+    """One caption, pill and text together, so the graph only has to fade it.
+
+    The type shrinks rather than the pill clipping: a caption that does not fit
+    the frame is a caption with a word cut off, which is worse than one set a
+    point smaller."""
+    size = 34 * u
     probe = ImageDraw.Draw(Image.new("RGBA", (8, 8)))
-    box = probe.textbbox((0, 0), text, font=f)
+    for _ in range(12):
+        f = font(int(size), "Medium")
+        box = probe.textbbox((0, 0), text, font=f)
+        if box[2] - box[0] + 2 * (30 * u) <= max_w or size <= 14 * u:
+            break
+        size *= 0.94
+    pad_x, pad_top, pad_bottom = 30 * u, 11 * u, 13 * u
     tw, th = box[2] - box[0], box[3] - box[1]
-    line = 34 * u * 1.12
+    line = size * 1.12
     w = min(max_w, int(tw + 2 * pad_x))
     h = int(line + pad_top + pad_bottom)
     blur = 40 * u / 3.0

@@ -140,10 +140,15 @@ try {
     await r.caption('68 minutes became 27');
     await r.settle(900);
     await r.zoom('[data-req-line]', { scale: 1.55, holdMs: 2400 });
-    await r.settle(4200);
+    await r.settle(2600);
+    /* The hand comes off the line the camera framed, the way a hand does when
+     * it has finished reading, and the page tells us the pointer is an arrow
+     * again now that it is over plain text. */
+    await r.drift(38, 30);
+    await r.settle(900);
 
     await r.caption('');
-    await r.settle(600);
+    await r.settle(700);
   });
 
   const line = await r.eval(`document.querySelector('[data-req-line]').textContent.replace(/\\s+/g,' ').trim()`);

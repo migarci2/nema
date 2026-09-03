@@ -186,9 +186,14 @@ console.log(`${source} video ${meta.videoWidth}x${meta.videoHeight} ${meta.durat
 
 /* --------------------------------------------------------------- render -- */
 
+// The same rule the ffmpeg compositor follows: the film runs a second past the
+// source so it ends on the window at rest. seekTo clamps to the last frame and
+// renderAt is past every event by then, so the extra second is a held still.
+const REST_S = 1.0;
 let duration = polishMeta
   ? meta.duration
   : Math.max(0.5, Math.min(meta.duration, log.duration ? log.duration + 0.5 : meta.duration));
+duration += REST_S;
 if (opt.seconds) duration = Math.min(duration, Number(opt.seconds));
 const total = Math.max(1, Math.floor(duration * fps));
 console.log(`rendering ${total} frames at ${fps} fps`);

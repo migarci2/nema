@@ -238,6 +238,11 @@ export async function openRecorder({
   let cursor = null; // last known cursor point, page CSS pixels
   let lastBox = null; // box of the element the cursor last moved to
   let lastKind = 'arrow'; // the pointer the page last asked for
+  // A take may not stop while the camera is still pushed in. Every click and
+  // every zoom sets the wall clock time before which stop() must not return:
+  // the compositor needs 600 ms to ease in, the hold, and 700 ms to ease out.
+  let restBy = 0;
+  const CAMERA_TAIL = 1500;
 
   /* The renderer has drained its input queue and painted when two animation
    * frames have gone by. Every place the take needs the page to have caught up,
@@ -403,14 +408,58 @@ export async function openRecorder({
        * nothing measurable on top. */
       const shown = await settled(opts.contextId);
       logEventAt(shown, 'click', { x: p.x, y: p.y, bbox: p.bbox || lastBox || null, cursor: lastKind });
+      restBy = Math.max(restBy, Date.now() + 1800 + CAMERA_TAIL);
       await sleep(pressMs);
       await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: p.x, y: p.y, button: 'left', buttons: 0, clickCount: 1 });
       await sleep(settleMs);
+      await rec.nudge(opts.contextId).catch(() => {});
       return p;
     },
 
+    /**
+     * One mouse move that goes nowhere. The page re-runs its hit test at the
+     * point the pointer is already on, so a rebuild that put plain text under a
+     * pointer that was over a button gets the pointer it deserves. Cheap enough
+     * to do after every click and after every long pause.
+     */
+    async nudge(contextId = null) {
+      if (!cursor) return lastKind;
+      await installProbe(contextId);
+      await rec.eval('window.__nemaCursor.log.length = 0; true', contextId).catch(() => {});
+      await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: cursor.x, y: cursor.y, buttons: 0 });
+      const when = await settled(contextId);
+      let seen = [];
+      try { seen = JSON.parse(await rec.eval('JSON.stringify(window.__nemaCursor.log)', contextId) || '[]'); } catch { seen = []; }
+      const kind = seen.length ? cursorKind(seen[seen.length - 1][3]) : lastKind;
+      if (kind !== lastKind) {
+        lastKind = kind;
+        logEventAt(when, 'move', {
+          from: { x: cursor.x, y: cursor.y }, to: { x: cursor.x, y: cursor.y }, ms: 0, cursor: kind,
+          samples: [[Number(clockAt(when).toFixed(3)), cursor.x, cursor.y, kind]]
+        });
+      }
+      return kind;
+    },
+
+    /**
+     * A small idle move, the way a hand comes off what it was reading. Keeps the
+     * pointer from sitting on top of the text the camera just framed.
+     */
+    async drift(dx = 30, dy = 22, ms = 420) {
+      if (!cursor) return null;
+      const to = {
+        x: Math.max(6, Math.min(width - 6, cursor.x + dx)),
+        y: Math.max(6, Math.min(height - 6, cursor.y + dy))
+      };
+      return rec.moveTo(to, ms, { moveSpeed: 2 });
+    },
+
     /** Hold still for a beat. The only thing a take needs between moments. */
-    async settle(ms = 800) { await sleep(ms); },
+    async settle(ms = 800) {
+      await sleep(ms);
+      // A long pause is where a page rebuilds itself under a resting pointer.
+      if (ms >= 600) await rec.nudge().catch(() => {});
+    },
 
     /**
      * Ask the camera for a push, either at a point or at an element.
@@ -430,6 +479,7 @@ export async function openRecorder({
         if (typeof opts.holdMs === 'number') holdMs = opts.holdMs;
       }
       logEvent('zoom', { x: p.x, y: p.y, scale, holdMs, bbox: p.bbox || null });
+      restBy = Math.max(restBy, Date.now() + holdMs + CAMERA_TAIL);
       return p;
     },
 
@@ -478,14 +528,21 @@ export async function openRecorder({
       fs.rmSync(framesDir, { recursive: true, force: true }); fs.mkdirSync(framesDir);
       // cursor and lastKind survive a take boundary on purpose: the pointer is
       // where the last shot left it, and it should not teleport between takes.
-      frames.length = 0; events = []; lastBox = null; captureSize = null; t0 = 0; recording = true; wallStart = Date.now();
+      frames.length = 0; events = []; lastBox = null; captureSize = null; restBy = 0; t0 = 0; recording = true; wallStart = Date.now();
       await send('Page.startScreencast', {
         format: captureFormat, ...(captureFormat === 'jpeg' ? { quality: captureQuality } : {}),
         maxWidth: Math.round(width * deviceScaleFactor), maxHeight: Math.round(height * deviceScaleFactor),
         everyNthFrame: 1
       });
     },
-    async stop() { wallEnd = Date.now(); await send('Page.stopScreencast'); recording = false; await sleep(300); return rec.encode(); },
+    async stop() {
+      /* No take ends mid push. The last click or zoom set the moment the camera
+       * can be home again; the recording runs until then whatever the take
+       * asked for, so the compositor always has room to ease out. */
+      const owed = restBy - Date.now();
+      if (owed > 0) { console.log(`  holding ${Math.round(owed)} ms so the camera can come to rest`); await sleep(owed); }
+      wallEnd = Date.now(); await send('Page.stopScreencast'); recording = false; await sleep(300); return rec.encode();
+    },
     async take(name, fn) { await rec.start(name); try { await fn(); } finally { return await rec.stop(); } },
     sleep,
     async close() { if (recording) await rec.stop(); ws.close(); proc.kill(); },
