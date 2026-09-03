@@ -517,7 +517,8 @@ try {
   await thief.goto('about:blank', 300);
 
   const { page: stray } = await browser.newPage(`${V}/connect.html#request=not-a-request&return=${encodeURIComponent(H)}`);
-  await sleep(1000);
+  /* Production redirects /connect.html first, so wait for the page to say it. */
+  await stray.waitFor(`/could not be read/.test(document.querySelector('[data-connect-title]')?.textContent || '')`, 10000);
   ok(
     /could not be read/.test(await stray.evaluate(`document.querySelector('[data-connect-title]').textContent`)),
     'an unreadable request is named, not guessed at'
