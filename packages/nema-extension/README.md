@@ -2,6 +2,8 @@
 
 > **Learn it once. It counts everywhere.**
 >
+> Many sites teach you. One vault keeps it. Your agent connects them with WebMCP.
+>
 > Learn something on one site, and the next one already knows. You decide what
 > gets shared, every time. The picture is on
 > [the hub](https://nema.migarci2.dev/).
@@ -17,7 +19,8 @@ Two things to know before Chrome asks you to confirm the permissions.
 
 > **This prototype runs on all pages so it can detect published nema tools.**
 > Before you choose Review request, it reads only the tool list those pages
-> publish to any agent, and the learning offer those tools describe. Nothing
+> publish to whichever agent the reader brought, and the learning offer those
+> tools describe. Nothing
 > about you leaves the vault until you approve a request.
 
 > **The extension keeps a local vault for this browser profile.** Load the demo
@@ -41,9 +44,10 @@ bash scripts/build-extension.sh
 Reload any tab that was already open before you loaded the extension: a content
 script only runs on a page that loads after it is installed.
 
-Chrome 116 or newer. The pages themselves need WebMCP: Chrome 149+ with
-`chrome://flags/#enable-webmcp-testing`, or any Chrome at all, because every
-nema page loads the WebMCP polyfill.
+Chrome 116 or newer. Native end to end tests ran on Chrome for Testing 154.
+nema targets WebMCP enabled Chrome 149+ and ChatGPT's in app browser, which
+does not run extensions. Other browsers use the bundled Chrome Labs polyfill for
+a degraded demonstration.
 
 ## What the panel shows
 
@@ -124,7 +128,7 @@ seconds and re-reads the tool list, because a page registers its tools one at a
 time and can add more later. When an activity turns `passed` it tells the panel
 once; the panel issues the receipt, stages it with the vault's own
 `stageReceipt`, and the page gets a toast naming the bands that moved: "Kept in
-your vault: ratios, now durable". The row appears under "What you did here" in
+your vault: ratios, now usable". The row appears under "What you did here" in
 the same moment. Failures, duplicates and pending issuers are quiet: they show
 as a word on the row, never in the page. The manual button, **Check for receipts
 now**, is under the hood and asks the page about every activity.
@@ -194,7 +198,8 @@ answer.
 - **`<all_urls>` host permission.** The content script runs everywhere so the
   badge and the bar can tell you a page works with nema before you click
   anything. It reads one thing: the names of the tools the page already
-  publishes to any agent, and then the offer those tools describe. A shipping
+  publishes to whichever agent the reader brought, and then the offer those
+  tools describe. A shipping
   version would ask for a site the first time you use it there.
 - **ponytail: the 30 day approval is written by the panel.** The vault's own
   auto approval is one hour and it has no setter, so `rememberSite()` writes the
@@ -222,7 +227,7 @@ answer.
   runs in the tab the learner is looking at, and the worker wakes the panel with
   a message, which Chrome never throttles.
 - **ChatGPT desktop's in-app browser does not run extensions.** There, and in
-  any agent that speaks WebMCP, nema works without this: the vault page and the
+  an agent that speaks WebMCP, nema works without this: the vault page and the
   provider pages are the interface. The extension is for the browser you already
   use, with no agent at all.
 

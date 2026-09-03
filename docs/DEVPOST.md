@@ -15,7 +15,7 @@ your learning state, everywhere.
 ## Elevator pitch, 40 words
 
 nema is a protocol anyone who teaches on the web can install in a minute: one
-manifest tag, one script tag. Readers keep signed evidence of what they learned
+manifest block, one script tag. Readers keep signed evidence of what they learned
 in a vault they own, the next site asks for it and shortens itself, and a 68
 minute cooking course becomes 27.
 
@@ -26,7 +26,7 @@ minute cooking course becomes 27.
 - Vault: https://nema-vault.migarci2.dev
 - Saucier School (a course site): https://saucier.migarci2.dev
 - Line Cook Lab (a second course site): https://linecook.migarci2.dev
-- Maillard, explained (a blog post, installed with one tag): https://maillard.migarci2.dev
+- Maillard, explained (a blog post, installed with one manifest block and one script tag): https://maillard.migarci2.dev
 - The embed itself: https://nema.migarci2.dev/nema-provider.js
 - Repository: https://github.com/migarci2/nema (MIT)
 - Judge guide: https://github.com/migarci2/nema/blob/main/docs/JUDGE_GUIDE.md
@@ -43,14 +43,15 @@ each of them. The usual fix is an integration: API keys, OAuth, a partnership
 per pair of companies. That does not scale to the open web.
 
 WebMCP changes the shape of the problem. A site declares what it can do as tools
-on the page it already serves, and any agent in the browser can call them while
+on the page it already serves, and the agent the reader already uses can call
+them while
 the person watches. A site that teaches publishes what it teaches and what it
 assumes. A learner-owned vault publishes one careful capability: answer a
 specific question about readiness, for one audience, after the human approves
 it. The agent composes the two.
 
 It also makes the install small enough for the people who really teach on the
-web. A blog joins with one manifest tag and one script tag, no backend and no
+web. A blog joins with one manifest block and one script tag, no backend and no
 account, because the tools already live in the page it publishes. Its self
 signed receipts are capped at the weight of a self report, so a stranger's site
 is safe to accept.
@@ -81,7 +82,7 @@ Then a second, unrelated site, a drill for line cooks, asks the same vault. Two
 of its three requirements come back verified from evidence it never produced, so
 its intro lessons go grey, and the missing one is named precisely.
 
-The third site is a blog post that installed nema with two tags. Its readers
+The third site is a blog post that installed nema with one manifest block and one script tag. Its readers
 walk away with a receipt too.
 
 The other half is what does not happen. The vault never sends history. The agent
@@ -145,7 +146,7 @@ Word count: 193.
 
 The same tool table also runs outside the browser: `packages/nema-mcp` boots the vault inside Node with four shims and serves the eleven tools over MCP, so Claude Code and Codex reach the learner's vault with the same names and schemas that ChatGPT reaches through WebMCP on the page. Consent travels through MCP elicitation. Nothing was rewritten: WebMCP tools turned out to be a good enough contract to be the MCP contract too.
 
-The repo also ships nema as a Chrome extension: the vault as a side panel with a model free broker, one click to share bands with the page you are on and one click to take the receipt home.
+The repo also ships nema as a Chrome extension: the vault as a side panel with a model free broker. There is nothing to copy: the page bar opens the same approval step, and after a passed check the receipt is collected into the local vault.
 
 Concept alignment is one array in the vault document and no change anywhere else. An alignment record points one origin's local id at one registry id with a relation and a status, and `shared/inference.js` never sees it: derivation runs over a translated view of the ledger in which each confirmed local claim is read as its registry concept and each unconfirmed one is left out. That is why confirming an alignment moves bands with no write to the evidence, and why rejecting it moves them back. Two tools reach it, `propose_concept_alignment` and `get_concept_alignments`, and there is deliberately no third: what a site's own name means is the learner's judgement, so confirming exists only as a button in the vault page and the extension panel.
 
@@ -175,7 +176,7 @@ only the platforms can implement is another platform.
 
 nema is a protocol anyone who teaches on the web can install in a minute, so
 every reader keeps what they learned. Sites, blogs, articles, courses: one
-manifest tag and one script tag, or five tool registrations if you would rather
+manifest block and one script tag, or five tool registrations if you would rather
 write them yourself.
 
 The vault holds signed evidence and derives your state from it: per concept, per
@@ -205,7 +206,8 @@ worth: `registered` for a key in the issuer list, `origin` for a key the site
 publishes at `/.well-known/nema-issuer.json`, `self` for a key the page
 generated in your own browser. A `self` receipt is capped at the weight of a
 self report, 0.3, so a site can vouch for itself and only for itself. That cap
-is what makes a one tag install safe to accept from a stranger, and what makes
+is what makes a manifest and script install safe to accept from a stranger, and
+what makes
 the protocol installable by a stranger in the first place.
 
 The agent is whichever one you already use: ChatGPT desktop, Chrome 149 or
@@ -247,7 +249,8 @@ vinaigrette diagnostic. A second, unrelated site asks the same vault about three
 different concepts, recognises mise en place and food safety from evidence it
 never produced, names emulsions as missing, and unlocks its labs once the agent
 has worked through that gap and the vault has recorded it. A third site, a blog
-post with two tags and no backend, issues receipts to its readers on the same
+post with one manifest block, one script tag and no backend, issues receipts to
+its readers on the same
 protocol. Three websites, one vault, no shared accounts, no partnership.
 
 ### How we built it
@@ -269,7 +272,7 @@ every one of them is also rendered in a textarea with a Copy button and every
 page that accepts one accepts it pasted, through the same code path as the tool.
 That is what makes the no agent route real rather than a fallback.
 
-`shared/provider-embed.js` is the one tag install: it reads a
+`shared/provider-embed.js` is the manifest and script install: it reads a
 `application/nema+json` manifest out of the page, registers the same five
 provider tools, renders one scoped block in the host page's own fonts, grades
 quizzes deterministically in the browser, and signs receipts with a P-256 key it
@@ -324,7 +327,8 @@ warm paper cooking school to a near black kitchen tool to a plain white blog
 post, and the vault answers all three, the claim is being shown rather than
 asserted.
 
-The one tag install. A blog post with no backend registers the same five tools,
+The manifest and script install. A blog post with no backend registers the same
+five imperative tools and the declarative form,
 grades in the page, signs with its own key and issues receipts a vault accepts,
 capped and labelled. That is the difference between a protocol two demo sites
 speak and a protocol the web can speak.

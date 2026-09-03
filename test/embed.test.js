@@ -1,5 +1,6 @@
 /**
- * The one tag install (contract section 21), tested in Node.
+ * The embed install, one manifest block and one script tag (contract section
+ * 21), tested in Node.
  *
  * `shared/provider-embed.js` keeps its browser half behind a `document` guard,
  * so importing it here registers no tools, touches no network and reads no

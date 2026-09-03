@@ -8,7 +8,7 @@ nema moves claims about a person between origins that do not trust each other,
 with an LLM in the middle. This document lists what can go wrong, what the
 implementation does about it, and what it honestly does not do.
 
-Scope: the protocol (`nema/0.1`), the reference apps, and the one tag install
+Scope: the protocol (`nema/0.1`), the reference apps, and the embed install
 any site can drop into a page. Out of scope: the security of the browser, the
 operating system, and the agent runtime itself, which the learner chooses and
 nema does not control.
@@ -90,7 +90,7 @@ no state.
 
 ### T5a. A self certified site inflates its own reader
 
-The one tag install signs receipts with a key it generated in the reader's
+The embed install signs receipts with a key it generated in the reader's
 browser. Nothing outside that page vouches for the key, so the page can claim
 whatever it likes about whoever visits it: a `deterministic` grader on a quiz
 with one obvious answer, a hundred receipts, an `apply` claim for a concept it
@@ -167,7 +167,7 @@ Mitigation. WebMCP is per document. Tools live on the page that owns the data,
 so an agent can only reach the vault's tools while the learner has the vault
 open, and a page that embeds the vault in an iframe gets nothing without the
 `allow="tools <origin>"` Permissions Policy the learner's browser enforces. The
-one tag embed registers only the five provider tools of the page it is on; it
+embed registers only the five imperative provider tools of the page it is on; it
 has no path to a vault and never sees one. This depends on the browser; see
 limits.
 
@@ -230,7 +230,7 @@ Written plainly, because a judge will find these anyway.
 4. **The seed issuer is a demo fixture.** "Load demo learner" imports
    `/seed.json`, receipts signed by the `seed` key whose origin is
    `urn:nema:seed` and whose name in the ledger is "nema demo seed". It exists
-   so a judge sees a populated vault in one click. It is not evidence of
+   so a judge sees a populated vault in one step. It is not evidence of
    anything, and the ledger says so on every row.
 5. **The agent is not ours.** nema ships no agent. The reader brings ChatGPT
    desktop, Chrome's own agent, Claude Code or Codex, and nema's guarantees have

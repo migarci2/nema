@@ -20,7 +20,7 @@ for app in "${APPS[@]}"; do
   fi
   if [ "$app" = "blog" ] || [ "$app" = "aesgcm" ] || [ "$app" = "cpu" ]; then
     # The blog and the two mirrored articles are the proof that the install is
-    # one tag: their origins carry the article and nothing else. They load the
+    # small: their origins carry the article and nothing else. They load the
     # embed and the modules the embed imports from the hub, cross origin.
     rm -rf "dist/$app/shared"
   else

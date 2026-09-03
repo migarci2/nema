@@ -49,7 +49,7 @@
       </div>
 
       <p>
-        The technical half of nema. Status: draft, implemented by the five reference apps in this repository.
+        The technical half of nema. Status: draft, implemented by the seven reference apps in this repository.
         Protocol identifier <span class="mono">nema/0.1</span>, concept namespace
         <span class="mono">nema:</span>. Three roles and six objects, two of them signed, all of it inside one
         browser. The two example providers teach cooking, so nothing in the examples below is about agents.
@@ -82,7 +82,7 @@
 
       <h2 id="architecture">Architecture</h2>
       <p>
-        nema runs as five static pages on five separate origins. There is no shared database, no account
+        nema runs as static pages on seven separate origins. There is no shared database, no account
         system and no server that sees both sides of a handoff. Each page is served by a Cloudflare Worker;
         the two providers also keep a Worker route at <span class="mono">/api/*</span>, because grading and
         signing happen on the server and neither the answer key nor the issuer private key may reach the
@@ -120,6 +120,16 @@
               <td>provider</td>
               <td>Maillard, explained: one blog post installed with the embed, self certified receipts, no server.</td>
             </tr>
+            <tr>
+              <td><a class="mono" href="https://aesgcm.migarci2.dev" rel="noopener">aesgcm.migarci2.dev</a></td>
+              <td>provider</td>
+              <td>frereit's AES-GCM article under CC BY-SA 4.0, republished with the embed, beside the original and the generated diff.</td>
+            </tr>
+            <tr>
+              <td><a class="mono" href="https://cpu.migarci2.dev" rel="noopener">cpu.migarci2.dev</a></td>
+              <td>provider</td>
+              <td>Lexi Mattick's CPU chapter under the MIT licence, republished with the embed, beside the original and the generated diff.</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -127,8 +137,9 @@
       <p>
         Tools are registered with <span class="mono">document.modelContext.registerTool</span> on the page
         that owns the data, so whichever agent the reader brought discovers them there and nowhere else.
-        Every page also loads the Chrome Labs WebMCP polyfill, so the same code path runs in a browser
-        without native support.
+        Native end to end tests ran on Chrome for Testing 154. nema targets WebMCP enabled Chrome 149+ and
+        ChatGPT's in app browser. Other browsers use the bundled Chrome Labs polyfill for a degraded
+        demonstration.
       </p>
 
       <h3>The MCP bridge</h3>
@@ -139,9 +150,9 @@
         <span class="mono">localStorage</span> with <span class="mono">~/.nema/vault.json</span>, and asks
         for consent through MCP elicitation. If the client cannot elicit, the tool returns
         <span class="mono">denied</span> with the command that pre-approves that audience, so the agent still
-        cannot approve on its own. Same eleven tools, same names, same schemas, same return shapes: browser
-        agents reach the vault through WebMCP, terminal agents reach it through MCP, and the vault does not
-        know the difference.
+        cannot approve on its own. The same eleven imperative tools, same names, same schemas, same return shapes:
+        browser agents reach the vault through WebMCP, terminal agents reach it through MCP, and the vault
+        does not know the difference. The declarative form exists only in the browser.
       </p>
       <pre class="code">claude mcp add nema -- node /path/to/nema/packages/nema-mcp/bin.mjs
 codex  mcp add nema -- node /path/to/nema/packages/nema-mcp/bin.mjs</pre>
@@ -549,8 +560,10 @@ await verifyToken(token, publicJwk) -&gt; { ok, payload, reason? }</pre>
 
       <h3>Provider role</h3>
       <p>
-        Both demo providers implement the same five tools, with one difference in the second one. Saucier
-        School personalizes a path; Line Cook Lab checks prerequisites and unlocks labs.
+        Both demo providers implement the same five imperative tools plus the declarative
+        <span class="mono">present_assertion</span> form, so <span class="mono">getTools()</span> lists six.
+        There is one difference in the second one: Saucier School personalizes a path; Line Cook Lab checks
+        prerequisites and unlocks labs.
       </p>
       <div class="s-table-wrap">
         <table class="s-table s-table--tools">
@@ -605,14 +618,15 @@ await verifyToken(token, publicJwk) -&gt; { ok, payload, reason? }</pre>
       <p>
         The demo learner has knife skills and heat control evidenced, and only weak evidence about ratios.
         Saucier School offers 68 minutes. After one approved disclosure it offers 27, and after the learner
-        passes the six minute ratios diagnostic it offers 21. Nothing is ever added to the path: everything
+        passes the six minute ratios diagnostic, keeps the receipt and presents a fresh assertion, it offers
+        21. Nothing is ever added to the path: everything
         that survives was already inside the 68 minute offer.
       </p>
 
       <figure class="figure">
         <svg viewBox="0 0 720 230" role="img" aria-labelledby="fg-title fg-desc">
           <title id="fg-title">The Saucier School unit shrinking from 68 minutes to 27 and then to 21</title>
-          <desc id="fg-desc">Three bars. The first is the full 68 minute offer. The second is 27 minutes, after three lessons are struck through on the strength of one approved disclosure. The third is 21 minutes, after the ratios diagnostic is passed and drops out.</desc>
+          <desc id="fg-desc">Three bars. The first is the full 68 minute offer. The second is 27 minutes, after three lessons are struck through on the strength of one approved disclosure. The third is 21 minutes, after the ratios diagnostic is passed, its receipt is kept and a fresh assertion is presented, so the diagnostic drops out.</desc>
 
           <g>
             <text class="fg-num" x="100" y="40" text-anchor="end">68</text>
@@ -668,8 +682,10 @@ await verifyToken(token, publicJwk) -&gt; { ok, payload, reason? }</pre>
       </p>
       <p>
         Line Cook Lab is the other half of the claim. It has never spoken to Saucier School. It verifies one
-        signature from the vault, checks the token was minted for its own origin, reads three bands, and
-        unlocks its labs with the label "Prerequisite recognised from another provider".
+        signature from the vault, checks the token was minted for its own origin, reads the bands it asked
+        for, skips the material already covered, and names the prerequisite still missing. Once that
+        prerequisite is supplied, its labs open with the label "Prerequisite recognised from another
+        provider".
       </p>
 
       <h2 id="conformance">Conformance</h2>

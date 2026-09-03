@@ -27,9 +27,11 @@ https://github.com/hackclub/putting-the-you-in-cpu under the MIT licence:
     SOFTWARE.
 
 public/original.html is that chapter as mirrored, together with the stylesheet,
-the six figures and the favicons it loads. Two things were changed while
-mirroring, and both are said in the attribution on the page: the Plausible
-analytics script was removed, and the canonical link was pointed at this copy.
+the six figures and the favicons it loads. Three things were changed while
+mirroring, and all three are said in the attribution on the page: the Plausible
+analytics script was removed, the chapter's relative links were rewritten as
+absolute links back to cpu.land so they still reach the original, and the
+canonical link was pointed at this copy.
 The chapter's Google Fonts links are left as they are, because this is a mirror
 of someone else's page.
 

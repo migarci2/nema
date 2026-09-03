@@ -3,7 +3,7 @@
   "name": "nema-blog",
   "compatibility_date": "2026-08-01",
   "workers_dev": true,
-  // The third example: an ordinary blog post that installs nema with one tag.
+  // The third example: an ordinary blog post that installs nema with the embed.
   // No Worker script and no issuer secret. The key that signs its receipts is
   // generated in the reader's browser, so there is no /.well-known/nema-issuer.json
   // to publish and the receipts land in the vault's self certified tier.

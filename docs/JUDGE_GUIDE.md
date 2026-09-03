@@ -7,6 +7,10 @@ gets shared, every time.
 
 ![a site asks, you say yes, it counts next time](../apps/site/public/press/card-how-it-works-sm.png)
 
+Your learning is scattered across the web: a course here, an article there, a
+video somewhere else. nema keeps it in one place you own, and your agent uses
+WebMCP to connect that place to every page you learn from.
+
 **If you only have three minutes**, do
 [step 1 of the golden path](#step-1-a-course-site-asks-what-you-know-and-68-minutes-become-27).
 It is the whole idea end to end: a course asks, you say yes, 68 minutes become
@@ -32,9 +36,14 @@ real, testable and completely unrelated to the machinery underneath.
 |---|---|---|
 | Site | https://nema.migarci2.dev | The hub, and the install guide at `/creators.html`. Start here. |
 | Vault | https://nema-vault.migarci2.dev | The learner's vault. 11 imperative tools plus one declarative form, so `getTools()` lists 12. |
-| Saucier School | https://saucier.migarci2.dev | Provider 1, "Pan Sauces and Emulsions". 5 tools. |
-| Line Cook Lab | https://linecook.migarci2.dev | Provider 2, "Service Under Pressure". 5 tools. |
-| Maillard, explained | https://maillard.migarci2.dev | One blog post, installed with one manifest tag and one script tag. The same 5 tools plus the `present_assertion` form, no server. |
+| Saucier School | https://saucier.migarci2.dev | Provider 1, "Pan Sauces and Emulsions". 5 imperative tools plus the `present_assertion` form, so `getTools()` lists 6. |
+| Line Cook Lab | https://linecook.migarci2.dev | Provider 2, "Service Under Pressure". 5 imperative tools plus the `present_assertion` form, so `getTools()` lists 6. |
+| Maillard, explained | https://maillard.migarci2.dev | One blog post, installed with one manifest block and one script tag. The same 5 imperative tools plus the `present_assertion` form, so `getTools()` lists 6. No server. |
+| AES-GCM, compared | https://aesgcm.migarci2.dev/compare | frereit's article under CC BY-SA 4.0, republished beside the nema version with the generated diff. The nema copy at `/` is a teaching page: 5 imperative tools plus the form. |
+| CPU chapter, compared | https://cpu.migarci2.dev/compare | Lexi Mattick's CPU chapter under the MIT licence, republished beside the nema version with the generated diff. The nema copy at `/` is a teaching page: 5 imperative tools plus the form. |
+
+Seven origins in all: the hub, the vault, two courses, one blog, and the two
+mirrored articles.
 
 Repository: https://github.com/migarci2/nema (MIT).
 
@@ -58,15 +67,45 @@ to Enabled, restart, then attach whatever agent you use in that browser.
 or the same line with `codex mcp add`. The vault runs inside Node with the same
 eleven tools; the sites stay in the browser and you paste one token between them.
 
-**Any other browser.** It still works. Every page loads the Chrome Labs WebMCP
-polyfill, so tools register and the UI behaves identically. The header pill on
-every page says `tools: N` and reads `native` or `polyfill`, so you always know
-which path you are on.
+**Browser support.** Native end to end tests ran on Chrome for Testing 154.
+nema targets WebMCP enabled Chrome 149+ and ChatGPT's in app browser. Other
+browsers use the bundled Chrome Labs polyfill for a degraded demonstration. The
+header pill on every page says `tools: N` and reads `native` or `polyfill`, so
+you always know which path you are on.
 
 Nothing needs an account, an API key or a sign in. Nothing is stored on a
 server. The vault lives in your browser's `localStorage`.
 
 - No Chrome 149 at hand? Chrome for Testing canary has WebMCP on by default: `npx --yes @puppeteer/browsers install chrome@canary --path .chrome`, then open the URLs with that binary.
+
+## Evidence, frozen for this submission
+
+Unit tests: 267 (`npm test`). Extension end to end: 38 checks. Native browser
+flows on Chrome for Testing 154 against the live origins: golden-vault 46,
+golden-providers 12, golden-connect 38, all passing. MCP: `npm run test:mcp`,
+8 passing.
+
+Tool inventory, checkable with `document.modelContext.getTools()`:
+
+- Teaching page: 5 imperative tools and 1 declarative form, so `getTools()`
+  returns 6 entries.
+- Browser vault: 11 imperative tools and 1 declarative form, so `getTools()`
+  returns 12 entries.
+- MCP bridge: the 11 imperative vault tools.
+
+The seven live origins, by role:
+
+| role | origin |
+|---|---|
+| hub | https://nema.migarci2.dev |
+| vault | https://nema-vault.migarci2.dev |
+| course | https://saucier.migarci2.dev |
+| course | https://linecook.migarci2.dev |
+| blog | https://maillard.migarci2.dev |
+| mirrored article | https://aesgcm.migarci2.dev |
+| mirrored article | https://cpu.migarci2.dev |
+
+Submission commit: `03c14aa`.
 
 ## Before you start
 
@@ -230,21 +269,22 @@ available with the label "Prerequisite recognised from another provider".
 Two independent websites and one learner owned vault, with no shared account
 between them and no back channel.
 
-### Step 3. A blog post does the same with one tag
+### Step 3. A blog post does the same with one manifest block and one script tag
 
 Open https://maillard.migarci2.dev. It is one article, "Why browning tastes like
 that", written the way a personal blog is written: white page, a serif, one
-column. It has no server, no database and no account. Its whole integration is
-two tags, and the source marks them with a comment so you can copy them.
+column. It has no server, no database and no account. Its whole integration is one
+manifest block and one script tag, and the source marks them with a comment so
+you can copy them.
 
 Read it, click **Connect your vault** at the top of the block, approve, and the
 article tells you what you can skip. Answer the two questions at the end and
-click **Keep in my vault**. With an agent, the same five provider tool names are
-on that page and it can do all of it.
+click **Keep in my vault**. With an agent, the same five imperative provider tool names are on that page and
+it can do all of it.
 
 That whole loop is the point of this step: a blog with no server, no account and
 no build step, talking to a vault it has never met, through two buttons that
-came with the one script tag.
+came with the script tag.
 
 In the vault, that receipt reads `self`. The blog signs with a key it generated
 in the reader's browser and publishes inside the receipt, so the signature
@@ -344,16 +384,17 @@ Interactive `codex` and Claude Code ask you to approve each nema tool call; `cod
 
 ## nema in your browser, optional, 30 seconds to load
 
-The same vault as a Chrome side panel, with a broker that needs no model:
-one click shares bands with the page you are on, one click takes the receipt
-home. Chrome 116 or newer. ChatGPT desktop's browser does not run extensions.
+The same vault as a Chrome side panel, with a broker that needs no model. There
+is nothing to copy: the page bar opens the same approval step, and after you
+pass a check the receipt is collected into the local vault. Chrome 116 or newer.
+ChatGPT desktop's browser does not run extensions.
 
 1. `bash scripts/build-extension.sh`, or download the built zip from https://github.com/migarci2/nema/releases/tag/v0.1.0 and unzip it.
 2. Open `chrome://extensions`, turn on Developer mode, click Load unpacked and choose `packages/nema-extension/dist`.
-3. Pin the nema icon and click it: the vault opens in the side panel. Click "Load demo learner".
-4. Open https://saucier.migarci2.dev. The badge shows how many nema tools the page has; the "This page" strip lists them.
-5. Click "Share bands with this page" and approve: the course rebuilds its path from 68 minutes to 27.
-6. Answer "Which vinaigrette holds" in the page, then click "Take the receipt to my vault": the signed receipt lands in your ledger and the ratios bands move.
+3. Pin the nema icon and click it: the vault opens in the side panel. Click "Load the demo learner".
+4. Open https://saucier.migarci2.dev. A bar appears at the bottom of the page, "This site works with nema. Share what you already know?", and the panel reads "Saucier School asks about 5 things you may already know" with each one in plain words.
+5. Click **Review request**, then **Approve**: the course rebuilds its path from 68 minutes to 27.
+6. Answer "Which vinaigrette holds" in the page. The receipt is collected with nothing to copy, and the page shows a toast: "Kept in your vault: ratios, now usable".
 
 Reload any tab that was open before you loaded the extension. Its own test: `CHROME=<chrome> node packages/nema-extension/test/e2e.mjs`.
 
@@ -396,7 +437,7 @@ No agent, no extension, no clipboard.
    names it. A site with no relationship to anyone got a precise, minimal answer
    about a stranger, because the learner clicked Approve.
 5. Open https://maillard.migarci2.dev and view source. That is the whole
-   install: one manifest tag, one script tag, and the same two buttons.
+   install: one manifest block, one script tag, and the same two buttons.
 
 If you only look at one screen, make it the consent modal.
 
@@ -415,8 +456,9 @@ If you only look at one screen, make it the consent modal.
 - The derivation. Bands are recomputed from the receipt ledger on every read
   with the formulas in `docs/SPEC.md`. Nothing is hardcoded for the demo.
 - Deterministic grading on the Worker, before signing, for the two course sites.
-- The one tag install. The blog runs the same five tools from the shared embed,
-  with no build step and no backend of its own.
+- The manifest and script install. The blog runs the same five imperative tools
+  and the declarative form from the shared embed, with no build step and no
+  backend of its own.
 - The cooking. The ratios, temperatures and rescues in the units are the real
   ones. A 3:1 vinaigrette with mustard holds. A butter emulsion mounted off the
   heat and kept under about 60 C holds; boiled, it breaks. Chicken at 60 C is
@@ -439,8 +481,8 @@ If you only look at one screen, make it the consent modal.
   `discriminate` claim, and discrimination claims contribute only to
   `discriminate`, so no Saucier receipt is load bearing for the Line Cook unit,
   and this guide does not pretend otherwise. What is real is the mechanism: Line
-  Cook Lab verifies one vault signature and reads three bands, whoever produced
-  the evidence underneath them.
+  Cook Lab verifies one vault signature and reads the bands it asked for,
+  whoever produced the evidence underneath them.
 
 **Known limits.** Provider answer keys are visible in devtools, the vault key
 is in `localStorage`, and there is no revocation. Written up honestly in

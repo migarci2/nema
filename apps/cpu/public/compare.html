@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Same chapter, with and without nema</title>
+<title>Same CPU chapter, with and without nema</title>
 <link rel="icon" href="/favicon-on-light.png">
 <style>
   :root { color-scheme: light; }
@@ -48,7 +48,7 @@
 <body>
 <div class="wrap">
 
-  <h1 id="headline">Same chapter.</h1>
+  <h1 id="headline">Same CPU chapter.</h1>
   <p class="lede">
     <b>Learn it once. It counts everywhere.</b>
     On the left, a chapter as it was published. On the right, the same bytes with nema added:
@@ -75,8 +75,9 @@
     The chapter is <a href="https://cpu.land/the-basics">The &ldquo;Basics&rdquo;</a>, chapter 1 of
     <a href="https://cpu.land/">Putting the &ldquo;You&rdquo; in CPU</a> by Lexi Mattick, mirrored
     under the <a href="https://opensource.org/license/mit" rel="license">MIT licence</a> and
-    republished under the same licence with nema added. The analytics script was removed and the
-    canonical link was pointed at this copy; nothing else was changed.
+    republished under the same licence with nema added. The analytics script was removed, the
+    chapter's relative links were rewritten as absolute links back to cpu.land, and the canonical
+    link was pointed at this copy; nothing else was changed.
   </p>
 
 </div>
@@ -94,7 +95,7 @@
         if (lines[i].charAt(0) === '+' && lines[i].slice(0, 3) !== '+++') added++;
       }
       document.getElementById('headline').textContent =
-        'Same article. ' + added + (added === 1 ? ' line added.' : ' lines added.');
+        'Same CPU chapter. ' + added + (added === 1 ? ' line added.' : ' lines added.');
       var pre = document.getElementById('diff');
       pre.textContent = '';
       for (var j = 0; j < lines.length; j++) {
@@ -109,7 +110,7 @@
       }
     })
     .catch(function () {
-      document.getElementById('headline').textContent = 'Same article, with nema added.';
+      document.getElementById('headline').textContent = 'Same CPU chapter, with nema added.';
       document.getElementById('diff').textContent =
         'diff.txt is written by scripts/build.sh: run bash scripts/build.sh cpu.';
     });

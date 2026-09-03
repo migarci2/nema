@@ -191,6 +191,25 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
 
 .lp-tagline { font-size: var(--fs-16); color: var(--cyan); }
 
+/* The promise, in the words the whole submission repeats. */
+.lp-promise {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-20);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+/* One line under the promise: the distributed premise, in plain words. */
+.lp-strapline {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-16);
+  line-height: 1.45;
+  color: var(--ink-2);
+  max-width: 52ch;
+}
+
 /* display: the wordmark and these three lines, nothing else. */
 .lp-thesis {
   display: flex;
@@ -394,7 +413,8 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
 .lp-step__why { flex: none; font-size: var(--fs-12); color: var(--teal); }
 .lp-step[data-done] .lp-step__name { text-decoration: line-through; color: var(--ink-3); }
 
-/* The install demo: two tags, then the six tools they register. */
+/* The install demo: the manifest block and the script tag, then the six tools
+   they register. */
 .lp-file {
   border: 1px solid var(--line-soft);
   border-radius: var(--r-2);
@@ -519,7 +539,7 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
   height: 48px;
 }
 
-/* The bar the extension draws on any page that installed the two tags. */
+/* The bar the extension draws on any page that installed the embed. */
 .lp-ext { position: relative; }
 
 .lp-bar {
@@ -920,6 +940,8 @@ body[data-page-title='Hub'] .n-app { max-width: 1168px; }
   line-height: 1.2;
   color: var(--ink);
 }
+
+.layer__strapline { font-size: var(--fs-16); color: var(--ink-2); max-width: 66ch; }
 
 .layer__say { font-size: var(--fs-16); color: var(--ink-2); max-width: 66ch; }
 .layer__say b { color: var(--ink); font-weight: 600; }

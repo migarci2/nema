@@ -7,6 +7,10 @@ in your final report with the reason, and keep the public interface stable.
 Read `PLAN.md` for the hackathon context and the product story. Read
 `docs/PHILOSOPHY.md` (if present) for tone.
 
+This contract is chronological. Later numbered amendments override earlier
+sections when they describe the same surface. Sections 30 and 31 describe the
+current learner policy and extension panel.
+
 ## 0. Non-negotiables
 
 - Plain HTML + CSS + ES modules. No frameworks, no bundlers, no TypeScript.
@@ -1502,35 +1506,59 @@ The three states, in `packages/nema-extension/sidepanel.js`:
    "Load the demo learner". A vault that already holds evidence drops the button
    and shows the Next card instead. Import a vault file and Start empty move
    under the hood.
-2. **A nema page, not shared yet.** One card: "<Site> asks to know <n> things",
-   the n rows in plain words with what the vault says about each (verified, not
-   sure yet, not yet), a primary "Share", a quiet "Not now", and the "Remember
-   this site for 30 days" checkbox. Under it, nothing. The vault's own consent
-   modal stays the confirmation step, and in the panel it is that same card with
-   the buttons swapped: the panel's ground, no dim, the same rows in the same
-   words (name, ability, the plain status word, no subtitle), one line "Shared
-   for 30 minutes. Nothing else leaves." in place of the withheld list, the
-   expiry sentence and the countdown, the same checkbox, then Approve and Deny.
-   `app.js` still owns the modal and still settles the promise: `sidepanel.js`
-   renders the rows and the line into the modal body, and `sidepanel.css` hides
-   the page width copy. `#consent-modal`, `[data-consent-approve]` and
+2. **A nema page, not shared yet.** One card: "<Site> asks about <n> things you
+   may already know", the n rows in plain words with what the vault says about
+   each (verified, not sure yet, not yet) as quiet text, never a pill. The
+   ability is said the way a person says it: recognize is "recognise", retrieve
+   is "from memory", explain is "in your own words", apply is "in practice",
+   transfer is "in a new situation", discriminate is "tell apart", so a row
+   reads "Cooking ratios, in practice   not sure yet". Then a primary "Review
+   request" and a quiet "Not on this visit". Under it, nothing.
+
+   "Review request", not "Share": nothing leaves at that click, it opens the
+   step where the learner approves. The vault's own consent modal is that step,
+   and in the panel it is the same card with the buttons swapped: the panel's
+   ground, no dim, the same rows in the same words, one line "This answer will
+   be valid for 30 minutes. Nothing else will leave." in place of the withheld
+   list, the expiry sentence and the countdown, then Approve and Deny. `app.js`
+   still owns the modal and still settles the promise: `sidepanel.js` renders
+   the rows and the line into the modal body, and `sidepanel.css` hides the page
+   width copy. `#consent-modal`, `[data-consent-approve]` and
    `[data-consent-deny]` are unchanged, and the origin, the purpose string and
-   the learner id stay in the modal's own block under the hood. The checkbox is
-   one node that moves into the modal and back, so a site is promised one thing,
-   not two: the vault's own hour long auto approval line is hidden in the
-   panel.
+   the learner id stay in the modal's own block under the hood.
+
+   The "Remember this site for 30 days" checkbox lives in that block under the
+   hood too. An answer that expires in thirty minutes and an approval that lasts
+   thirty days are two different promises, and beside each other they read as
+   one. The vault's own hour long auto approval line is hidden in the panel for
+   the same reason.
 3. **Shared.** One line, "Shared with <Site>. 68 minutes became 27.", then
    "What you did here", the receipts this page produced as they arrive, one row
-   each with the activity and one word (verified, waiting, already in your
-   vault), and one line naming the bands that moved. Then the Next card, reduced
-   to its title, its minutes, the rubric checklist and Done.
+   each with the activity and one word: kept, waiting, already in your vault.
+   "kept", not "verified": nema verified a signature, not the learner. Then one
+   plain sentence for what moved, "Cooking ratios is now usable." The ability by
+   ability transition, "Cooking ratios, apply: uncertain to usable, and 3 below
+   it", goes under the hood. The empty state is "Nothing yet. Pass something
+   here and nema will keep the receipt."
+
+   The card is the visit, not the tab. Which origins were shared with, which
+   were told "not on this visit", the line each one earned and the receipts each
+   one gave back are written to `chrome.storage.session`, so a side panel closed
+   and opened again does not ask the same site twice in the same visit.
+
+State 1 with a vault that already holds evidence is the headline and one
+sentence, "Open a page with the nema mark. It will ask here before anything is
+shared.", and nothing else: the Next card is under the hood, because a self
+reported Done sitting next to a signed receipt reads as the same kind of
+evidence and it is not.
 
 Everything else lives in exactly one closed `<details>` at the bottom of the
 panel, labelled "Under the hood", and stays functional there: the tool names,
-the tool call log with its timings, the alignments with Confirm and Reject,
-"Check for receipts now", the two other first run choices, and the whole vault
-page (lede, summary, graph, learner state, needs, ledgers, the "Do it by hand"
-forms, the tool activity strip). `scripts/build-extension.sh` builds that
+the tool call log with its timings, the full band transition, the two transport
+lines below, the alignments with Confirm and Reject, the thirty day approval,
+the Next card with its rubric and Done, "Check for receipts now", the two other
+first run choices, and the whole vault page (lede, summary, graph, learner
+state, needs, ledgers, the "Do it by hand" forms, the tool activity strip). `scripts/build-extension.sh` builds that
 structure by rewriting the vault's `<main>`: the extension's three cards, then
 the block with the vault inside it. The vault files are still copied, never
 edited.
@@ -1538,6 +1566,14 @@ edited.
 An alignment only the learner can settle surfaces as one quiet line inside
 state 2 or 3, "This site calls Maillard reaction 'browning science'. Confirm",
 and only while there is one to decide.
+
+Two lines under the hood say which WebMCP is which, so a technical judge who
+inspects the panel does not read the whole demonstration as polyfilled:
+"Page transport: native WebMCP" or "WebMCP polyfill", read from the tab itself
+(`bridge.js` reports whether the polyfill installed itself there, which it only
+does when the browser has none), and "Panel transport: extension broker", which
+is how the panel reaches that page. The panel's own document is always
+polyfilled, `panel-webmcp.js`, and that says nothing about the page in the tab.
 
 Two rules the panel keeps for itself:
 
@@ -1549,4 +1585,17 @@ Two rules the panel keeps for itself:
   which is the set the panel's Share builds.
 
 Look: the vault's own tokens, navy, one accent, 15 px body, generous spacing,
-sentence case, no pill with a machine word in the three states.
+sentence case, no pill and no machine word in the three states.
+
+The extension README leads with the two things a judge meets before the
+explanation does: that the prototype runs on all pages so it can detect
+published nema tools, and reads only the tool list and the offer those tools
+describe before a request is approved; and that the panel keeps a local vault
+for this browser profile which does not sync with the web vault, so the demo
+learner is loaded inside the panel.
+
+Reviewed by Oracle (GPT-5.6 Sol, Pro thinking), `docs/reviews/oracle-2026-09-04.md`
+section 4. Every recommendation in that section is implemented here except one:
+alignment decisions still surface as the single quiet line in states 2 and 3,
+because the one decision only a person can take is the point of section 23, and
+one line is not a second surface.

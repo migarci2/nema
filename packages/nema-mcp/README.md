@@ -14,9 +14,9 @@ with four small shims (a file backed `localStorage`, an event sink for
 `document`, a `fetch` that reads repo files, and module hooks that resolve the
 vault's absolute imports).
 
-The vault is the infrastructure. The agent is a commodity: nema ships none, and
-this package exists so the one you already run in a terminal can hold the vault
-side while the sites stay in a browser. You ask here for a readiness assertion,
+The vault is the infrastructure, and nema does not ship an agent of its own.
+This package exists so the agent you already run in a terminal can hold the
+vault side while the sites stay in a browser. You ask here for a readiness assertion,
 approve it here, and paste the token into "Paste an assertion" on the site.
 Receipts come back the same way, pasted or carried by the agent.
 
@@ -93,7 +93,8 @@ bands without a single line of the ledger changing.
 
 Receipts from a site that signs with its own browser generated key verify and
 land as `self`, capped at the weight of a self report, 0.3. That is how a page
-with a one tag install and no server takes part without being able to inflate
+installed with one manifest block and one script tag, and no server, takes part
+without being able to inflate
 anyone: it vouches for itself and for nobody else.
 
 ## Consent outside the browser

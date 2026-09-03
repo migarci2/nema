@@ -120,7 +120,8 @@ function report(data) {
 /**
  * What this page teaches, in the two lists the panel needs: the concepts it
  * can move, and the local names it uses for them. `describe_learning_offer`
- * reads the manifest the page already publishes to any agent; it changes
+ * reads the manifest the page already publishes to whichever agent the reader
+ * brought; it changes
  * nothing on the page.
  */
 function summarizeManifest(payload) {

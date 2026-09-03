@@ -9,7 +9,8 @@
  *   nema-ext:execute        ->  nema-ext:result   { ok, result } or { ok:false, error }
  *
  * It never reads page state, never writes to the page, and executes only tools
- * the page itself registered for any agent. Native WebMCP wants a JSON string
+ * the page itself registered for whichever agent the reader brought. Native
+ * WebMCP wants a JSON string
  * as input and returns a JSON string (CONTRACT section 16), the polyfill takes
  * and returns objects, so both directions are normalized here.
  */

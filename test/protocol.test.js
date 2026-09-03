@@ -718,7 +718,7 @@ test('the full handoff works end to end: assertion out, receipt back', async () 
 
 const BLOG = 'https://maillard.migarci2.dev';
 
-/** A receipt from a page that installed the one tag and signs with its own key. */
+/** A receipt from a page that installed the embed and signs with its own key. */
 async function selfCertifiedReceipt(overrides = {}) {
   const key = overrides.key || (await generateKeyPair());
   const payload = buildReceiptPayload(

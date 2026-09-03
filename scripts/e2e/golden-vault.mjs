@@ -82,7 +82,7 @@ try {
   const goal = parse(await page.evaluate(tool('set_learning_goal', { title: 'Hold a pan sauce through service', concepts: ['nema:pan-sauces'] })));
   ok(goal.status === 'ok' && goal.goalId, 'goal set');
 
-  // A page that installed the one tag: it signs with a key it made itself and
+  // A page that installed the embed: it signs with a key it made itself and
   // encloses the public half. Nothing listens on 9999, so the well known
   // lookup fails and the receipt stays at the self tier.
   const cryptoMod = await import(REPO + '/shared/crypto.js');

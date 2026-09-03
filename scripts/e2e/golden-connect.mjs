@@ -3,7 +3,7 @@
 // Contract section 25: a site opens the vault in a popup, the learner approves
 // there, and the vault answers the site with postMessage. No agent, no
 // extension, no copied token. This script drives exactly that, twice: once on
-// Saucier School (a full course) and once on the blog (the one tag install).
+// Saucier School (a full course) and once on the blog (the embed install).
 //
 // Usage:
 //   CHROME=<chrome with WebMCP> node scripts/e2e/golden-connect.mjs \
@@ -416,7 +416,7 @@ try {
   await ledger.goto('about:blank', 400);
 
   // -------------------------------------------------------------------------
-  // The blog: the same two buttons, from a one tag install on another origin.
+  // The blog: the same two buttons, from an embed install on another origin.
   // -------------------------------------------------------------------------
   const { page: post } = await browser.newPage(`${B}/`);
   /* localStorage is only reachable once the blog document itself is up. */

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Same article, with and without nema</title>
+<title>Same AES-GCM article, with and without nema</title>
 <link rel="icon" href="data:,">
 <style>
   :root { color-scheme: light; }
@@ -48,7 +48,7 @@
 <body>
 <div class="wrap">
 
-  <h1 id="headline">Same article.</h1>
+  <h1 id="headline">Same AES-GCM article.</h1>
   <p class="lede">
     <b>Learn it once. It counts everywhere.</b>
     On the left, an article as it was published. On the right, the same bytes with nema added:
@@ -92,7 +92,7 @@
         if (lines[i].charAt(0) === '+' && lines[i].slice(0, 3) !== '+++') added++;
       }
       document.getElementById('headline').textContent =
-        'Same article. ' + added + (added === 1 ? ' line added.' : ' lines added.');
+        'Same AES-GCM article. ' + added + (added === 1 ? ' line added.' : ' lines added.');
       var pre = document.getElementById('diff');
       pre.textContent = '';
       for (var j = 0; j < lines.length; j++) {
@@ -107,7 +107,7 @@
       }
     })
     .catch(function () {
-      document.getElementById('headline').textContent = 'Same article, with nema added.';
+      document.getElementById('headline').textContent = 'Same AES-GCM article, with nema added.';
       document.getElementById('diff').textContent =
         'diff.txt is written by scripts/build.sh: run bash scripts/build.sh aesgcm.';
     });

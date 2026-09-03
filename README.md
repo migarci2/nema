@@ -18,6 +18,12 @@
 </p>
 
 <p align="center">
+  Your learning is scattered across the web: a course here, an article there, a<br>
+  video somewhere else. nema keeps it in one place you own, and your agent uses<br>
+  WebMCP to connect that place to every page you learn from.
+</p>
+
+<p align="center">
   <b>The web teaches. Your vault remembers. Your agent connects the two.</b>
 </p>
 
@@ -36,7 +42,7 @@ nema is a WebMCP protocol for learning, plus the pages that implement it.
    derives your state from it, per concept, per ability.
 2. A **site that teaches** publishes what it teaches, what it assumes, and what
    evidence each activity produces, as tools on its own page. A course site
-   writes that by hand; a blog installs it with one manifest tag and one script
+   writes that by hand; a blog installs it with one manifest block and one script
    tag and needs no backend at all.
 3. Your **agent** is whichever one you already use: ChatGPT desktop, Chrome 149
    or later, Claude Code or Codex over MCP. It asks the site what it needs, asks
@@ -91,24 +97,28 @@ same.
 
 | App | URL | Tools |
 |---|---|---|
-| Site (hub) | https://nema.migarci2.dev | `explain_nema`, `open_app` (declarative) |
+| Site (hub) | https://nema.migarci2.dev | `explain_nema` |
 | Vault | https://nema-vault.migarci2.dev | 11 imperative + 1 declarative form (12 in `getTools()`) |
-| Saucier School (provider) | https://saucier.migarci2.dev | 5 + `present_assertion` (declarative) |
-| Line Cook Lab (provider) | https://linecook.migarci2.dev | 5 + `present_assertion` (declarative) |
-| Maillard, explained (a blog) | https://maillard.migarci2.dev | the same 5 + `present_assertion`, from the embed, with no server |
+| Saucier School (provider) | https://saucier.migarci2.dev | 5 imperative + `present_assertion` (declarative), 6 in `getTools()` |
+| Line Cook Lab (provider) | https://linecook.migarci2.dev | 5 imperative + `present_assertion` (declarative), 6 in `getTools()` |
+| Maillard, explained (a blog) | https://maillard.migarci2.dev | the same 5 imperative + `present_assertion`, from the embed, with no server |
+| AES-GCM, compared | https://aesgcm.migarci2.dev/compare | frereit's article, CC BY-SA 4.0, beside the nema version. The nema copy is a teaching page: the same 5 + the form |
+| CPU chapter, compared | https://cpu.migarci2.dev/compare | Lexi Mattick's chapter, MIT, beside the nema version. The nema copy is a teaching page: the same 5 + the form |
 | The embed | https://nema.migarci2.dev/nema-provider.js | source in `shared/provider-embed.js` |
 
 There is no nema agent. The agent is the reader's own, and every flow also works
 with no agent at all.
 
-Judges: start with [`docs/JUDGE_GUIDE.md`](docs/JUDGE_GUIDE.md). It is a three
+Judges: start with [`docs/JUDGE_GUIDE.md`](docs/JUDGE_GUIDE.md). It is a four
 step walkthrough, with an agent or by hand, with the exact tool names and a list
 of things to try to break.
 
 ## Bring your own agent
 
-The vault is the infrastructure. The agent is a commodity, and the same eleven
-tools reach it over two transports:
+The vault is the infrastructure, and nema does not require its own agent. The
+same eleven imperative vault tools reach it over two transports: browser agents
+through WebMCP, and Claude Code and Codex through MCP. The browser vault also
+exposes one declarative form.
 
 | agent | transport | how |
 |---|---|---|
@@ -126,16 +136,16 @@ browser one and merges by receipt id.
 
 ## nema in your browser (Chrome extension)
 
-The same vault as a Chrome side panel, with a broker that needs no model:
-one click shares bands with the page you are on, one click takes the receipt
-home. Chrome 116 or newer. ChatGPT desktop's browser does not run extensions.
+The same vault as a Chrome side panel, with a broker that needs no model. There
+is nothing to copy. Chrome 116 or newer. ChatGPT desktop's browser does not run
+extensions.
 
 1. `bash scripts/build-extension.sh`
 2. Open `chrome://extensions`, turn on Developer mode, click Load unpacked and choose `packages/nema-extension/dist`.
-3. Pin the nema icon and click it: the vault opens in the side panel. Click "Load demo learner".
-4. Open https://saucier.migarci2.dev. The badge shows how many nema tools the page has; the "This page" strip lists them.
-5. Click "Share bands with this page" and approve: the course rebuilds its path from 68 minutes to 27.
-6. Answer "Which vinaigrette holds" in the page, then click "Take the receipt to my vault": the signed receipt lands in your ledger and the ratios bands move.
+3. Pin the nema icon and click it: the vault opens in the side panel. Click "Load the demo learner".
+4. Open https://saucier.migarci2.dev. A bar appears at the bottom of the page, "This site works with nema. Share what you already know?", and the panel reads "Saucier School asks about 5 things you may already know" with each one in plain words.
+5. Click **Review request**, then **Approve**: the course rebuilds its path from 68 minutes to 27.
+6. Answer "Which vinaigrette holds" in the page. The receipt is collected with nothing to copy, and the page shows a toast: "Kept in your vault: ratios, now usable".
 
 Reload any tab that was open before you loaded the extension. Its own test: `CHROME=<chrome> node packages/nema-extension/test/e2e.mjs`.
 
@@ -200,7 +210,8 @@ verifies or reads storage.
 
 ## For creators
 
-Any page that teaches something can join. Two tags, no backend, no account:
+Any page that teaches something can join. One manifest block and one script tag,
+no backend, no account:
 
 ```html
 <script type="application/nema+json">
@@ -219,8 +230,8 @@ Any page that teaches something can join. Two tags, no backend, no account:
 <script type="module" src="https://nema.migarci2.dev/nema-provider.js"></script>
 ```
 
-The script registers the same five provider tools plus the declarative
-`present_assertion` form, renders one quiet block in your own fonts and colours,
+The script registers the same five imperative provider tools plus the
+declarative `present_assertion` form, renders one quiet block in your own fonts and colours,
 grades the quiz in the page, and signs each receipt with a key it generates in
 the reader's browser. Those receipts are self certified: a vault verifies them,
 labels them `self` and caps their weight at the `self-report` weight, 0.3. Two
@@ -239,7 +250,7 @@ Node 20 or later and wrangler 4. No dependencies to install beyond wrangler.
 npm install          # wrangler only
 npm test             # node --test "test/**/*.test.js"
 npm run build        # dist/<app> = apps/<app>/public + shared
-npm run dev          # five wrangler dev servers, ports below
+npm run dev          # four wrangler dev servers: site, vault, and the two courses
 ```
 
 Run the tests through `npm test`. `node --test test/` is not equivalent on
@@ -247,19 +258,24 @@ Node 22 and later: it treats the directory argument as a single test file and
 fails. If you want the raw runner, use `node --test "test/**/*.test.js"` or
 `node --test test/*.test.js`.
 
+`npm run dev` starts the four servers the golden path needs. The other three are
+started one at a time with `bash scripts/dev-restart.sh <app>`.
+
 | App | Dev port |
 |---|---|
 | site | http://localhost:8780 |
 | vault | http://localhost:8781 |
 | harness (Saucier School) | http://localhost:8782 |
 | security (Line Cook Lab) | http://localhost:8783 |
-| blog (Maillard, explained) | http://localhost:8784 |
+| blog (Maillard, explained) | http://localhost:8785 |
+| aesgcm (AES-GCM, compared) | http://localhost:8786 |
+| cpu (CPU chapter, compared) | http://localhost:8787 |
 
-For native WebMCP, open Chrome 149 or later, go to
-`chrome://flags/#enable-webmcp-testing`, set it to Enabled and restart. In
-ChatGPT desktop's in-app browser, WebMCP is on by default. In any other browser
-the Chrome Labs polyfill takes over and everything still works; the header pill
-on each page tells you which path is live and how many tools are registered.
+Native end to end tests ran on Chrome for Testing 154. nema targets WebMCP
+enabled Chrome 149+ (`chrome://flags/#enable-webmcp-testing`, set to Enabled,
+then restart) and ChatGPT's in app browser. Other browsers use the bundled
+Chrome Labs polyfill for a degraded demonstration; the header pill on each page
+tells you which path is live and how many tools are registered.
 
 `npm run seed` re-signs the demo learner fixture. It needs
 `secrets/issuer-private-keys.json`, which is gitignored, so it is only useful if
@@ -274,7 +290,7 @@ nema/
     PHILOSOPHY.md      why learning state belongs to the learner
     SPEC.md            protocol 0.1: objects, tokens, verification, inference
     THREAT_MODEL.md    threats, mitigations, and the honest limits of this demo
-    JUDGE_GUIDE.md     three step walkthrough, what to break, real vs simulated
+    JUDGE_GUIDE.md     four step walkthrough, what to break, real vs simulated
     DEVPOST.md         submission text
     VIDEO_SCRIPT.md    2:55 shot list
   shared/
@@ -283,7 +299,7 @@ nema/
     inference.js       derive bands from receipts, compute learning needs
     webmcp.js          registerTool helper, tool activity events, live indicator
     webmcp-polyfill.js Chrome Labs polyfill (Apache-2.0)
-    provider-embed.js  the one tag install, served as /nema-provider.js
+    provider-embed.js  the manifest and script install, served as /nema-provider.js
     concepts.json      the nema: concept registry
     issuers.json       trusted issuer public keys
     origins.json       app origins, prod and dev
@@ -294,6 +310,8 @@ nema/
     harness/           provider 1, Saucier School, "Pan Sauces and Emulsions", 5 tools + Worker
     security/          provider 2, Line Cook Lab, "Service Under Pressure", 5 tools + Worker
     blog/              one article, "Why browning tastes like that", installed with the embed
+    aesgcm/            frereit's AES-GCM article mirrored under CC BY-SA 4.0, with and without nema
+    cpu/               Lexi Mattick's CPU chapter mirrored under MIT, with and without nema
   scripts/             build.sh, dev.sh, deploy.sh, make-seed.mjs
   test/                crypto, protocol, inference, graders
 ```
@@ -367,10 +385,9 @@ await document.modelContext.registerTool({
 Registration goes through `shared/webmcp.js`, which catches errors into
 `{ error }` results instead of throwing and dispatches a `nema:toolcall` event
 so every page can show a tool activity strip. The declarative form is
-demonstrated too: the vault exposes `<form toolname="set_learning_goal_form">`,
-the site exposes `<form toolname="open_app">`, and every teaching page exposes
-`<form toolname="present_assertion">`, which is also the textarea a person
-pastes into when no agent is present.
+demonstrated too: the vault exposes `<form toolname="set_learning_goal_form">` and every teaching
+page exposes `<form toolname="present_assertion">`, which is also the textarea a
+person pastes into when no agent is present.
 
 ## Tool catalogs
 
@@ -386,7 +403,9 @@ Plus the declarative form `set_learning_goal_form`, so
 `check_prerequisites` (Line Cook Lab), `start_activity`, `get_attempt_status`,
 `issue_evidence_receipt`. The blog registers the same five from the embed.
 
-**Site**, 1 imperative plus 1 declarative. `explain_nema`, `open_app`.
+**Site**, 1 imperative tool on the hub home: `explain_nema`. The reference
+pages under it (`/protocol.html`, `/philosophy.html`, `/judges.html`) also carry
+a declarative `<form toolname="open_app">`.
 
 Full input and output shapes are in [`docs/SPEC.md`](docs/SPEC.md), sections 7
 and 8.
@@ -444,13 +463,20 @@ MIT. See [`LICENSE`](LICENSE).
 - WebMCP polyfill by Chrome Labs, Apache-2.0. Vendored at
   `shared/webmcp-polyfill.js` with its license header intact.
 - Fonts, all SIL Open Font License and self-hosted: Pixelify Sans, Inter,
-  JetBrains Mono.
+  JetBrains Mono. The notice is at `shared/brand/fonts/OFL.txt`.
+- "AES-GCM and breaking it on nonce reuse" by frereit, republished under
+  CC BY-SA 4.0 with attribution and a change notice in
+  [`apps/aesgcm/LICENSE.article`](apps/aesgcm/LICENSE.article).
+- "The Basics", chapter 1 of "Putting the You in CPU" by Lexi Mattick,
+  republished under the MIT licence with attribution and a change notice in
+  [`apps/cpu/LICENSE.article`](apps/cpu/LICENSE.article). That copy also has
+  the analytics script removed and its links adjusted, as disclosed on the page.
 - Everything else in this repository is original work by the author, MIT
-  licensed.
+  licensed. The root MIT licence does not cover the two mirrored articles.
 
 ---
 
 Built for **The WebMCP Challenge**. Everything here was created during the
-submission period, 25 August to 3 September 2026; the commit history is the
+submission period, 25 August to 4 September 2026; the commit history is the
 evidence. No prior work was reused, apart from the two third party items
 credited above.

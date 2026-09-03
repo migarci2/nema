@@ -266,7 +266,7 @@ Rules:
 
 An optional `issuerKey` (a public JWK) may follow `keyId`. A page that signs
 with a key nobody has registered includes it, so the receipt is self
-certifying in the same way an assertion is. The one tag install of section 12
+certifying in the same way an assertion is. The embed install of section 12
 always does, with `keyId: "self:<origin>"`.
 
 Rules:
@@ -421,7 +421,7 @@ The cap is applied in the derivation, not at intake: `deriveState` takes an
 optional `weightCap(receipt)` and the vault passes the tier rule. So a self
 certified page can say "this reader answered my quiz" and be believed exactly
 as much as a learner saying it about themselves. It can vouch for itself and
-for nobody else, which is what makes a one tag install safe to accept from a
+for nobody else, which is what makes the embed install safe to accept from a
 stranger.
 
 The `/.well-known/nema-issuer.json` document is `{ "keyId", "jwk" }`, served
@@ -681,7 +681,7 @@ browser during the demo.
 ## 11. Implementing a provider in 30 minutes
 
 You need a page, a manifest, a grader and one key. If you have no server, skip
-to section 12: the one tag install does all of this for you, and you write only
+to section 12: the embed install does all of this for you, and you write only
 the manifest.
 
 **1. Generate an issuer key (2 minutes).**
@@ -760,7 +760,7 @@ partnership, an account or a shared database.
 
 ---
 
-## 12. The one tag install
+## 12. The embed install: one manifest block and one script tag
 
 A site with no backend joins with a manifest and a script.
 

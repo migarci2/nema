@@ -9,9 +9,9 @@ nema
 
 ## Elevator pitch (200 characters max)
 
-Learn it once, it counts everywhere. A site asks what you already know, you decide what to share, and what you did counts on the next site. One tag, any agent, WebMCP.
+Learn it once. It counts everywhere. WebMCP lets teaching pages ask your vault what you know, with consent, and give you a signed receipt a later page can use.
 
-(167 characters)
+(159 characters)
 
 ## Thumbnail
 
@@ -26,12 +26,17 @@ gets shared, every time.
 
 ![a site asks, you say yes, it counts next time](https://nema.migarci2.dev/press/card-how-it-works-sm.png)
 
+Your learning is scattered across the web: a course here, an article there, a
+video somewhere else. nema keeps it in one place you own, and your agent uses
+WebMCP to connect that place to every page you learn from.
+
 ## Inspiration
 
 Most of what we know we learned on the web, one page at a time: a blog post
 about browning meat, a chapter about syscalls, a course on pan sauces. None of
-those pages know each other, and none of them know us. Every site starts from
-zero, and nothing we did on one page survives on the next.
+those pages know each other, and none of them know us. Independent teaching
+pages rarely share a learner record. When we move between them, the next page
+usually has no evidence of what we did before.
 
 WebMCP changes the shape of the problem. A page can declare what it can do as
 tools, and an agent in the browser can call them. So we asked: what if a page
@@ -39,122 +44,125 @@ could declare what it teaches, ask a reader's own vault what they already know,
 and hand back a signed note of what they did? That is nema: your learning
 state, everywhere.
 
-**Why this needs WebMCP.** The tools of a lesson exist only while that page is
-open, and the learner's state exists only where the learner keeps it. WebMCP
-lets the agent already in your browser compose the two at the moment they
-meet: it reads what a page teaches from the page itself, asks your vault for
-the least it needs, waits for you to approve, and carries the signed answer
-back. Without WebMCP this would need a central account, a per site
-integration, or an extension that scrapes pages. With it, any page that
-teaches becomes operable by any agent, at runtime, with the person present.
+**Why this needs WebMCP.** Learning lives on many sites that will never share a
+database. A teaching page knows what it teaches. The learner's
+vault knows what evidence it holds. WebMCP lets the browser agent bring those
+two capabilities together while both pages are open: the page declares what it
+needs, the vault returns only the named status values under the learner's
+approval, and the page adapts. After a check, the page can issue a signed
+receipt back to the vault. Without WebMCP, an agent would need a custom
+integration for each site or an extension that interprets the page.
 
 ## What it does
 
-**A site asks.** You open a page that teaches something, and it asks what you
-already know before it teaches you anything.
+**A site asks.** Before a teaching page adapts its path, it declares the
+readiness bands it needs.
 
-**You say yes.** You see exactly what was asked, and only what you approve
-leaves.
+**You decide.** The vault shows the requested fields, audience, purpose and
+expiry before it returns anything.
 
-**It counts next time.** You do the work that is left, and what you did here
-counts on the next site.
+**It counts next time.** After you pass a check, the site can issue a signed
+receipt that another participating page can use through your vault.
 
 Everything below is that loop at full size, in the words the system uses.
 
-**A vault you own.** The vault is your own record of what you have learned:
-signed receipts of work you actually did, issued by the sites where you did
-it. From those receipts it derives your state: a band per concept and per
-ability (recognise, retrieve, explain, apply, transfer, discriminate), a memory
-schedule, and a list of what to learn next. It lives with you, in your browser
-or on your disk, not on any site, and there is no account. Owning it means
-something concrete: the keys are made in your browser, the ledger exports to
-one file, and you can delete any of it. The demo vault is at
-https://nema-vault.migarci2.dev.
+**A vault you own.** The vault is your own ledger of learning evidence: signed
+receipts for activities and checks that sites recorded for you. It derives
+coarse bands, review dates and next step suggestions from that ledger. The keys
+are created in your browser, the ledger exports as one file, and you can erase
+the vault. Teaching providers do not hold the complete record. The demo vault
+is at https://nema-vault.migarci2.dev.
 
 ![A receipt, signed by the course and kept in the vault](https://nema.migarci2.dev/press/story-receipt-sm.gif)
 
-**A protocol a site installs in a minute.** Two tags on any page.
+**A small protocol for teaching pages.** Add one manifest block and one script
+tag.
 
-![Two tags on any page](https://nema.migarci2.dev/press/card-one-tag-sm.png)
+![One manifest block and one script tag](https://nema.migarci2.dev/press/card-one-tag-sm.png)
 
-That page now exposes six WebMCP tools: it describes what it teaches, asks the
-vault about three prerequisites, adapts, and signs a receipt when the reader
-passes a check. No backend needed.
+Together they expose five imperative WebMCP tools and one declarative form. The
+page can describe what it teaches, accept a scoped readiness assertion, adapt
+its path, and issue a receipt after a check. The self certified tier needs no
+backend.
 
 **A learner model with a source.** The vault follows the principles of learning
 fast that Justin Skycak writes up at justinmath.com and that Kris Abdelmessih
 collects in "The Principles of Learning Fast"
 (https://moontowermeta.com/the-principles-of-learning-fast/). Passing something
-advanced credits every prerequisite under it at a fraction and pushes its review
-date out, which Math Academy calls Fractional Implicit Repetition. The vault
+advanced can credit declared prerequisites at a fraction and extend their review
+dates, which Math Academy calls Fractional Implicit Repetition. The vault
 asks for a concept only when its prerequisites are held, and otherwise names the
 weakest prerequisite and the goal it is blocking. A session interleaves rather
 than drilling one concept, and keeps confusable concepts apart unless telling
-them apart is the point. It is an inspectable policy, not a psychometric
-model: every weight, decay and threshold is a documented default you can read
-in one file, and a signature proves who issued a receipt, not how hard the
-check was.
+them apart is the point. It is an inspectable policy, not a psychometric model.
+Every weight, decay rule and threshold is a documented demo default in the
+repository. A signature proves which key issued a receipt and that its payload
+was not altered. It does not prove how difficult or valid the check was.
 
-**Consent you can see.** A site never reads the vault. It asks one question,
-and the vault shows a modal: what will be shared (three status bands), what
-will not (history, scores, other subjects), for which site, for how long. You
-approve. The answer is a signed token bound to that one site, valid thirty
-minutes.
+**Consent you can see.** A teaching page never reads the vault directly. It
+names the bands it needs. The first approval shows the requested fields,
+audience, purpose and expiry. Every signed answer is bound to that site and
+expires after thirty minutes.
 
 ![The consent modal, in words](https://nema.migarci2.dev/press/card-consent-sm.png)
 
 ![A course asks, you approve, 68 minutes become 27](https://nema.migarci2.dev/press/story-ask-sm.gif)
 
 **Two example courses that look nothing like nema.** Saucier School (pan
-sauces) asks your vault three things and turns 68 minutes into 27, then 21.
-Line Cook Lab (food safety on the pass) has never spoken to Saucier School, but
-recognises what you did there and unlocks its advanced lab.
+sauces) turns a 68 minute path into 27 after the learner approves its readiness
+request. After the ratios check is passed and a fresh assertion is presented, 27
+becomes 21. Line Cook Lab (food safety on the pass) has never spoken to Saucier
+School, but it recognises evidence from the learner's vault, skips material
+already covered, and names the prerequisite still missing.
 
 ![68 to 27 to 21 minutes](https://nema.migarci2.dev/press/card-minutes-sm.png)
 
 ![A second site recognises the first](https://nema.migarci2.dev/press/story-second-site-sm.gif)
 
-**Two real articles, with and without nema.** We mirrored a CC BY-SA article
-on AES-GCM and an MIT chapter of "Putting the You in CPU", added retrieval
-questions inside the text, and put the original and the nema version side by
-side with the exact diff as the headline.
+**Two real articles, with and without nema.** We republished frereit's AES-GCM
+article under CC BY-SA 4.0 and Lexi Mattick's CPU chapter under its MIT licence,
+with attribution and change notices. We added retrieval questions and show each
+original beside the nema version with the generated diff.
 
-![Same article. 112 lines added.](https://nema.migarci2.dev/press/card-diff-sm.png)
+![Same AES-GCM article. 112 lines added.](https://nema.migarci2.dev/press/card-diff-sm.png)
 
 ![The two columns, and a question inside the text](https://nema.migarci2.dev/press/story-article-sm.gif)
 
-**Any agent.** ChatGPT desktop and Chrome 149 call the tools on the page.
-Claude Code and Codex reach the same vault over MCP (`packages/nema-mcp`, the
-same eleven tools, same schemas). The agent is a commodity; the vault is the
-infrastructure.
+**The agent you already use.** ChatGPT's in app browser and an agent in
+WebMCP enabled Chrome can call the tools on the page. Claude Code and Codex
+reach the eleven imperative vault tools over MCP (`packages/nema-mcp`, the same
+schemas). nema does not require its own agent; the learner's vault is the
+persistent part.
 
-![Any agent, one vault](https://nema.migarci2.dev/press/card-agents-sm.png)
+![The agent you already use, one vault](https://nema.migarci2.dev/press/card-agents-sm.png)
 
-**nema in your browser.** A Chrome extension puts the vault in the side panel
-and does the boring transport with no model: a bar appears on any site that
-works with nema, one click shares your bands, and receipts are collected
-automatically when you pass something.
+**nema in your browser.** The Chrome extension puts the vault in a side panel
+and handles the transport with no model. Its page bar opens the same approval
+step, and after the learner passes a check, an accepted receipt is collected
+into the local vault.
 
 ![The extension: share from the bar, the receipt is collected on its own](https://nema.migarci2.dev/press/story-extension-sm.gif)
 
-**Sites that speak their own names.** A site can use its own concept ids. An
-agent proposes what they mean, you confirm once, and the vault translates at
-its edges. Who translated a name never changes how much a receipt is worth;
-who signed it does.
+**Sites can keep their own names.** A site may declare its own vocabulary. An
+agent may propose a mapping for an undeclared name, but only the learner can
+confirm or reject it. Alignments translate names without changing who signed a
+receipt or how much the evidence weighs.
 
 ![A site's own word meets the vault's](https://nema.migarci2.dev/press/card-alignment-sm.png)
 
 ## How we built it
 
-- Plain HTML, CSS and ES modules. No framework, no bundler. Every page loads
-  the Chrome Labs WebMCP polyfill and registers tools with
-  `document.modelContext.registerTool`, exactly as Chrome documents it, so the
-  same code runs natively in Chrome 149+ and ChatGPT desktop and degrades
-  gracefully elsewhere.
-- The protocol is six objects (LearningManifest, ReadinessRequest,
-  ReadinessAssertion, EvidenceReceipt, LearningNeed, ConceptAlignment) carried
-  as compact tokens: `nema1.<payload>.<signature>`, ECDSA P-256 over the exact
-  payload bytes via the Web Crypto API, in browsers, Workers and Node alike.
+- Plain HTML, CSS and ES modules. No framework, no bundler. Each page registers
+  its tools with `document.modelContext.registerTool`, exactly as Chrome
+  documents it. Native end to end tests ran on Chrome for Testing 154. nema
+  targets WebMCP enabled Chrome 149+ and ChatGPT's in app browser. Other
+  browsers use the bundled Chrome Labs polyfill for a degraded demonstration.
+- The protocol defines six objects (LearningManifest, ReadinessRequest,
+  ReadinessAssertion, EvidenceReceipt, LearningNeed, ConceptAlignment).
+  Readiness assertions and evidence receipts use compact ECDSA P-256 signed
+  tokens, `nema1.<payload>.<signature>`, over the exact payload bytes via the
+  Web Crypto API, in browsers, Workers and Node alike. Manifests, requests and
+  learning needs use JSON; alignments remain inspectable records in the vault.
 - Trust has three tiers. Registered issuers (the courses, whose keys never
   leave a Cloudflare Worker), origin published keys (`/.well-known/nema-issuer.json`),
   and self certified receipts (a blog with no backend signs with a key it made
@@ -173,10 +181,10 @@ who signed it does.
 - `packages/nema-extension` is Manifest V3: the vault page as the side panel,
   a MAIN world bridge that is the only code touching `document.modelContext`,
   and a service worker that relays tool calls per tab.
-- Verification: 267 unit tests, and native end to end scripts that drive Chrome
-  for Testing 154 over the DevTools Protocol against the live origins: the
-  golden path, the connect handshake, the extension, replay and tampering
-  rejections, wrong audience, expired tokens.
+- Verification, frozen at commit `03c14aa`: `npm test` reports 267 passing unit
+  tests. Separate native end to end suites cover the browser flow, the connect
+  handshake, the extension, tampering, replay, wrong audience and expiry on
+  Chrome for Testing 154, against the live origins.
 
 ## Challenges we ran into
 
@@ -199,18 +207,20 @@ who signed it does.
 
 ## Accomplishments that we're proud of
 
-- The consent modal. A site asks for three things; the learner sees exactly
-  those three, and what will never leave. Everything else in the project
+- The consent modal. A site names a small set of readiness bands; the learner
+  sees exactly those, and what will never leave. Everything else in the project
   exists so that this moment is true.
-- 68 minutes to 27 to 21, on a site that has no account, then a second site
+- 68 minutes to 27, and then to 21 once the ratios check is passed and a fresh
+  assertion is presented, on a site that has no account, then a second site
   that recognises the first, with zero partnership between them.
 - Two real articles from other authors, republished under their licences,
   gaining retrieval practice and portable evidence with about a hundred added
   lines, and the diff shown to prove it.
-- The same eleven vault tools reachable from ChatGPT, Chrome, Claude Code,
-  Codex and a Chrome extension, from one `tools.js`.
-- Everything checkable: every claim in this text has a test that drives a
-  real browser against the live URL.
+- The same eleven imperative vault tools are available to browser agents through
+  WebMCP and to Claude Code and Codex through MCP, from one `tools.js`. The
+  browser vault also exposes one declarative form.
+- The critical protocol paths are covered by unit tests and native browser runs
+  against the live origins.
 
 ## What we learned
 
@@ -228,7 +238,7 @@ who signed it does.
 ## What's next for nema
 
 - A published `nema-provider.js` on a CDN, a `well-known` key helper, and a
-  WordPress and Astro integration so the one tag install is one click.
+  WordPress and Astro integration so the install is a single step.
 - Alignment sharing between learners: once someone confirms that a site's
   "browning science" is Maillard, the next learner's agent can propose it with
   that provenance.
@@ -245,12 +255,12 @@ with the human present, and lets the learner's own vault expose a minimal,
 consented answer. No API keys, no accounts, no scraping: the page is
 the API, and the person is in the loop by construction.
 
-**How it improves the user experience.** You never start from zero. A course
-asks three questions, your vault answers with three words, and 68 minutes
-become 27. A second site recognises the first. A blog post you read leaves you
-with proof you understood it. And you never copy a token or read a key: the
-extension or the popup handshake do the transport, and cryptography stays
-under the hood.
+**How it improves the user experience.** A participating site can start from
+relevant evidence already in the vault. It asks for a small set of readiness
+bands, and the vault returns one plain status per item. After a passed check,
+the page can issue a signed receipt for that event. In the normal browser path,
+the popup or extension carries the cryptographic material, so the learner does
+not have to copy it.
 
 **What collaboration between people and agents becomes possible.** The agent
 reads manifests, asks your vault, carries signed tokens, proposes what a
@@ -277,7 +287,7 @@ webmcp, javascript, html, css, cloudflare-workers, web-crypto-api, ecdsa, mcp, m
 - https://nema-vault.migarci2.dev (the vault; click Load demo learner)
 - https://saucier.migarci2.dev (course one, Saucier School)
 - https://linecook.migarci2.dev (course two, Line Cook Lab)
-- https://maillard.migarci2.dev (a blog post with the one tag install)
+- https://maillard.migarci2.dev (a blog post installed with one manifest block and one script tag)
 - https://aesgcm.migarci2.dev/compare (a real article, with and without nema)
 - https://cpu.migarci2.dev/compare (a second real article, with and without nema)
 - https://nema.migarci2.dev/judges (the three minute walkthrough)
@@ -301,4 +311,4 @@ webmcp, javascript, html, css, cloudflare-workers, web-crypto-api, ecdsa, mcp, m
 
 ## Prior work note
 
-Everything was created during the submission period (first commit 2026-09-01). The two mirrored articles are third party works reproduced under their licences (CC BY-SA 4.0 and MIT) with attribution, unchanged except for the nema additions shown in their diffs.
+Everything original to nema was created during the submission period (first commit 2026-09-01). The mirrored works retain their own licences and attribution: frereit's AES-GCM article under CC BY-SA 4.0, and Lexi Mattick's CPU chapter under the MIT licence. The comparison pages show the nema additions; the CPU mirror also removes analytics and fixes relative links, as disclosed on the page.

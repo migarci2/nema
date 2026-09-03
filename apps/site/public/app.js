@@ -21,7 +21,7 @@ import { registerTools, getActivity, EXPOSED_TO, isNative } from '/shared/webmcp
  * anything the five apps do not do. */
 const TOPICS = {
   overview:
-    'nema is a WebMCP protocol for learning that anyone who teaches on the web can install with one manifest tag and one script tag. '
+    'nema is a WebMCP protocol for learning that anyone who teaches on the web can install with one manifest block and one script tag. '
     + 'A vault you own holds signed evidence of what you have learned and derives your state from it, per concept and per ability. '
     + 'Websites never read the vault: they ask one question, and the vault answers with the smallest true answer, after you approve it. '
     + 'In the demo a 68 minute course becomes 27, then 21, a second website recognises prerequisites it never taught, and a blog post issues receipts of its own.',
@@ -42,7 +42,7 @@ const TOPICS = {
   providers:
     'A provider keeps its content, its pedagogy, its pricing and its brand. What it publishes is a LearningManifest: what a unit teaches, what it assumes, and what evidence each activity can produce. '
     + 'It verifies one signature from the vault, checks the token was minted for its own origin, and rebuilds the path, striking through what the learner can skip with the reason next to each item. '
-    + 'Implementing one takes a page, a manifest, a grader and one key, and a site with no server at all can install the embed instead: one manifest tag, one script tag, self certified receipts.',
+    + 'Implementing one takes a page, a manifest, a grader and one key, and a site with no server at all can install the embed instead: one manifest block, one script tag, self certified receipts.',
   judges:
     'Load the demo learner in the vault, then follow the golden path in the judge guide with your own agent or by hand. '
     + 'The moment to watch is the consent modal: a tool call stops, the page asks, and the token does not exist until a person clicks. '

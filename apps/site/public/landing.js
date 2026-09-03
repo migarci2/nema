@@ -134,7 +134,7 @@ if (proto) {
     timers = [];
     for (const li of items) delete li.dataset.on;
     if (note) {
-      note.textContent = 'Two tags on any page, and no backend.';
+      note.textContent = 'One manifest block and one script tag on any page, and no backend for the self certified tier.';
       delete note.dataset.state;
     }
   }
@@ -207,11 +207,11 @@ if (ext) {
     share.addEventListener('click', () => {
       shared = !shared;
       if (toast) toast.hidden = !shared;
-      share.textContent = shared ? 'Play again' : 'Share bands with this page';
+      share.textContent = shared ? 'Play again' : 'Review request';
       if (note) {
         note.textContent = shared
           ? 'The page got the bands it asked for. It never saw the rest.'
-          : 'The bar appears on any page that installed the two tags.';
+          : 'The bar appears on any page that installed the manifest and the script.';
       }
     });
   }

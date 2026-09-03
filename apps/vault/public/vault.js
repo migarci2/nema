@@ -228,7 +228,7 @@ export function issuerName(payload) {
   if (payload.keyId === SELF_CHECK_KEY_ID) return 'you, in the vault';
   const known = (issuerMapProd && issuerMapProd[payload.keyId]) || (issuerMapDev && issuerMapDev[payload.keyId]);
   if (known) return known.name;
-  /* A site that installed the one tag has no registered name, so it is known
+  /* A site that installed the embed has no registered name, so it is known
    * by the domain it signs from. That is exactly as much as it has earned. */
   if (isSelfCertified(payload)) {
     try {

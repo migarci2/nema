@@ -1,5 +1,6 @@
 /**
- * nema provider embed: the one tag install (contract section 21).
+ * nema provider embed: the install that is one manifest block and one script
+ * tag (contract section 21).
  *
  * A site that teaches something installs nema with a manifest and one script:
  *
@@ -690,7 +691,7 @@ async function boot() {
 
 /**
  * Native WebMCP is used when the browser has it. Otherwise the Google polyfill
- * that ships next to this file is installed, so the one tag install behaves the
+ * that ships next to this file is installed, so the embed install behaves the
  * same in a browser without WebMCP.
  */
 function ensureModelContext() {

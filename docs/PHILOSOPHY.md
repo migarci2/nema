@@ -154,7 +154,7 @@ produces it for you.
 Somebody wrote the answer that unblocked you last Tuesday, and it was a blog
 post or notes from a course that ran once in 2019. A protocol only platforms can
 implement is another platform, so the install had to be small enough for those
-people: one manifest tag, one script tag, no backend, no permission from anyone.
+people: one manifest block, one script tag, no backend, no permission from anyone.
 
 WebMCP is what makes that possible. A site declares what it can do as tools on
 the page it already serves, and an agent calls them while the person watches.
