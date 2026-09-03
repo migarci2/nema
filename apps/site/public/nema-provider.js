@@ -1148,8 +1148,8 @@ function connectSection(app) {
       class: 'nema-embed-lede',
       'data-nema-connect-lede': '',
       text:
-        'This site can ask your nema vault what you already know, and sign what you do here. ' +
-        'Nothing leaves your vault until you say yes.'
+        'This site can ask what you already know, and remember what you do here. ' +
+        'Nothing is shared until you say yes.'
     })
   );
   const connected = Boolean(app.assertion);

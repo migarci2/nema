@@ -9,10 +9,9 @@ nema
 
 ## Elevator pitch (200 characters max)
 
-A learning protocol for the web: any site adds one tag, readers keep signed
-proof of what they learned in a vault they own, and any agent connects the two.
+Learn it once, it counts everywhere. A site asks what you already know, you decide what to share, and what you did counts on the next site. One tag, any agent, WebMCP.
 
-(155 characters)
+(167 characters)
 
 ## Thumbnail
 
@@ -20,12 +19,12 @@ proof of what they learned in a vault they own, and any agent connects the two.
 
 ## Project Story (About the project)
 
-**Prove it once. Skip it everywhere.**
+**Learn it once. It counts everywhere.**
 
-A site asks your vault what you already know, you say yes, and the site adapts.
-When you pass something, it signs a receipt that any other site can ask about.
+Learn something on one site, and the next one already knows. You decide what
+gets shared, every time.
 
-![page asks, vault answers, page signs](https://nema.migarci2.dev/press/card-how-it-works-sm.png)
+![a site asks, you say yes, it counts next time](https://nema.migarci2.dev/press/card-how-it-works-sm.png)
 
 ## Inspiration
 
@@ -51,16 +50,16 @@ teaches becomes operable by any agent, at runtime, with the person present.
 
 ## What it does
 
-**Page asks.** You open a page that teaches something, and before it teaches
-you anything it asks your vault for the few things it needs to know about you.
+**A site asks.** You open a page that teaches something, and it asks what you
+already know before it teaches you anything.
 
-**Vault answers.** Your vault shows you exactly what was asked, you say yes,
-and it sends back a signed answer that carries only that much.
+**You say yes.** You see exactly what was asked, and only what you approve
+leaves.
 
-**Page signs.** You do the work that is left, and the page signs a receipt for
-what you passed, which lands in your vault for the next site to ask about.
+**It counts next time.** You do the work that is left, and what you did here
+counts on the next site.
 
-Everything below is that loop at full size.
+Everything below is that loop at full size, in the words the system uses.
 
 **A vault you own.** The vault is your own record of what you have learned:
 signed receipts of work you actually did, issued by the sites where you did

@@ -1,16 +1,16 @@
 # Judge guide
 
-**Prove it once. Skip it everywhere.**
+**Learn it once. It counts everywhere.**
 
-A site asks your vault what you already know, you say yes, and the site adapts.
-When you pass something, it signs a receipt that any other site can ask about.
+Learn something on one site, and the next one already knows. You decide what
+gets shared, every time.
 
-![page asks, vault answers, page signs](../apps/site/public/press/card-how-it-works-sm.png)
+![a site asks, you say yes, it counts next time](../apps/site/public/press/card-how-it-works-sm.png)
 
 **If you only have three minutes**, do
 [step 1 of the golden path](#step-1-a-course-site-asks-what-you-know-and-68-minutes-become-27).
-It is the whole idea end to end: a course asks, your vault answers, 68 minutes
-become 27.
+It is the whole idea end to end: a course asks, you say yes, 68 minutes become
+27.
 
 Three minutes to see the whole thing. Sixty seconds if you are behind schedule.
 

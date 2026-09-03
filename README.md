@@ -5,16 +5,16 @@
 <p align="center"><code>your learning state, everywhere.</code></p>
 
 <p align="center">
-  <b>Prove it once. Skip it everywhere.</b>
+  <b>Learn it once. It counts everywhere.</b>
 </p>
 
 <p align="center">
-  A site asks your vault what you already know, you say yes, and the site adapts.<br>
-  When you pass something, it signs a receipt that any other site can ask about.
+  Learn something on one site, and the next one already knows.<br>
+  You decide what gets shared, every time.
 </p>
 
 <p align="center">
-  <img src="apps/site/public/press/card-how-it-works.png" alt="page asks, vault answers, page signs" width="720">
+  <img src="apps/site/public/press/card-how-it-works.png" alt="a site asks, you say yes, it counts next time" width="720">
 </p>
 
 <p align="center">

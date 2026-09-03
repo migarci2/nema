@@ -15,7 +15,7 @@ Hosted at `https://nema.migarci2.dev/press/<file>`.
 
 | card | 1x | embed | what it shows |
 |---|---|---|---|
-| how it works | `card-how-it-works.png` 1600 x 657 | `card-how-it-works-sm.png` 720 x 296 | A page, the nema mark, a signed receipt, two arrows: page asks, vault answers, page signs. |
+| how it works | `card-how-it-works.png` 1600 x 657 | `card-how-it-works-sm.png` 720 x 296 | A page, the nema mark, a signed receipt, two arrows: a site asks, you say yes, it counts next time. |
 | one tag | `card-one-tag.png` 1600 x 618 | `card-one-tag-sm.png` 720 x 278 | The whole install: the two script tags in a code frame, nothing else. |
 | consent | `card-consent.png` 1600 x 866 | `card-consent-sm.png` 720 x 390 | The consent modal reduced to its skeleton: the site's name, three concepts with their bands, Deny and Approve. |
 | minutes | `card-minutes.png` 1600 x 456 | `card-minutes-sm.png` 720 x 205 | 68 to 27 to 21 minutes. |

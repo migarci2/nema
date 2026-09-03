@@ -1,10 +1,10 @@
 # nema-mcp
 
-> **Prove it once. Skip it everywhere.**
+> **Learn it once. It counts everywhere.**
 >
-> A site asks your vault what you already know, you say yes, and the site
-> adapts. When you pass something, it signs a receipt that any other site can
-> ask about. The picture is on [the hub](https://nema.migarci2.dev/).
+> Learn something on one site, and the next one already knows. You decide what
+> gets shared, every time. The picture is on
+> [the hub](https://nema.migarci2.dev/).
 
 The nema learning vault for terminal agents. Claude Code, Codex and any other
 MCP client get the same eleven tools that browser agents reach through WebMCP
