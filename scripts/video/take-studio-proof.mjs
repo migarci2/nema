@@ -69,10 +69,18 @@ async function waitForGone(port, targetId, maxMs = 10000) {
   return false;
 }
 
-/* 1440x900 at deviceScaleFactor 2: the raw frames are 2880x1800, so a 1.6 push
- * still lands on real pixels. */
+/* 1440x900 at deviceScaleFactor 3: the raw frames are 4320x2700, so the 4K
+ * compositor shows the page at a 1.5x downscale at rest and lands at about 1:1
+ * native pixels at the 1.55 push, never upscaled. The price is frame rate: the
+ * page is rastered in software at that size, which this machine sustains at
+ * about 4 fps. The film's own motion, the camera, the pointer, the ripple and
+ * the captions, is drawn by the compositor at 30 fps regardless; what runs at
+ * the capture rate is the page's own animation. DSF=2 buys 9 fps if a take
+ * leans on page motion. */
+const DSF = Number(process.env.DSF || 3);
 const r = await openRecorder({
-  chrome, out, width: 1440, height: 900, deviceScaleFactor: 2, fps: 30,
+  chrome, out, width: 1440, height: 900, deviceScaleFactor: DSF, fps: 30,
+  captureFormat: 'png', rawCrf: 12, rawPreset: 'fast', rawPix: 'yuv444p',
   overlays: false, profile: path.join(out, 'profile')
 });
 
@@ -133,6 +141,9 @@ try {
   console.log('after the handshake:', line);
   if (!/68 minutes became 27/.test(line)) console.warn('warning: the course did not personalise itself');
   console.log('raw video   ' + mp4);
+  const meta = JSON.parse(fs.readFileSync(path.join(out, 'events.json'), 'utf8'));
+  const shot = meta.capture ? `${meta.capture.w}x${meta.capture.h}` : 'unknown';
+  console.log(`capture     ${shot} at deviceScaleFactor ${DSF}`);
   console.log('event log   ' + path.join(out, 'events.json'));
   console.log('composite with: CHROME=$CHROME node scripts/video/studio.mjs ' + out);
 } finally {

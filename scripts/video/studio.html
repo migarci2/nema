@@ -17,16 +17,20 @@
     --cyan: #00E5FF;
     --ink: #F2F6FF;
   }
+  /* --u is the frame scale: 1 for a 1920x1080 render, 2 for 3840x2160. Every
+     fixed size below is written at 1x and multiplied, so one number moves the
+     whole composition between the two. */
+  :root { --u: 1; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #000; }
+  html, body { overflow: hidden; background: #000; }
   body { font-family: Inter, "Inter Display", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
 
-  #frame { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+  #frame { position: relative; overflow: hidden; }
 
   /* Everything the camera can see. Transformed as one, origin at 0 0, so the
      maths in renderAt is a plain q -> q * s + t. */
   #scene {
-    position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+    position: absolute; left: 0; top: 0;
     transform-origin: 0 0; will-change: transform;
   }
 
@@ -48,25 +52,27 @@
   }
 
   #win {
-    position: absolute; border-radius: 14px; overflow: hidden;
+    position: absolute; border-radius: calc(14px * var(--u)); overflow: hidden;
     background: var(--navy);
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 calc(30px * var(--u)) calc(80px * var(--u)) rgba(0, 0, 0, 0.55),
+                0 calc(2px * var(--u)) calc(6px * var(--u)) rgba(0, 0, 0, 0.4);
     /* A hairline keeps the rounded edge crisp against a light wallpaper. */
-    outline: 1px solid rgba(255, 255, 255, 0.09); outline-offset: -1px;
+    outline: calc(1px * var(--u)) solid rgba(255, 255, 255, 0.09);
+    outline-offset: calc(-1px * var(--u));
   }
   #bar {
-    position: relative; height: 36px; display: flex; align-items: center;
+    position: relative; display: flex; align-items: center;
     background: linear-gradient(180deg, #2a2f37 0%, #22262d 100%);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+    border-bottom: calc(1px * var(--u)) solid rgba(0, 0, 0, 0.5);
   }
-  #lights { display: flex; gap: 8px; padding-left: 14px; }
-  #lights i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+  #lights { display: flex; gap: calc(8px * var(--u)); padding-left: calc(14px * var(--u)); }
+  #lights i { width: calc(12px * var(--u)); height: calc(12px * var(--u)); border-radius: 50%; display: block; }
   #lights i:nth-child(1) { background: #ff5f57; box-shadow: inset 0 0 0 0.5px rgba(0,0,0,.22); }
   #lights i:nth-child(2) { background: #febc2e; box-shadow: inset 0 0 0 0.5px rgba(0,0,0,.22); }
   #lights i:nth-child(3) { background: #28c840; box-shadow: inset 0 0 0 0.5px rgba(0,0,0,.22); }
   #wintitle {
     position: absolute; left: 0; right: 0; text-align: center;
-    font-size: 13px; font-weight: 500; letter-spacing: 0.01em; color: #c9cfd8;
+    font-size: calc(13px * var(--u)); font-weight: 500; letter-spacing: 0.01em; color: #c9cfd8;
   }
   #screen { position: relative; background: #fff; overflow: hidden; }
   #vid { display: block; width: 100%; height: 100%; object-fit: fill; }
@@ -74,27 +80,34 @@
   /* Cursor and ripples live inside the scene so they track page pixels exactly,
      and are counter scaled by renderAt so they keep their on screen size. */
   #cursor { position: absolute; left: 0; top: 0; transform-origin: 0 0; pointer-events: none; }
-  #cursor svg { display: block; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)); }
+  #cursor svg {
+    display: block;
+    width: calc(36.92px * var(--u)); height: calc(36.92px * var(--u));
+    filter: drop-shadow(0 calc(2px * var(--u)) calc(4px * var(--u)) rgba(0, 0, 0, 0.35));
+  }
   /* Two tone so a click reads on a cream page and on a dark one alike: a white
      core with a soft dark ring around it. */
   .ripple {
-    position: absolute; width: 40px; height: 40px; margin: -20px 0 0 -20px;
+    position: absolute;
+    width: calc(40px * var(--u)); height: calc(40px * var(--u));
+    margin: calc(-20px * var(--u)) 0 0 calc(-20px * var(--u));
     /* 40 px at rest, opening to about 90: big enough to read at 640 px wide. */
     border-radius: 50%; transform-origin: 50% 50%; pointer-events: none; opacity: 0;
     background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.3) 46%, rgba(255,255,255,0) 68%);
-    box-shadow: 0 0 0 2.5px rgba(11, 19, 32, 0.4), 0 0 16px 4px rgba(255, 255, 255, 0.35);
+    box-shadow: 0 0 0 calc(2.5px * var(--u)) rgba(11, 19, 32, 0.4),
+                0 0 calc(16px * var(--u)) calc(4px * var(--u)) rgba(255, 255, 255, 0.35);
   }
 
   /* The caption is on the frame, not in the scene: the camera never moves it. */
   #caption {
-    position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%);
+    position: absolute; left: 50%; bottom: calc(22px * var(--u)); transform: translateX(-50%);
     display: flex; align-items: center; opacity: 0;
-    font-size: 34px; line-height: 1.12; font-weight: 500; letter-spacing: -0.011em;
+    font-size: calc(34px * var(--u)); line-height: 1.12; font-weight: 500; letter-spacing: -0.011em;
     color: #F2F6FF; background: rgba(11, 19, 32, 0.92);
-    border: 1px solid rgba(0, 229, 255, 0.28);
-    border-radius: 999px; padding: 11px 30px 13px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
-    max-width: 1520px; text-align: center; white-space: pre-wrap;
+    border: calc(1px * var(--u)) solid rgba(0, 229, 255, 0.28);
+    border-radius: 999px; padding: calc(11px * var(--u)) calc(30px * var(--u)) calc(13px * var(--u));
+    box-shadow: 0 calc(12px * var(--u)) calc(40px * var(--u)) rgba(0, 0, 0, 0.45);
+    max-width: calc(1520px * var(--u)); text-align: center; white-space: pre-wrap;
   }
 </style>
 </head>
@@ -109,10 +122,16 @@
     </div>
     <div id="ripples"></div>
     <div id="cursor">
-      <!-- macOS arrow: the tip is the origin, so translate(x, y) is the hotspot. -->
-      <svg width="24" height="29" viewBox="0 0 24 29">
-        <path d="M1 1 L1 22.2 L6.4 17.1 L9.9 25.6 L13.6 24.1 L10.2 15.8 L17.6 15.5 Z"
-              fill="#ffffff" stroke="#0d0d0d" stroke-width="1.4" stroke-linejoin="round"/>
+      <!-- The macOS arrow from scripts/video/assets/cursor-arrow.svg
+           (github.com/sawyerh/cursor.in). The viewBox starts at the tip, 8.2 4.9,
+           so the element's own origin is the hotspot and translate(x, y) lands it
+           on the event point. Ink is 18.2 units tall, which at this size is 24 px
+           at 1x and 48 px in the 4K frame. -->
+      <svg viewBox="8.2 4.9 28 28">
+        <polygon fill="#FFFFFF" points="8.2,20.9 8.2,4.9 19.8,16.5 13,16.5 12.6,16.6"/>
+        <polygon fill="#FFFFFF" points="17.3,21.6 13.7,23.1 9,12 12.7,10.5"/>
+        <polygon points="11.03,14.293 12.875,13.519 15.971,20.895 14.127,21.67"/>
+        <polygon points="9.2,7.3 9.2,18.5 12.2,15.6 12.6,15.5 17.4,15.5"/>
       </svg>
     </div>
   </div>
@@ -158,6 +177,7 @@
   /* ------------------------------------------------------------- state -- */
 
   const el = {
+    frame: document.getElementById('frame'),
     scene: document.getElementById('scene'),
     wall: document.getElementById('wall'),
     win: document.getElementById('win'),
@@ -172,17 +192,21 @@
   };
 
   const S = {
+    u: 1,                                   // 1 for a 1920x1080 frame, 2 for 4K
     frameW: 1920, frameH: 1080,
     winX: 240, winY: 40, pageW: 1440, pageH: 900, barH: 36,
     zoomIn: 0.6, zoomHold: 1.8, zoomOut: 0.7, zoomScale: 1.6,
     fadeMs: 0.24,
+    cameraOff: false, cursorOff: false,      // the polished source owns both
+    polish: null,                            // polish's zoom map, in video pixels
     moves: [], clicks: [], captions: [], segments: [], ripples: []
   };
   const winH = () => S.pageH + S.barH;
   const home = () => ({ s: 1, tx: 0, ty: 0 });
 
-  /* A page point in scene coordinates: the page starts under the title bar. */
-  const toScene = (p) => ({ x: S.winX + p.x, y: S.winY + S.barH + p.y });
+  /* A page point in scene coordinates: the page starts under the title bar, and
+     the frame scale applies because the window is `u` times the page's own size. */
+  const toScene = (p) => ({ x: S.winX + p.x * S.u, y: S.winY + S.barH + p.y * S.u });
 
   /**
    * Where the camera has to sit for a focus point to be centred at a scale,
@@ -208,6 +232,7 @@
   /** The camera state at time t, walking the anchors in order. */
   function cameraAt(t) {
     let c = home();
+    if (S.cameraOff) return c;
     for (const seg of S.segments) {
       if (t < seg.t) break;
       const inEnd = seg.t + S.zoomIn;
@@ -263,9 +288,61 @@
     return { text: cur.text, alpha: easeFade(a) };
   }
 
+  /* ------------------------------------------------------------ polish -- */
+
+  /* The polish stage bakes its own zoom into the video and, with --speedup, its
+     own clock. These two mirror polish.py exactly (remap_t and the cosine ramps
+     of piecewise/ease_expr) so an overlay drawn here lands where the content
+     actually is in the polished frame. */
+
+  function polishRemap(segments) {
+    if (!segments || !segments.length) return (t) => t;
+    const table = []; let out = 0;
+    for (const [t0, t1, sp] of segments) { table.push([t0, t1, sp, out]); out += (t1 - t0) / sp; }
+    return (t) => {
+      for (let i = 0; i < table.length; i++) {
+        const [t0, t1, sp, o] = table[i];
+        if (t <= t1 || i === table.length - 1) return o + Math.max(0, Math.min(t, t1) - t0) / sp;
+      }
+      return out;
+    };
+  }
+
+  function polishPiecewise(kfs, t) {
+    if (t < kfs[0][0]) return kfs[0][1];
+    for (let i = 1; i < kfs.length; i++) {
+      const [t0, v0] = kfs[i - 1], [t1, v1] = kfs[i];
+      if (t < t1) {
+        if (Math.abs(v1 - v0) < 1e-6 || t1 <= t0) return v1;
+        return v0 + (v1 - v0) * (0.5 - 0.5 * Math.cos(Math.PI * (t - t0) / (t1 - t0)));
+      }
+    }
+    return kfs[kfs.length - 1][1];
+  }
+
+  /** Where a page point shows up inside the polished frame, and at what scale. */
+  function polishMap(p, t) {
+    const P = S.polish;
+    const sx = P.videoW / S.srcW, sy = P.videoH / S.srcH;
+    let vx = p.x * sx, vy = p.y * sy, z = 1;
+    if (P.zoom) {
+      z = polishPiecewise(P.zoom.z, t);
+      const cx = polishPiecewise(P.zoom.x, t), cy = polishPiecewise(P.zoom.y, t);
+      const X = Math.max(0, Math.min(P.videoW - P.videoW / z, cx - P.videoW / (2 * z)));
+      const Y = Math.max(0, Math.min(P.videoH - P.videoH / z, cy - P.videoH / (2 * z)));
+      vx = (vx - X) * z; vy = (vy - Y) * z;
+    }
+    return { x: S.winX + (vx / P.videoW) * S.pageW, y: S.winY + S.barH + (vy / P.videoH) * S.pageH, z };
+  }
+
   /* -------------------------------------------------------------- init -- */
 
   function layout() {
+    document.documentElement.style.setProperty('--u', String(S.u));
+    for (const node of [document.documentElement, document.body, el.frame, el.scene]) {
+      node.style.width = S.frameW + 'px';
+      node.style.height = S.frameH + 'px';
+    }
     el.win.style.left = S.winX + 'px';
     el.win.style.top = S.winY + 'px';
     el.win.style.width = S.pageW + 'px';
@@ -277,7 +354,7 @@
 
   function buildTimeline(events) {
     S.moves = events.filter((e) => e.type === 'move').map((e) => ({ t: e.t, ms: e.ms, from: toScene(e.from), to: toScene(e.to) }));
-    S.clicks = events.filter((e) => e.type === 'click').map((e) => ({ t: e.t, p: toScene(e) }));
+    S.clicks = events.filter((e) => e.type === 'click').map((e) => ({ t: e.t, p: toScene(e), page: { x: e.x, y: e.y } }));
     S.captions = events.filter((e) => e.type === 'caption').map((e) => ({ t: e.t, text: e.text }));
 
     const zooms = events.filter((e) => e.type === 'zoom');
@@ -302,7 +379,7 @@
       d.style.left = c.p.x + 'px';
       d.style.top = c.p.y + 'px';
       el.ripples.appendChild(d);
-      return { t: c.t, node: d };
+      return { t: c.t, node: d, page: c.page };
     });
   }
 
@@ -312,7 +389,7 @@
     el.scene.style.transform = 'translate(' + cam.tx.toFixed(3) + 'px,' + cam.ty.toFixed(3) + 'px) scale(' + cam.s.toFixed(5) + ')';
 
     const inv = 1 / cam.s;
-    const cur = cursorAt(t);
+    const cur = S.cursorOff ? null : cursorAt(t);
     if (cur) {
       el.cursor.style.opacity = '1';
       el.cursor.style.transform = 'translate(' + cur.x.toFixed(2) + 'px,' + cur.y.toFixed(2) + 'px) scale(' + (inv * pressAt(t)).toFixed(5) + ')';
@@ -324,8 +401,17 @@
       const u = (t - r.t) / 0.4;
       if (u < 0 || u > 1) { r.node.style.opacity = '0'; continue; }
       const e = easeFade(u);
+      // In polished mode the content moves under the overlay, so the ripple is
+      // placed and sized from polish's own camera at this exact frame.
+      let k = inv;
+      if (S.polish) {
+        const m = polishMap(r.page, t);
+        r.node.style.left = m.x.toFixed(2) + 'px';
+        r.node.style.top = m.y.toFixed(2) + 'px';
+        k = m.z;
+      }
       r.node.style.opacity = String((1 - e) * 0.95);
-      r.node.style.transform = 'scale(' + ((0.75 + e * 1.5) * inv).toFixed(4) + ')';
+      r.node.style.transform = 'scale(' + ((0.75 + e * 1.5) * k).toFixed(4) + ')';
     }
 
     const cap = captionAt(t);
@@ -349,15 +435,27 @@
   };
 
   window.studioInit = function studioInit(cfg) {
-    if (cfg.window) Object.assign(S, cfg.window);
     if (typeof cfg.zoomScale === 'number') S.zoomScale = cfg.zoomScale;
-    S.pageW = cfg.pageW || S.pageW;
-    S.pageH = cfg.pageH || S.pageH;
+    S.u = cfg.u || 1;
+    S.srcW = cfg.pageW || 1440;                 // the recording's own CSS size
+    S.srcH = cfg.pageH || 900;
+    S.frameW = 1920 * S.u; S.frameH = 1080 * S.u;
+    S.pageW = S.srcW * S.u; S.pageH = S.srcH * S.u;
+    S.barH = 36 * S.u; S.winY = 40 * S.u;
     S.winX = Math.round((S.frameW - S.pageW) / 2);
+    if (cfg.polish) {
+      // The polished video carries the camera and the cursor already.
+      S.polish = cfg.polish; S.cameraOff = true; S.cursorOff = true;
+    }
     layout();
     el.title.textContent = cfg.title || '';
     if (cfg.wallpaper) el.wall.style.backgroundImage = 'url("' + cfg.wallpaper + '")';
-    buildTimeline(cfg.events || []);
+    let events = cfg.events || [];
+    if (S.polish && S.polish.segments) {        // follow the retimed clock
+      const f = polishRemap(S.polish.segments);
+      events = events.map((e) => ({ ...e, t: f(e.t), ...(e.type === 'move' ? { ms: e.ms } : {}) }));
+    }
+    buildTimeline(events);
 
     const v = el.vid;
     return new Promise((resolve, reject) => {

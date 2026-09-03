@@ -14,6 +14,13 @@
 //   --fps <n>            output frame rate (default 30)
 //   --gif <seconds>      length of the preview gif (default 6)
 //   --seconds <n>        render only the first n seconds (a quick look)
+//   --source raw|polished   raw.mp4, or polished.mp4 from the polish stage with
+//                        its own zoom and cursor already in the picture
+//   --frame 4k|1080p     output size (default 4k: 3840x2160, the page 1:1)
+//   --out-name <stem>    stem for the files (default out)
+//
+// Output: <out>/<stem>.mp4 (4K), <out>/<stem>-1080p.mp4, <out>/<stem>.gif,
+//         <out>/<stem>-sample-*.png
 //   --keep-frames        do not delete the png frames afterwards
 //
 // Output: <out>/out.mp4, <out>/preview.gif, <out>/frames/*.png
@@ -38,17 +45,39 @@ for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
   if (a.startsWith('--')) {
     const key = a.slice(2);
-    if (key === 'keep-frames') opt[key] = true;
+    if (key === 'keep-frames' || key === 'png') opt[key] = true;
     else opt[key] = argv[++i];
   } else positional.push(a);
 }
 
 const takeDir = positional[0] || path.join(SCRATCH, 'studio/proof');
+const stem = opt['out-name'] || 'out';
+const frame = (opt.frame || '4k').toLowerCase();
+const U = frame === '1080p' ? 1 : 2;                 // frame scale, 2 is 3840x2160
+const FW = 1920 * U, FH = 1080 * U;
+const source = (opt.source || 'raw').toLowerCase();
+// PNG is lossless but the frames are only an intermediate for x264; a high
+// quality JPEG halves the capture cost at 4K and survives crf 17 untouched.
+const CAP = opt.png ? { format: 'png', ext: 'png' } : { format: 'jpeg', quality: 96, ext: 'jpg' };
 const eventsPath = opt.events || path.join(takeDir, 'events.json');
 if (!fs.existsSync(eventsPath)) { console.error('no event log at ' + eventsPath); process.exit(2); }
 const log = JSON.parse(fs.readFileSync(eventsPath, 'utf8'));
-const videoPath = path.resolve(opt.video || log.video);
-if (!fs.existsSync(videoPath)) { console.error('no raw video at ' + videoPath); process.exit(2); }
+let videoPath = path.resolve(opt.video || log.video);
+let polishMeta = null;
+if (source === 'polished') {
+  // The polish stage owns the camera and the cursor; the compositor keeps the
+  // window, the wallpaper, the captions and the click ripple, and follows
+  // polish's zoom map so the ripple lands on the content it belongs to.
+  videoPath = path.resolve(opt.video || path.join(takeDir, 'polished.mp4'));
+  const metaPath = opt.meta || path.join(takeDir, 'polish-meta.json');
+  if (fs.existsSync(metaPath)) {
+    const m = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+    polishMeta = { videoW: m.video.w, videoH: m.video.h, segments: m.segments, zoom: m.zoom };
+  } else {
+    console.warn('no polish meta at ' + metaPath + ', overlays will assume no zoom');
+  }
+}
+if (!fs.existsSync(videoPath)) { console.error('no video at ' + videoPath); process.exit(2); }
 const outDir = opt.out || takeDir;
 const fps = Number(opt.fps || log.fps || 30);
 const gifSeconds = Number(opt.gif || 6);
@@ -76,7 +105,7 @@ const wallUrl = wallpaper ? '/wall' + path.extname(wallpaper) : null;
 const routes = {
   '/': path.join(HERE, 'studio.html'),
   '/studio.html': path.join(HERE, 'studio.html'),
-  '/raw.mp4': videoPath
+  '/source.mp4': videoPath
 };
 if (wallUrl) routes[wallUrl] = wallpaper;
 
@@ -110,7 +139,7 @@ const proc = spawn(chrome, [
   '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', '--hide-scrollbars',
   '--force-device-scale-factor=1', '--autoplay-policy=no-user-gesture-required',
   `--remote-debugging-port=${port}`, `--user-data-dir=/tmp/claude-1000/nema-studio-${port}`,
-  '--window-size=1920,1080', 'about:blank'
+  `--window-size=${FW},${FH}`, 'about:blank'
 ], { stdio: 'ignore' });
 
 let target = null;
@@ -130,7 +159,7 @@ ws.onmessage = (ev) => {
 const send = (method, params = {}) => new Promise((res) => { const i = ++id; pending.set(i, res); ws.send(JSON.stringify({ id: i, method, params })); });
 await new Promise((r) => (ws.onopen = r));
 await send('Page.enable'); await send('Runtime.enable');
-await send('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
+await send('Emulation.setDeviceMetricsOverride', { width: FW, height: FH, deviceScaleFactor: 1, mobile: false });
 
 const evaluate = async (expression, awaitPromise = false) => {
   const m = await send('Runtime.evaluate', { expression, awaitPromise, returnByValue: true });
@@ -143,19 +172,23 @@ await send('Page.navigate', { url: `http://127.0.0.1:${httpPort}/` });
 for (let i = 0; i < 60; i++) { if (await evaluate('typeof window.studioInit === "function"').catch(() => false)) break; await sleep(200); }
 
 const cfg = {
-  video: '/raw.mp4',
+  video: '/source.mp4',
   wallpaper: wallUrl,
   title,
   pageW: log.width || 1440,
   pageH: log.height || 900,
+  u: U,
+  polish: polishMeta,
   events: log.events || []
 };
 const meta = await evaluate(`window.studioInit(${JSON.stringify(cfg)})`, true);
-console.log('raw video', meta.videoWidth + 'x' + meta.videoHeight, meta.duration.toFixed(2) + 's');
+console.log(`${source} video ${meta.videoWidth}x${meta.videoHeight} ${meta.duration.toFixed(2)}s -> ${FW}x${FH}`);
 
 /* --------------------------------------------------------------- render -- */
 
-let duration = Math.max(0.5, Math.min(meta.duration, log.duration ? log.duration + 0.5 : meta.duration));
+let duration = polishMeta
+  ? meta.duration
+  : Math.max(0.5, Math.min(meta.duration, log.duration ? log.duration + 0.5 : meta.duration));
 if (opt.seconds) duration = Math.min(duration, Number(opt.seconds));
 const total = Math.max(1, Math.floor(duration * fps));
 console.log(`rendering ${total} frames at ${fps} fps`);
@@ -163,27 +196,34 @@ const started = Date.now();
 let lastSeek = -1;
 let stuck = 0;
 
+const phase = { seek: 0, render: 0, capture: 0, write: 0 };
 for (let i = 0; i < total; i++) {
   const t = i / fps;
+  let mark = Date.now();
   const at = await evaluate(`window.seekTo(${t})`, true);
+  phase.seek += Date.now() - mark; mark = Date.now();
   // A seek that never advances means the decoder stalled: worth saying out loud
   // rather than silently writing the same frame two hundred times.
   if (i > 0 && at === lastSeek && t > 0.2) stuck++;
   lastSeek = at;
   await evaluate(`window.renderAt(${t})`);
+  phase.render += Date.now() - mark; mark = Date.now();
   const shot = await send('Page.captureScreenshot', {
-    format: 'png',
-    clip: { x: 0, y: 0, width: 1920, height: 1080, scale: 1 },
+    format: CAP.format, ...(CAP.quality ? { quality: CAP.quality } : {}),
+    clip: { x: 0, y: 0, width: FW, height: FH, scale: 1 },
     captureBeyondViewport: false,
     fromSurface: true
   });
   if (!shot.result?.data) throw new Error('capture failed at frame ' + i);
-  fs.writeFileSync(path.join(framesDir, String(i + 1).padStart(6, '0') + '.png'), Buffer.from(shot.result.data, 'base64'));
+  phase.capture += Date.now() - mark; mark = Date.now();
+  fs.writeFileSync(path.join(framesDir, String(i + 1).padStart(6, '0') + '.' + CAP.ext), Buffer.from(shot.result.data, 'base64'));
+  phase.write += Date.now() - mark;
   if (i % 30 === 0 || i === total - 1) {
     const per = (Date.now() - started) / (i + 1);
     process.stdout.write(`  frame ${i + 1}/${total}  video t=${Number(at).toFixed(3)}  eta ${Math.round((total - i - 1) * per / 1000)}s\n`);
   }
 }
+console.log('phases (s):', Object.entries(phase).map(([k, v]) => k + ' ' + (v / 1000).toFixed(1)).join('  '));
 if (stuck > total * 0.5) console.warn(`warning: the video did not advance on ${stuck} frames`);
 if (consoleErrors.length) console.warn('page errors: ' + consoleErrors.slice(0, 4).join(' | '));
 
@@ -191,25 +231,35 @@ ws.close(); proc.kill(); server.close();
 
 /* -------------------------------------------------------------- encode -- */
 
-const outMp4 = path.join(outDir, 'out.mp4');
-execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(fps), '-i', path.join(framesDir, '%06d.png'),
-  '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-r', String(fps), outMp4]);
+const outMp4 = path.join(outDir, stem + '.mp4');
+execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(fps), '-i', path.join(framesDir, '%06d.' + CAP.ext),
+  '-c:v', 'libx264', '-preset', 'slow', '-crf', '17', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-r', String(fps), outMp4]);
 
-const gif = path.join(outDir, 'preview.gif');
-const palette = path.join(outDir, 'palette.png');
+// A 1080p companion for anything that has to move over a wire.
+const outSmall = path.join(outDir, stem + '-1080p.mp4');
+execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', outMp4, '-vf', 'scale=1920:1080:flags=lanczos',
+  '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-r', String(fps), outSmall]);
+
+const gif = path.join(outDir, stem + '.gif');
+const palette = path.join(outDir, stem + '-palette.png');
 const gifFilters = `fps=12,scale=640:-1:flags=lanczos`;
-execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-t', String(gifSeconds), '-i', outMp4, '-vf', `${gifFilters},palettegen=stats_mode=diff`, palette]);
-execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-t', String(gifSeconds), '-i', outMp4, '-i', palette,
+execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-t', String(gifSeconds), '-i', outSmall, '-vf', `${gifFilters},palettegen=stats_mode=diff`, palette]);
+execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-t', String(gifSeconds), '-i', outSmall, '-i', palette,
   '-lavfi', `${gifFilters}[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3`, gif]);
 fs.rmSync(palette, { force: true });
 
 // Three stills for a look at the render without opening the video: the open,
 // the middle of the shot and the last frame.
 const samples = [1, Math.round(total * 0.55), total]
-  .map((n) => String(Math.max(1, Math.min(total, n))).padStart(6, '0') + '.png');
-for (const name of samples) fs.copyFileSync(path.join(framesDir, name), path.join(outDir, 'sample-' + name));
+  .map((n) => String(Math.max(1, Math.min(total, n))).padStart(6, '0') + '.' + CAP.ext);
+for (const name of samples) {
+  const png = path.join(outDir, stem + '-sample-' + name.replace(/\.jpg$/, '.png'));
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', path.join(framesDir, name), png]);
+}
 if (!opt['keep-frames']) fs.rmSync(framesDir, { recursive: true, force: true });
 
-console.log('\nout.mp4     ' + outMp4);
-console.log('preview.gif ' + gif);
-console.log('duration    ' + (total / fps).toFixed(2) + 's, ' + total + ' frames');
+console.log('\nmaster      ' + outMp4 + `  (${FW}x${FH})`);
+console.log('1080p       ' + outSmall);
+console.log('gif         ' + gif);
+console.log('duration    ' + (total / fps).toFixed(2) + 's, ' + total + ' frames, ' +
+  ((Date.now() - started) / 1000 / total).toFixed(2) + 's per frame');

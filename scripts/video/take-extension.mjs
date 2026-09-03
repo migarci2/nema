@@ -23,6 +23,14 @@ const S2 = process.env.LINECOOK || 'https://linecook.migarci2.dev';
 const BLOG = process.env.BLOG || 'https://maillard.migarci2.dev';
 const HUB = process.env.HUB || 'https://nema.migarci2.dev';
 const PANEL_W = 480, SITE_W = 1440, H = 1080, FPS = 25;
+/* Capture density. The screencast hands back the CSS viewport unless the browser
+ * itself runs at that scale, so the flag and the metrics override have to agree,
+ * and maxWidth has to allow the larger frame. DSF=2 makes the stacked output
+ * 3840x2160; every derived number below is computed from it, so DSF=1 is the
+ * old 1920x1080 behaviour exactly. Higher costs frame rate: this machine
+ * sustains about 36 fps at 1x, 9 at 2x, 4 at 3x. */
+const DSF = Number(process.env.DSF || 2);
+const px = (n) => Math.round(n * DSF);
 const content = await import(REPO + '/apps/harness/public/content.js');
 const ANSWER = content.ACTIVITIES['ratios-diagnostic'].content.answerKey;
 
@@ -37,6 +45,7 @@ const now = () => (Date.now() - t0) / 1000;
 const port = 9600 + Math.floor(Math.random() * 300);
 const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', '--hide-scrollbars',
   `--remote-debugging-port=${port}`, `--user-data-dir=/tmp/claude-1000/nema-video-profile-${port}`, `--window-size=${SITE_W},${H}`,
+  ...(DSF !== 1 ? [`--force-device-scale-factor=${DSF}`] : []),
   `--disable-extensions-except=${DIST}`, `--load-extension=${DIST}`, 'about:blank'], { stdio: 'ignore' });
 let endpoint = null;
 for (let i = 0; i < 60 && !endpoint; i++) { try { endpoint = (await (await fetch(`http://127.0.0.1:${port}/json/version`)).json()).webSocketDebuggerUrl; } catch {} if (!endpoint) await sleep(250); }
@@ -51,7 +60,7 @@ ws.onmessage = (ev) => {
     if (rec) {
       const ts = m.params.metadata.timestamp;
       if (!rec.t0) rec.t0 = ts;
-      const file = path.join(rec.dir, String(rec.frames.length).padStart(6, '0') + '.jpg');
+      const file = path.join(rec.dir, String(rec.frames.length).padStart(6, '0') + (DSF === 1 ? '.jpg' : '.png'));
       fs.writeFileSync(file, Buffer.from(m.params.data, 'base64'));
       rec.frames.push({ file, t: ts - rec.t0 });
     }
@@ -63,7 +72,7 @@ const send = (method, params = {}, sessionId) => new Promise((res, rej) => { con
 async function attach(targetId, width) {
   const { sessionId } = await send('Target.attachToTarget', { targetId, flatten: true });
   await send('Page.enable', {}, sessionId); await send('Runtime.enable', {}, sessionId);
-  await send('Emulation.setDeviceMetricsOverride', { width, height: H, deviceScaleFactor: 1, mobile: false }, sessionId);
+  await send('Emulation.setDeviceMetricsOverride', { width, height: H, deviceScaleFactor: DSF, mobile: false }, sessionId);
   const tab = {
     sessionId, width,
     async goto(url, wait = 3000) { await send('Page.navigate', { url }, sessionId); await sleep(wait); await tab.overlay(); },
@@ -80,7 +89,7 @@ async function attach(targetId, width) {
       if (click && ok) await tab.eval(`(() => { const el = ${finder}; el.click(); return true; })()`);
       return ok;
     },
-    async record(name) { const dir = path.join(out, name + '-frames'); fs.mkdirSync(dir, { recursive: true }); recorders.set(sessionId, { dir, frames: [], t0: 0, name }); await send('Page.startScreencast', { format: 'jpeg', quality: 85, maxWidth: width, maxHeight: H, everyNthFrame: 1 }, sessionId); },
+    async record(name) { const dir = path.join(out, name + '-frames'); fs.mkdirSync(dir, { recursive: true }); recorders.set(sessionId, { dir, frames: [], t0: 0, name }); await send('Page.startScreencast', { format: DSF === 1 ? 'jpeg' : 'png', ...(DSF === 1 ? { quality: 85 } : {}), maxWidth: px(width), maxHeight: px(H), everyNthFrame: 1 }, sessionId); },
     async stop() { await send('Page.stopScreencast', {}, sessionId); await sleep(300); },
   };
   return tab;
@@ -189,7 +198,7 @@ function encode(rec, width) {
   txt += `file '${rec.frames[rec.frames.length - 1].file}'\n`;
   fs.writeFileSync(list, txt);
   const mp4 = path.join(out, rec.name + '.mp4');
-  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', list, '-vf', `fps=${FPS},scale=${width}:${H}:flags=lanczos,format=yuv420p`, '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-t', total.toFixed(2), mp4]);
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', list, '-vf', `fps=${FPS},scale=${px(width)}:${px(H)}:flags=lanczos,format=${DSF === 1 ? 'yuv420p' : 'yuv444p'}`, '-c:v', 'libx264', '-preset', DSF === 1 ? 'medium' : 'fast', '-crf', DSF === 1 ? '20' : '12', '-t', total.toFixed(2), mp4]);
   return mp4;
 }
 const recs = [...recorders.values()];
@@ -199,5 +208,5 @@ const siteMp4 = encode(recs.find((r) => r.name === 'site'), SITE_W);
 const srt = captions.map((c, i) => { const end = captions[i + 1] ? captions[i + 1].t : total; if (!c.text) return ''; const f = (s) => new Date(s * 1000).toISOString().slice(11, 23).replace('.', ','); return `${i + 1}\n${f(c.t)} --> ${f(end)}\n${c.text}\n`; }).filter(Boolean).join('\n');
 fs.writeFileSync(path.join(out, 'captions.srt'), srt);
 const final = path.join(out, 'nema-video.mp4');
-execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', panelMp4, '-i', siteMp4, '-filter_complex', `[0:v][1:v]hstack=inputs=2,subtitles=${path.join(out, 'captions.srt')}:force_style='FontName=JetBrains Mono,FontSize=22,PrimaryColour=&H00FFE500,OutlineColour=&H80201309,BorderStyle=4,BackColour=&HB0201309,Alignment=2,MarginV=40'`, '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-pix_fmt', 'yuv420p', final]);
-console.log('video:', final, 'duration', total.toFixed(1), 's');
+execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', panelMp4, '-i', siteMp4, '-filter_complex', `[0:v][1:v]hstack=inputs=2,subtitles=${path.join(out, 'captions.srt')}:force_style='FontName=JetBrains Mono,FontSize=${px(22)},PrimaryColour=&H00FFE500,OutlineColour=&H80201309,BorderStyle=4,BackColour=&HB0201309,Alignment=2,MarginV=${px(40)}'`, '-c:v', 'libx264', '-preset', DSF === 1 ? 'medium' : 'slow', '-crf', DSF === 1 ? '19' : '16', ...(DSF === 1 ? [] : ['-profile:v', 'high', '-level', '5.1']), '-pix_fmt', 'yuv420p', final]);
+console.log('video:', final, 'duration', total.toFixed(1), 's', `at ${px(PANEL_W + SITE_W)}x${px(H)}`);
