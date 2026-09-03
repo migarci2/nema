@@ -1,0 +1,42 @@
+<meta charset="utf-8"><title>Every page shows its tools with WebMCP</title>
+<link rel="stylesheet" href="film.css">
+<style>
+  .pill { display: inline-flex; align-items: center; gap: 16px; border-radius: 999px;
+    background: #111C2E; border: 2px solid #23334D; padding: 18px 32px; font-size: 34px;
+    font-weight: 500; color: var(--ink-2); white-space: nowrap; }
+  .pill .dot { width: 16px; height: 16px; border-radius: 50%; background: var(--amber); }
+  .pill .n { color: var(--ink); font-weight: 600; }
+  .badge .mark { width: 34px; height: 34px; border-radius: 9px; background: #0B1320;
+    display: grid; place-items: center; }
+</style>
+<div class="stage">
+  <div id="line" class="kin" style="position:absolute;left:200px;top:392px;width:1560px;font-size:96px"></div>
+  <div id="row" style="position:absolute;left:200px;top:606px;display:flex;gap:28px;align-items:center">
+    <span class="pill" id="p1"><span class="dot"></span><span><span class="n">6 tools</span> on this page</span></span>
+    <span class="pill badge" id="p2"><span class="mark" id="mk"></span><span>Works with nema</span></span>
+  </div>
+  <div id="sub" class="mono" style="position:absolute;left:200px;top:742px;font-size:30px;color:#4E6389">
+    describe_learning_offer &middot; check_prerequisites &middot; issue_evidence_receipt
+  </div>
+</div>
+<script type="module">
+import { span, ease, words, kinetic, fade } from './film.js';
+document.getElementById('mk').innerHTML =
+  `<svg viewBox="0 0 64 64" width="26" height="26"><defs>
+    <linearGradient id="e" x1="32" y1="4" x2="58" y2="34" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00E5FF"/><stop offset=".5" stop-color="#15C4B4"/><stop offset="1" stop-color="#3A78FF"/>
+    </linearGradient></defs>
+   <path d="M32 6 L54 19 L54 45 L32 58 L10 45 L10 19 Z" fill="none" stroke="url(#e)" stroke-width="4"/>
+   <g fill="#F2F6FF" shape-rendering="crispEdges">
+     <rect x="24" y="24" width="16" height="4"/><rect x="24" y="28" width="4" height="12"/><rect x="36" y="28" width="4" height="12"/>
+   </g></svg>`;
+const spans = words(document.getElementById('line'), 'Every page shows its tools with WebMCP.');
+spans[spans.length - 1].style.color = 'var(--cyan)';
+const p1 = document.getElementById('p1'), p2 = document.getElementById('p2'), sub = document.getElementById('sub');
+window.renderAt = (t) => {
+  kinetic(spans, t, { start: 0.08, stagger: 0.05, dur: 0.24 });
+  fade(p1, ease(span(t, 0.95, 0.32)), 16);
+  fade(p2, ease(span(t, 1.15, 0.32)), 16);
+  fade(sub, ease(span(t, 1.55, 0.36)), 12);
+};
+</script>

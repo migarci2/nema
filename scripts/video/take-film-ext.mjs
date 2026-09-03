@@ -322,8 +322,11 @@ const poll = (async () => {
 
 const hold = (s) => sleep(s * 1000);
 
-caption('Any page. Any agent.');
-await hold(1.4);
+/* One take serves two chapters: chapter one is the ask, the disclosure and the
+ * counter; chapter four is the same window while the receipt comes home. Both
+ * sets of captions are logged here and each cut takes the window it wants. */
+caption('A site asks');
+await hold(5.0);
 
 /* Share, from the page's own bar. The bar is a shadow root, so the pointer is
  * aimed with the host's own geometry and the press goes to the real button. */
@@ -343,19 +346,27 @@ await panel.waitFor(`document.querySelector('#consent-modal').hidden === false`,
  * drops any anchor that lands within 1.8 s of the one before it, so a zoom
  * asked for right after the click on Share is thrown away and the film stays
  * framed on the button instead of the question. */
-await sleep(1900);
+await sleep(1500);
+caption('You say yes');
+await sleep(400);
 const modalBox = await boxIn(panel, `document.querySelector('#consent-modal .n-modal, #consent-modal > *') || document.querySelector('#consent-modal')`);
-zoomAt('panel', modalBox, { scale: 1.7, holdMs: 2000 });
-await hold(2.2);
+zoomAt('panel', modalBox, { scale: 1.7, holdMs: 2400 });
+await hold(2.8);
 await clickIn(panel, 'panel', `document.querySelector('[data-consent-approve]')`, { ms: 620 });
 
 const pathNote = await site.waitFor(
   `(() => { const t = document.querySelector('[data-path-note]').textContent; return t.includes('27') ? t : ''; })()`,
   { label: 'Saucier School to personalise' });
 console.log('  page rebuilt: ' + pathNote.replace(/\s+/g, ' ').trim().slice(0, 80));
-await hold(1.6);
+await hold(0.9);
+caption('68 minutes become 27');
+const noteBox = await boxIn(site, `document.querySelector('[data-path-note]')`);
+zoomAt('site', noteBox, { scale: 1.5, holdMs: 3400 });
+await hold(8.6);
+console.log('  panel result: ' + String(await panel.evaluate(`(document.querySelector('[data-ext-result]')?.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 90)`)));
 
 /* The learner answers, in the page, by hand. */
+caption('Any page. Any agent.');
 await clickIn(site, 'site', `[...document.querySelectorAll('[data-path-list] .n-path__row')].find((r) => r.textContent.toLowerCase().includes('vinaigrette'))`, { ms: 700 });
 await site.waitFor(`Boolean(document.querySelector('input[name="diagnostic-option"][value="ratio-b"]'))`, { label: 'the diagnostic' });
 await hold(0.5);

@@ -22,7 +22,7 @@ FILM = '/tmp/claude-1000/-home-dark-Desktop-Projects/b5daf22a-b862-4b2b-ad5a-8aa
 SEG = os.path.join(FILM, 'segments')
 OUT = os.path.join(FILM, 'final')
 WORK = os.path.join(OUT, 'work')
-CAM = os.path.join(FOOT, 'take-camera-final.mp4')
+CAM = os.path.join(FOOT, 'take-camera-original.mp4')
 VOICE_CHAIN = os.path.join(NEMA, 'scripts/video/voice-chain.sh')
 os.makedirs(WORK, exist_ok=True)
 
@@ -76,15 +76,17 @@ for k, v in SLOTS.items():
     v['in'] = round(a - AIR, 3)
     v['dur'] = round((b - a) + 2 * AIR, 3)
 
-# The camera is 720p in a 4K frame: scaled up once with lanczos, sharpened a
-# little to put back what the scale softened, cooled and darkened a touch so it
-# sits next to the navy, and a two percent vignette so the frame has an edge.
+# The camera is 1080p in a 4K frame: a two times scale rather than three, so it
+# is sharpened about half as hard as the smaller copy needed. Cooled and
+# darkened a touch so it sits next to the navy, and a two percent vignette so
+# the frame has an edge.
 # The phone recorded through the front camera and saved the preview, so every
-# frame is mirrored: the laptop stickers read backwards, github, java, nginx and
-# "In Code We Trust" all reversed. hflip puts the room the right way round.
+# frame is mirrored: the laptop stickers read backwards, git, nginx and
+# "In Code We Trust" all reversed. The recovered original is mirrored the same
+# way, checked on a frame, so hflip stays.
 CAM_VF = ('hflip,'
           'scale=3840:2160:flags=lanczos,'
-          'unsharp=5:5:0.55:5:5:0.0,'
+          'unsharp=5:5:0.30:5:5:0.0,'
           'eq=contrast=1.045:saturation=0.94:brightness=-0.012,'
           'colorbalance=rs=-0.030:bs=0.050:rm=-0.028:bm=0.045:rh=-0.015:bh=0.030,'
           'vignette=angle=PI/9:mode=forward,'
@@ -116,6 +118,19 @@ VO = [
     ('vo-07b', 'vo-07.wav', 4.08, 7.12, 'One tag on the page. That is all.'),
     ('vo-08', 'vo-08.wav', 2.76, 6.36, 'If you teach on the web, you can add this in one minute.'),
 ]
+# Carmen's WebMCP line is still to be recorded. The slot on screen is already
+# cut and captioned; the moment the file lands this picks it up, runs it through
+# the same chain and places it on that card. Until then the card plays silent
+# over the bed.
+# Carmen's WebMCP line arrived as one voice note holding two sentences. It is
+# cut at the pause between them, 4.86 to 5.55 by whisper's word times, so the
+# first can sit on the card that names WebMCP and the second on the logo field.
+WEBMCP_SRC = os.path.join(FOOT, 'vo-webmcp.mp3')
+if os.path.exists(WEBMCP_SRC):
+    VO += [
+        ('vo-webmcp-a', '../vo-webmcp.mp3', 0.51, 5.06, 'Every page shows what it can do with WebMCP.'),
+        ('vo-webmcp-b', '../vo-webmcp.mp3', 5.35, 10.00, 'Any agent can use it, and my nema answers only what I approve.'),
+    ]
 
 if 'audio' in steps or 'master' in steps:
     for name, src, a, b in [(n, s, a, b) for n, s, a, b, _ in VO]:
@@ -131,9 +146,9 @@ if 'audio' in steps or 'master' in steps:
 # ------------------------------------------------------------------ the order --
 
 ORDER = [
-    ('slot-A', 'cam'), ('01-open-a', 'seg'), ('02-open-s1', 'seg'), ('03-open-b', 'seg'),
-    ('04-open-s2', 'seg'), ('05-open-c', 'seg'), ('06-open-s3', 'seg'), ('07-title', 'seg'),
-    ('09-ch1-ask', 'seg'), ('10-ch1-consent', 'seg'), ('11-ch1-became', 'seg'), ('12-beat', 'seg'),
+    ('slot-A', 'cam'), ('01-open-a', 'seg'), ('07-title', 'seg'),
+    ('09-ch1-ask', 'seg'), ('10-ch1-consent', 'seg'), ('11-ch1-became', 'seg'),
+    ('12-webmcp', 'seg'), ('12b-beat', 'seg'),
     ('13-ch2-answer', 'seg'), ('14-ch2-receipt', 'seg'), ('15-ch2-keep', 'seg'), ('16-ch2-ledger', 'seg'),
     ('slot-C', 'cam'), ('18-ch3-ask', 'seg'), ('19-ch3-consent', 'seg'), ('20-ch3-open', 'seg'),
     ('21-ch4-ext', 'seg'), ('22-ch4-toast', 'seg'), ('23-ch4-article', 'seg'),
@@ -142,7 +157,7 @@ ORDER = [
 ]
 CHAPTER = {
     'slot-A': 'Filmed intro', '01-open-a': 'Cold open', '07-title': 'Title', '09-ch1-ask': 'Chapter 1',
-    '12-beat': 'Beat', '13-ch2-answer': 'Chapter 2', 'slot-C': 'Filmed, slot C', '18-ch3-ask': 'Chapter 3',
+    '12-webmcp': 'WebMCP', '12b-beat': 'Beat', '13-ch2-answer': 'Chapter 2', 'slot-C': 'Filmed, slot C', '18-ch3-ask': 'Chapter 3',
     '21-ch4-ext': 'Chapter 4', 'slot-D': 'Filmed, slot D', '25-logos': 'Logos', '26-twotags': 'Two tags',
     'slot-E': 'Filmed, slot E', '28-closing': 'Closing',
 }
@@ -165,7 +180,7 @@ length = {c['name']: c['dur'] for c in TL}
 
 # Where each voice line starts. Chosen against the picture, never overlapping
 # another line and never running into a filmed scene.
-PLACE = {
+PLACE = {  # every entry is checked against VO below
     'vo-01': start['09-ch1-ask'] + 0.34,
     'vo-02': start['10-ch1-consent'] + 1.74,
     'vo-03': start['11-ch1-became'] + 1.44,
@@ -174,6 +189,8 @@ PLACE = {
     'vo-06a': start['20-ch3-open'] + 1.12,
     'vo-06b': start['21-ch4-ext'] + 0.42,
     'vo-07a': start['23-ch4-article'] + 0.42,
+    'vo-webmcp-a': start['12-webmcp'] + 0.55,
+    'vo-webmcp-b': start['25-logos'] + 0.55,
     'vo-07b': start['26-twotags'] + 0.35,
     'vo-08': start['26-twotags'] + 3.72,
 }
@@ -208,6 +225,8 @@ def kf_expr(kfs):
 
 
 if 'audio' in steps:
+    for name, *_ in [(n,) for n, s2, a, b, t in VO]:
+        assert name in PLACE, 'no place for voice line ' + name
     voice_windows = []
     for name, src, a, b, _ in VO:
         t0 = PLACE[name]

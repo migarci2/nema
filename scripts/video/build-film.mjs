@@ -102,21 +102,26 @@ const slotQuery = (k) => [
  * from; `in` and `dur` trim it; `dipIn` and `dipOut` are the only fades in the
  * film and they only ever happen at a chapter border. */
 const SEGMENTS = [
-  // 1. cold open. Starts on navy so the filmed intro can cross into it.
-  { name: '01-open-a', chapter: 'Cold open', kind: 'mograph', page: 'open-a.html', dur: 1.30 },
-  { name: '02-open-s1', kind: 'stock', clip: 'laptop-night', in: 3.0, dur: 1.50 },
-  { name: '03-open-b', kind: 'mograph', page: 'open-b.html', dur: 0.65 },
-  { name: '04-open-s2', kind: 'stock', clip: 'student-screen', in: 6.0, dur: 1.50 },
-  { name: '05-open-c', kind: 'mograph', page: 'open-c.html', dur: 0.25 },
-  { name: '06-open-s3', kind: 'stock', clip: 'reading-long', in: 2.5, dur: 1.30 },
+  /* 1. cold open, one beat. It used to be three stock cuts with the line split
+   * across navy dips, which was six and a half seconds and pushed the first
+   * frame of the product to almost eighteen. Devpost wants the thing working
+   * inside fifteen. One card says the same sentence in two seconds. */
+  { name: '01-open-a', chapter: 'Cold open', kind: 'mograph', page: 'open-one.html', dur: 2.00 },
   // 2. title
   { name: '07-title', chapter: 'Title', kind: 'mograph', page: 'title.html', dur: 3.50 },
   // 3. chapter one
-  { name: '09-ch1-ask', chapter: 'Chapter 1', label: 'One', kind: 'take', take: 'ch1', shot: 'ask', title: 'Saucier School', in: 0.55, dur: 7.60 },
-  { name: '10-ch1-consent', kind: 'consent', from: 'ch1', cap: 'You say yes', dur: 4.40 },
-  { name: '11-ch1-became', kind: 'take', take: 'ch1', shot: 'became', title: 'Saucier School', in: 1.40, dur: 8.60, dipOut: 0.20 },
+  /* Chapters one and four are two cuts of one recording of the same window:
+   * the course on the left, the nema side panel on the right, both live. The
+   * consent is no longer a card of its own; it happens in the panel, in the
+   * window, which is what it does for a person. */
+  { name: '09-ch1-ask', chapter: 'Chapter 1', label: 'One', kind: 'take', take: 'panel', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 0.60, dur: 7.60 },
+  { name: '10-ch1-consent', kind: 'take', take: 'panel', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 8.00, dur: 4.40 },
+  { name: '11-ch1-became', kind: 'take', take: 'panel', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 13.00, dur: 8.60, dipOut: 0.20 },
   // 4. the beat
-  { name: '12-beat', chapter: 'Beat', kind: 'stock', clip: 'pan-sauce', in: 4.0, dur: 2.00, dipIn: 0.16, dipOut: 0.16 },
+  /* The one thing the audio never said: where WebMCP is in this. The slot holds
+   * the caption and waits for Carmen's line. */
+  { name: '12-webmcp', chapter: 'WebMCP', kind: 'mograph', page: 'webmcp.html', dur: 6.40 },
+  { name: '12b-beat', chapter: 'Beat', kind: 'stock', clip: 'pan-sauce', in: 4.0, dur: 2.00, dipIn: 0.16, dipOut: 0.16 },
   // 5. chapter two
   /* One recording, two cuts: the answer and the submit, then the signed
    * receipt. What sits between them is a page thinking, and a film cuts it. */
@@ -133,13 +138,13 @@ const SEGMENTS = [
   // 7. chapter four
   /* One window, the page and the side panel both live, cut twice: the
    * disclosure, then the receipt arriving on its own. */
-  { name: '21-ch4-ext', chapter: 'Chapter 4', label: 'Three', kind: 'take', take: 'ch4', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 1.30, dur: 5.60, dipIn: 0.16 },
-  { name: '22-ch4-toast', kind: 'take', take: 'ch4', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 16.10, dur: 3.60 },
+  { name: '21-ch4-ext', chapter: 'Chapter 4', label: 'Three', kind: 'take', take: 'panel', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 21.90, dur: 5.60, dipIn: 0.16 },
+  { name: '22-ch4-toast', kind: 'take', take: 'panel', shot: 'ext', title: 'Saucier School', anchors: 'zooms', in: 28.60, dur: 3.60 },
   { name: '23-ch4-article', kind: 'take', take: 'ch4b', shot: 'article', title: 'AES-GCM, with and without nema', in: 1.60, dur: 5.60, dipOut: 0.20 },
   // on camera, slot D
   { name: '24-slot-d', chapter: 'Slot D', kind: 'mograph', page: 'slot.html', dur: SLOTS.D.secs, query: slotQuery('D') },
   // 8. the logos
-  { name: '25-logos', chapter: 'Logos', kind: 'mograph', page: 'logos.html', dur: 6.00 },
+  { name: '25-logos', chapter: 'Logos', kind: 'mograph', page: 'logos.html', dur: 7.00 },
   // 9. two tags
   { name: '26-twotags', chapter: 'Two tags', kind: 'mograph', page: 'twotags.html', dur: 7.60 },
   // on camera, slot E
