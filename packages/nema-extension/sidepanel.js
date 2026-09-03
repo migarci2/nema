@@ -346,6 +346,13 @@ function renderNext() {
   const rubric = Array.isArray(need.rubric) ? need.rubric : [];
   const teacher = teacherFor(need);
 
+  /* The card is redrawn on every vault change and every 4 s refresh. Redrawing
+   * the checklist would wipe the boxes a person has just ticked, so the card is
+   * rebuilt only when the need itself or its note changes. */
+  const key = [need.needId, need.kind, need.minutes, rubric.join('|'), selfCheckNote, canSelfCheck].join('\u0001');
+  if (refs.next.dataset.nextKey === key && refs.next.querySelector('[data-ext-done]')) return;
+  refs.next.dataset.nextKey = key;
+
   const checklist = rubric.length === 0
     ? '<p class="x-next__none">This need has no rubric in the registry yet.</p>'
     : `<ul class="x-next__rubric" data-ext-rubric>${rubric.map((criterion, index) => `
