@@ -204,9 +204,9 @@
       "text": "A different site. It asks, I say yes, and it already counts what I did before."
     },
     {
-      "name": "vo-06a",
-      "at": 73.02000000000001,
-      "text": "Two lessons done before I start. The lab opens."
+      "name": "vo-lab",
+      "at": 72.2,
+      "text": "Two lessons are already done. The page names the prerequisite I still need."
     },
     {
       "name": "vo-06b",
@@ -219,9 +219,9 @@
       "text": "This is a real article, with questions inside the text."
     },
     {
-      "name": "vo-07b",
+      "name": "vo-tags",
       "at": 103.38333299999998,
-      "text": "One tag on the page. That is all."
+      "text": "One manifest block and one script tag. That is all."
     },
     {
       "name": "vo-08",

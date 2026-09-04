@@ -106,16 +106,21 @@ if 'camera' in steps:
 # Where each line was split out of Carmen's take. vo-06 and vo-07 each hold two
 # lines and are cut at the pause between them, found with whisper word times;
 # vo-08 opens with a false start and only its second, complete sentence is kept.
+# Two lines were re-recorded after the captions changed and arrived as their own
+# voice notes: vo-lab replaces the first half of vo-06 and vo-tags replaces the
+# second half of vo-07. Both are trimmed to the speech that silencedetect found
+# at -38 dB, with a little air on each side, and both run through the same chain
+# and the same de-noise as the rest of Carmen's lines.
 VO = [
     ('vo-01', 'vo-01.wav', 0.00, None, 'A cooking course I have never opened. It wants to know three things about me. It asks my nema, not me.'),
     ('vo-02', 'vo-02.wav', 0.00, None, 'I say yes. That is all it gets.'),
     ('vo-03', 'vo-03.wav', 0.00, None, '68 minutes become 27. It skips what I already know.'),
     ('vo-04', 'vo-04.wav', 0.00, None, 'I do one exercise. The course gives me a note that says I passed. That note is mine. I keep it in my nema.'),
     ('vo-05', 'vo-05.wav', 0.00, None, 'A different site. It asks, I say yes, and it already counts what I did before.'),
-    ('vo-06a', 'vo-06.wav', 0.00, 3.70, 'Two lessons done before I start. The lab opens.'),
+    ('vo-lab', '../vo-lab.mp3', 0.42, 5.53, 'Two lessons are already done. The page names the prerequisite I still need.'),
     ('vo-06b', 'vo-06.wav', 4.06, 8.95, 'With the extension it is one click. My notes come home alone.'),
     ('vo-07a', 'vo-07.wav', 0.00, 4.02, 'This is a real article, with questions inside the text.'),
-    ('vo-07b', 'vo-07.wav', 4.08, 7.12, 'One tag on the page. That is all.'),
+    ('vo-tags', '../vo-tags.mp3', 0.55, 3.45, 'One manifest block and one script tag. That is all.'),
     ('vo-08', 'vo-08.wav', 2.76, 6.36, 'If you teach on the web, you can add this in one minute.'),
 ]
 # Carmen's WebMCP line is still to be recorded. The slot on screen is already
@@ -186,12 +191,12 @@ PLACE = {  # every entry is checked against VO below
     'vo-03': start['11-ch1-became'] + 1.44,
     'vo-04': start['13-ch2-answer'] + 0.44,
     'vo-05': start['18-ch3-ask'] + 0.32,
-    'vo-06a': start['20-ch3-open'] + 1.12,
+    'vo-lab': start['20-ch3-open'] + 0.30,
     'vo-06b': start['21-ch4-ext'] + 0.42,
     'vo-07a': start['23-ch4-article'] + 0.42,
     'vo-webmcp-a': start['12-webmcp'] + 0.55,
     'vo-webmcp-b': start['25-logos'] + 0.55,
-    'vo-07b': start['26-twotags'] + 0.35,
+    'vo-tags': start['26-twotags'] + 0.35,
     'vo-08': start['26-twotags'] + 3.72,
 }
 
